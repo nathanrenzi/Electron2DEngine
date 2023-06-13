@@ -6,7 +6,7 @@ namespace OpenGLTest
     {
         public static void Main(string[] args)
         {
-            TestGame game = new TestGame(800, 600, "Test Game!");
+            TestGame game = new TestGame(1600, 1200, "Test Game!");
             game.Run();
         }
     }

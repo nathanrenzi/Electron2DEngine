@@ -42,7 +42,7 @@ namespace OpenGLTest.Rendering.Display
             Import(Glfw.GetProcAddress);
 
             glViewport(0, 0, _width, _height);
-            Glfw.SwapInterval(0); // VSYNC is off, 1 is on
+            Glfw.SwapInterval(1); // VSYNC is off, 1 is on
         }
 
         public static void CloseWindow()

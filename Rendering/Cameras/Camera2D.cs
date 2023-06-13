@@ -6,6 +6,8 @@ namespace OpenGLTest.Rendering.Cameras
 {
     public class Camera2D
     {
+        public static Camera2D main { get; private set; }
+
         public Vector2 position;
         public float zoom;
 
@@ -13,6 +15,8 @@ namespace OpenGLTest.Rendering.Cameras
         {
             position = _focusPosition;
             zoom = _zoom;
+
+            if (main == null) main = this;
         }
 
         public Matrix4x4 GetProjectionMatrix()

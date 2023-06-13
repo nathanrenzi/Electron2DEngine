@@ -9,6 +9,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Rendering\Shaders\Default\SpriteShader\fragment.txt" />
+    <None Remove="Rendering\Shaders\Default\SpriteShader\vertex.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Rendering\Shaders\Default\SpriteShader\fragment.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Rendering\Shaders\Default\SpriteShader\vertex.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="StbImageSharp" Version="2.27.13" />
   </ItemGroup>
 
@@ -18,6 +32,9 @@
 
   <ItemGroup>
     <None Update="Images\test.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Images\test2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

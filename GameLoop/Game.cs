@@ -28,11 +28,11 @@ namespace OpenGLTest.GameLoop
             {
                 Time.deltaTime = (float)Glfw.Time - Time.totalElapsedSeconds;
                 Time.totalElapsedSeconds = (float)Glfw.Time;
-
+                
                 Update();
 
                 Glfw.PollEvents();
-
+                
                 Render();
             }
 
