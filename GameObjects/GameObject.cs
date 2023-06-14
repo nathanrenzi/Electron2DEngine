@@ -8,8 +8,15 @@ namespace OpenGLTest.GameObjects
         public Transform transform = new Transform();
         public MeshRenderer meshRenderer;
 
+        public GameObject()
+        {
+            GameObjectManager.RegisterGameObject(this);
+        }
+
         public void InitializeMeshRenderer(Shader _shader = null)
         {
+            if (_shader == null) return;
+
             float[] vertices =
 {
                 // Position    UV        Color
@@ -37,6 +44,17 @@ namespace OpenGLTest.GameObjects
         }
 
         public virtual void Update()
+        {
+
+        }
+
+        public void Destroy()
+        {
+            GameObjectManager.UnregisterGameObject(this);
+            OnDestroy();
+        }
+
+        public virtual void OnDestroy()
         {
 
         }

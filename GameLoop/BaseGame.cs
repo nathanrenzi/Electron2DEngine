@@ -1,15 +1,16 @@
 ﻿using OpenGLTest.Rendering.Display;
 using GLFW;
+using OpenGLTest.GameObjects;
 
 namespace OpenGLTest.GameLoop
 {
-    public abstract class Game
+    public abstract class BaseGame
     {
         protected int initialWindowWidth;
         protected int initialWindowHeight;
         protected string initialWindowTitle;
 
-        public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle)
+        public BaseGame(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle)
         {
             initialWindowWidth = _initialWindowWidth;
             initialWindowHeight = _initialWindowHeight;

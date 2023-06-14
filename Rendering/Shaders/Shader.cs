@@ -9,6 +9,7 @@ namespace OpenGLTest.Rendering.Shaders
     {
         private string vertexCode;
         private string fragmentCode;
+        private bool loaded = false;
 
         public uint programID;
 
@@ -20,6 +21,8 @@ namespace OpenGLTest.Rendering.Shaders
 
         public void Load()
         {
+            if (loaded) return;
+
             uint vs, fs;
 
             vs = glCreateShader(GL_VERTEX_SHADER);
@@ -61,6 +64,8 @@ namespace OpenGLTest.Rendering.Shaders
             glDetachShader(programID, fs);
             glDeleteShader(vs);
             glDeleteShader(fs);
+
+            loaded = true;
         }
 
         public void Use()
