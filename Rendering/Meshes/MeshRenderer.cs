@@ -1,14 +1,15 @@
-﻿using OpenGLTest.GameLoop;
-using OpenGLTest.GameObjects;
-using OpenGLTest.Rendering.Cameras;
-using OpenGLTest.Rendering.Display;
-using OpenGLTest.Rendering.Shaders;
+﻿using Electron2D.Framework;
+using Electron2D.GameObjects;
+using Electron2D.Rendering.Cameras;
+using Electron2D.Rendering.Display;
+using Electron2D.Rendering.Images;
+using Electron2D.Rendering.Shaders;
 using StbImageSharp;
 using System.Numerics;
 using System.Reflection;
-using static OpenGLTest.OpenGL.GL;
+using static Electron2D.OpenGL.GL;
 
-namespace OpenGLTest.Rendering.Meshes
+namespace Electron2D.Rendering.Meshes
 {
     /// <summary>
     /// Handles rendering objects to the screen using vertices and a shader
@@ -19,32 +20,49 @@ namespace OpenGLTest.Rendering.Meshes
         public uint vao { get; private set; }
         public uint vbo { get; private set; }
 
-        private string imagesPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Images\\");
+        public bool initialized { get; private set; } = false;
+        public bool loaded { get; private set; } = false;
+
+        private ImageTexture image;
         private Shader shader;
         private Transform transform;
 
-        private bool initialized = false;
-
         public MeshRenderer() { }
 
-        public MeshRenderer(Transform _transform, Shader _shader, float[] _vertices)
+        public MeshRenderer(Transform _transform, Shader _shader)
         {
-            Initialize(_transform, _shader, _vertices);
+            Initialize(_transform, _shader);
         }
 
         /// <summary>
         /// Call this method to initialize the shader and vertices if they were not passed into the constructor
         /// </summary>
-        public void Initialize(Transform _transform, Shader _shader, float[] _vertices)
+        public void Initialize(Transform _transform, Shader _shader)
         {
             transform = _transform;
             shader = _shader;
-            vertices = _vertices;
+            vertices = _transform.vertices;
             initialized = true;
+        }
+
+        public void SetShader(Shader _shader)
+        {
+            shader = _shader;
+            shader.Load();
+        }
+
+        public void SetImage(ImageTexture _image)
+        {
+            image = _image;
         }
 
         public unsafe void Load()
         {
+            if (shader == null)
+            {
+                Console.WriteLine("No shader found on GameObject. Loading aborted.");
+                return;
+            }
             shader.Load();
 
             // Create our VAO and VBO
@@ -71,13 +89,13 @@ namespace OpenGLTest.Rendering.Meshes
             glVertexAttribPointer(2, 3, GL_FLOAT, false, 7 * sizeof(float), (void*)(4 * sizeof(float)));
             glEnableVertexAttribArray(2);
 
-
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
 
-            // Binding texture to uint
             uint texture;
             glGenTextures(1, &texture);
+
+            // Binding texture to uint - defines how many textures will be used for this object
             glBindTexture(GL_TEXTURE_2D, texture);
 
             // Setting texture wrapping / filtering options on bound texture object
@@ -90,27 +108,15 @@ namespace OpenGLTest.Rendering.Meshes
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            // Loading and generating texture
-            string path = Path.Combine(imagesPath, "test2.png");
-            byte[] data = File.ReadAllBytes(path);
-            StbImage.stbi_set_flip_vertically_on_load(1);
-            ImageResult image = ImageResult.FromMemory(data, ColorComponents.RedGreenBlueAlpha);
-            fixed (byte* d = image.Data)
-            {
-                if (d != null)
-                {
-                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.Width, image.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, d);
-                    glGenerateMipmap(GL_TEXTURE_2D);
-                }
-                else
-                {
-                    Console.WriteLine("Failed to load texture.");
-                }
-            }
+            image.Use(0);
+
+            loaded = true;
         }
 
         public void Render()
         {
+            if (!loaded) return;
+
             shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
 
             shader.Use();

@@ -1,8 +1,8 @@
-﻿using OpenGLTest.Rendering.Display;
+﻿using Electron2D.Rendering.Display;
 using System;
 using System.Numerics;
 
-namespace OpenGLTest.Rendering.Cameras
+namespace Electron2D.Rendering.Cameras
 {
     public class Camera2D
     {

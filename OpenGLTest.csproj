@@ -9,11 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\boid1.png" />
+    <None Remove="Images\boid2.png" />
     <None Remove="Rendering\Shaders\Default\SpriteShader\fragment.txt" />
     <None Remove="Rendering\Shaders\Default\SpriteShader\vertex.txt" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Images\boid1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Images\boid2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Rendering\Shaders\Default\SpriteShader\fragment.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -24,10 +32,6 @@
 
   <ItemGroup>
     <PackageReference Include="StbImageSharp" Version="2.27.13" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Images\" />
   </ItemGroup>
 
   <ItemGroup>

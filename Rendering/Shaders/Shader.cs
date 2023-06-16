@@ -1,9 +1,9 @@
-﻿using static OpenGLTest.OpenGL.GL;
+﻿using static Electron2D.OpenGL.GL;
 using GLFW;
 using System.Diagnostics;
 using System.Numerics;
 
-namespace OpenGLTest.Rendering.Shaders
+namespace Electron2D.Rendering.Shaders
 {
     public class Shader
     {

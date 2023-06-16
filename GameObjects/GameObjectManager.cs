@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenGLTest.GameObjects
+namespace Electron2D.GameObjects
 {
     public static class GameObjectManager
     {
         public static List<GameObject> gameObjects = new List<GameObject>();
-
+        private static bool hasStarted = false;
         public static void RegisterGameObject(GameObject _obj)
         {
             if (gameObjects.Contains(_obj)) return;
 
             gameObjects.Add(_obj);
+            if (hasStarted) _obj.Start();
         }
 
         public static void UnregisterGameObject(GameObject _obj)
@@ -45,6 +46,8 @@ namespace OpenGLTest.GameObjects
             for (int i = 0; i < gameObjects.Count; i++)
             {
                 gameObjects[i].Start();
+                if (gameObjects[i].useRendering) gameObjects[i].InitializeMeshRenderer();
+                hasStarted = true;
             }
         }
     }

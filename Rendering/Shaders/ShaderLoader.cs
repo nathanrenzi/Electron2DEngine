@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace OpenGLTest.Rendering.Shaders
+namespace Electron2D.Rendering.Shaders
 {
     public static class ShaderLoader
     {

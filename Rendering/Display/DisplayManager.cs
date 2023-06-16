@@ -1,9 +1,9 @@
 ﻿using GLFW;
 using System.Drawing;
 using System.Numerics;
-using static OpenGLTest.OpenGL.GL;
+using static Electron2D.OpenGL.GL;
 
-namespace OpenGLTest.Rendering.Display
+namespace Electron2D.Rendering.Display
 {
     static class DisplayManager
     {

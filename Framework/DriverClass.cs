@@ -1,27 +1,27 @@
-﻿using OpenGLTest.Rendering.Display;
+﻿using Electron2D.Rendering.Display;
 using GLFW;
-using OpenGLTest.GameObjects;
+using Electron2D.GameObjects;
 
-namespace OpenGLTest.GameLoop
+namespace Electron2D.Framework
 {
-    public abstract class BaseGame
+    public abstract class DriverClass
     {
-        protected int initialWindowWidth;
-        protected int initialWindowHeight;
-        protected string initialWindowTitle;
+        public int currentWindowWidth { get; protected set; }
+        public int currentWindowHeight { get; protected set; }
+        public string currentWindowTitle { get; protected set; }
 
-        public BaseGame(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle)
+        public DriverClass(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle)
         {
-            initialWindowWidth = _initialWindowWidth;
-            initialWindowHeight = _initialWindowHeight;
-            initialWindowTitle = _initialWindowTitle;
+            currentWindowWidth = _initialWindowWidth;
+            currentWindowHeight = _initialWindowHeight;
+            currentWindowTitle = _initialWindowTitle;
         }
 
         public void Run()
         {
             Initialize();
 
-            DisplayManager.CreateWindow(initialWindowWidth, initialWindowHeight, initialWindowTitle);
+            DisplayManager.CreateWindow(currentWindowWidth, currentWindowHeight, currentWindowTitle);
 
             LoadContent();
 
