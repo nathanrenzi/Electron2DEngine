@@ -1,4 +1,4 @@
-﻿using Electron2D.Core.Rendering.Meshes;
+﻿using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
 
 namespace Electron2D.Core.GameObjects
@@ -6,7 +6,7 @@ namespace Electron2D.Core.GameObjects
     public class GameObject
     {
         public Transform transform = new Transform();
-        public TextureRenderer renderer;
+        public SpriteRenderer renderer;
         public Shader shader;
         public bool useRendering { get; private set; }
 
@@ -17,7 +17,7 @@ namespace Electron2D.Core.GameObjects
 
             // Initializing the shader and transform to their default values
             shader = new Shader(Shader.ParseShader("Build/Resources/Shaders/Default.glsl"), true);
-            renderer = new TextureRenderer(transform, shader);
+            renderer = new SpriteRenderer(transform, shader);
         }
 
         public virtual void Start()

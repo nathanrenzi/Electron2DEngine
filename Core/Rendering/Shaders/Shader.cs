@@ -9,6 +9,7 @@ namespace Electron2D.Core.Rendering.Shaders
     {
         public uint programID { get; private set; }
         public bool compiled { get; private set; }
+        private readonly IDictionary<string, int> uniforms = new Dictionary<string, int>();
 
         private ShaderProgramSource shaderProgramSource { get; }
 
@@ -57,7 +58,7 @@ namespace Electron2D.Core.Rendering.Shaders
             return new ShaderProgramSource(shaderSource[(int)eShaderType.VERTEX], shaderSource[(int)eShaderType.FRAGMENT]);
         }
 
-        public bool CompileShader()
+        public unsafe bool CompileShader()
         {
             if(compiled)
             {
@@ -114,9 +115,20 @@ namespace Electron2D.Core.Rendering.Shaders
             glDeleteShader(vs);
             glDeleteShader(fs);
 
+            int[] count = glGetProgramiv(programID, GL_ACTIVE_UNIFORMS, 1);
+            for (int i = 0; i < count[0]; i++)
+            {
+                string key;
+                glGetActiveUniform(programID, (uint)i, 20, out _, out _, out _, out key);
+                int location = glGetUniformLocation(programID, key);
+                uniforms.Add(key, location);
+            }
+
             compiled = true;
             return true;
         }
+
+        public int GetUniformLocation(string _uniformName) => uniforms[_uniformName];
 
         public void Use()
         {

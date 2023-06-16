@@ -12,7 +12,6 @@
     <None Remove="Build\Resources\Textures\boid1.png" />
     <None Remove="Build\Resources\Textures\boid2.png" />
     <None Remove="Build\Resources\Shaders\Default.glsl" />
-    <None Remove="Build\Resources\Shaders\Texture.glsl" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,9 +20,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\boid2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Shaders\Texture.glsl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Shaders\Default.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

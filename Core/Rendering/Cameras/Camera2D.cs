@@ -1,8 +1,7 @@
-﻿using Electron2D.Core.Rendering.Display;
-using System;
+﻿using System;
 using System.Numerics;
 
-namespace Electron2D.Core.Rendering.Cameras
+namespace Electron2D.Core.Rendering
 {
     public class Camera2D
     {

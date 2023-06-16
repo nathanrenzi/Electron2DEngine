@@ -3,12 +3,29 @@ using System.Drawing;
 using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
-namespace Electron2D.Core.Rendering.Display
+namespace Electron2D.Core.Rendering
 {
-    static class DisplayManager
+    public sealed class DisplayManager
     {
+        private static DisplayManager instance = null;
+        private static readonly object loc = new();
         public static Window window;
         public static Vector2 windowSize;
+
+        public static DisplayManager Instance
+        {
+            get
+            {
+                lock(loc)
+                {
+                    if (instance is null)
+                    { 
+                        instance = new DisplayManager();
+                    }
+                    return instance;
+                }
+            }
+        }
 
         public static void CreateWindow(int _width, int _height, string _title)
         {
@@ -29,6 +46,7 @@ namespace Electron2D.Core.Rendering.Display
             if (window == Window.None)
             {
                 // Error creating window
+                Console.WriteLine("Error creating window.");
                 return;
             }
 
@@ -41,7 +59,7 @@ namespace Electron2D.Core.Rendering.Display
             Glfw.MakeContextCurrent(window);
             Import(Glfw.GetProcAddress);
 
-            glViewport(0, 0, _width, _height);
+            glViewport(0, 0, _width, _height); // Call this again if window is resized
             Glfw.SwapInterval(1); // VSYNC is off, 1 is on
         }
 

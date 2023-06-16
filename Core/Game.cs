@@ -1,6 +1,6 @@
 ﻿using GLFW;
 using Electron2D.Core.GameObjects;
-using Electron2D.Core.Rendering.Display;
+using Electron2D.Core.Rendering;
 
 namespace Electron2D.Core
 {

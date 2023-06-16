@@ -11,7 +11,7 @@ namespace Electron2D.Core
 
         public static void Main(string[] args)
         {
-            game = new TestGame(1920, 1080, "Test Game!");
+            game = new MainGame(1920, 1080, "Test Game!");
             game.Run();
         }
     }
