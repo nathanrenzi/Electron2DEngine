@@ -8,17 +8,19 @@ namespace Electron2D.Build.Resources.Objects
     {
         public readonly List<Boid> boids = new List<Boid>();
 
+        private BoidForcefieldDisplay forcefield;
         private readonly Random rand = new Random();
         private int predatorCount;
 
         public BoidField(int _predatorCount = 3, int _boidCount = 100, float _baseSpeed = 5) : base(false)
         {
+            forcefield = new BoidForcefieldDisplay();
             predatorCount = _predatorCount;
 
             for (int i = 0; i < _boidCount; i++)
             {
-                int xPos = rand.Next(-(Program.game.currentWindowWidth / 2), Program.game.currentWindowWidth / 2 + 1);
-                int yPos = rand.Next(-(Program.game.currentWindowHeight / 2), Program.game.currentWindowHeight / 2 + 1);
+                int xPos = rand.Next(-(Program.game.currentWindowWidth / 4), Program.game.currentWindowWidth / 4 + 1);
+                int yPos = rand.Next(-(Program.game.currentWindowHeight / 4), Program.game.currentWindowHeight / 4 + 1);
                 float xVel = rand.Next(-100, 101) / 100f;
                 float yVel = rand.Next(-100, 101) / 100f;
                 Vector2 velocity = NormalizeVector2(new Vector2(xVel, yVel)) * _baseSpeed;
@@ -32,6 +34,7 @@ namespace Electron2D.Build.Resources.Objects
         public override void Update()
         {
             Advance();
+            forcefield.transform.position = Input.GetMouseWorldPosition();
         }
 
         public void Advance(bool bounceOffWalls = true, bool wrapAroundEdges = false)
@@ -98,14 +101,23 @@ namespace Electron2D.Build.Resources.Objects
             {
                 Boid predator = boids[i];
                 predator.SetPredator();
-                double distanceAway = boid.GetDistance(predator);
-                if (distanceAway < distance)
+                double _distanceAway = boid.GetDistance(predator);
+                if (_distanceAway < distance)
                 {
-                    double closeness = distance - distanceAway;
+                    double closeness = distance - _distanceAway;
                     sumClosenessX += (boid.transform.position.X - predator.transform.position.X) * closeness;
                     sumClosenessY += (boid.transform.position.Y - predator.transform.position.Y) * closeness;
                 }
             }
+            // Adding forcefield to predator list
+            double distanceAway = Vector2.Distance(boid.transform.position, forcefield.transform.position);
+            if (distanceAway < distance)
+            {
+                double closeness = distance - distanceAway;
+                sumClosenessX += (boid.transform.position.X - forcefield.transform.position.X) * closeness;
+                sumClosenessY += (boid.transform.position.Y - forcefield.transform.position.Y) * closeness;
+            }
+
             return (sumClosenessX * power, sumClosenessY * power);
         }
 

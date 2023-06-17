@@ -29,7 +29,8 @@ namespace Electron2D.Core.GameObjects
 
         public Matrix4x4 GetRotationMatrix()
         {
-            return Matrix4x4.CreateRotationZ((float)rotation);
+            // Converting from degrees to radians
+            return Matrix4x4.CreateRotationZ((float)rotation * ((float)Math.PI / 180));
         }
     }
 }

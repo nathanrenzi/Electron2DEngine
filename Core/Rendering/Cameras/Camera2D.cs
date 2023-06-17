@@ -20,8 +20,8 @@ namespace Electron2D.Core.Rendering
 
         public Matrix4x4 GetProjectionMatrix()
         {
-            float left = position.X + DisplayManager.Instance.windowSize.X / 2f;
-            float right = position.X - DisplayManager.Instance.windowSize.X / 2f;
+            float left = position.X - DisplayManager.Instance.windowSize.X / 2f;
+            float right = position.X + DisplayManager.Instance.windowSize.X / 2f;
             float top = position.Y + DisplayManager.Instance.windowSize.Y / 2f;
             float bottom = position.Y - DisplayManager.Instance.windowSize.Y / 2f;
 

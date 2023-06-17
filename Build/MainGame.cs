@@ -5,6 +5,7 @@ using Electron2D.Core.Management;
 using Electron2D.Build.Resources.Objects;
 using Electron2D.Core.GameObjects;
 using System.Numerics;
+using Electron2D.Core.Rendering;
 
 namespace Electron2D.Build
 {
@@ -22,8 +23,14 @@ namespace Electron2D.Build
 
         protected override void LoadContent()
         {
-            //BoidField b = new(3, 100);
-            GameObject obj = new();
+            BoidField b = new(3, 100);
+            GameObject centerDisplay = new(false);
+            centerDisplay.renderer.Load();
+            centerDisplay.renderer.SetVertexValueAll(8, 2);
+            centerDisplay.renderer.SetVertexValueAll(7, 1);
+            centerDisplay.renderer.SetVertexValueAll(4, 1);
+            centerDisplay.renderer.SetVertexValueAll(5, 1);
+            centerDisplay.renderer.SetVertexValueAll(6, 0.7f);
 
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid1.png");
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid2.png");
@@ -32,8 +39,26 @@ namespace Electron2D.Build
 
         protected override void Update()
         {
-            startCamera.position = Vector2.UnitY * ((float)Math.Sin(Time.totalElapsedSeconds) * 100);
-            Console.WriteLine(startCamera.position);
+            Camera2D.main.zoom += Input.scrollDelta;
+            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 3);
+
+            float moveSpeed = 1000;
+            if(Input.GetKey(Keys.W))
+            {
+                Camera2D.main.position += new Vector2(0, moveSpeed * Time.deltaTime);
+            }
+            if (Input.GetKey(Keys.A))
+            {
+                Camera2D.main.position += new Vector2(-moveSpeed * Time.deltaTime, 0);
+            }
+            if (Input.GetKey(Keys.S))
+            {
+                Camera2D.main.position += new Vector2(0, -moveSpeed * Time.deltaTime);
+            }
+            if (Input.GetKey(Keys.D))
+            {
+                Camera2D.main.position += new Vector2(moveSpeed * Time.deltaTime, 0);
+            }
         }
 
         protected unsafe override void Render()

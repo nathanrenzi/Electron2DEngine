@@ -13,11 +13,12 @@ namespace Electron2D.Core.GameObjects
         public GameObject(bool _useRendering = true)
         {
             useRendering = _useRendering;
-            GameObjectManager.RegisterGameObject(this);
 
             // Initializing the shader and transform to their default values
             shader = new Shader(Shader.ParseShader("Build/Resources/Shaders/Default.glsl"), true);
             renderer = new SpriteRenderer(transform, shader);
+
+            GameObjectManager.RegisterGameObject(this);
         }
 
         public virtual void Start()

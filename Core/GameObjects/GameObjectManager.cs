@@ -15,7 +15,10 @@ namespace Electron2D.Core.GameObjects
             if (gameObjects.Contains(_obj)) return;
 
             gameObjects.Add(_obj);
-            if (hasStarted) _obj.Start();
+            if (hasStarted)
+            {
+                DoStartGameObjects(gameObjects.Count - 1);
+            }
         }
 
         public static void UnregisterGameObject(GameObject _obj)
@@ -45,10 +48,16 @@ namespace Electron2D.Core.GameObjects
         {
             for (int i = 0; i < gameObjects.Count; i++)
             {
-                gameObjects[i].Start();
-                if (gameObjects[i].useRendering) gameObjects[i].InitializeMeshRenderer();
+                DoStartGameObjects(i);
                 hasStarted = true;
             }
         }
+
+        private static void DoStartGameObjects(int _i)
+        {
+            if (gameObjects[_i].useRendering) gameObjects[_i].InitializeMeshRenderer();
+            gameObjects[_i].Start();
+        }
+
     }
 }

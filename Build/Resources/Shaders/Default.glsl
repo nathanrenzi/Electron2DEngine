@@ -2,7 +2,7 @@
 #version 330 core
 layout (location = 0) in vec2 aPosition;
 layout (location = 1) in vec2 aTexCoord;
-layout (location = 2) in vec3 aColor;
+layout (location = 2) in vec4 aColor;
 layout (location = 3) in float aIndex;
 out vec2 texCoord;
 out vec4 vertexColor;
@@ -15,7 +15,7 @@ void main()
 {
     texCoord = aTexCoord;
     texIndex = aIndex;
-    vertexColor = vec4(aColor.rgb, 1.0);
+    vertexColor = aColor;
     gl_Position = projection * model * vec4(aPosition.xy, 0.0, 1.0);
 }
 

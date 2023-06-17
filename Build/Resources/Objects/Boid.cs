@@ -10,6 +10,8 @@ namespace Electron2D.Build.Resources.Objects
         public Vector2 velocity;
         public bool isPredator;
 
+        private BoidForcefieldDisplay display;
+
         public Boid(float _x, float _y, Vector2 _velocity)
         {
             transform.position.X = _x;
@@ -23,7 +25,9 @@ namespace Electron2D.Build.Resources.Objects
             isPredator = true;
 
             transform.scale = Vector2.One * 0.8f;
-            renderer.SetVertexValueAll(7, 1.0f); // Setting the texture index
+            renderer.SetVertexValueAll(8, 1.0f); // Setting the texture index
+            display = new BoidForcefieldDisplay();
+            display.renderer.SetVertexValueAll(7, 0.2f);
         }
 
         public float GetDistance(Boid _boid)
@@ -54,9 +58,9 @@ namespace Electron2D.Build.Resources.Objects
             if (double.IsNaN(velocity.Y))
                 velocity.Y = 0;
 
-            Vector2 dir = transform.position + velocity - transform.position;
+            Vector2 dir = transform.position - (transform.position + velocity);
             dir = NormalizeVector2(dir);
-            transform.rotation = (float)Math.Atan2(dir.X, -dir.Y);
+            transform.rotation = (float)Math.Atan2(dir.X, -dir.Y) * (180 / (float)Math.PI); // Converting to degrees
         }
 
         private Vector2 NormalizeVector2(Vector2 _vector)
@@ -76,6 +80,11 @@ namespace Electron2D.Build.Resources.Objects
             }
 
             return _vector / max;
+        }
+
+        public override void Update()
+        {
+            if(display != null) display.transform.position = transform.position;
         }
     }
 }

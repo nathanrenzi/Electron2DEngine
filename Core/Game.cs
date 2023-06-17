@@ -24,10 +24,10 @@ namespace Electron2D.Core
         public void Run()
         {
             Initialize();
-            Input.Initialize();
             startCamera = new Camera2D(Vector2.Zero, 1);
 
             DisplayManager.Instance.CreateWindow(currentWindowWidth, currentWindowHeight, currentWindowTitle);
+            Input.Initialize();
 
             // Enabling transparent textures
             glEnable(GL_BLEND);
@@ -41,10 +41,10 @@ namespace Electron2D.Core
             {
                 Time.deltaTime = (float)Glfw.Time - Time.totalElapsedSeconds;
                 Time.totalElapsedSeconds = (float)Glfw.Time;
-                
+
                 // Updating
-                GameObjectManager.UpdateGameObjects();
                 Update();
+                GameObjectManager.UpdateGameObjects();
                 // -------------------------------
 
 
@@ -57,8 +57,8 @@ namespace Electron2D.Core
                 glClear(GL_COLOR_BUFFER_BIT);
                 glClearColor(0.2f, 0.2f, 0.2f, 1);
 
-                GameObjectManager.RenderGameObjects();
                 Render();
+                GameObjectManager.RenderGameObjects();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.window);
                 // -------------------------------

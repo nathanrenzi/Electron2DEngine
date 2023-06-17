@@ -11,11 +11,11 @@ namespace Electron2D.Core.Rendering
     {
         private readonly float[] vertices =
         {
-            // Positions    UV            Color               Index
-             1f,  1f,       1.0f, 1.0f,   1.0f, 1.0f, 1.0f,   0.0f,      // top right - red
-             1f, -1f,       1.0f, 0.0f,   1.0f, 1.0f, 1.0f,   0.0f,      // bottom right - green
-            -1f, -1f,       0.0f, 0.0f,   1.0f, 1.0f, 1.0f,   0.0f,      // bottom left - blue
-            -1f,  1f,       0.0f, 1.0f,   1.0f, 1.0f, 1.0f,   0.0f,      // top left - white
+            // Positions    UV            Color                     Index
+             1f,  1f,       1.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top right - red
+             1f, -1f,       1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // bottom right - green
+            -1f, -1f,       0.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // bottom left - blue
+            -1f,  1f,       0.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top left - white
         };
 
         private readonly uint[] indices =
@@ -55,7 +55,7 @@ namespace Electron2D.Core.Rendering
             layout = new BufferLayout();
             layout.Add<float>(2);
             layout.Add<float>(2);
-            layout.Add<float>(3);
+            layout.Add<float>(4);
             layout.Add<float>(1);
 
             vertexArray.AddBuffer(vertexBuffer, layout);
