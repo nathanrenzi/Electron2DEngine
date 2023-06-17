@@ -9,8 +9,8 @@ namespace Electron2D.Core.Rendering
     {
         private static DisplayManager instance = null;
         private static readonly object loc = new();
-        public static Window window;
-        public static Vector2 windowSize;
+        public Window window;
+        public Vector2 windowSize;
 
         public static DisplayManager Instance
         {
@@ -27,7 +27,7 @@ namespace Electron2D.Core.Rendering
             }
         }
 
-        public static void CreateWindow(int _width, int _height, string _title)
+        public void CreateWindow(int _width, int _height, string _title)
         {
             windowSize = new Vector2(_width, _height);
 

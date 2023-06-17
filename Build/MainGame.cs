@@ -3,6 +3,8 @@ using GLFW;
 using Electron2D.Core;
 using Electron2D.Core.Management;
 using Electron2D.Build.Resources.Objects;
+using Electron2D.Core.GameObjects;
+using System.Numerics;
 
 namespace Electron2D.Build
 {
@@ -20,7 +22,8 @@ namespace Electron2D.Build
 
         protected override void LoadContent()
         {
-            BoidField b = new(3, 100);
+            //BoidField b = new(3, 100);
+            GameObject obj = new();
 
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid1.png");
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid2.png");
@@ -29,7 +32,8 @@ namespace Electron2D.Build
 
         protected override void Update()
         {
-            
+            startCamera.position = Vector2.UnitY * ((float)Math.Sin(Time.totalElapsedSeconds) * 100);
+            Console.WriteLine(startCamera.position);
         }
 
         protected unsafe override void Render()

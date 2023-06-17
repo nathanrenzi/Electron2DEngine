@@ -20,7 +20,7 @@ namespace Electron2D.Core.Management.Textures
             glActiveTexture(textureUnit);
             glBindTexture(GL_TEXTURE_2D, handle);
             using var image = new Bitmap(_textureName);
-            image.RotateFlip(RotateFlipType.RotateNoneFlipNone);
+            image.RotateFlip(RotateFlipType.RotateNoneFlipY);
             var data = image.LockBits(
                 new Rectangle(0, 0, image.Width, image.Height),
                 ImageLockMode.ReadOnly,

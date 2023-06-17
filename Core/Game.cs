@@ -2,6 +2,7 @@
 using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering;
 using static Electron2D.OpenGL.GL;
+using System.Numerics;
 
 namespace Electron2D.Core
 {
@@ -10,6 +11,8 @@ namespace Electron2D.Core
         public int currentWindowWidth { get; protected set; }
         public int currentWindowHeight { get; protected set; }
         public string currentWindowTitle { get; protected set; }
+
+        protected Camera2D startCamera;
 
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle)
         {
@@ -21,9 +24,10 @@ namespace Electron2D.Core
         public void Run()
         {
             Initialize();
-            Camera2D camera = new Camera2D(DisplayManager.windowSize / 2, 1);
+            Input.Initialize();
+            startCamera = new Camera2D(Vector2.Zero, 1);
 
-            DisplayManager.CreateWindow(currentWindowWidth, currentWindowHeight, currentWindowTitle);
+            DisplayManager.Instance.CreateWindow(currentWindowWidth, currentWindowHeight, currentWindowTitle);
 
             // Enabling transparent textures
             glEnable(GL_BLEND);
@@ -33,7 +37,7 @@ namespace Electron2D.Core
             LoadContent();
             GameObjectManager.StartGameObjects();
 
-            while (!Glfw.WindowShouldClose(DisplayManager.window))
+            while (!Glfw.WindowShouldClose(DisplayManager.Instance.window))
             {
                 Time.deltaTime = (float)Glfw.Time - Time.totalElapsedSeconds;
                 Time.totalElapsedSeconds = (float)Glfw.Time;
@@ -45,7 +49,7 @@ namespace Electron2D.Core
 
 
                 // Input
-                Glfw.PollEvents();
+                Input.ProcessInput();
                 // -------------------------------
 
 
@@ -56,7 +60,7 @@ namespace Electron2D.Core
                 GameObjectManager.RenderGameObjects();
                 Render();
 
-                Glfw.SwapBuffers(DisplayManager.window);
+                Glfw.SwapBuffers(DisplayManager.Instance.window);
                 // -------------------------------
             }
 

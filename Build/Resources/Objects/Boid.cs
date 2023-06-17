@@ -23,7 +23,7 @@ namespace Electron2D.Build.Resources.Objects
             isPredator = true;
 
             transform.scale = Vector2.One * 0.8f;
-            renderer.SetVertexValueAll(7, 1.0f); // Setting the texture
+            renderer.SetVertexValueAll(7, 1.0f); // Setting the texture index
         }
 
         public float GetDistance(Boid _boid)

@@ -115,7 +115,7 @@ namespace Electron2D.Build.Resources.Objects
             int height = Program.game.currentWindowHeight;
 
             float pad = 50f;
-            float turn = 0.5f;
+            float turn = 0.35f;
             if (boid.transform.position.X + width / 2f < pad)
                 boid.velocity.X += turn;
 
