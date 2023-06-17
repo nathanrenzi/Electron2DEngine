@@ -31,8 +31,9 @@ namespace Electron2D.Core
             // -----------
 
             LoadContent();
+            GameObjectManager.StartGameObjects();
 
-            while(!Glfw.WindowShouldClose(DisplayManager.window))
+            while (!Glfw.WindowShouldClose(DisplayManager.window))
             {
                 Time.deltaTime = (float)Glfw.Time - Time.totalElapsedSeconds;
                 Time.totalElapsedSeconds = (float)Glfw.Time;

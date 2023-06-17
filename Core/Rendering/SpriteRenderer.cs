@@ -11,11 +11,11 @@ namespace Electron2D.Core.Rendering
     {
         private readonly float[] vertices =
         {
-            // Positions          UV            Color               Index
-             0.5f,  0.5f, 0.0f,   1.0f, 1.0f,   1.0f, 1.0f, 1.0f,   1.0f,      // top right - red
-             0.5f, -0.5f, 0.0f,   1.0f, 0.0f,   1.0f, 1.0f, 1.0f,   1.0f,      // bottom right - green
-            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f,   1.0f, 1.0f, 1.0f,   1.0f,      // bottom left - blue
-            -0.5f,  0.5f, 0.0f,   0.0f, 1.0f,   1.0f, 1.0f, 1.0f,   1.0f,      // top left - white
+            // Positions    UV            Color               Index
+             1f,  1f,       1.0f, 1.0f,   1.0f, 1.0f, 1.0f,   0.0f,      // top right - red
+             1f, -1f,       1.0f, 0.0f,   1.0f, 1.0f, 1.0f,   0.0f,      // bottom right - green
+            -1f, -1f,       0.0f, 0.0f,   1.0f, 1.0f, 1.0f,   0.0f,      // bottom left - blue
+            -1f,  1f,       0.0f, 1.0f,   1.0f, 1.0f, 1.0f,   0.0f,      // top left - white
         };
 
         private readonly uint[] indices =
@@ -27,6 +27,7 @@ namespace Electron2D.Core.Rendering
         private VertexBuffer vertexBuffer;
         private VertexArray vertexArray;
         private IndexBuffer indexBuffer;
+        private BufferLayout layout;
 
         private Transform transform;
         private Shader shader;
@@ -39,12 +40,7 @@ namespace Electron2D.Core.Rendering
             shader = _shader;
         }
 
-        public void SetShader(Shader _shader)
-        {
-            shader = _shader;
-        }
-
-        public unsafe void Load()
+        public void Load()
         {
             shader = new Shader(Shader.ParseShader("Build/Resources/Shaders/Default.glsl"));
             if (!shader.CompileShader())
@@ -56,8 +52,8 @@ namespace Electron2D.Core.Rendering
             vertexArray = new VertexArray();
             vertexBuffer = new VertexBuffer(vertices);
 
-            BufferLayout layout = new BufferLayout();
-            layout.Add<float>(3);
+            layout = new BufferLayout();
+            layout.Add<float>(2);
             layout.Add<float>(2);
             layout.Add<float>(3);
             layout.Add<float>(1);
@@ -67,19 +63,38 @@ namespace Electron2D.Core.Rendering
             indexBuffer = new IndexBuffer(indices);
 
             var textureSampleUniformLocation = shader.GetUniformLocation("u_Texture[0]");
-            int[] samplers = new int[2] { 0, 1 };
+            int[] samplers = new int[3] { 0, 1, 2 };
             glUniform1iv(textureSampleUniformLocation, samplers.Length, samplers);
 
             loaded = true;
+        }
+
+        /// <summary>
+        /// Sets a specific value in every vertex.
+        /// </summary>
+        /// <param name="_index">The index of the vertex value to edit (Only in first vertex, rest are automatic).</param>
+        /// <param name="_value">The value to set.</param>
+        public void SetVertexValueAll(int _index, float _value)
+        {
+            int loops = vertices.Length / layout.GetRawStride();
+
+            // Setting the value for each vertex
+            for (int i = 0; i < loops; i++)
+            {
+                vertices[(i * layout.GetRawStride()) + _index] = _value;
+            }
+
+            // Setting a new vertex buffer
+            vertexBuffer = new VertexBuffer(vertices);
+            vertexArray.AddBuffer(vertexBuffer, layout);
         }
 
         public unsafe void Render()
         {
             if (!loaded || shader.compiled == false) return;
 
-            shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
-
             shader.Use();
+            shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
             vertexArray.Bind();
             indexBuffer.Bind();
 

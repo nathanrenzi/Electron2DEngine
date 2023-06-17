@@ -142,11 +142,17 @@ namespace Electron2D.Core.Rendering.Shaders
             }
         }
 
-        public void SetMatrix4x4(string _uniformName, Matrix4x4 mat)
+        public void SetMatrix4x4(string _uniformName, Matrix4x4 _mat)
         {
             // Finding where location is in memory
             int location = glGetUniformLocation(programID, _uniformName);
-            glUniformMatrix4fv(location, 1, false, GetMatrix4x4Values(mat));
+            glUniformMatrix4fv(location, 1, false, GetMatrix4x4Values(_mat));
+        }
+
+        public void SetFloat(string _uniformName, float _value)
+        {
+            int location = glGetUniformLocation(programID, _uniformName);
+            glUniform1f(location, _value);
         }
 
         private float[] GetMatrix4x4Values(Matrix4x4 m)
