@@ -12,8 +12,6 @@ namespace Electron2D.Build
 
     public class MainGame : Game
     {
-        private Camera2D camera;
-
         public MainGame(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle) : base(_initialWindowWidth, _initialWindowHeight, _initialWindowTitle)
         {
 
@@ -26,11 +24,6 @@ namespace Electron2D.Build
 
         protected override void LoadContent()
         {
-            camera = new Camera2D(DisplayManager.windowSize / 2, 1);
-
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid1.png");
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid2.png");
 
@@ -40,17 +33,12 @@ namespace Electron2D.Build
 
         protected override void Update()
         {
-            GameObjectManager.UpdateGameObjects();
+            
         }
 
         protected unsafe override void Render()
         {
-            glClear(GL_COLOR_BUFFER_BIT);
-            glClearColor(0.2f, 0.2f, 0.2f, 1);
 
-            GameObjectManager.RenderGameObjects();
-
-            Glfw.SwapBuffers(DisplayManager.window);
         }
     }
 }

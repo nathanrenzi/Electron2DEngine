@@ -2,10 +2,7 @@
 
 namespace Electron2D.Core
 {
-    /// <summary>
-    /// The entry point of the Electron2D engine.
-    /// </summary>
-    public class MainClass
+    public class Program
     {
         public static Game game { get; private set; }
 

@@ -18,14 +18,14 @@ namespace Electron2D.Core.GameObjects
         public Matrix4x4 GetPositionMatrix()
         {
             // Calculations below ensure that the position will scale with the screen width
-            return Matrix4x4.CreateTranslation(position.X * (MainClass.game.currentWindowWidth / REFERENCE_WIDTH) + MainClass.game.currentWindowWidth / 2f,
-                position.Y * (MainClass.game.currentWindowWidth / REFERENCE_WIDTH) + MainClass.game.currentWindowHeight / 2f, 0);
+            return Matrix4x4.CreateTranslation(position.X * (Program.game.currentWindowWidth / REFERENCE_WIDTH) + Program.game.currentWindowWidth / 2f,
+                position.Y * (Program.game.currentWindowWidth / REFERENCE_WIDTH) + Program.game.currentWindowHeight / 2f, 0);
         }
 
         public Matrix4x4 GetScaleMatrix()
         {
             // Calculations below ensure that the scale will remain constant between screen sizes
-            return Matrix4x4.CreateScale(MainClass.game.currentWindowWidth * (scale.X / 100f), MainClass.game.currentWindowWidth * (scale.Y / 100f), 1);
+            return Matrix4x4.CreateScale(Program.game.currentWindowWidth * (scale.X / 100f), Program.game.currentWindowWidth * (scale.Y / 100f), 1);
         }
 
         public Matrix4x4 GetRotationMatrix()
