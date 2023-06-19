@@ -26,11 +26,11 @@ namespace Electron2D.Build
             BoidField b = new(3, 100);
             GameObject centerDisplay = new(false);
             centerDisplay.renderer.Load();
-            centerDisplay.renderer.SetVertexValueAll(8, 2);
-            centerDisplay.renderer.SetVertexValueAll(7, 1);
-            centerDisplay.renderer.SetVertexValueAll(4, 1);
-            centerDisplay.renderer.SetVertexValueAll(5, 1);
-            centerDisplay.renderer.SetVertexValueAll(6, 0.7f);
+            centerDisplay.renderer.SetVertexValueAll(SpriteVertexAttribute.TextureIndex, 2);
+            centerDisplay.renderer.SetVertexValueAll(SpriteVertexAttribute.ColorA, 1);
+            centerDisplay.renderer.SetVertexValueAll(SpriteVertexAttribute.ColorR, 1);
+            centerDisplay.renderer.SetVertexValueAll(SpriteVertexAttribute.ColorG, 1);
+            centerDisplay.renderer.SetVertexValueAll(SpriteVertexAttribute.ColorB, 0.7f);
 
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid1.png");
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid2.png");

@@ -72,16 +72,16 @@ namespace Electron2D.Core.Rendering
         /// <summary>
         /// Sets a specific value in every vertex.
         /// </summary>
-        /// <param name="_index">The index of the vertex value to edit (Only in first vertex, rest are automatic).</param>
+        /// <param name="_type">The type of attribute to edit.</param>
         /// <param name="_value">The value to set.</param>
-        public void SetVertexValueAll(int _index, float _value)
+        public void SetVertexValueAll(SpriteVertexAttribute _type, float _value)
         {
             int loops = vertices.Length / layout.GetRawStride();
 
             // Setting the value for each vertex
             for (int i = 0; i < loops; i++)
             {
-                vertices[(i * layout.GetRawStride()) + _index] = _value;
+                vertices[(i * layout.GetRawStride()) + (int)_type] = _value;
             }
 
             // Setting a new vertex buffer
@@ -102,5 +102,18 @@ namespace Electron2D.Core.Rendering
 
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
+    }
+    
+    public enum SpriteVertexAttribute
+    {
+        PositionX = 0,
+        PositionY = 1,
+        UvX = 2,
+        UvY = 3,
+        ColorR = 4,
+        ColorG = 5,
+        ColorB = 6,
+        ColorA = 7,
+        TextureIndex = 8
     }
 }

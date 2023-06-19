@@ -25,9 +25,9 @@ namespace Electron2D.Build.Resources.Objects
             isPredator = true;
 
             transform.scale = Vector2.One * 0.8f;
-            renderer.SetVertexValueAll(8, 1.0f); // Setting the texture index
+            renderer.SetVertexValueAll(SpriteVertexAttribute.TextureIndex, 1); // Setting the texture index
             display = new BoidForcefieldDisplay();
-            display.renderer.SetVertexValueAll(7, 0.2f);
+            display.renderer.SetVertexValueAll(SpriteVertexAttribute.ColorA, 0.2f);
         }
 
         public float GetDistance(Boid _boid)
