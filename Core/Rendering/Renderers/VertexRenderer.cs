@@ -7,7 +7,7 @@ using static Electron2D.OpenGL.GL;
 namespace Electron2D.Core.Rendering
 {
     /// <summary>
-    /// An IRenderer that specializes in custom shapes.
+    /// A renderer that specializes in custom shapes.
     /// </summary>
     public class VertexRenderer : IRenderer
     {
@@ -25,6 +25,7 @@ namespace Electron2D.Core.Rendering
         private Transform transform;
         private Shader shader;
 
+        public bool isDirty { get; private set; } = false;
         public bool loaded { get; private set; } = false;
 
         public VertexRenderer(Transform _transform, Shader _shader)
@@ -82,6 +83,7 @@ namespace Electron2D.Core.Rendering
         {
             vertices = tempVertices.ToArray();
             indices = tempIndices.ToArray();
+            isDirty = true;
         }
 
         /// <summary>
@@ -124,14 +126,34 @@ namespace Electron2D.Core.Rendering
                 vertices[(i * layout.GetRawStride()) + _type] = _value;
             }
 
-            // Setting a new vertex buffer
-            vertexBuffer = new VertexBuffer(vertices);
-            vertexArray.AddBuffer(vertexBuffer, layout);
+            isDirty = true;
         }
+
+        /// <summary>
+        /// Returns the vertex value of the specified type. Samples from the first vertex by default.
+        /// </summary>
+        /// <param name="_type">The type of vertex data to return.</param>
+        /// <returns></returns>
+        public float GetVertexValue(int _type, int _vertex = 0)
+        {
+            return vertices[(_vertex * layout.GetRawStride()) + _type];
+        }
+
+        public void SetSprite(int _spritesheetIndex, int _col, int _row) => Console.WriteLine("Trying to set sprite with a vertex renderer.");
 
         public unsafe void Render()
         {
             if (!loaded || shader.compiled == false) return;
+
+            if (isDirty)
+            {
+                // Setting a new vertex buffer if the vertices have been updated
+                indexBuffer = new IndexBuffer(indices);
+                vertexBuffer = new VertexBuffer(vertices);
+                vertexArray.AddBuffer(vertexBuffer, layout);
+                isDirty = false;
+            }
+
             shader.Use();
             shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
             vertexArray.Bind();
@@ -142,17 +164,17 @@ namespace Electron2D.Core.Rendering
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
     }
-}
 
-/// <summary>
-/// This enum corresponds to an attribute in a vertex for the vertex renderer.
-/// </summary>
-public enum VertexRendererAttribute
-{
-    PositionX = 0,
-    PositionY = 1,
-    ColorR = 2,
-    ColorG = 3,
-    ColorB = 4,
-    ColorA = 5
+    /// <summary>
+    /// This enum corresponds to an attribute in a vertex for the vertex renderer.
+    /// </summary>
+    public enum VertexAttribute
+    {
+        PositionX = 0,
+        PositionY = 1,
+        ColorR = 2,
+        ColorG = 3,
+        ColorB = 4,
+        ColorA = 5
+    }
 }

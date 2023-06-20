@@ -8,6 +8,7 @@ using System.Numerics;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
+using Electron2D.Core.Management.Textures;
 
 namespace Electron2D.Build
 {
@@ -26,13 +27,6 @@ namespace Electron2D.Build
         protected override void LoadContent()
         {
             BoidField b = new(3, 100);
-            GameObject centerDisplay = new(false);
-            centerDisplay.renderer.Load();
-            centerDisplay.renderer.SetVertexValueAll((int)SpriteRendererAttribute.TextureIndex, 2);
-            centerDisplay.renderer.SetVertexValueAll((int)SpriteRendererAttribute.ColorA, 1);
-            centerDisplay.renderer.SetVertexValueAll((int)SpriteRendererAttribute.ColorR, 1);
-            centerDisplay.renderer.SetVertexValueAll((int)SpriteRendererAttribute.ColorG, 1);
-            centerDisplay.renderer.SetVertexValueAll((int)SpriteRendererAttribute.ColorB, 0.7f);
 
             GameObject testVertex = new(false, null);
             VertexRenderer renderer = new VertexRenderer(testVertex.transform, new Shader(Shader.ParseShader("Build/Resources/Shaders/DefaultVertex.glsl")));
@@ -59,9 +53,9 @@ namespace Electron2D.Build
             renderer.ClearTempLists();
             renderer.Load();
 
-            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid1.png");
-            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid2.png");
-            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/mouseBorder.png");
+            // First spritesheet
+            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boidSpritesheet.png");
+            SpritesheetManager.Add(250, 3, 1);
         }
 
         protected override void Update()
