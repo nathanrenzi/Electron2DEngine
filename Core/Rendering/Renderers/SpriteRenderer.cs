@@ -7,7 +7,7 @@ namespace Electron2D.Core.Rendering
     /// <summary>
     /// Handles rendering textures to the screen using vertices and a shader
     /// </summary>
-    public class SpriteRenderer
+    public class SpriteRenderer : IRenderer
     {
         private readonly float[] vertices =
         {
@@ -40,9 +40,13 @@ namespace Electron2D.Core.Rendering
             shader = _shader;
         }
 
+        public Shader GetShader() => shader;
+
+        /// <summary>
+        /// Loads all resources necessary for the renderer, such as the shader and all buffers.
+        /// </summary>
         public void Load()
         {
-            shader = new Shader(Shader.ParseShader("Build/Resources/Shaders/Default.glsl"));
             if (!shader.CompileShader())
             {
                 Console.WriteLine("Failed to compile shader.");
@@ -74,14 +78,20 @@ namespace Electron2D.Core.Rendering
         /// </summary>
         /// <param name="_type">The type of attribute to edit.</param>
         /// <param name="_value">The value to set.</param>
-        public void SetVertexValueAll(SpriteVertexAttribute _type, float _value)
+        public void SetVertexValueAll(int _type, float _value)
         {
+            if(!loaded)
+            {
+                Console.WriteLine("Trying to set vertex data when renderer has not been initialized yet.");
+                return;
+            }
+
             int loops = vertices.Length / layout.GetRawStride();
 
             // Setting the value for each vertex
             for (int i = 0; i < loops; i++)
             {
-                vertices[(i * layout.GetRawStride()) + (int)_type] = _value;
+                vertices[(i * layout.GetRawStride()) + _type] = _value;
             }
 
             // Setting a new vertex buffer
@@ -104,7 +114,10 @@ namespace Electron2D.Core.Rendering
         }
     }
     
-    public enum SpriteVertexAttribute
+    /// <summary>
+    /// This enum corresponds to an attribute in a vertex for the sprite renderer.
+    /// </summary>
+    public enum SpriteRendererAttribute
     {
         PositionX = 0,
         PositionY = 1,

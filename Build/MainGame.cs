@@ -6,6 +6,8 @@ using Electron2D.Build.Resources.Objects;
 using Electron2D.Core.GameObjects;
 using System.Numerics;
 using Electron2D.Core.Rendering;
+using Electron2D.Core.Rendering.Shaders;
+using System.Drawing;
 
 namespace Electron2D.Build
 {
@@ -26,11 +28,36 @@ namespace Electron2D.Build
             BoidField b = new(3, 100);
             GameObject centerDisplay = new(false);
             centerDisplay.renderer.Load();
-            centerDisplay.renderer.SetVertexValueAll(SpriteVertexAttribute.TextureIndex, 2);
-            centerDisplay.renderer.SetVertexValueAll(SpriteVertexAttribute.ColorA, 1);
-            centerDisplay.renderer.SetVertexValueAll(SpriteVertexAttribute.ColorR, 1);
-            centerDisplay.renderer.SetVertexValueAll(SpriteVertexAttribute.ColorG, 1);
-            centerDisplay.renderer.SetVertexValueAll(SpriteVertexAttribute.ColorB, 0.7f);
+            centerDisplay.renderer.SetVertexValueAll((int)SpriteRendererAttribute.TextureIndex, 2);
+            centerDisplay.renderer.SetVertexValueAll((int)SpriteRendererAttribute.ColorA, 1);
+            centerDisplay.renderer.SetVertexValueAll((int)SpriteRendererAttribute.ColorR, 1);
+            centerDisplay.renderer.SetVertexValueAll((int)SpriteRendererAttribute.ColorG, 1);
+            centerDisplay.renderer.SetVertexValueAll((int)SpriteRendererAttribute.ColorB, 0.7f);
+
+            GameObject testVertex = new(false, null);
+            VertexRenderer renderer = new VertexRenderer(testVertex.transform, new Shader(Shader.ParseShader("Build/Resources/Shaders/DefaultVertex.glsl")));
+            testVertex.renderer = renderer;
+
+            // Diamond
+            renderer.AddVertex(new Vector2(0.5f, 0), Color.Red);
+            renderer.AddVertex(new Vector2(0, -1), Color.Red);
+            renderer.AddVertex(new Vector2(-0.5f, 0), Color.Red);
+            renderer.AddVertex(new Vector2(0, 1), Color.Red);
+            renderer.AddTriangle(0, 1, 3, 0);
+            renderer.AddTriangle(1, 2, 3, 0);
+
+            // Multicolored diamond
+            renderer.AddVertex(new Vector2(0.5f - 3, 0), Color.Red);
+            renderer.AddVertex(new Vector2(0 - 3, -1), Color.Green);
+            renderer.AddVertex(new Vector2(-0.5f - 3, 0), Color.Blue);
+            renderer.AddVertex(new Vector2(0 - 3, 1), Color.White);
+            renderer.AddTriangle(0, 1, 3, 4);
+            renderer.AddTriangle(1, 2, 3, 4);
+
+            // Finalizing the vertex renderer
+            renderer.FinalizeVertices();
+            renderer.ClearTempLists();
+            renderer.Load();
 
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid1.png");
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boid2.png");

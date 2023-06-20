@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Build\Resources\Shaders\DefaultVertex.glsl" />
     <None Remove="Build\Resources\Textures\boid1.png" />
     <None Remove="Build\Resources\Textures\boid2.png" />
     <None Remove="Build\Resources\Shaders\Default.glsl" />
@@ -16,6 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Build\Resources\Shaders\DefaultVertex.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\boid1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>

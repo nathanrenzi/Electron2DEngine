@@ -6,17 +6,22 @@ namespace Electron2D.Core.GameObjects
     public class GameObject
     {
         public Transform transform = new Transform();
-        public SpriteRenderer renderer;
-        public Shader shader;
-        public bool useRendering { get; private set; }
+        public IRenderer renderer;
+        public bool useAutoInitialization { get; private set; }
 
-        public GameObject(bool _useRendering = true)
+        public GameObject(bool _useAutoInitialization = true, IRenderer _customRenderer = null)
         {
-            useRendering = _useRendering;
+            useAutoInitialization = _useAutoInitialization;
 
-            // Initializing the shader and transform to their default values
-            shader = new Shader(Shader.ParseShader("Build/Resources/Shaders/Default.glsl"), true);
-            renderer = new SpriteRenderer(transform, shader);
+            // Initializing the renderer
+            if (_customRenderer != null)
+            {
+                renderer = _customRenderer;
+            }
+            else
+            {
+                renderer = new SpriteRenderer(transform, new Shader(Shader.ParseShader("Build/Resources/Shaders/Default.glsl"), false));
+            }
 
             GameObjectManager.RegisterGameObject(this);
         }

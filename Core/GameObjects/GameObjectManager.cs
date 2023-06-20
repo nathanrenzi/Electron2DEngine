@@ -55,7 +55,7 @@ namespace Electron2D.Core.GameObjects
 
         private static void DoStartGameObjects(int _i)
         {
-            if (gameObjects[_i].useRendering) gameObjects[_i].InitializeMeshRenderer();
+            if (gameObjects[_i].useAutoInitialization) gameObjects[_i].InitializeMeshRenderer();
             gameObjects[_i].Start();
         }
 
