@@ -1,11 +1,14 @@
 ﻿using Electron2D.Core.GameObjects;
+using Electron2D.Core.Management;
+using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Rendering.Shaders;
+using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Core.Rendering
 {
     /// <summary>
-    /// Handles rendering textures to the screen using vertices and a shader
+    /// A renderer specializing in rendering textures.
     /// </summary>
     public class SpriteRenderer : IRenderer
     {
@@ -16,6 +19,14 @@ namespace Electron2D.Core.Rendering
              1f, -1f,       1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // bottom right - green
             -1f, -1f,       0.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // bottom left - blue
             -1f,  1f,       0.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top left - white
+        };
+
+        private readonly float[] defaultUV =
+        {
+            1.0f, 1.0f,
+            1.0f, 0.0f,
+            0.0f, 0.0f,
+            0.0f, 1.0f,
         };
 
         private readonly uint[] indices =
@@ -32,6 +43,7 @@ namespace Electron2D.Core.Rendering
         private Transform transform;
         private Shader shader;
 
+        public bool isDirty { get; set; } = false;
         public bool loaded { get; private set; } = false;
 
         public SpriteRenderer(Transform _transform, Shader _shader)
@@ -94,14 +106,66 @@ namespace Electron2D.Core.Rendering
                 vertices[(i * layout.GetRawStride()) + _type] = _value;
             }
 
-            // Setting a new vertex buffer
-            vertexBuffer = new VertexBuffer(vertices);
-            vertexArray.AddBuffer(vertexBuffer, layout);
+            // The vertex buffer will be updated before rendering
+            isDirty = true;
+        }
+
+        /// <summary>
+        /// Returns the vertex value of the specified type. Samples from the first vertex by default.
+        /// </summary>
+        /// <param name="_type">The type of vertex data to return.</param>
+        /// <returns></returns>
+        public float GetVertexValue(int _type, int _vertex = 0)
+        {
+            return vertices[(_vertex * layout.GetRawStride()) + _type];
+        }
+
+        /// <summary>
+        /// Returns the default texture UV associated with the vertex inputted.
+        /// </summary>
+        /// <param name="_vertex">The vertex to get the UV of.</param>
+        /// <returns></returns>
+        public Vector2 GetDefaultUV(int _vertex = 0)
+        {
+            return new Vector2(defaultUV[_vertex * 2], defaultUV[(_vertex * 2) + 1]);
+        }
+
+        /// <summary>
+        /// Sets the UV's of each vertex to display a certain sprite on a spritesheet.
+        /// </summary>
+        /// <param name="_spritesheet">The spritesheet to get the sprite from.</param>
+        /// <param name="_col">The column of the desired sprite (Left to Right).</param>
+        /// <param name="_row">The row of the desired sprite (Bottom to Top)</param>
+        public void SetSprite(int _spritesheetIndex, int _col, int _row)
+        {
+            int loops = vertices.Length / layout.GetRawStride();
+            Vector2 newUV;
+            for (int i = 0; i < loops; i++)
+            {
+                // Getting the new UV from the spritesheet
+                newUV = SpritesheetManager.GetVertexUV(_spritesheetIndex, _col, _row, GetDefaultUV(i));
+
+                // Setting the new UV
+                vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvX] = newUV.X;
+                vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvY] = newUV.Y;
+            }
+
+            // Setting the texture index
+            SetVertexValueAll((int)SpriteVertexAttribute.TextureIndex, _spritesheetIndex);
+            isDirty = true;
         }
 
         public unsafe void Render()
         {
             if (!loaded || shader.compiled == false) return;
+
+            if(isDirty)
+            {
+                // Setting a new vertex buffer if the vertices have been updated
+                vertexBuffer = new VertexBuffer(vertices);
+                vertexArray.AddBuffer(vertexBuffer, layout);
+                isDirty = false;
+            }
 
             shader.Use();
             shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
@@ -117,7 +181,7 @@ namespace Electron2D.Core.Rendering
     /// <summary>
     /// This enum corresponds to an attribute in a vertex for the sprite renderer.
     /// </summary>
-    public enum SpriteRendererAttribute
+    public enum SpriteVertexAttribute
     {
         PositionX = 0,
         PositionY = 1,

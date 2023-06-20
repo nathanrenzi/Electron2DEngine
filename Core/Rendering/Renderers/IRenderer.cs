@@ -1,9 +1,4 @@
 ﻿using Electron2D.Core.Rendering.Shaders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Electron2D.Core.Rendering
 {
@@ -12,6 +7,13 @@ namespace Electron2D.Core.Rendering
         public void Load();
         public void Render();
         public void SetVertexValueAll(int _type, float _value);
+        public float GetVertexValue(int _type, int _vertex = 0);
+        public void SetSprite(int _spritesheetIndex, int _col, int _row);
         public Shader GetShader();
+
+        /// <summary>
+        /// This is true if the vertex data has been updated this frame
+        /// </summary>
+        public bool isDirty { get; set; }
     }
 }

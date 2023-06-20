@@ -19,15 +19,19 @@ namespace Electron2D.Build.Resources.Objects
             velocity = _velocity;
         }
 
+        public override void Start()
+        {
+            renderer.SetSprite(0, 0, 0);
+        }
+
         public void SetPredator()
         {
             if (isPredator) return;
             isPredator = true;
 
             transform.scale = Vector2.One * 0.8f;
-            renderer.SetVertexValueAll((int)SpriteRendererAttribute.TextureIndex, 1); // Setting the texture index
+            renderer.SetSprite(0, 1, 0);
             display = new BoidForcefieldDisplay();
-            display.renderer.SetVertexValueAll((int)SpriteRendererAttribute.ColorA, 0.2f);
         }
 
         public float GetDistance(Boid _boid)
