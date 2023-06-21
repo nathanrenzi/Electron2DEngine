@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using static Electron2D.OpenGL.GL;
 
-namespace Electron2D.Core.Management.Textures
+namespace Electron2D.Core.Management
 {
     public static class TextureFactory
     {

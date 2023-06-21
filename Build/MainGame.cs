@@ -1,5 +1,4 @@
-﻿using static Electron2D.OpenGL.GL;
-using GLFW;
+﻿using GLFW;
 using Electron2D.Core;
 using Electron2D.Core.Management;
 using Electron2D.Build.Resources.Objects;
@@ -9,6 +8,7 @@ using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 using Electron2D.Core.Management.Textures;
+using Electron2D.Core.Audio;
 
 namespace Electron2D.Build
 {
@@ -62,6 +62,8 @@ namespace Electron2D.Build
         {
             Camera2D.main.zoom += Input.scrollDelta;
             Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 3);
+
+            if(Input.GetKeyDown(Keys.K)) AudioPlayback.Instance.PlaySound(ResourceManager.Instance.LoadSound("Build/Resources/Audio/SFX/testsfx.mp3"));
 
             float moveSpeed = 1000;
             if(Input.GetKey(Keys.W))

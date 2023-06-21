@@ -3,6 +3,7 @@ using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering;
 using static Electron2D.OpenGL.GL;
 using System.Numerics;
+using Electron2D.Core.Audio;
 
 namespace Electron2D.Core
 {
@@ -64,6 +65,7 @@ namespace Electron2D.Core
                 // -------------------------------
             }
 
+            AudioPlayback.Instance.Dispose();
             DisplayManager.CloseWindow();
         }
 

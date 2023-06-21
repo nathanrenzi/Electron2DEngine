@@ -1,4 +1,5 @@
-﻿using Electron2D.Core.Management.Textures;
+﻿using Electron2D.Core.Audio;
+using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Rendering;
 
 namespace Electron2D.Core.Management
@@ -8,6 +9,7 @@ namespace Electron2D.Core.Management
         private static ResourceManager instance = null;
         private static readonly object loc = new();
         private IDictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
+        private IDictionary<string, CachedSound> soundCache = new Dictionary<string, CachedSound>();
 
         public static ResourceManager Instance
         {
@@ -24,16 +26,29 @@ namespace Electron2D.Core.Management
             }
         }
 
-        public Texture2D LoadTexture(string _textureName)
+        public Texture2D LoadTexture(string _textureFileName)
         {
-            textureCache.TryGetValue(_textureName, out var value);
+            textureCache.TryGetValue(_textureFileName, out var value);
             if(value is not null)
             {
                 return value;
             }
 
-            value = TextureFactory.Load(_textureName);
-            textureCache.Add(_textureName, value);
+            value = TextureFactory.Load(_textureFileName);
+            textureCache.Add(_textureFileName, value);
+            return value;
+        }
+
+        public CachedSound LoadSound(string _soundFileName)
+        {
+            soundCache.TryGetValue(_soundFileName, out var value);
+            if(value is not null)
+            {
+                return value;
+            }
+
+            value = new CachedSound(_soundFileName);
+            soundCache.Add(_soundFileName, value);
             return value;
         }
     }
