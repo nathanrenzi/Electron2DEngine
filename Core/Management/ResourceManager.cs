@@ -4,6 +4,8 @@ using Electron2D.Core.Rendering;
 
 namespace Electron2D.Core.Management
 {
+    // MAKE LOADING HAPPEN DURING THE LOADING PHASE USING A MAP FILE THAT CONTAINS ALL SOUNDS AND TEXTURES THAT WILL NEED TO BE LOADED
+    // THERE IS CURRENTLY LAG HAPPENING WHEN TEXTURES AND ESPECIALLY SOUNDS ARE LOADED IN AT RUNTIME
     public sealed class ResourceManager
     {
         private static ResourceManager instance = null;
