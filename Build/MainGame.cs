@@ -28,7 +28,7 @@ namespace Electron2D.Build
         {
             BoidField b = new(3, 100);
 
-            GameObject testVertex = new(1, false, null);
+            GameObject testVertex = new((int)RenderLayer.Default + 1, false, null);
             VertexRenderer renderer = new VertexRenderer(testVertex.transform, new Shader(Shader.ParseShader("Build/Resources/Shaders/DefaultVertex.glsl")));
             testVertex.renderer = renderer;
 

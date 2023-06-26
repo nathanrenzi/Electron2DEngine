@@ -31,8 +31,8 @@ namespace Electron2D.Core.GameObjects
         public void SetRenderOrder(int _renderOrder)
         {
             if (renderOrder == _renderOrder) return;
+            GameObjectManager.OrderGameObject(this, true, renderOrder, _renderOrder);
             renderOrder = _renderOrder;
-            GameObjectManager.SortByRenderOrder();
         }
 
         public virtual void Start()

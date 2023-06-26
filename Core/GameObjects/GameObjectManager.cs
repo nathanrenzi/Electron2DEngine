@@ -3,30 +3,51 @@
     public static class GameObjectManager
     {
         public static List<GameObject> gameObjectsInScene = new List<GameObject>();
+        private static SortedList<int, List<GameObject>> renderOrderList = new SortedList<int, List<GameObject>>();
         private static bool hasStarted = false;
         public static void RegisterGameObject(GameObject _obj)
         {
             if (gameObjectsInScene.Contains(_obj)) return;
 
-            // Resorting the gameobjects in the scene after adding a new one
-            SortByRenderOrder();
+            OrderGameObject(_obj);
 
             gameObjectsInScene.Add(_obj);
             if (hasStarted)
             {
-                DoStartGameObjects(gameObjectsInScene.Count - 1);
+                DoStartGameObject(gameObjectsInScene.Count - 1);
             }
         }
 
         /// <summary>
-        /// Sorts all gameobjects in the scene by their render order so that the higher the render order, the closer to the top of the scene they will be.
+        /// Registers or reorders the gameobject in the render order sorted list.
         /// </summary>
-        public static void SortByRenderOrder()
+        /// <param name="_obj">The object to order in the sorted list.</param>
+        /// <param name="_reorder">True if the object already exists in the render order list.</param>
+        /// <param name="_oldRenderOrder">Used for reordering. The old render order of the object being reordered.</param>
+        /// <param name="_newRenderOrder">Used for reordering. The new render order of the object being reordered.</param>
+        public static void OrderGameObject(GameObject _obj, bool _reorder = false, int _oldRenderOrder = -1, int _newRenderOrder = -1)
         {
-            // A possible new system would be to have lists of GameObjects in a dictionary where the render order is the key
-            // This would eliminate the need to reorder a list and gameobjects could easily
-            // switch render order at will without a performance impact
-            gameObjectsInScene = gameObjectsInScene.OrderBy(s => s.renderOrder).ToList();
+            // Removing the old render order if the gameobject is reordering itself instead of initializing
+            if(_reorder)
+            {
+                // If the render order is registered in the sorted list, remove the gameobject from the value list
+                List<GameObject> list;
+                if(renderOrderList.TryGetValue(_oldRenderOrder, out list))
+                {
+                    bool removed = list.Remove(_obj);
+                    if (!removed) Console.WriteLine($"Item does not exist in the render order. Cannot remove it from layer {_oldRenderOrder}");
+                }
+            }
+
+            int renderOrder = _reorder ? _newRenderOrder : _obj.renderOrder;
+            // If true, the render order was not in the sorted list yet so it is added
+            if (!renderOrderList.TryAdd(renderOrder, new List<GameObject> { _obj }))
+            {
+                // If false, the render order already exists so the object must be added to an existing value list
+                renderOrderList[renderOrder].Add(_obj);
+
+                // The sorted list class is already sorted in ascending order, so no extra sorting is necessary
+            }
         }
 
         /// <summary>
@@ -38,6 +59,13 @@
             if (!gameObjectsInScene.Contains(_obj)) return;
 
             gameObjectsInScene.Remove(_obj);
+
+            // Removing the object from the render order dictionary
+            List<GameObject> list;
+            if (renderOrderList.TryGetValue(_obj.renderOrder, out list))
+            {
+                list.Remove(_obj);
+            }
         }
 
         public static void UpdateGameObjects()
@@ -50,9 +78,12 @@
 
         public static void RenderGameObjects()
         {
-            for (int i = 0; i < gameObjectsInScene.Count; i++)
+            foreach (KeyValuePair<int, List<GameObject>> pair in renderOrderList)
             {
-                gameObjectsInScene[i].Render();
+                for (int i = 0; i < pair.Value.Count; i++)
+                {
+                    pair.Value[i].Render();
+                }
             }
         }
 
@@ -60,12 +91,12 @@
         {
             for (int i = 0; i < gameObjectsInScene.Count; i++)
             {
-                DoStartGameObjects(i);
+                DoStartGameObject(i);
                 hasStarted = true;
             }
         }
 
-        private static void DoStartGameObjects(int _i)
+        private static void DoStartGameObject(int _i)
         {
             if (gameObjectsInScene[_i].useAutoInitialization) gameObjectsInScene[_i].InitializeMeshRenderer();
             gameObjectsInScene[_i].Start();
