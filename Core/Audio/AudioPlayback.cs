@@ -21,7 +21,8 @@ namespace Electron2D.Core.Audio
         public AudioPlayback(float _masterVolume, int _sampleRate = 44100, int _channelCount = 2)
         {
             //string[] driverNames = AsioOut.GetDriverNames();
-            //outputDevice = new AsioOut(driverNames.Length - 1); // CHANGE TO ALLOW FOR USER TO SELEC PROPER AUDIO OUTPUT DEVICE
+            // must select correct output device in driver list
+            //outputDevice = new AsioOut(driverNames.Length - 1);
             outputDevice = new WasapiOut(NAudio.CoreAudioApi.AudioClientShareMode.Shared, 50);
             mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(_sampleRate, _channelCount));
             mixer.ReadFully = true;
@@ -49,9 +50,11 @@ namespace Electron2D.Core.Audio
             throw new NotImplementedException("Not yet implemented this channel count conversion");
         }
 
-        public void PlaySound(CachedSound _sound)
+        public void PlaySound(CachedSound _sound, float _volume = 1f)
         {
-            AddMixerInput(new CachedSoundSampleProvider(_sound));
+            VolumeSampleProvider clipVolume = new VolumeSampleProvider(new CachedSoundSampleProvider(_sound));
+            clipVolume.Volume = _volume;
+            AddMixerInput(clipVolume);
         }
 
         private void AddMixerInput(ISampleProvider input)

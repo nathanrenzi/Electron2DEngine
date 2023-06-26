@@ -12,7 +12,7 @@ namespace Electron2D.Build.Resources.Objects
         private readonly Random rand = new Random();
         private int predatorCount;
 
-        public BoidField(int _predatorCount = 3, int _boidCount = 100, float _baseSpeed = 5) : base(false)
+        public BoidField(int _predatorCount = 3, int _boidCount = 100, float _baseSpeed = 5) : base(0, false)
         {
             forcefield = new BoidForcefieldDisplay();
             predatorCount = _predatorCount;

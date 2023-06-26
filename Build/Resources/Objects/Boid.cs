@@ -10,8 +10,6 @@ namespace Electron2D.Build.Resources.Objects
         public Vector2 velocity;
         public bool isPredator;
 
-        private BoidForcefieldDisplay display;
-
         public Boid(float _x, float _y, Vector2 _velocity)
         {
             transform.position.X = _x;
@@ -31,7 +29,6 @@ namespace Electron2D.Build.Resources.Objects
 
             transform.scale = Vector2.One * 0.8f;
             renderer.SetSprite(0, 1, 0);
-            display = new BoidForcefieldDisplay();
         }
 
         public float GetDistance(Boid _boid)
@@ -84,11 +81,6 @@ namespace Electron2D.Build.Resources.Objects
             }
 
             return _vector / max;
-        }
-
-        public override void Update()
-        {
-            if(display != null) display.transform.position = transform.position;
         }
     }
 }

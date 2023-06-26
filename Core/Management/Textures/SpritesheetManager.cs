@@ -15,9 +15,9 @@ namespace Electron2D.Core.Management.Textures
         public static IDictionary<int, SpritesheetElement> spritesheets = new Dictionary<int, SpritesheetElement>();
         private static int spriteCursor;
 
-        public static void Add(int _spriteSize, int _totalSpriteColumns, int _totalSpriteRows)
+        public static void Add(int _totalSpriteColumns, int _totalSpriteRows)
         {
-            spritesheets.Add(spriteCursor, new SpritesheetElement(_spriteSize, _totalSpriteColumns, _totalSpriteRows));
+            spritesheets.Add(spriteCursor, new SpritesheetElement(_totalSpriteColumns, _totalSpriteRows));
             spriteCursor++;
         }
 

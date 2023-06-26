@@ -28,7 +28,7 @@ namespace Electron2D.Build
         {
             BoidField b = new(3, 100);
 
-            GameObject testVertex = new(false, null);
+            GameObject testVertex = new(1, false, null);
             VertexRenderer renderer = new VertexRenderer(testVertex.transform, new Shader(Shader.ParseShader("Build/Resources/Shaders/DefaultVertex.glsl")));
             testVertex.renderer = renderer;
 
@@ -55,7 +55,7 @@ namespace Electron2D.Build
 
             // First spritesheet
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boidSpritesheet.png");
-            SpritesheetManager.Add(250, 3, 1);
+            SpritesheetManager.Add(3, 1);
         }
 
         protected override void Update()
@@ -63,7 +63,7 @@ namespace Electron2D.Build
             Camera2D.main.zoom += Input.scrollDelta;
             Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 3);
 
-            if(Input.GetKeyDown(Keys.K)) AudioPlayback.Instance.PlaySound(ResourceManager.Instance.LoadSound("Build/Resources/Audio/SFX/testsfx.mp3"));
+            if(Input.GetKeyDown(Keys.K)) AudioPlayback.Instance.PlaySound(ResourceManager.Instance.LoadSound("Build/Resources/Audio/SFX/testsfx.mp3"), 0.2f);
 
             float moveSpeed = 1000;
             if(Input.GetKey(Keys.W))

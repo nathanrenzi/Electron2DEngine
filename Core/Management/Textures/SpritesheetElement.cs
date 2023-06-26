@@ -12,14 +12,12 @@ namespace Electron2D.Core.Management
     /// </summary>
     public struct SpritesheetElement
     {
-        public readonly int spriteSize;
         public readonly int totalSpriteColumns;
         public readonly int totalSpriteRows;
 
         // Eventually add auto generated spritesheets
-        public SpritesheetElement(int _spriteSize, int _totalSpriteColumns, int _totalSpriteRows)
+        public SpritesheetElement(int _totalSpriteColumns, int _totalSpriteRows)
         {
-            spriteSize = _spriteSize;
             totalSpriteColumns = _totalSpriteColumns;
             totalSpriteRows = _totalSpriteRows;
         }

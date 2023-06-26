@@ -7,11 +7,13 @@ namespace Electron2D.Core.GameObjects
     {
         public Transform transform = new Transform();
         public IRenderer renderer;
+        public int renderOrder { get; private set; }
         public bool useAutoInitialization { get; private set; }
 
-        public GameObject(bool _useAutoInitialization = true, IRenderer _customRenderer = null)
+        public GameObject(int _renderOrder = 0, bool _useAutoRendererInitialization = true, IRenderer _customRenderer = null)
         {
-            useAutoInitialization = _useAutoInitialization;
+            renderOrder = _renderOrder;
+            useAutoInitialization = _useAutoRendererInitialization;
 
             // Initializing the renderer
             if (_customRenderer != null)
@@ -24,6 +26,13 @@ namespace Electron2D.Core.GameObjects
             }
 
             GameObjectManager.RegisterGameObject(this);
+        }
+
+        public void SetRenderOrder(int _renderOrder)
+        {
+            if (renderOrder == _renderOrder) return;
+            renderOrder = _renderOrder;
+            GameObjectManager.SortByRenderOrder();
         }
 
         public virtual void Start()
