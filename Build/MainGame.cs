@@ -58,12 +58,13 @@ namespace Electron2D.Build
             SpritesheetManager.Add(3, 1);
         }
 
+        private Random rand = new Random();
         protected override void Update()
         {
             Camera2D.main.zoom += Input.scrollDelta;
             Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 3);
 
-            if(Input.GetKeyDown(Keys.K)) AudioPlayback.Instance.PlaySound(ResourceManager.Instance.LoadSound("Build/Resources/Audio/SFX/testsfx.mp3"), 0.2f);
+            if(Input.GetKeyDown(Keys.K)) AudioPlayback.Instance.PlaySound(ResourceManager.Instance.LoadSound("Build/Resources/Audio/SFX/testsfx.mp3"), 0.2f, rand.Next(80, 120) / 100f);
 
             float moveSpeed = 1000;
             if(Input.GetKey(Keys.W))
