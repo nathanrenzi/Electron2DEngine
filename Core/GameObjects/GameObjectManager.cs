@@ -3,7 +3,7 @@
     public static class GameObjectManager
     {
         public static List<GameObject> gameObjectsInScene = new List<GameObject>();
-        private static SortedList<int, List<GameObject>> renderOrderList = new SortedList<int, List<GameObject>>();
+        private static SortedList<int, List<GameObject>> renderLayerOrderedList = new SortedList<int, List<GameObject>>();
         private static bool hasStarted = false;
         public static void RegisterGameObject(GameObject _obj)
         {
@@ -19,34 +19,34 @@
         }
 
         /// <summary>
-        /// Registers or reorders the gameobject in the render order sorted list.
+        /// Registers or reorders the gameobject in the render layer sorted list.
         /// </summary>
         /// <param name="_obj">The object to order in the sorted list.</param>
-        /// <param name="_reorder">True if the object already exists in the render order list.</param>
-        /// <param name="_oldRenderOrder">Used for reordering. The old render order of the object being reordered.</param>
-        /// <param name="_newRenderOrder">Used for reordering. The new render order of the object being reordered.</param>
-        public static void OrderGameObject(GameObject _obj, bool _reorder = false, int _oldRenderOrder = -1, int _newRenderOrder = -1)
+        /// <param name="_reorder">True if the object already exists in the render layer list.</param>
+        /// <param name="_oldRenderLayer">Used for reordering. The old render layer of the object being reordered.</param>
+        /// <param name="_newRenderLayer">Used for reordering. The new render layer of the object being reordered.</param>
+        public static void OrderGameObject(GameObject _obj, bool _reorder = false, int _oldRenderLayer = -1, int _newRenderLayer = -1)
         {
-            // Removing the old render order if the gameobject is reordering itself instead of initializing
-            if(_reorder)
+            // Removing the old render layer if the gameobject is reordering itself instead of initializing
+            if (_reorder)
             {
-                // If the render order is registered in the sorted list, remove the gameobject from the value list
+                // If the render layer is registered in the sorted list, remove the gameobject from the value list
                 List<GameObject> list;
-                if(renderOrderList.TryGetValue(_oldRenderOrder, out list))
+                if(renderLayerOrderedList.TryGetValue(_oldRenderLayer, out list))
                 {
                     bool removed = list.Remove(_obj);
-                    if (!removed) Console.WriteLine($"Item does not exist in the render order. Cannot remove it from layer {_oldRenderOrder}");
+                    if (!removed) Console.WriteLine($"Since item does not exist in layer {_oldRenderLayer}, cannot remove it.");
                 }
             }
 
-            int renderOrder = _reorder ? _newRenderOrder : _obj.renderOrder;
-            // If true, the render order was not in the sorted list yet so it is added
-            if (!renderOrderList.TryAdd(renderOrder, new List<GameObject> { _obj }))
+            int renderOrder = _reorder ? _newRenderLayer : _obj.renderLayer;
+            // If true, the render layer was not in the sorted list yet so it is added
+            if (!renderLayerOrderedList.TryAdd(renderOrder, new List<GameObject> { _obj }))
             {
-                // If false, the render order already exists so the object must be added to an existing value list
-                renderOrderList[renderOrder].Add(_obj);
+                // If false, the render layer already exists so the object must be added to an existing value list
+                renderLayerOrderedList[renderOrder].Add(_obj);
 
-                // The sorted list class is already sorted in ascending order, so no extra sorting is necessary
+                // The sorted list class is already sorted in ascending layer, so no extra sorting is necessary
             }
         }
 
@@ -62,7 +62,7 @@
 
             // Removing the object from the render order dictionary
             List<GameObject> list;
-            if (renderOrderList.TryGetValue(_obj.renderOrder, out list))
+            if (renderLayerOrderedList.TryGetValue(_obj.renderLayer, out list))
             {
                 list.Remove(_obj);
             }
@@ -78,7 +78,7 @@
 
         public static void RenderGameObjects()
         {
-            foreach (KeyValuePair<int, List<GameObject>> pair in renderOrderList)
+            foreach (KeyValuePair<int, List<GameObject>> pair in renderLayerOrderedList)
             {
                 for (int i = 0; i < pair.Value.Count; i++)
                 {
