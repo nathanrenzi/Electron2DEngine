@@ -28,7 +28,7 @@ namespace Electron2D.Build
         {
             BoidField b = new(3, 100);
 
-            GameObject testVertex = new((int)RenderLayer.Default + 1, false, null);
+            GameObject testVertex = new((int)RenderLayer.Default + 1, false);
             VertexRenderer renderer = new VertexRenderer(testVertex.transform, new Shader(Shader.ParseShader("Build/Resources/Shaders/DefaultVertex.glsl")));
             testVertex.renderer = renderer;
 
@@ -51,7 +51,7 @@ namespace Electron2D.Build
             // Finalizing the vertex renderer
             renderer.FinalizeVertices();
             renderer.ClearTempLists();
-            renderer.Load();
+            //renderer.Load();
 
             // First spritesheet
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boidSpritesheet.png");
@@ -61,8 +61,7 @@ namespace Electron2D.Build
         private Random rand = new Random();
         protected override void Update()
         {
-            Camera2D.main.zoom += Input.scrollDelta;
-            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 3);
+            CameraZoomScrolling();
 
             if(Input.GetKeyDown(Keys.K)) AudioPlayback.Instance.PlaySound(ResourceManager.Instance.LoadSound("Build/Resources/Audio/SFX/testsfx.mp3"), 0.2f, rand.Next(80, 120) / 100f);
 
@@ -83,6 +82,12 @@ namespace Electron2D.Build
             {
                 Camera2D.main.position += new Vector2(moveSpeed * Time.deltaTime, 0);
             }
+        }
+
+        private void CameraZoomScrolling()
+        {
+            Camera2D.main.zoom += Input.scrollDelta;
+            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 3);
         }
 
         protected unsafe override void Render()
