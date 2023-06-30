@@ -27,7 +27,7 @@ namespace Electron2D.Core.GameObjects
             }
             else
             {
-                renderer = new SpriteRenderer(transform, new Shader(Shader.ParseShader("Build/Resources/Shaders/Default.glsl"), false));
+                renderer = new SpriteRenderer(transform, new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"), false));
             }
 
             GameObjectManager.RegisterGameObject(this);
