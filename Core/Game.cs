@@ -4,6 +4,8 @@ using Electron2D.Core.Rendering;
 using static Electron2D.OpenGL.GL;
 using System.Numerics;
 using Electron2D.Core.Audio;
+using Electron2D.Core.Physics;
+using Electron2D.Core.Misc;
 
 namespace Electron2D.Core
 {
@@ -44,8 +46,17 @@ namespace Electron2D.Core
                 Time.totalElapsedSeconds = (float)Glfw.Time;
 
                 // Updating
+                double goST = Glfw.Time;
                 Update();
                 GameObjectManager.UpdateGameObjects();
+                PerformanceTimings.gameObjectMilliseconds = (Glfw.Time - goST) * 1000;
+                // -------------------------------
+
+
+                // Physics
+                double phyST = Glfw.Time;
+                VerletWorld.Step();
+                PerformanceTimings.physicsMilliseconds = (Glfw.Time - phyST) * 1000;
                 // -------------------------------
 
 
@@ -55,6 +66,7 @@ namespace Electron2D.Core
 
 
                 // Rendering
+                double rendST = Glfw.Time;
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 glClearColor(0.2f, 0.2f, 0.2f, 1);
 
@@ -62,6 +74,7 @@ namespace Electron2D.Core
                 GameObjectManager.RenderGameObjects();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.window);
+                PerformanceTimings.renderMilliseconds = (Glfw.Time - rendST) * 1000;
                 // -------------------------------
             }
 

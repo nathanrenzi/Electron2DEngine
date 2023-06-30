@@ -12,6 +12,9 @@ namespace Electron2D.Core
         private static bool[] KEYS;
         private static bool[] KEYS_LAST;
 
+        private static InputState[] MOUSE = new InputState[8];
+        private static InputState[] MOUSE_LAST = new InputState[8];
+
         private static int totalKeyCount;
         private static Keys[] keyValues;
 
@@ -43,10 +46,14 @@ namespace Electron2D.Core
 
         public static void ProcessInput()
         {
-            // Resetting the KEYS_LAST table
+            // Resetting the LAST tables
             for (int i = 0; i < KEYS_LAST.Length; i++)
             {
                 KEYS_LAST[i] = KEYS[i];
+            }
+            for (int i = 0; i < MOUSE_LAST.Length; i++)
+            {
+                MOUSE_LAST[i] = MOUSE[i];
             }
 
             Glfw.PollEvents();
@@ -62,8 +69,28 @@ namespace Electron2D.Core
                 if ((int)keyValues[i] == -1) continue; // Passing Unknown (-1) into the GetKey function causes an error
                 KEYS[i] = Glfw.GetKey(DisplayManager.Instance.window, keyValues[i]) == InputState.Press;
             }
+            for (int i = 0; i < MOUSE.Length; i++)
+            {
+                // Mouse presses
+                MOUSE[i] = Glfw.GetMouseButton(DisplayManager.Instance.window, (MouseButton)i);
+            }
 
             scrollCallbackFrame = false;
+        }
+
+        public static bool GetMouseButtonDown(MouseButton _button)
+        {
+            return MOUSE[(int)_button] == InputState.Press && MOUSE_LAST[(int)_button] == InputState.Release;
+        }
+
+        public static bool GetMouseButtonUp(MouseButton _button)
+        {
+            return MOUSE[(int)_button] == InputState.Release && MOUSE_LAST[(int)_button] == InputState.Press;
+        }
+
+        public static bool GetMouseButton(MouseButton _button)
+        {
+            return MOUSE[(int)_button] == InputState.Press;
         }
 
         public static bool GetKey(Keys _key)

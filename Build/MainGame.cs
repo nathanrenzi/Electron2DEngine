@@ -9,6 +9,7 @@ using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Audio;
+using Electron2D.Core.Physics;
 
 namespace Electron2D.Build
 {
@@ -26,47 +27,40 @@ namespace Electron2D.Build
 
         protected override void LoadContent()
         {
-            BoidField b = new(3, 100);
-
-            GameObject testVertex = new((int)RenderLayer.Default + 1, false);
-            VertexRenderer renderer = new VertexRenderer(testVertex.transform, new Shader(Shader.ParseShader("Build/Resources/Shaders/DefaultVertex.glsl")));
-            testVertex.renderer = renderer;
-
-            // Diamond
-            renderer.AddVertex(new Vector2(0.5f, 0), Color.Red);
-            renderer.AddVertex(new Vector2(0, -1), Color.Red);
-            renderer.AddVertex(new Vector2(-0.5f, 0), Color.Red);
-            renderer.AddVertex(new Vector2(0, 1), Color.Red);
-            renderer.AddTriangle(0, 1, 3, 0);
-            renderer.AddTriangle(1, 2, 3, 0);
-
-            // Multicolored diamond
-            renderer.AddVertex(new Vector2(0.5f - 3, 0), Color.Red);
-            renderer.AddVertex(new Vector2(0 - 3, -1), Color.Green);
-            renderer.AddVertex(new Vector2(-0.5f - 3, 0), Color.Blue);
-            renderer.AddVertex(new Vector2(0 - 3, 1), Color.White);
-            renderer.AddTriangle(0, 1, 3, 4);
-            renderer.AddTriangle(1, 2, 3, 4);
-
-            // Finalizing the vertex renderer
-            renderer.FinalizeVertices();
-            renderer.ClearTempLists();
-            //renderer.Load();
+            GameObject obj = new GameObject();
+            VerletBody body = new VerletBody(obj.transform);
+            obj.transform.position = new Vector2(0, 200);
+            obj.SetSprite(0, 0, 0);
 
             // First spritesheet
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boidSpritesheet.png");
             SpritesheetManager.Add(3, 1);
         }
 
-        private Random rand = new Random();
         protected override void Update()
         {
-            CameraZoomScrolling();
+            CameraMovement();
+            if(Input.GetMouseButton(MouseButton.Left))
+            {
+                SpawnNewPhysicsObj(Input.GetMouseWorldPosition());
+            }
+        }
 
-            if(Input.GetKeyDown(Keys.K)) AudioPlayback.Instance.PlaySound(ResourceManager.Instance.LoadSound("Build/Resources/Audio/SFX/testsfx.mp3"), 0.2f, rand.Next(80, 120) / 100f);
+        private void SpawnNewPhysicsObj(Vector2 _position)
+        {
+            GameObject obj = new GameObject();
+            VerletBody body = new VerletBody(obj.transform);
+            obj.transform.position = _position;
+            obj.SetSprite(0, 0, 0);
+        }
+
+        private void CameraMovement()
+        {
+            Camera2D.main.zoom += Input.scrollDelta;
+            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 3);
 
             float moveSpeed = 1000;
-            if(Input.GetKey(Keys.W))
+            if (Input.GetKey(Keys.W))
             {
                 Camera2D.main.position += new Vector2(0, moveSpeed * Time.deltaTime);
             }
@@ -82,12 +76,6 @@ namespace Electron2D.Build
             {
                 Camera2D.main.position += new Vector2(moveSpeed * Time.deltaTime, 0);
             }
-        }
-
-        private void CameraZoomScrolling()
-        {
-            Camera2D.main.zoom += Input.scrollDelta;
-            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 3);
         }
 
         protected unsafe override void Render()

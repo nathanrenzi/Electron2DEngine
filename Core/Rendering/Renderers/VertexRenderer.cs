@@ -26,7 +26,7 @@ namespace Electron2D.Core.Rendering
         private Shader shader;
 
         public bool isDirty { get; set; } = false;
-        public bool loaded { get; private set; } = false;
+        public bool isLoaded { get; set; } = false;
 
         public VertexRenderer(Transform _transform, Shader _shader)
         {
@@ -108,7 +108,7 @@ namespace Electron2D.Core.Rendering
             shader.Use();
             indexBuffer = new IndexBuffer(indices);
 
-            loaded = true;
+            isLoaded = true;
         }
 
         /// <summary>
@@ -143,7 +143,7 @@ namespace Electron2D.Core.Rendering
 
         public unsafe void Render()
         {
-            if (!loaded || shader.compiled == false) return;
+            if (!isLoaded || shader.compiled == false) return;
 
             if (isDirty)
             {

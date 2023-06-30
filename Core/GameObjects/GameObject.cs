@@ -10,6 +10,11 @@ namespace Electron2D.Core.GameObjects
         public int renderLayer { get; private set; }
         public bool useAutoInitialization { get; private set; }
 
+        private int queuedSpriteIndex;
+        private int queuedSpriteCol;
+        private int queuedSpriteRow;
+        private bool hasFinishedSetSprite = true;
+
         public GameObject(int _renderOrder = 0, bool _useAutoRendererInitialization = true, IRenderer _customRenderer = null)
         {
             renderLayer = _renderOrder;
@@ -28,6 +33,24 @@ namespace Electron2D.Core.GameObjects
             GameObjectManager.RegisterGameObject(this);
         }
 
+        /// <summary>
+        /// Safer to use than IRenderer.SetSprite(). Will queue until the renderer has loaded. 
+        /// </summary>
+        public void SetSprite(int _spritesheetIndex, int _col, int _row)
+        {
+            hasFinishedSetSprite = false;
+
+            queuedSpriteIndex = _spritesheetIndex;
+            queuedSpriteCol = _col;
+            queuedSpriteRow = _row;
+
+            if (renderer.isLoaded)
+            {
+                renderer.SetSprite(_spritesheetIndex, _col, _row);
+                hasFinishedSetSprite = true;
+            }
+        }
+
         public void SetRenderOrder(int _renderOrder)
         {
             if (renderLayer == _renderOrder) return;
@@ -41,11 +64,16 @@ namespace Electron2D.Core.GameObjects
         }
 
         /// <summary>
-        /// Called automatically after Start if rendering is enabled. Initializes the mesh renderer and inputs
+        /// Called automatically after Start if rendering is enabled. Initializes the mesh renderer and sets the sprite if it has not been set yet.
         /// </summary>
         public void InitializeMeshRenderer()
         {
             renderer.Load();
+            if(!hasFinishedSetSprite)
+            {
+                renderer.SetSprite(queuedSpriteIndex, queuedSpriteCol, queuedSpriteRow);
+                hasFinishedSetSprite = true;
+            }
         }
 
         public virtual void Render()

@@ -44,7 +44,7 @@ namespace Electron2D.Core.Rendering
         private Shader shader;
 
         public bool isDirty { get; set; } = false;
-        public bool loaded { get; private set; } = false;
+        public bool isLoaded { get; set; } = false;
 
         public SpriteRenderer(Transform _transform, Shader _shader)
         {
@@ -82,7 +82,7 @@ namespace Electron2D.Core.Rendering
             int[] samplers = new int[3] { 0, 1, 2 };
             glUniform1iv(textureSampleUniformLocation, samplers.Length, samplers);
 
-            loaded = true;
+            isLoaded = true;
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Electron2D.Core.Rendering
         /// <param name="_value">The value to set.</param>
         public void SetVertexValueAll(int _type, float _value)
         {
-            if(!loaded)
+            if(!isLoaded)
             {
                 Console.WriteLine("Trying to set vertex data when renderer has not been initialized yet.");
                 return;
@@ -157,7 +157,7 @@ namespace Electron2D.Core.Rendering
 
         public unsafe void Render()
         {
-            if (!loaded || shader.compiled == false) return;
+            if (!isLoaded || shader.compiled == false) return;
 
             if(isDirty)
             {
