@@ -6,11 +6,15 @@ using System.Numerics;
 using Electron2D.Core.Audio;
 using Electron2D.Core.Physics;
 using Electron2D.Core.Misc;
+using Electron2D.Core.Rendering.Shaders;
 
 namespace Electron2D.Core
 {
     public abstract class Game
     {
+        public static event Action onStartEvent;
+        public static event Action onUpdateEvent;
+
         public int currentWindowWidth { get; protected set; }
         public int currentWindowHeight { get; protected set; }
         public string currentWindowTitle { get; protected set; }
@@ -38,6 +42,7 @@ namespace Electron2D.Core
             // -----------
 
             LoadContent();
+            onStartEvent?.Invoke();
             GameObjectManager.StartGameObjects();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.window))
@@ -48,6 +53,7 @@ namespace Electron2D.Core
                 // Updating
                 double goST = Glfw.Time;
                 Update();
+                onUpdateEvent?.Invoke();
                 GameObjectManager.UpdateGameObjects();
                 PerformanceTimings.gameObjectMilliseconds = (Glfw.Time - goST) * 1000;
                 // -------------------------------
