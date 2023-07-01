@@ -9,11 +9,11 @@ namespace Electron2D.Core.Rendering
     {
         public readonly float[] vertices =
         {
-            // Positions    UV            Color                     TexIndex
-             1f,  1f,       1.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top right
-             1f, -1f,       1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // bottom right
-            -1f, -1f,       0.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // bottom left
-            -1f,  1f,       0.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top left
+            // Positions          UV            Color                     TexIndex
+             1f,  1f, 0, 1,       1.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top right
+             1f, -1f, 0, 1,       1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // bottom right
+            -1f, -1f, 0, 1,       0.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // bottom left
+            -1f,  1f, 0, 1,       0.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top left
         };
 
         public readonly float[] defaultUV =
@@ -42,7 +42,7 @@ namespace Electron2D.Core.Rendering
             GlobalBatches.staticObjectBatch.AddRenderer(this);
 
             layout = new BufferLayout();
-            layout.Add<float>(2);
+            layout.Add<float>(4);
             layout.Add<float>(2);
             layout.Add<float>(4);
             layout.Add<float>(1);
@@ -119,12 +119,12 @@ namespace Electron2D.Core.Rendering
                 newUV = SpritesheetManager.GetVertexUV(_spritesheetIndex, _col, _row, GetDefaultUV(i));
 
                 // Setting the new UV
-                vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvX] = newUV.X;
-                vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvY] = newUV.Y;
+                vertices[(i * layout.GetRawStride()) + (int)BatchedVertexAttribute.UvX] = newUV.X;
+                vertices[(i * layout.GetRawStride()) + (int)BatchedVertexAttribute.UvY] = newUV.Y;
             }
 
             // Setting the texture index
-            SetVertexValueAll((int)SpriteVertexAttribute.TextureIndex, _spritesheetIndex);
+            SetVertexValueAll((int)BatchedVertexAttribute.TextureIndex, _spritesheetIndex);
             isDirty = true;
         }
 
@@ -132,5 +132,20 @@ namespace Electron2D.Core.Rendering
         {
             return GlobalBatches.staticObjectBatch.shader;
         }
+    }
+
+    public enum BatchedVertexAttribute
+    {
+        PositionX = 0,
+        PositionY = 1,
+        PositionZ = 2,
+        PositionW = 3,
+        UvX = 4,
+        UvY = 5,
+        ColorR = 6,
+        ColorG = 7,
+        ColorB = 8,
+        ColorA = 9,
+        TextureIndex = 10
     }
 }
