@@ -14,6 +14,13 @@ namespace Electron2D.Core.Rendering
                 glBufferData(GL_ARRAY_BUFFER, _vertices.Length * sizeof(float), v, GL_STATIC_DRAW);
         }
 
+        public unsafe void UpdateData(float[] _vertices)
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+            fixed (float* v = &_vertices[0])
+                glBufferData(GL_ARRAY_BUFFER, _vertices.Length * sizeof(float), v, GL_STATIC_DRAW);
+        }
+
         public void Bind()
         {
             glBindBuffer(GL_ARRAY_BUFFER, bufferID);
