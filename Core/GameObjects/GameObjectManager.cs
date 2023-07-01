@@ -2,7 +2,9 @@
 {
     public static class GameObjectManager
     {
+        public static event Action<int> onLayerRendered;
         public static List<GameObject> gameObjectsInScene = new List<GameObject>();
+
         private static SortedList<int, List<GameObject>> renderLayerOrderedList = new SortedList<int, List<GameObject>>();
         private static bool hasStarted = false;
         public static void RegisterGameObject(GameObject _obj)
@@ -80,6 +82,8 @@
         {
             foreach (KeyValuePair<int, List<GameObject>> pair in renderLayerOrderedList)
             {
+                onLayerRendered?.Invoke(pair.Key);
+
                 for (int i = 0; i < pair.Value.Count; i++)
                 {
                     pair.Value[i].Render();
