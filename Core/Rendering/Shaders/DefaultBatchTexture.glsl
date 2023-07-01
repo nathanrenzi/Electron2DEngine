@@ -7,15 +7,13 @@ layout (location = 3) in float aIndex;
 out vec2 texCoord;
 out vec4 vertexColor;
 out float texIndex;
-    
-uniform mat4 projection;
 
 void main() 
 {
     texCoord = aTexCoord;
     texIndex = aIndex;
     vertexColor = aColor;
-    gl_Position = projection * vec4(aPosition.xy, 0.0, 1.0);
+    gl_Position = vec4(aPosition.xy, 0, 1);
 }
 
 #shader fragment

@@ -27,11 +27,6 @@ namespace Electron2D.Build
 
         protected override void LoadContent()
         {
-            GameObject obj = new GameObject();
-            VerletBody body = new VerletBody(obj.transform);
-            obj.transform.position = new Vector2(0, 200);
-            obj.SetSprite(0, 0, 0);
-
             // First spritesheet
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boidSpritesheet.png");
             SpritesheetManager.Add(3, 1);
@@ -40,7 +35,11 @@ namespace Electron2D.Build
         protected override void Update()
         {
             CameraMovement();
-            if(Input.GetMouseButton(MouseButton.Left))
+            if(Input.GetMouseButtonDown(MouseButton.Left))
+            {
+                SpawnNewPhysicsObj(Input.GetMouseWorldPosition());
+            }
+            if (Input.GetMouseButton(MouseButton.Right))
             {
                 SpawnNewPhysicsObj(Input.GetMouseWorldPosition());
             }
@@ -48,9 +47,12 @@ namespace Electron2D.Build
 
         private void SpawnNewPhysicsObj(Vector2 _position)
         {
-            GameObject obj = new GameObject();
+            GameObject obj = new GameObject(-1, false);
+            obj.renderer = new BatchedSpriteRenderer(obj.transform);
+            obj.SetSprite(0, 0, 0);
+
             VerletBody body = new VerletBody(obj.transform);
-            obj.transform.position = _position;
+            obj.transform.position = new Vector2(0, 200);
             obj.SetSprite(0, 0, 0);
         }
 

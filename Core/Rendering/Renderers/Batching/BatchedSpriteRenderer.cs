@@ -32,14 +32,14 @@ namespace Electron2D.Core.Rendering
 
         public Transform transform { get; private set; }
         public bool isDirty { get; set; }
-        public bool isLoaded { get; set; }
+        public bool isLoaded { get; set; } = true; // Batched renderers are always loaded
 
         private BufferLayout layout;
 
         public BatchedSpriteRenderer(Transform _transform)
         {
             transform = _transform;
-            BatchManager.staticObjectBatch.AddRenderer(this);
+            GlobalBatches.staticObjectBatch.AddRenderer(this);
 
             layout = new BufferLayout();
             layout.Add<float>(2);
@@ -55,7 +55,7 @@ namespace Electron2D.Core.Rendering
 
         public void Render()
         {
-            // This renderer does not need to render anything itself
+            // This renderer does not render anything itself
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Electron2D.Core.Rendering
 
         public Shader GetShader()
         {
-            return BatchManager.staticObjectBatch.shader;
+            return GlobalBatches.staticObjectBatch.shader;
         }
     }
 }
