@@ -51,8 +51,8 @@ namespace Electron2D.Build
             obj.renderer = new BatchedSpriteRenderer(obj.transform);
             obj.SetSprite(0, 0, 0);
 
-            VerletBody body = new VerletBody(obj.transform);
-            obj.transform.position = new Vector2(0, 200);
+            //VerletBody body = new VerletBody(obj.transform);
+            //obj.transform.position = new Vector2(0, 200);
             obj.SetSprite(0, 0, 0);
         }
 

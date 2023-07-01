@@ -38,7 +38,7 @@ namespace Electron2D.Core.Rendering
             vertexArray = new VertexArray();
 
             layout = new BufferLayout();
-            layout.Add<float>(2); // Position
+            layout.Add<float>(4); // Position
             layout.Add<float>(2); // UV
             layout.Add<float>(4); // Color
             layout.Add<float>(1); // Texture Index
@@ -114,14 +114,19 @@ namespace Electron2D.Core.Rendering
                 for (int x = 0; x < loops; x++)
                 {
                     int stride = x * layout.GetRawStride();
-                    Vector2 pos = new Vector2(renderers[i].vertices[0 + stride], renderers[i].vertices[1 + stride]);
+                    Vector4 pos = new Vector4(renderers[i].vertices[0 + stride], renderers[i].vertices[1 + stride], 0, 1);
 
-                    Vector4 newPos = (pos.X * m0) + (pos.Y * m1) + (0 * m2) + (1 * m3);
-                    Console.WriteLine(newPos);
+                    Vector4 newPos = new Vector4();
+                    newPos.X = m0.X * pos.X + m1.X * pos.Y + m2.X * pos.Z + m3.X * pos.W;
+                    newPos.Y = m0.Y * pos.X + m1.Y * pos.Y + m2.Y * pos.Z + m3.Y * pos.W;
+                    newPos.Z = m0.Z * pos.X + m1.Z * pos.Y + m2.Z * pos.Z + m3.Z * pos.W;
+                    newPos.W = m0.W * pos.X + m1.W * pos.Y + m2.W * pos.Z + m3.W * pos.W;
 
                     tempVertexBuffer.Add(newPos.X);
                     tempVertexBuffer.Add(newPos.Y);
-                    for (int k = 2; k < layout.GetRawStride(); k++)
+                    tempVertexBuffer.Add(newPos.Z);
+                    tempVertexBuffer.Add(newPos.W);
+                    for (int k = 4; k < layout.GetRawStride(); k++)
                     {
                         tempVertexBuffer.Add(renderers[i].vertices[k + stride]);
                     }
