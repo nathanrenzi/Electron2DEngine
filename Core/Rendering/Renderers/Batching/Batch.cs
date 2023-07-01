@@ -17,10 +17,10 @@ namespace Electron2D.Core.Rendering
         public Shader shader;
         public bool isDirty;
 
-        private List<float> tempVertexBuffer;
-        private List<uint> tempIndexBuffer;
+        private List<float> tempVertexBuffer = new List<float>();
+        private List<uint> tempIndexBuffer = new List<uint>();
 
-        private List<BufferUpdateItem> bufferUpdates;
+        private List<BufferUpdateItem> bufferUpdates = new List<BufferUpdateItem>();
 
         private VertexArray vertexArray;
         private VertexBuffer vertexBuffer;
@@ -42,7 +42,6 @@ namespace Electron2D.Core.Rendering
             layout.Add<float>(2); // UV
             layout.Add<float>(4); // Color
             layout.Add<float>(1); // Texture Index
-            layout.Add<float>(1); // Matrix Index
 
             var textureSampleUniformLocation = shader.GetUniformLocation("u_Texture[0]");
             int[] samplers = new int[3] { 0, 1, 2 };
@@ -51,7 +50,7 @@ namespace Electron2D.Core.Rendering
 
         private unsafe void OnUpdate()
         {
-            // New buffers must be created every frame, since the vertices must be manually moved
+            // New buffers must be created every frame, since the vertices must be manually projected
             CreateNewBufferData();
             return;
 
@@ -103,17 +102,22 @@ namespace Electron2D.Core.Rendering
             {
                 // The model matrix is being added to the temp model list
                 Matrix4x4 model = renderers[i].transform.GetScaleMatrix() * renderers[i].transform.GetRotationMatrix() * renderers[i].transform.GetPositionMatrix();
-                Vector3 m0 = new Vector3(model.M11, model.M21, model.M31);
-                Vector3 m1 = new Vector3(model.M12, model.M22, model.M32);
-                Vector3 m2 = new Vector3(model.M13, model.M23, model.M33);
+                Matrix4x4 projection = Camera2D.main.GetProjectionMatrix();
+
+                Matrix4x4 finalM = projection * model;
+                Vector4 m0 = new Vector4(finalM.M11, finalM.M21, finalM.M31, finalM.M41);
+                Vector4 m1 = new Vector4(finalM.M12, finalM.M22, finalM.M32, finalM.M42);
+                Vector4 m2 = new Vector4(finalM.M13, finalM.M23, finalM.M33, finalM.M43);
+                Vector4 m3 = new Vector4(finalM.M14, finalM.M24, finalM.M34, finalM.M44);
 
                 int loops = renderers[i].vertices.Length / layout.GetRawStride();
                 for (int x = 0; x < loops; x++)
                 {
                     int stride = x * layout.GetRawStride();
                     Vector2 pos = new Vector2(renderers[i].vertices[0 + stride], renderers[i].vertices[1 + stride]);
-                    Vector3 pos3 = new Vector3(pos.X, pos.Y, 0);
-                    Vector3 newPos = pos3.X * m0 + pos3.Y * m1 + pos3.Z * m2;
+
+                    Vector4 newPos = (pos.X * m0) + (pos.Y * m1) + (0 * m2) + (1 * m3);
+                    Console.WriteLine(newPos);
 
                     tempVertexBuffer.Add(newPos.X);
                     tempVertexBuffer.Add(newPos.Y);
@@ -171,8 +175,6 @@ namespace Electron2D.Core.Rendering
             shader.Use();
             vertexArray.Bind();
             indexBuffer.Bind();
-
-            shader.SetMatrix4x4("projection", Camera2D.main.GetProjectionMatrix());
 
             glDrawElements(GL_TRIANGLES, tempIndexBuffer.Count, GL_UNSIGNED_INT, (void*)0);
         }
