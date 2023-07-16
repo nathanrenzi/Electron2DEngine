@@ -8,12 +8,14 @@ out vec2 texCoord;
 out vec4 vertexColor;
 out float texIndex;
 
+uniform mat4 projection;
+
 void main() 
 {
     texCoord = aTexCoord;
     texIndex = aIndex;
     vertexColor = aColor;
-    gl_Position = aPosition.xyzw;
+    gl_Position = projection * aPosition.xyzw;
 }
 
 #shader fragment
