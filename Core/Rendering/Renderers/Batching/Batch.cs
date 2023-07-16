@@ -2,7 +2,9 @@
 using Electron2D.Core.Rendering.Shaders;
 using System;
 using System.Numerics;
+using System.Reflection.Metadata;
 using static Electron2D.OpenGL.GL;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Electron2D.Core.Rendering
 {
@@ -98,34 +100,39 @@ namespace Electron2D.Core.Rendering
             tempVertexBuffer.Clear();
             tempIndexBuffer.Clear();
 
+            // Add renderer culling so that if all vertices are off screen and not off screen in opposing directions
+
             for (int i = 0; i < renderers.Count; i++)
             {
-                // The model matrix is being added to the temp model list
-                Matrix4x4 model = renderers[i].transform.GetScaleMatrix() * renderers[i].transform.GetRotationMatrix() * renderers[i].transform.GetPositionMatrix();
-                Matrix4x4 projection = Camera2D.main.GetProjectionMatrix();
-
-                Matrix4x4 finalM = projection * model;
-                Vector4 m0 = new Vector4(finalM.M11, finalM.M21, finalM.M31, finalM.M41);
-                Vector4 m1 = new Vector4(finalM.M12, finalM.M22, finalM.M32, finalM.M42);
-                Vector4 m2 = new Vector4(finalM.M13, finalM.M23, finalM.M33, finalM.M43);
-                Vector4 m3 = new Vector4(finalM.M14, finalM.M24, finalM.M34, finalM.M44);
-
                 int loops = renderers[i].vertices.Length / layout.GetRawStride();
                 for (int x = 0; x < loops; x++)
                 {
                     int stride = x * layout.GetRawStride();
-                    Vector4 pos = new Vector4(renderers[i].vertices[0 + stride], renderers[i].vertices[1 + stride], 0, 1);
+                    Vector2 localPos = new Vector2(renderers[i].vertices[0 + stride], renderers[i].vertices[1 + stride]);
+                    Vector2 scale = new Vector2(Program.game.currentWindowWidth * (renderers[i].transform.scale.X / 100f), Program.game.currentWindowWidth * (renderers[i].transform.scale.Y / 100f));
 
-                    Vector4 newPos = new Vector4();
-                    newPos.X = m0.X * pos.X + m1.X * pos.Y + m2.X * pos.Z + m3.X * pos.W;
-                    newPos.Y = m0.Y * pos.X + m1.Y * pos.Y + m2.Y * pos.Z + m3.Y * pos.W;
-                    newPos.Z = m0.Z * pos.X + m1.Z * pos.Y + m2.Z * pos.Z + m3.Z * pos.W;
-                    newPos.W = m0.W * pos.X + m1.W * pos.Y + m2.W * pos.Z + m3.W * pos.W;
+                    // Rotation
+                    Vector2 pivotPoint = renderers[i].transform.pivotPoint;
+                    float rot = renderers[i].transform.rotation * (MathF.PI / 180);
+                    Vector2 rotationVector = RotateVertexAroundLocalPoint(rot, renderers[i].transform, localPos, pivotPoint);
+                    localPos = rotationVector;
+                    // -------------
 
-                    tempVertexBuffer.Add(newPos.X);
-                    tempVertexBuffer.Add(newPos.Y);
-                    tempVertexBuffer.Add(newPos.Z);
-                    tempVertexBuffer.Add(newPos.W);
+                    // Scale
+                    localPos.X *= scale.X;
+                    localPos.Y *= scale.Y;
+                    // -------------
+
+                    // Position
+                    Vector2 currentPos = new Vector2(renderers[i].transform.position.X * (Program.game.currentWindowWidth / Transform.REFERENCE_WINDOW_WIDTH),
+                        renderers[i].transform.position.Y * (Program.game.currentWindowWidth / Transform.REFERENCE_WINDOW_WIDTH));
+                    localPos += currentPos;
+                    // -------------
+
+                    tempVertexBuffer.Add(localPos.X);
+                    tempVertexBuffer.Add(localPos.Y);
+                    tempVertexBuffer.Add(0);
+                    tempVertexBuffer.Add(1);
                     for (int k = 4; k < layout.GetRawStride(); k++)
                     {
                         tempVertexBuffer.Add(renderers[i].vertices[k + stride]);
@@ -134,7 +141,7 @@ namespace Electron2D.Core.Rendering
 
                 for (int z = 0; z < renderers[i].indices.Length; z++)
                 {
-                    tempIndexBuffer.Add(renderers[i].indices[z]);
+                    tempIndexBuffer.Add((uint)(i * 4) + renderers[i].indices[z]);
                 }
             }
 
@@ -178,10 +185,26 @@ namespace Electron2D.Core.Rendering
         public unsafe void Render()
         {
             shader.Use();
+            shader.SetMatrix4x4("projection", Camera2D.main.GetProjectionMatrix());
             vertexArray.Bind();
             indexBuffer.Bind();
 
             glDrawElements(GL_TRIANGLES, tempIndexBuffer.Count, GL_UNSIGNED_INT, (void*)0);
+        }
+
+        private Vector2 RotateVertexAroundLocalPoint(float _radians, Transform _transform, Vector2 _position, Vector2 _pivotPoint)
+        {
+            // Using the negative of radians to get positive clockwise rotation
+            float s = (float)Math.Sin(-_radians);
+            float c = (float)Math.Cos(-_radians);
+
+            Vector2 localPivot = (_transform.up * _pivotPoint.Y) + (_transform.right * _pivotPoint.X);
+
+            // Calculating new coordinate values
+            float xnew = c * (_position.X - localPivot.X) - s * (_position.Y - localPivot.Y) + localPivot.X;
+            float ynew = s * (_position.X - localPivot.X) + c * (_position.Y - localPivot.Y) + localPivot.Y;
+
+            return new Vector2(xnew, ynew);
         }
     }
 }

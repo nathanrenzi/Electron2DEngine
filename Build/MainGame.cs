@@ -49,17 +49,16 @@ namespace Electron2D.Build
         {
             GameObject obj = new GameObject(-1, false);
             obj.renderer = new BatchedSpriteRenderer(obj.transform);
+            obj.transform.position = _position;
             obj.SetSprite(0, 0, 0);
 
-            //VerletBody body = new VerletBody(obj.transform);
-            //obj.transform.position = new Vector2(0, 200);
-            obj.SetSprite(0, 0, 0);
+            VerletBody body = new VerletBody(obj.transform);
         }
 
         private void CameraMovement()
         {
             Camera2D.main.zoom += Input.scrollDelta;
-            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 3);
+            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 10);
 
             float moveSpeed = 1000;
             if (Input.GetKey(Keys.W))

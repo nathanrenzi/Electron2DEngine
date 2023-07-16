@@ -9,6 +9,7 @@ namespace Electron2D.Core.Physics
 
         private const float GRAVITY_FORCE = -9.81f;
         private const float PIXELS_PER_METER = 80f;
+        private const float MAX_SPEED = 2000f;
 
         public static void Step()
         {
@@ -20,11 +21,18 @@ namespace Electron2D.Core.Physics
 
         private static void StepBody(VerletBody _body)
         {
-            // Add dynamic acceleration - https://en.wikipedia.org/wiki/Verlet_integration
+            // Add dynamic acceleration dampening - https://en.wikipedia.org/wiki/Verlet_integration
             Vector2 gravity = new Vector2(0, GRAVITY_FORCE * PIXELS_PER_METER);
 
             Vector2 newPosition = _body.attachedTransform.position + (_body.velocity*Time.deltaTime) + (gravity*(Time.deltaTime*Time.deltaTime*0.5f));
             Vector2 newVelocity = _body.velocity + (gravity + gravity) * (Time.deltaTime * 0.5f);
+
+            float magnitude = MathF.Sqrt(newVelocity.X * newVelocity.X + newVelocity.Y * newVelocity.Y);
+            if (magnitude > MAX_SPEED)
+            {
+                newVelocity = (newVelocity / magnitude) * MAX_SPEED;
+            }
+
 
             _body.attachedTransform.position = newPosition;
             _body.velocity = newVelocity;

@@ -96,8 +96,8 @@
             for (int i = 0; i < gameObjectsInScene.Count; i++)
             {
                 DoStartGameObject(i);
-                hasStarted = true;
             }
+            hasStarted = true;
         }
 
         private static void DoStartGameObject(int _i)
