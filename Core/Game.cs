@@ -77,7 +77,8 @@ namespace Electron2D.Core
                 glClearColor(0.2f, 0.2f, 0.2f, 1);
 
                 Render();
-                GameObjectManager.RenderGameObjects();
+                RenderLayerManager.RenderAllLayers();
+                //GameObjectManager.RenderGameObjects();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.window);
                 PerformanceTimings.renderMilliseconds = (Glfw.Time - rendST) * 1000;

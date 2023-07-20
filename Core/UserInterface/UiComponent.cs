@@ -3,7 +3,7 @@ using Electron2D.Core.Rendering;
 
 namespace Electron2D.Core.UI
 {
-    public abstract class UiComponent
+    public abstract class UiComponent : IRenderable
     {
         public bool visible = true;
         public float position;
@@ -11,11 +11,13 @@ namespace Electron2D.Core.UI
         public float sizeY;
         public Vector2 anchor;
         public IRenderer renderer;
-        public int uiRenderLayer = 0;
+        public int uiRenderLayer { get; private set; }
         public List<UiListener> listeners { get; private set; } = new List<UiListener>();
 
-        public UiComponent(IRenderer _customRenderer = null)
+        public UiComponent(int _uiRenderLayer = 0, IRenderer _customRenderer = null)
         {
+            uiRenderLayer = _uiRenderLayer;
+
             if (_customRenderer != null)
             {
                 renderer = _customRenderer;
@@ -26,6 +28,20 @@ namespace Electron2D.Core.UI
                 // Also set the shader of this renderer to UiShader, a shader that will allow for rounded corners
                 //  and other common ui functionality built-in
             }
+
+            RenderLayerManager.OrderRenderable(this);
+        }
+
+        ~UiComponent()
+        {
+            RenderLayerManager.RemoveRenderable(this);
+        }
+
+        public void SetRenderLayer(int _uiRenderLayer)
+        {
+            if (_uiRenderLayer == uiRenderLayer) return;
+            RenderLayerManager.OrderRenderable(this, true, uiRenderLayer + (int)RenderLayer.Interface, _uiRenderLayer + (int)RenderLayer.Interface);
+            uiRenderLayer = _uiRenderLayer;
         }
 
         public virtual bool CheckBounds(Vector2 _position)
@@ -67,6 +83,8 @@ namespace Electron2D.Core.UI
         {
             renderer.Render();
         }
+
+        public int GetRenderLayer() => uiRenderLayer + (int)RenderLayer.Interface;
     }
 
     public interface UiListener

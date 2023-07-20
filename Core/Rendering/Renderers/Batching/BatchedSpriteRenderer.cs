@@ -39,7 +39,7 @@ namespace Electron2D.Core.Rendering
         public BatchedSpriteRenderer(Transform _transform)
         {
             transform = _transform;
-            GlobalBatches.staticObjectBatch.AddRenderer(this);
+            GlobalBatches.staticBackgroundBatch.AddRenderer(this);
 
             layout = new BufferLayout();
             layout.Add<float>(4);
@@ -130,7 +130,7 @@ namespace Electron2D.Core.Rendering
 
         public Shader GetShader()
         {
-            return GlobalBatches.staticObjectBatch.shader;
+            return GlobalBatches.staticBackgroundBatch.shader;
         }
     }
 

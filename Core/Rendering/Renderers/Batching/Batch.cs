@@ -1,17 +1,14 @@
 ﻿using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering.Shaders;
-using System;
 using System.Numerics;
-using System.Reflection.Metadata;
 using static Electron2D.OpenGL.GL;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Electron2D.Core.Rendering
 {
     /// <summary>
     /// Allows for multiple objects to be rendered with one draw call. Can only support one shader and one render layer per batch.
     /// </summary>
-    public class Batch
+    public class Batch : IRenderable
     {
         public int renderLayer;
 
@@ -35,7 +32,6 @@ namespace Electron2D.Core.Rendering
             renderLayer = _renderLayer;
 
             Game.onUpdateEvent += OnUpdate;
-            GameObjectManager.onLayerRendered += OnRender;
 
             vertexArray = new VertexArray();
 
@@ -48,6 +44,13 @@ namespace Electron2D.Core.Rendering
             var textureSampleUniformLocation = shader.GetUniformLocation("u_Texture[0]");
             int[] samplers = new int[3] { 0, 1, 2 };
             glUniform1iv(textureSampleUniformLocation, samplers.Length, samplers);
+
+            RenderLayerManager.OrderRenderable(this);
+        }
+
+        ~Batch()
+        {
+            RenderLayerManager.RemoveRenderable(this);
         }
 
         private unsafe void OnUpdate()
@@ -87,13 +90,7 @@ namespace Electron2D.Core.Rendering
             }
         }
 
-        private void OnRender(int _layer)
-        {
-            if(_layer == renderLayer)
-            {
-                Render();
-            }
-        }
+        public int GetRenderLayer() => renderLayer;
 
         private void CreateNewBufferData()
         {

@@ -2,6 +2,9 @@
 
 namespace Electron2D.Core.Rendering
 {
+    /// <summary>
+    /// An interface that allows an object to be used as a renderer and be passed into GameObjects.
+    /// </summary>
     public interface IRenderer
     {
         public void Load();
