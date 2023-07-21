@@ -14,7 +14,7 @@ namespace Electron2D.Core.Rendering
 
         public List<BatchedSpriteRenderer> renderers { get; private set; } = new List<BatchedSpriteRenderer>();
         public Shader shader;
-        public bool isDirty;
+        public bool isDirty { get; set; }
 
         private List<float> tempVertexBuffer = new List<float>();
         private List<uint> tempIndexBuffer = new List<uint>();
@@ -55,7 +55,6 @@ namespace Electron2D.Core.Rendering
 
         private unsafe void OnUpdate()
         {
-            // New buffers must be created every frame, since the vertices must be manually projected
             CreateNewBufferData();
             return;
 
@@ -71,22 +70,35 @@ namespace Electron2D.Core.Rendering
             }
 
             // Looping through every renderer to find any updated data
+            bool foundDirty = false;
             for (int i = 0; i < renderers.Count; i++)
             {
                 if (renderers[i].isDirty)
                 {
                     bufferUpdates.Add(new BufferUpdateItem(i * layout.GetRawStride(), renderers[i].vertices));
                     renderers[i].isDirty = false;
+                    foundDirty = true;
+                }
+
+                if (renderers[i].transform.isDirty)
+                {
+                    bufferUpdates.Add(new BufferUpdateItem(i * layout.GetRawStride(), renderers[i].vertices));
+                    renderers[i].transform.UnflagDirty();
+                    foundDirty = true;
                 }
             }
 
-            // Applying the updated data
-            vertexBuffer.Bind();
-            for (int i = 0; i < bufferUpdates.Count; i++)
+            // Only if there was a renderer who's data was updated, update the data
+            if (foundDirty)
             {
-                BufferUpdateItem item = bufferUpdates[i];
-                fixed (float* v = &item.data[0])
-                    glBufferSubData(GL_ARRAY_BUFFER, item.offset, item.data.Length * sizeof(float), v);
+                // Applying the updated data
+                vertexBuffer.Bind();
+                for (int i = 0; i < bufferUpdates.Count; i++)
+                {
+                    BufferUpdateItem item = bufferUpdates[i];
+                    fixed (float* v = &item.data[0])
+                        glBufferSubData(GL_ARRAY_BUFFER, item.offset, item.data.Length * sizeof(float), v);
+                }
             }
         }
 

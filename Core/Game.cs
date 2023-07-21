@@ -14,6 +14,7 @@ namespace Electron2D.Core
     {
         public static event Action onStartEvent;
         public static event Action onUpdateEvent;
+        public static event Action onLateUpdateEvent;
 
         public int currentWindowWidth { get; protected set; }
         public int currentWindowHeight { get; protected set; }
@@ -55,6 +56,7 @@ namespace Electron2D.Core
                 Update();
                 onUpdateEvent?.Invoke();
                 GameObjectManager.UpdateGameObjects();
+                onLateUpdateEvent?.Invoke();
                 PerformanceTimings.gameObjectMilliseconds = (Glfw.Time - goST) * 1000;
                 // -------------------------------
 
