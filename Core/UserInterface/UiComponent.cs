@@ -1,18 +1,52 @@
 ﻿using System.Numerics;
+using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering;
+using Electron2D.Core.Rendering.Shaders;
+using System.Drawing;
 
 namespace Electron2D.Core.UI
 {
-    public abstract class UiComponent : IRenderable
+    public class UiComponent : IRenderable
     {
+        public Transform transform { get; private set; } = new Transform();
         public bool visible = true;
-        public float position;
         public float sizeX;
         public float sizeY;
         public Vector2 anchor;
         public IRenderer renderer;
+        public VertexRenderer rendererReference { get; private set; }
         public int uiRenderLayer { get; private set; }
+
         public List<UiListener> listeners { get; private set; } = new List<UiListener>();
+
+        public float LeftXBound
+        {
+            get
+            {
+                return sizeX + (-anchor.X * sizeX);
+            }
+        }
+        public float RightXBound
+        {
+            get
+            {
+                return -sizeX + (-anchor.X * sizeX);
+            }
+        }
+        public float TopYBound
+        {
+            get
+            {
+                return -sizeY + (-anchor.Y * sizeY);
+            }
+        }
+        public float BottomYBound
+        {
+            get
+            {
+                return sizeY + (-anchor.Y * sizeY);
+            }
+        }
 
         public UiComponent(int _uiRenderLayer = 0, IRenderer _customRenderer = null)
         {
@@ -24,12 +58,26 @@ namespace Electron2D.Core.UI
             }
             else
             {
-                // Set the renderer to be a new advanced sprite / ui renderer that allows for tiling
-                // Also set the shader of this renderer to UiShader, a shader that will allow for rounded corners
-                //  and other common ui functionality built-in
+                // Must implement seperate UI Shader and Renderer, ex. for rounded corners
+                rendererReference = new VertexRenderer(transform, new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultVertex.glsl")));
+                renderer = rendererReference;
             }
 
             RenderLayerManager.OrderRenderable(this);
+        }
+
+        public void GenerateUiMesh()
+        {
+            rendererReference.AddVertex(transform.position + new Vector2(LeftXBound, BottomYBound), Color.LightSkyBlue);  // b-left
+            rendererReference.AddVertex(transform.position + new Vector2(LeftXBound, TopYBound), Color.LightSkyBlue);     // t-left
+            rendererReference.AddVertex(transform.position + new Vector2(RightXBound, TopYBound), Color.LightSkyBlue);    // t-right
+            rendererReference.AddVertex(transform.position + new Vector2(RightXBound, BottomYBound), Color.LightSkyBlue); // b-right
+           
+            rendererReference.AddTriangle(3, 1, 0, 0);
+            rendererReference.AddTriangle(3, 2, 1, 0);
+
+            rendererReference.FinalizeVertices();
+            rendererReference.Load();
         }
 
         ~UiComponent()
@@ -46,13 +94,10 @@ namespace Electron2D.Core.UI
 
         public virtual bool CheckBounds(Vector2 _position)
         {
-            float leftXBound = sizeX * (anchor.X * sizeX);
-            float rightXBound = sizeX * (-anchor.X * sizeX);
-            float topYBound = sizeY * (-anchor.Y * sizeY);
-            float bottomYBound = sizeY * (anchor.Y * sizeY);
+            Vector2 pos = _position - transform.position;
 
-            if(_position.X >= leftXBound && _position.X <= rightXBound
-                && _position.Y >= bottomYBound && _position.Y <= topYBound)
+            if (pos.X >= LeftXBound && pos.X <= RightXBound
+                && pos.Y >= BottomYBound && pos.Y <= TopYBound)
             {
                 // The point is within the bounds
                 return true;

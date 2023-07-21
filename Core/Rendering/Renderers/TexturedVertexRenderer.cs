@@ -7,12 +7,12 @@ using static Electron2D.OpenGL.GL;
 namespace Electron2D.Core.Rendering
 {
     /// <summary>
-    /// A renderer that specializes in custom shapes.
+    /// A renderer that specializes in custom shapes, with a tiling texture.
     /// </summary>
-    public class VertexRenderer : IRenderer
+    public class TexturedVertexRenderer : IRenderer
     {
-        public float[] vertices { get; private set; }
-        public uint[] indices { get; private set; }
+        private float[] vertices;
+        private uint[] indices;
 
         private List<float> tempVertices = new List<float>();
         private List<uint> tempIndices = new List<uint>();
@@ -28,7 +28,7 @@ namespace Electron2D.Core.Rendering
         public bool isDirty { get; set; } = false;
         public bool isLoaded { get; set; } = false;
 
-        public VertexRenderer(Transform _transform, Shader _shader)
+        public TexturedVertexRenderer(Transform _transform, Shader _shader)
         {
             transform = _transform;
             shader = _shader;
@@ -50,16 +50,13 @@ namespace Electron2D.Core.Rendering
         /// </summary>
         /// <param name="_position">The position of the vertex, from 1,1 to -1,-1.</param>
         /// <param name="_color">The color of the vertex.</param>
-        public void AddVertex(Vector2 _position, Color _color)
+        public void AddVertex(Vector2 _position, Vector2 _uv, int _textureIndex)
         {
-            Console.WriteLine($"Added: {_position.X}, {_position.Y} to the temp list.");
             tempVertices.Add(_position.X);
             tempVertices.Add(_position.Y);
-            // Must divide the colors by 255 to normalize them
-            tempVertices.Add(_color.R / 255f);
-            tempVertices.Add(_color.G / 255f);
-            tempVertices.Add(_color.B / 255f);
-            tempVertices.Add(_color.A / 255f);
+            tempVertices.Add(_uv.X);
+            tempVertices.Add(_uv.Y);
+            tempVertices.Add(_textureIndex);
         }
 
         /// <summary>
@@ -103,7 +100,8 @@ namespace Electron2D.Core.Rendering
 
             layout = new BufferLayout();
             layout.Add<float>(2); // Position
-            layout.Add<float>(4); // Color
+            layout.Add<float>(2); // UV
+            layout.Add<float>(1); // Texture Index
 
             vertexArray.AddBuffer(vertexBuffer, layout);
             shader.Use();
@@ -140,7 +138,7 @@ namespace Electron2D.Core.Rendering
             return vertices[(_vertex * layout.GetRawStride()) + _type];
         }
 
-        public void SetSprite(int _spritesheetIndex, int _col, int _row) => Console.WriteLine("Trying to set sprite with a vertex renderer does not do anything.");
+        public void SetSprite(int _spritesheetIndex, int _col, int _row) => Console.WriteLine("Trying to set sprite with a vertex renderer.");
 
         public unsafe void Render()
         {
@@ -167,15 +165,14 @@ namespace Electron2D.Core.Rendering
     }
 
     /// <summary>
-    /// This enum corresponds to an attribute in a vertex for the vertex renderer.
+    /// This enum corresponds to an attribute in a vertex for the renderer.
     /// </summary>
-    public enum VertexAttribute
+    public enum TexturedVertexAttribute
     {
         PositionX = 0,
         PositionY = 1,
-        ColorR = 2,
-        ColorG = 3,
-        ColorB = 4,
-        ColorA = 5
+        UvX = 2,
+        UvY = 3,
+        TextureIndex = 4
     }
 }
