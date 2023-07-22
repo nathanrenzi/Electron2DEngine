@@ -11,6 +11,7 @@ namespace Electron2D.Core.UI
     {
         public Transform transform { get; private set; } = new Transform();
         public bool visible = true;
+        public bool useScreenPosition = true;
         public float sizeX;
         public float sizeY;
         public Vector2 anchor;
@@ -18,6 +19,10 @@ namespace Electron2D.Core.UI
         public VertexRenderer rendererReference { get; private set; }
         public int uiRenderLayer { get; private set; }
         public List<UiListener> listeners { get; private set; } = new List<UiListener>();
+
+        public UiFrameTickData thisFrameData = new UiFrameTickData();
+        public UiFrameTickData lastFrameData = new UiFrameTickData();
+        public UiConstraints constraints;
 
         private bool isLoaded = false;
 
@@ -52,6 +57,7 @@ namespace Electron2D.Core.UI
 
         public UiComponent(int _uiRenderLayer = 0, IRenderer _customRenderer = null)
         {
+            constraints = new UiConstraints(this);
             uiRenderLayer = _uiRenderLayer;
 
             if (_customRenderer != null)
@@ -61,29 +67,35 @@ namespace Electron2D.Core.UI
             else
             {
                 // Must implement seperate UI Shader and Renderer, ex. for rounded corners
-                rendererReference = new VertexRenderer(transform, new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultVertex.glsl")));
+                rendererReference = new VertexRenderer(transform, new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultUserInterface.glsl")));
                 renderer = rendererReference;
+                rendererReference.useUnscaledProjectionMatrix = true;
             }
 
             RenderLayerManager.OrderRenderable(this);
             UiMaster.display.RegisterUiComponent(this);
         }
 
-        public void GenerateUiMesh()
+        public void Load()
+        {
+            GenerateMesh();
+
+            if(isLoaded == false) rendererReference.Load();
+            isLoaded = true;
+        }
+
+        protected virtual void GenerateMesh()
         {
             rendererReference.ClearTempLists();
-            rendererReference.AddVertex(transform.position + new Vector2(LeftXBound, BottomYBound), Color.LightSkyBlue);  // b-left
-            rendererReference.AddVertex(transform.position + new Vector2(LeftXBound, TopYBound), Color.LightSkyBlue);     // t-left
-            rendererReference.AddVertex(transform.position + new Vector2(RightXBound, TopYBound), Color.LightSkyBlue);    // t-right
-            rendererReference.AddVertex(transform.position + new Vector2(RightXBound, BottomYBound), Color.LightSkyBlue); // b-right
-           
+            rendererReference.AddVertex(new Vector2(LeftXBound, BottomYBound), Color.White);  // b-left
+            rendererReference.AddVertex(new Vector2(LeftXBound, TopYBound), Color.White);     // t-left
+            rendererReference.AddVertex(new Vector2(RightXBound, TopYBound), Color.White);    // t-right
+            rendererReference.AddVertex(new Vector2(RightXBound, BottomYBound), Color.White); // b-right
+
             rendererReference.AddTriangle(3, 1, 0, 0);
             rendererReference.AddTriangle(3, 2, 1, 0);
 
             rendererReference.FinalizeVertices();
-
-            if(isLoaded == false) rendererReference.Load();
-            isLoaded = true;
         }
 
         ~UiComponent()
@@ -109,6 +121,7 @@ namespace Electron2D.Core.UI
 
         public void AddUiListener(UiListener _listener)
         {
+            if (!listeners.Contains(_listener)) return;
             listeners.Add(_listener);
         }
 

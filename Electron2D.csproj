@@ -17,6 +17,7 @@
     <None Remove="Build\Resources\Textures\boidSpritesheet.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
     <None Remove="Core\Rendering\Shaders\DefaultBatchTexture.glsl" />
+    <None Remove="Core\Rendering\Shaders\DefaultUserInterface.glsl" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +25,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultBatchTexture.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultUserInterface.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultVertex.glsl">

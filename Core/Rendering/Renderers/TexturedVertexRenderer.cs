@@ -25,6 +25,10 @@ namespace Electron2D.Core.Rendering
         private Transform transform;
         private Shader shader;
 
+        /// <summary>
+        /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
+        /// </summary>
+        public bool useUnscaledProjectionMatrix = false;
         public bool isDirty { get; set; } = false;
         public bool isLoaded { get; set; } = false;
 
@@ -158,7 +162,7 @@ namespace Electron2D.Core.Rendering
             vertexArray.Bind();
             indexBuffer.Bind();
 
-            shader.SetMatrix4x4("projection", Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
+            shader.SetMatrix4x4("projection", useUnscaledProjectionMatrix ? Camera2D.main.GetUnscaledProjectionMatrix() : Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
 
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }

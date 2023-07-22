@@ -30,5 +30,22 @@ namespace Electron2D.Core.Rendering
 
             return orthoMatrix * zoomMatrix;
         }
+        
+        /// <summary>
+        /// Returns an unscaled projection matrix that has no position and has default zoom.
+        /// </summary>
+        /// <returns></returns>
+        public Matrix4x4 GetUnscaledProjectionMatrix()
+        {
+            float left = 0 - DisplayManager.Instance.windowSize.X / 2f;
+            float right = 0 + DisplayManager.Instance.windowSize.X / 2f;
+            float top = 0 + DisplayManager.Instance.windowSize.Y / 2f;
+            float bottom = 0 - DisplayManager.Instance.windowSize.Y / 2f;
+
+            Matrix4x4 orthoMatrix = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, 0.01f, 100f);
+            Matrix4x4 zoomMatrix = Matrix4x4.CreateScale(1);
+
+            return orthoMatrix * zoomMatrix;
+        }
     }
 }

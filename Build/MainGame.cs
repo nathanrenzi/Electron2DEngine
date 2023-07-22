@@ -33,11 +33,10 @@ namespace Electron2D.Build
             SpritesheetManager.Add(3, 1);
 
             UiComponent ui = new TestUi();
-            ui.transform.position = Vector2.Zero;
             ui.sizeX = 200;
             ui.sizeY = 100;
-            ui.anchor = new Vector2(1, 0);
-            ui.GenerateUiMesh();
+            ui.Load();
+            ui.constraints.ApplyConstraints();
         }
 
         protected override void Update()

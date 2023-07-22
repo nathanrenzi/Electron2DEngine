@@ -6,8 +6,7 @@ namespace Electron2D.Core.UI
     public class UiDisplay
     {
         private List<UiComponent> activeComponents = new List<UiComponent>();
-        private List<bool> wasHoveringThisFrame = new List<bool>();
-        private List<bool> wasHoveringLastFrame = new List<bool>();
+
         // Add an ActiveUiComponent class that also holds a reference to the constraints being used
         //  and use that for the above list instead
 
@@ -26,8 +25,6 @@ namespace Electron2D.Core.UI
             if (activeComponents.Contains(_component)) return;
 
             activeComponents.Add(_component);
-            wasHoveringThisFrame.Add(false);
-            wasHoveringLastFrame.Add(false);
         }
 
         public void UnregisterUiComponent(UiComponent _component)
@@ -35,25 +32,26 @@ namespace Electron2D.Core.UI
             if (!activeComponents.Contains(_component)) return;
             int index = activeComponents.IndexOf(_component);
 
-            wasHoveringThisFrame.RemoveAt(index);
-            wasHoveringLastFrame.RemoveAt(index);
             activeComponents.Remove(_component);
         }
 
         public void CheckForInput()
         {
             Vector2 mousePos = Input.GetMouseWorldPosition();
+            Vector2 mousePosScreen = Input.GetMouseScreenPosition(true);
             for (int i = 0; i < activeComponents.Count; i++)
             {
                 UiComponent component = activeComponents[i];
+                UiFrameTickData lastFrame = activeComponents[i].lastFrameData;
+                UiFrameTickData thisFrame = activeComponents[i].thisFrameData;
 
-                wasHoveringThisFrame[i] = activeComponents[i].CheckBounds(mousePos);
-                if (wasHoveringThisFrame[i])
+                thisFrame.isHovered = activeComponents[i].CheckBounds(activeComponents[i].useScreenPosition ? mousePosScreen : mousePos);
+                if (thisFrame.isHovered)
                 {
                     // Mouse is hovering over UI component
                     component.InvokeUiAction(UiEvent.Hover);
 
-                    if (wasHoveringThisFrame[i] == true && wasHoveringLastFrame[i] == false)
+                    if (thisFrame.isHovered == true && lastFrame.isHovered == false)
                     {
                         component.InvokeUiAction(UiEvent.HoverStart);
                     }
@@ -61,13 +59,9 @@ namespace Electron2D.Core.UI
                     // Left click
                     if (Input.GetMouseButtonDown(GLFW.MouseButton.Left))
                     {
+                        thisFrame.isLeftClicked = true;
                         component.InvokeUiAction(UiEvent.LeftClickDown);
                         component.InvokeUiAction(UiEvent.ClickDown);
-                    }
-                    else if (Input.GetMouseButtonUp(GLFW.MouseButton.Left))
-                    {
-                        component.InvokeUiAction(UiEvent.LeftClickUp);
-                        component.InvokeUiAction(UiEvent.ClickUp);
                     }
 
                     if (Input.GetMouseButton(GLFW.MouseButton.Left))
@@ -80,13 +74,9 @@ namespace Electron2D.Core.UI
                     // Middle click
                     if (Input.GetMouseButtonDown(GLFW.MouseButton.Middle))
                     {
+                        thisFrame.isMiddleClicked = true;
                         component.InvokeUiAction(UiEvent.MiddleClickDown);
                         component.InvokeUiAction(UiEvent.ClickDown);
-                    }
-                    else if (Input.GetMouseButtonUp(GLFW.MouseButton.Middle))
-                    {
-                        component.InvokeUiAction(UiEvent.MiddleClickUp);
-                        component.InvokeUiAction(UiEvent.ClickUp);
                     }
 
                     if (Input.GetMouseButton(GLFW.MouseButton.Middle))
@@ -99,13 +89,9 @@ namespace Electron2D.Core.UI
                     // Right click
                     if (Input.GetMouseButtonDown(GLFW.MouseButton.Right))
                     {
+                        thisFrame.isRightClicked = true;
                         component.InvokeUiAction(UiEvent.RightClickDown);
                         component.InvokeUiAction(UiEvent.ClickDown);
-                    }
-                    else if (Input.GetMouseButtonUp(GLFW.MouseButton.Right))
-                    {
-                        component.InvokeUiAction(UiEvent.RightClickUp);
-                        component.InvokeUiAction(UiEvent.ClickUp);
                     }
 
                     if (Input.GetMouseButton(GLFW.MouseButton.Right))
@@ -115,13 +101,54 @@ namespace Electron2D.Core.UI
                     }
                     // ----------------------
                 }
-                else if (wasHoveringLastFrame[i] == true)
+                else if (lastFrame.isHovered == true)
                 {
                     component.InvokeUiAction(UiEvent.HoverEnd);
                 }
 
-                wasHoveringLastFrame[i] = wasHoveringThisFrame[i];
+                // Mouse button up
+                if (Input.GetMouseButtonUp(GLFW.MouseButton.Left) && thisFrame.isLeftClicked)
+                {
+                    // This is set to false here because it should be true until the mouse button is released
+                    thisFrame.isLeftClicked = false;
+                    component.InvokeUiAction(UiEvent.LeftClickUp);
+                    component.InvokeUiAction(UiEvent.ClickUp);
+                }
+
+                if (Input.GetMouseButtonUp(GLFW.MouseButton.Middle) && thisFrame.isMiddleClicked)
+                {
+                    // This is set to false here because it should be true until the mouse button is released
+                    thisFrame.isMiddleClicked = false;
+                    component.InvokeUiAction(UiEvent.MiddleClickUp);
+                    component.InvokeUiAction(UiEvent.ClickUp);
+                }
+
+                if (Input.GetMouseButtonUp(GLFW.MouseButton.Right) && thisFrame.isRightClicked)
+                {
+                    // This is set to false here because it should be true until the mouse button is released
+                    thisFrame.isRightClicked = false;
+                    component.InvokeUiAction(UiEvent.RightClickUp);
+                    component.InvokeUiAction(UiEvent.ClickUp);
+                }
+                // ----------------------
+
+                // Resetting the UiFrameTickData objects instead of destroying them
+                thisFrame.isClicked = thisFrame.isLeftClicked || thisFrame.isMiddleClicked || thisFrame.isRightClicked;
+                lastFrame.isHovered = thisFrame.isHovered;
+                lastFrame.isLeftClicked = thisFrame.isLeftClicked;
+                lastFrame.isMiddleClicked = thisFrame.isMiddleClicked;
+                lastFrame.isRightClicked = thisFrame.isRightClicked;
+                lastFrame.isClicked = thisFrame.isClicked;
             }
         }
+    }
+
+    public class UiFrameTickData
+    {
+        public bool isHovered;
+        public bool isLeftClicked;
+        public bool isMiddleClicked;
+        public bool isRightClicked;
+        public bool isClicked;
     }
 }

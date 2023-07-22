@@ -130,13 +130,14 @@ namespace Electron2D.Core
             return -1;
         }
 
-        public static Vector2 GetMouseScreenPosition()
+        public static Vector2 GetMouseScreenPosition(bool offsetToMiddle = false)
         {
             double x;
             double y;
             Glfw.GetCursorPosition(DisplayManager.Instance.window, out x, out y);
 
-            return new Vector2((float)x, (float)y);
+            Vector2 offset = offsetToMiddle ? new Vector2(Program.game.currentWindowWidth / 2f, Program.game.currentWindowHeight / 2f) : Vector2.Zero;
+            return new Vector2((float)x - offset.X, DisplayManager.Instance.windowSize.Y - (float)y - offset.Y);
         }
 
         public static Vector2 GetMouseWorldPosition()
@@ -144,7 +145,6 @@ namespace Electron2D.Core
             Vector2 worldPosition = GetMouseScreenPosition();
 
             // Centering the position
-            worldPosition.Y = DisplayManager.Instance.windowSize.Y - worldPosition.Y;
             worldPosition.Y -= DisplayManager.Instance.windowSize.Y / 2;
             worldPosition.X -= DisplayManager.Instance.windowSize.X / 2;
             // ----------------------
