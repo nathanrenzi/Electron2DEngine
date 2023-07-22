@@ -1,6 +1,5 @@
 ﻿using Electron2D.Core.GameObjects;
 using Electron2D.Core;
-using Electron2D.Core.Rendering;
 using System.Numerics;
 
 namespace Electron2D.Build.Resources.Objects

@@ -3,7 +3,7 @@ using Electron2D.Core.Rendering.Shaders;
 
 namespace Electron2D.Core.GameObjects
 {
-    public class GameObject
+    public class GameObject : IRenderable
     {
         public Transform transform = new Transform();
         public IRenderer renderer;
@@ -15,9 +15,9 @@ namespace Electron2D.Core.GameObjects
         private int queuedSpriteRow;
         private bool hasFinishedSetSprite = true;
 
-        public GameObject(int _renderOrder = 0, bool _useAutoRendererInitialization = true, IRenderer _customRenderer = null)
+        public GameObject(int _renderLayer = 0, bool _useAutoRendererInitialization = true, IRenderer _customRenderer = null)
         {
-            renderLayer = _renderOrder;
+            renderLayer = _renderLayer;
             useAutoInitialization = _useAutoRendererInitialization;
 
             // Initializing the renderer
@@ -27,9 +27,10 @@ namespace Electron2D.Core.GameObjects
             }
             else
             {
-                renderer = new SpriteRenderer(transform, new Shader(Shader.ParseShader("Build/Resources/Shaders/Default.glsl"), false));
+                renderer = new SpriteRenderer(transform, new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"), false));
             }
 
+            RenderLayerManager.OrderRenderable(this);
             GameObjectManager.RegisterGameObject(this);
         }
 
@@ -51,12 +52,14 @@ namespace Electron2D.Core.GameObjects
             }
         }
 
-        public void SetRenderOrder(int _renderOrder)
+        public void SetRenderLayer(int _renderLayer)
         {
-            if (renderLayer == _renderOrder) return;
-            GameObjectManager.OrderGameObject(this, true, renderLayer, _renderOrder);
-            renderLayer = _renderOrder;
+            if (renderLayer == _renderLayer) return;
+            RenderLayerManager.OrderRenderable(this, true, renderLayer, _renderLayer);
+            renderLayer = _renderLayer;
         }
+
+        public int GetRenderLayer() => renderLayer;
 
         public virtual void Start()
         {
@@ -89,6 +92,7 @@ namespace Electron2D.Core.GameObjects
         public void Destroy()
         {
             GameObjectManager.UnregisterGameObject(this);
+            RenderLayerManager.RemoveRenderable(this);
             OnDestroy();
         }
 

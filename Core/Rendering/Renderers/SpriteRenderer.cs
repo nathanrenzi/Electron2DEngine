@@ -161,9 +161,8 @@ namespace Electron2D.Core.Rendering
 
             if(isDirty)
             {
-                // Setting a new vertex buffer if the vertices have been updated
-                vertexBuffer = new VertexBuffer(vertices);
-                vertexArray.AddBuffer(vertexBuffer, layout);
+                // Updating the vertex buffer
+                vertexBuffer.UpdateData(vertices);
                 isDirty = false;
             }
 

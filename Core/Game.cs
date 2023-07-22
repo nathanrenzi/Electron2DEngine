@@ -6,11 +6,17 @@ using System.Numerics;
 using Electron2D.Core.Audio;
 using Electron2D.Core.Physics;
 using Electron2D.Core.Misc;
+using Electron2D.Core.Rendering.Shaders;
+using Electron2D.Core.UserInterface;
 
 namespace Electron2D.Core
 {
     public abstract class Game
     {
+        public static event Action onStartEvent;
+        public static event Action onUpdateEvent;
+        public static event Action onLateUpdateEvent;
+
         public int currentWindowWidth { get; protected set; }
         public int currentWindowHeight { get; protected set; }
         public string currentWindowTitle { get; protected set; }
@@ -38,17 +44,25 @@ namespace Electron2D.Core
             // -----------
 
             LoadContent();
+            onStartEvent?.Invoke();
             GameObjectManager.StartGameObjects();
+            UiMaster.display.Initialize();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.window))
             {
                 Time.deltaTime = (float)Glfw.Time - Time.totalElapsedSeconds;
                 Time.totalElapsedSeconds = (float)Glfw.Time;
 
+                // Input
+                Input.ProcessInput();
+                // -------------------------------
+
                 // Updating
                 double goST = Glfw.Time;
                 Update();
+                onUpdateEvent?.Invoke();
                 GameObjectManager.UpdateGameObjects();
+                onLateUpdateEvent?.Invoke();
                 PerformanceTimings.gameObjectMilliseconds = (Glfw.Time - goST) * 1000;
                 // -------------------------------
 
@@ -60,18 +74,14 @@ namespace Electron2D.Core
                 // -------------------------------
 
 
-                // Input
-                Input.ProcessInput();
-                // -------------------------------
-
-
                 // Rendering
                 double rendST = Glfw.Time;
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 glClearColor(0.2f, 0.2f, 0.2f, 1);
 
                 Render();
-                GameObjectManager.RenderGameObjects();
+                RenderLayerManager.RenderAllLayers();
+                //GameObjectManager.RenderGameObjects();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.window);
                 PerformanceTimings.renderMilliseconds = (Glfw.Time - rendST) * 1000;
