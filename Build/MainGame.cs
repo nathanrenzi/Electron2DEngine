@@ -32,16 +32,12 @@ namespace Electron2D.Build
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boidSpritesheet.png");
             SpritesheetManager.Add(3, 1);
 
-            UiComponent ui = new();
+            UiComponent ui = new TestUi();
             ui.transform.position = Vector2.Zero;
             ui.sizeX = 200;
             ui.sizeY = 100;
             ui.anchor = new Vector2(1, 0);
             ui.GenerateUiMesh();
-            for (int i = 0; i < ui.rendererReference.vertices.Length; i++)
-            {
-                Console.WriteLine(ui.rendererReference.vertices[i]);
-            }
         }
 
         protected override void Update()

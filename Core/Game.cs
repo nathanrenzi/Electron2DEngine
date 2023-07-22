@@ -7,6 +7,7 @@ using Electron2D.Core.Audio;
 using Electron2D.Core.Physics;
 using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering.Shaders;
+using Electron2D.Core.UserInterface;
 
 namespace Electron2D.Core
 {
@@ -45,11 +46,16 @@ namespace Electron2D.Core
             LoadContent();
             onStartEvent?.Invoke();
             GameObjectManager.StartGameObjects();
+            UiMaster.display.Initialize();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.window))
             {
                 Time.deltaTime = (float)Glfw.Time - Time.totalElapsedSeconds;
                 Time.totalElapsedSeconds = (float)Glfw.Time;
+
+                // Input
+                Input.ProcessInput();
+                // -------------------------------
 
                 // Updating
                 double goST = Glfw.Time;
@@ -65,11 +71,6 @@ namespace Electron2D.Core
                 double phyST = Glfw.Time;
                 VerletWorld.Step();
                 PerformanceTimings.physicsMilliseconds = (Glfw.Time - phyST) * 1000;
-                // -------------------------------
-
-
-                // Input
-                Input.ProcessInput();
                 // -------------------------------
 
 
