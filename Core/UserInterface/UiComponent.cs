@@ -3,6 +3,7 @@ using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
+using Electron2D.Core.UserInterface;
 
 namespace Electron2D.Core.UI
 {
@@ -16,31 +17,32 @@ namespace Electron2D.Core.UI
         public IRenderer renderer;
         public VertexRenderer rendererReference { get; private set; }
         public int uiRenderLayer { get; private set; }
-
         public List<UiListener> listeners { get; private set; } = new List<UiListener>();
 
-        public float LeftXBound
+        private bool isLoaded = false;
+
+        public float RightXBound
         {
             get
             {
                 return sizeX + (-anchor.X * sizeX);
             }
         }
-        public float RightXBound
+        public float LeftXBound
         {
             get
             {
                 return -sizeX + (-anchor.X * sizeX);
             }
         }
-        public float TopYBound
+        public float BottomYBound
         {
             get
             {
                 return -sizeY + (-anchor.Y * sizeY);
             }
         }
-        public float BottomYBound
+        public float TopYBound
         {
             get
             {
@@ -64,10 +66,12 @@ namespace Electron2D.Core.UI
             }
 
             RenderLayerManager.OrderRenderable(this);
+            UiMaster.display.RegisterUiComponent(this);
         }
 
         public void GenerateUiMesh()
         {
+            rendererReference.ClearTempLists();
             rendererReference.AddVertex(transform.position + new Vector2(LeftXBound, BottomYBound), Color.LightSkyBlue);  // b-left
             rendererReference.AddVertex(transform.position + new Vector2(LeftXBound, TopYBound), Color.LightSkyBlue);     // t-left
             rendererReference.AddVertex(transform.position + new Vector2(RightXBound, TopYBound), Color.LightSkyBlue);    // t-right
@@ -77,12 +81,15 @@ namespace Electron2D.Core.UI
             rendererReference.AddTriangle(3, 2, 1, 0);
 
             rendererReference.FinalizeVertices();
-            rendererReference.Load();
+
+            if(isLoaded == false) rendererReference.Load();
+            isLoaded = true;
         }
 
         ~UiComponent()
         {
             RenderLayerManager.RemoveRenderable(this);
+            UiMaster.display.UnregisterUiComponent(this);
         }
 
         public void SetRenderLayer(int _uiRenderLayer)
@@ -94,16 +101,10 @@ namespace Electron2D.Core.UI
 
         public virtual bool CheckBounds(Vector2 _position)
         {
-            Vector2 pos = _position - transform.position;
+            Vector2 pos = _position;
 
-            if (pos.X >= LeftXBound && pos.X <= RightXBound
-                && pos.Y >= BottomYBound && pos.Y <= TopYBound)
-            {
-                // The point is within the bounds
-                return true;
-            }
-
-            return false;
+            return pos.X >= LeftXBound + transform.position.X && pos.X <= RightXBound + transform.position.X
+                && pos.Y >= BottomYBound + transform.position.Y && pos.Y <= TopYBound + transform.position.Y;
         }
 
         public void AddUiListener(UiListener _listener)
@@ -122,7 +123,11 @@ namespace Electron2D.Core.UI
             {
                 listeners[i].OnUiAction(this, _event);
             }
+
+            OnUiEvent(_event);
         }
+
+        protected virtual void OnUiEvent(UiEvent _event) { }
 
         public virtual void Render()
         {
@@ -145,6 +150,9 @@ namespace Electron2D.Core.UI
         LeftClick,
         LeftClickDown,
         LeftClickUp,
+        MiddleClick,
+        MiddleClickDown,
+        MiddleClickUp,
         RightClick,
         RightClickDown,
         RightClickUp,

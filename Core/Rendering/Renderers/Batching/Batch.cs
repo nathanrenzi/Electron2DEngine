@@ -55,8 +55,8 @@ namespace Electron2D.Core.Rendering
 
         private unsafe void OnUpdate()
         {
-            CreateNewBufferData();
-            return;
+            //CreateNewBufferData();
+            //return;
 
             // If a renderer has been added or removed, new buffers will be created since buffers cannot be resized
             if (isDirty)
@@ -67,38 +67,35 @@ namespace Electron2D.Core.Rendering
                 {
                     renderers[i].isDirty = false;
                 }
+
+                return;
             }
 
             // Looping through every renderer to find any updated data
             bool foundDirty = false;
             for (int i = 0; i < renderers.Count; i++)
             {
-                if (renderers[i].isDirty)
+                if (renderers[i].isDirty || renderers[i].transform.isDirty)
                 {
-                    bufferUpdates.Add(new BufferUpdateItem(i * layout.GetRawStride(), renderers[i].vertices));
+                    //bufferUpdates.Add(new BufferUpdateItem(i * layout.GetRawStride(), renderers[i].vertices));
                     renderers[i].isDirty = false;
-                    foundDirty = true;
-                }
-
-                if (renderers[i].transform.isDirty)
-                {
-                    bufferUpdates.Add(new BufferUpdateItem(i * layout.GetRawStride(), renderers[i].vertices));
                     renderers[i].transform.UnflagDirty();
                     foundDirty = true;
                 }
             }
 
-            // Only if there was a renderer who's data was updated, update the data
+            // Only if there was a renderer who's data was updated, update the data -- TEMP DISABLED BECAUSE OF ERRORS WITH SUBBING DATA
             if (foundDirty)
             {
-                // Applying the updated data
-                vertexBuffer.Bind();
-                for (int i = 0; i < bufferUpdates.Count; i++)
-                {
-                    BufferUpdateItem item = bufferUpdates[i];
-                    fixed (float* v = &item.data[0])
-                        glBufferSubData(GL_ARRAY_BUFFER, item.offset, item.data.Length * sizeof(float), v);
-                }
+                //// Applying the updated data
+                //vertexBuffer.Bind();
+                //for (int i = 0; i < bufferUpdates.Count; i++)
+                //{
+                //    BufferUpdateItem item = bufferUpdates[i];
+                //    fixed (float* v = &item.data[0])
+                //        glBufferSubData(GL_ARRAY_BUFFER, item.offset, item.data.Length * sizeof(float), v);
+                //}
+                CreateNewBufferData();
             }
         }
 

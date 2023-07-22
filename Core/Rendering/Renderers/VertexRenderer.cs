@@ -52,7 +52,6 @@ namespace Electron2D.Core.Rendering
         /// <param name="_color">The color of the vertex.</param>
         public void AddVertex(Vector2 _position, Color _color)
         {
-            Console.WriteLine($"Added: {_position.X}, {_position.Y} to the temp list.");
             tempVertices.Add(_position.X);
             tempVertices.Add(_position.Y);
             // Must divide the colors by 255 to normalize them
