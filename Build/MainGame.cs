@@ -32,7 +32,7 @@ namespace Electron2D.Build
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boidSpritesheet.png");
             SpritesheetManager.Add(3, 1);
 
-            UiComponent ui = new TestUi();
+            UiComponent ui = new TestUi(Color.Black);
             ui.sizeX = 200;
             ui.sizeY = 100;
             ui.Load();

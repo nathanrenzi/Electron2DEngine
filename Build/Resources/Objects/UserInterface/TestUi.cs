@@ -7,25 +7,33 @@ namespace Electron2D.Build.Resources.Objects
 {
     public class TestUi : UiComponent
     {
-        public TestUi() : base()
+        private Color startColor;
+
+        public TestUi(Color _startColor) : base()
         {
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
+            startColor = _startColor;
+        }
+
+        private void SetColor(Color _color)
+        {
+            rendererReference.SetVertexValueAll((int)VertexAttribute.ColorR, _color.R / 255f);
+            rendererReference.SetVertexValueAll((int)VertexAttribute.ColorG, _color.G / 255f);
+            rendererReference.SetVertexValueAll((int)VertexAttribute.ColorB, _color.B / 255f);
+            rendererReference.SetVertexValueAll((int)VertexAttribute.ColorA, _color.A / 255f);
         }
 
         protected override void OnUiEvent(UiEvent _event)
         {
+            if(_event == UiEvent.Load) SetColor(startColor);
             if(_event == UiEvent.LeftClickDown)
             {
                 sizeX = 210;
                 sizeY = 110;
                 GenerateMesh();
 
-                Color col = Color.Sienna;
-                rendererReference.SetVertexValueAll((int)VertexAttribute.ColorR, col.R / 255f);
-                rendererReference.SetVertexValueAll((int)VertexAttribute.ColorG, col.G / 255f);
-                rendererReference.SetVertexValueAll((int)VertexAttribute.ColorB, col.B / 255f);
-                rendererReference.SetVertexValueAll((int)VertexAttribute.ColorA, col.A / 255f);
+                SetColor(Color.Sienna);
             }
             else if(_event == UiEvent.LeftClickUp)
             {
@@ -33,33 +41,21 @@ namespace Electron2D.Build.Resources.Objects
                 sizeY = 100;
                 GenerateMesh();
 
-                Color col = thisFrameData.isHovered ? Color.Wheat : Color.LightSkyBlue;
-                rendererReference.SetVertexValueAll((int)VertexAttribute.ColorR, col.R / 255f);
-                rendererReference.SetVertexValueAll((int)VertexAttribute.ColorG, col.G / 255f);
-                rendererReference.SetVertexValueAll((int)VertexAttribute.ColorB, col.B / 255f);
-                rendererReference.SetVertexValueAll((int)VertexAttribute.ColorA, col.A / 255f);
+                SetColor(thisFrameData.isHovered ? Color.Wheat : Color.LightSkyBlue);
             }
 
             if(_event == UiEvent.HoverStart)
             {
                 if (!thisFrameData.isLeftClicked)
                 {
-                    Color col = Color.Wheat;
-                    rendererReference.SetVertexValueAll((int)VertexAttribute.ColorR, col.R / 255f);
-                    rendererReference.SetVertexValueAll((int)VertexAttribute.ColorG, col.G / 255f);
-                    rendererReference.SetVertexValueAll((int)VertexAttribute.ColorB, col.B / 255f);
-                    rendererReference.SetVertexValueAll((int)VertexAttribute.ColorA, col.A / 255f);
+                    SetColor(Color.Wheat);
                 }
             }
             else if(_event == UiEvent.HoverEnd)
             {
                 if (!thisFrameData.isLeftClicked)
                 {
-                    Color col = Color.LightSkyBlue;
-                    rendererReference.SetVertexValueAll((int)VertexAttribute.ColorR, col.R / 255f);
-                    rendererReference.SetVertexValueAll((int)VertexAttribute.ColorG, col.G / 255f);
-                    rendererReference.SetVertexValueAll((int)VertexAttribute.ColorB, col.B / 255f);
-                    rendererReference.SetVertexValueAll((int)VertexAttribute.ColorA, col.A / 255f);
+                    SetColor(Color.LightSkyBlue);
                 }
             }
         }

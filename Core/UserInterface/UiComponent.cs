@@ -80,8 +80,12 @@ namespace Electron2D.Core.UI
         {
             GenerateMesh();
 
-            if(isLoaded == false) rendererReference.Load();
-            isLoaded = true;
+            if (isLoaded == false)
+            {
+                rendererReference.Load();
+                InvokeUiAction(UiEvent.Load);
+                isLoaded = true;
+            }
         }
 
         protected virtual void GenerateMesh()
@@ -157,6 +161,7 @@ namespace Electron2D.Core.UI
 
     public enum UiEvent
     {
+        Load,
         Click,
         ClickDown,
         ClickUp,
