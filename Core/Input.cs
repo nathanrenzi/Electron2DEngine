@@ -130,7 +130,7 @@ namespace Electron2D.Core
             return -1;
         }
 
-        public static Vector2 GetMouseScreenPosition(bool offsetToMiddle = false)
+        public static Vector2 GetMouseScreenPositionRaw(bool offsetToMiddle = false)
         {
             double x;
             double y;
@@ -140,20 +140,27 @@ namespace Electron2D.Core
             return new Vector2((float)x - offset.X, DisplayManager.Instance.windowSize.Y - (float)y - offset.Y);
         }
 
+        public static Vector2 GetMouseScreenPositionScaled(bool offsetToMiddle = false) => GetMouseScreenPositionRaw(offsetToMiddle) / Game.WINDOW_SCALE;
+
         public static Vector2 GetMouseWorldPosition()
         {
-            Vector2 worldPosition = GetMouseScreenPosition();
+            Vector2 worldPosition = GetMouseScreenPositionRaw();
 
             // Centering the position
-            worldPosition.Y -= DisplayManager.Instance.windowSize.Y / 2;
-            worldPosition.X -= DisplayManager.Instance.windowSize.X / 2;
+            worldPosition.Y -= Program.game.currentWindowHeight / 2;
+            worldPosition.X -= Program.game.currentWindowWidth / 2;
+            // ----------------------
+
+            // Scaling the cursor
+            worldPosition /= Game.WINDOW_SCALE;
             // ----------------------
 
             // Offsetting and scaling the position based on the current camera
             worldPosition /= Camera2D.main.zoom;
-            worldPosition += Camera2D.main.position;
+            worldPosition += (Camera2D.main.position / Game.WINDOW_SCALE);
             // ----------------------
 
+            Console.WriteLine(new Vector2(worldPosition.X, worldPosition.Y));
             return new Vector2(worldPosition.X, worldPosition.Y);
         }
     }

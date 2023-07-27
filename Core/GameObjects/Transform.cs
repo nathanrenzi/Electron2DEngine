@@ -9,8 +9,6 @@ namespace Electron2D.Core.GameObjects
 {
     public class Transform
     {
-        public const float REFERENCE_WINDOW_WIDTH = 1920f;
-
         public Vector2 position;
         public Vector2 scale = new Vector2(100, 100);
         public Vector2 pivotPoint;
@@ -57,15 +55,15 @@ namespace Electron2D.Core.GameObjects
         public Matrix4x4 GetPositionMatrix()
         {
             // Calculations below ensure that the position will scale with the screen width
-            //return Matrix4x4.CreateTranslation(position.X * (Program.game.currentWindowWidth / REFERENCE_WINDOW_WIDTH), position.Y * (Program.game.currentWindowWidth / REFERENCE_WINDOW_WIDTH), 0);
-            return Matrix4x4.CreateTranslation(position.X, position.Y, 0);
+            return Matrix4x4.CreateTranslation(position.X * Game.WINDOW_SCALE, position.Y * Game.WINDOW_SCALE, 0);
+            //return Matrix4x4.CreateTranslation(position.X, position.Y, 0);
         }
 
         public Matrix4x4 GetScaleMatrix()
         {
             // Calculations below ensure that the scale will remain constant between screen sizes
-            //return Matrix4x4.CreateScale(Program.game.currentWindowWidth * (scale.X / 100f), Program.game.currentWindowWidth * (scale.Y / 100f), 1);
-            return Matrix4x4.CreateScale(scale.X, scale.Y, 1);
+            return Matrix4x4.CreateScale(scale.X * Game.WINDOW_SCALE, scale.Y * Game.WINDOW_SCALE, 1);
+            //return Matrix4x4.CreateScale(scale.X, scale.Y, 1);
         }
 
         public Matrix4x4 GetRotationMatrix()

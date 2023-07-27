@@ -38,7 +38,7 @@ namespace Electron2D.Core.UI
         public void CheckForInput()
         {
             Vector2 mousePos = Input.GetMouseWorldPosition();
-            Vector2 mousePosScreen = Input.GetMouseScreenPosition(true);
+            Vector2 mousePosScreen = Input.GetMouseScreenPositionScaled(true);
             for (int i = 0; i < activeComponents.Count; i++)
             {
                 UiComponent component = activeComponents[i];

@@ -29,14 +29,13 @@ namespace Electron2D.Build
         protected override void LoadContent()
         {
             // First spritesheet
-            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/boidSpritesheet.png");
-            SpritesheetManager.Add(3, 1);
+            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/basicSpritesheet1.png");
+            SpritesheetManager.Add(2, 1);
 
             UiComponent ui = new TestUi(Color.Black);
             ui.sizeX = 200;
             ui.sizeY = 100;
             ui.Load();
-            ui.constraints.ApplyConstraints();
         }
 
         protected override void Update()
@@ -57,7 +56,7 @@ namespace Electron2D.Build
             GameObject obj = new GameObject(-1, false);
             obj.renderer = new BatchedSpriteRenderer(obj.transform);
             obj.transform.position = _position;
-            obj.SetSprite(0, 0, 0);
+            obj.SetSprite(0, 1, 0);
 
             VerletBody body = new VerletBody(obj.transform);
         }

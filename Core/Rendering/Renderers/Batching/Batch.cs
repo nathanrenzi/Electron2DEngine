@@ -130,8 +130,7 @@ namespace Electron2D.Core.Rendering
                     // -------------
 
                     // Position
-                    Vector2 currentPos = new Vector2(renderers[i].transform.position.X * (Program.game.currentWindowWidth / Transform.REFERENCE_WINDOW_WIDTH),
-                        renderers[i].transform.position.Y * (Program.game.currentWindowWidth / Transform.REFERENCE_WINDOW_WIDTH));
+                    Vector2 currentPos = new Vector2(renderers[i].transform.position.X * Game.WINDOW_SCALE, renderers[i].transform.position.Y * Game.WINDOW_SCALE);
                     localPos += currentPos;
                     // -------------
 

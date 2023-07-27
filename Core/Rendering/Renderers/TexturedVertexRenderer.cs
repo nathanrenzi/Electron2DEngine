@@ -1,4 +1,5 @@
 ﻿using Electron2D.Core.GameObjects;
+using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 using System.Numerics;
@@ -25,6 +26,14 @@ namespace Electron2D.Core.Rendering
         private Transform transform;
         private Shader shader;
 
+        //private readonly float[] defaultUV =
+        //{
+        //    1.0f, 1.0f,
+        //    1.0f, 0.0f,
+        //    0.0f, 0.0f,
+        //    0.0f, 1.0f,
+        //};
+
         /// <summary>
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
         /// </summary>
@@ -32,10 +41,17 @@ namespace Electron2D.Core.Rendering
         public bool isDirty { get; set; } = false;
         public bool isLoaded { get; set; } = false;
 
-        public TexturedVertexRenderer(Transform _transform, Shader _shader)
+        public TexturedVertexRenderer(Transform _transform, Shader _shader = null)
         {
             transform = _transform;
-            shader = _shader;
+            if (_shader == null)
+            {
+                shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"));
+            }
+            else
+            {
+                shader = _shader;
+            }
         }
 
         public Shader GetShader() => shader;
@@ -54,12 +70,16 @@ namespace Electron2D.Core.Rendering
         /// </summary>
         /// <param name="_position">The position of the vertex, from 1,1 to -1,-1.</param>
         /// <param name="_color">The color of the vertex.</param>
-        public void AddVertex(Vector2 _position, Vector2 _uv, int _textureIndex)
+        public void AddVertex(Vector2 _position, Vector2 _uv, Color _color, int _textureIndex)
         {
             tempVertices.Add(_position.X);
             tempVertices.Add(_position.Y);
             tempVertices.Add(_uv.X);
             tempVertices.Add(_uv.Y);
+            tempVertices.Add(_color.R);
+            tempVertices.Add(_color.G);
+            tempVertices.Add(_color.B);
+            tempVertices.Add(_color.A);
             tempVertices.Add(_textureIndex);
         }
 
@@ -105,6 +125,7 @@ namespace Electron2D.Core.Rendering
             layout = new BufferLayout();
             layout.Add<float>(2); // Position
             layout.Add<float>(2); // UV
+            layout.Add<float>(4); // Color
             layout.Add<float>(1); // Texture Index
 
             vertexArray.AddBuffer(vertexBuffer, layout);
@@ -142,7 +163,34 @@ namespace Electron2D.Core.Rendering
             return vertices[(_vertex * layout.GetRawStride()) + _type];
         }
 
-        public void SetSprite(int _spritesheetIndex, int _col, int _row) => Console.WriteLine("Trying to set sprite with a vertex renderer.");
+        //public void SetSprite(int _spritesheetIndex, int _col, int _row)
+        //{
+        //    int loops = vertices.Length / layout.GetRawStride();
+        //    Vector2 newUV;
+        //    for (int i = 0; i < loops; i++)
+        //    {
+        //        // Getting the new UV from the spritesheet
+        //        newUV = SpritesheetManager.GetVertexUV(_spritesheetIndex, _col, _row, GetDefaultUV(i));
+
+        //        // Setting the new UV
+        //        vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvX] = newUV.X;
+        //        vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvY] = newUV.Y;
+        //    }
+
+        //    // Setting the texture index
+        //    SetVertexValueAll((int)SpriteVertexAttribute.TextureIndex, _spritesheetIndex);
+        //    isDirty = true;
+        //}
+
+        /// <summary>
+        /// Returns the default texture UV associated with the vertex inputted.
+        /// </summary>
+        /// <param name="_vertex">The vertex to get the UV of.</param>
+        /// <returns></returns>
+        //public Vector2 GetDefaultUV(int _vertex = 0)
+        //{
+        //    return new Vector2(defaultUV[_vertex * 2], defaultUV[(_vertex * 2) + 1]);
+        //}
 
         public unsafe void Render()
         {
@@ -166,6 +214,11 @@ namespace Electron2D.Core.Rendering
 
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
+
+        public void SetSprite(int _spritesheetIndex, int _col, int _row)
+        {
+            Console.WriteLine("Trying to set sprite on a textured vertex renderer. This cannot be done.");
+        }
     }
 
     /// <summary>
@@ -177,6 +230,10 @@ namespace Electron2D.Core.Rendering
         PositionY = 1,
         UvX = 2,
         UvY = 3,
-        TextureIndex = 4
+        ColorR = 4,
+        ColorG = 5,
+        ColorB = 6,
+        ColorA = 7,
+        TextureIndex = 8
     }
 }

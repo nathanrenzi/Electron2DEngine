@@ -12,6 +12,7 @@
     <None Remove="Build\Resources\Audio\SFX\testsfx.mp3" />
     <None Remove="Build\Resources\Shaders\DefaultTexture.glsl" />
     <None Remove="Build\Resources\Shaders\DefaultVertex.glsl" />
+    <None Remove="Build\Resources\Textures\basicSpritesheet1.png" />
     <None Remove="Build\Resources\Textures\boid1.png" />
     <None Remove="Build\Resources\Textures\boid2.png" />
     <None Remove="Build\Resources\Textures\boidSpritesheet.png" />
@@ -22,6 +23,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\basicSpritesheet1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultBatchTexture.glsl">

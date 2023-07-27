@@ -18,10 +18,10 @@ namespace Electron2D.Build.Resources.Objects
 
         private void SetColor(Color _color)
         {
-            rendererReference.SetVertexValueAll((int)VertexAttribute.ColorR, _color.R / 255f);
-            rendererReference.SetVertexValueAll((int)VertexAttribute.ColorG, _color.G / 255f);
-            rendererReference.SetVertexValueAll((int)VertexAttribute.ColorB, _color.B / 255f);
-            rendererReference.SetVertexValueAll((int)VertexAttribute.ColorA, _color.A / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorR, _color.R / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorG, _color.G / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorB, _color.B / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorA, _color.A / 255f);
         }
 
         protected override void OnUiEvent(UiEvent _event)

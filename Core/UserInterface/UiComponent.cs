@@ -4,6 +4,7 @@ using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 using Electron2D.Core.UserInterface;
+using Electron2D.Core.Management.Textures;
 
 namespace Electron2D.Core.UI
 {
@@ -16,7 +17,7 @@ namespace Electron2D.Core.UI
         public float sizeY;
         public Vector2 anchor;
         public IRenderer renderer;
-        public VertexRenderer rendererReference { get; private set; }
+        public TexturedVertexRenderer rendererReference { get; private set; }
         public int uiRenderLayer { get; private set; }
         public List<UiListener> listeners { get; private set; } = new List<UiListener>();
 
@@ -67,7 +68,7 @@ namespace Electron2D.Core.UI
             else
             {
                 // Must implement seperate UI Shader and Renderer, ex. for rounded corners
-                rendererReference = new VertexRenderer(transform, new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultUserInterface.glsl")));
+                rendererReference = new TexturedVertexRenderer(transform);
                 renderer = rendererReference;
                 rendererReference.useUnscaledProjectionMatrix = true;
             }
@@ -79,6 +80,7 @@ namespace Electron2D.Core.UI
         public void Load()
         {
             GenerateMesh();
+            ApplyConstraints();
 
             if (isLoaded == false)
             {
@@ -91,15 +93,21 @@ namespace Electron2D.Core.UI
         protected virtual void GenerateMesh()
         {
             rendererReference.ClearTempLists();
-            rendererReference.AddVertex(new Vector2(LeftXBound, BottomYBound), Color.White);  // b-left
-            rendererReference.AddVertex(new Vector2(LeftXBound, TopYBound), Color.White);     // t-left
-            rendererReference.AddVertex(new Vector2(RightXBound, TopYBound), Color.White);    // t-right
-            rendererReference.AddVertex(new Vector2(RightXBound, BottomYBound), Color.White); // b-right
+
+            rendererReference.AddVertex(new Vector2(LeftXBound, BottomYBound), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 0)), Color.White, 0);  // b-left
+            rendererReference.AddVertex(new Vector2(LeftXBound, TopYBound), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 1)), Color.White, 0);     // t-left
+            rendererReference.AddVertex(new Vector2(RightXBound, TopYBound), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 1)), Color.White, 0);    // t-right
+            rendererReference.AddVertex(new Vector2(RightXBound, BottomYBound), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 0)), Color.White, 0); // b-right
 
             rendererReference.AddTriangle(3, 1, 0, 0);
             rendererReference.AddTriangle(3, 2, 1, 0);
 
             rendererReference.FinalizeVertices();
+        }
+
+        protected virtual void ApplyConstraints()
+        {
+            constraints.ApplyConstraints();
         }
 
         ~UiComponent()

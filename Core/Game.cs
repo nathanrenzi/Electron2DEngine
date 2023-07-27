@@ -16,6 +16,8 @@ namespace Electron2D.Core
         public static event Action onStartEvent;
         public static event Action onUpdateEvent;
         public static event Action onLateUpdateEvent;
+        public static readonly float REFERENCE_WINDOW_WIDTH = 1920f;
+        public static float WINDOW_SCALE { get { return Program.game.currentWindowWidth / REFERENCE_WINDOW_WIDTH; } }
 
         public int currentWindowWidth { get; protected set; }
         public int currentWindowHeight { get; protected set; }
