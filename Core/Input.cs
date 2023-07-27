@@ -160,7 +160,6 @@ namespace Electron2D.Core
             worldPosition += (Camera2D.main.position / Game.WINDOW_SCALE);
             // ----------------------
 
-            Console.WriteLine(new Vector2(worldPosition.X, worldPosition.Y));
             return new Vector2(worldPosition.X, worldPosition.Y);
         }
     }

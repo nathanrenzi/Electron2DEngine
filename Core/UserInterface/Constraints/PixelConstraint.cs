@@ -19,6 +19,7 @@ namespace Electron2D.Core.UserInterface
             {
                 case UiConstraintSide.Left:
                     _component.transform.position = new Vector2(LeftWindowBound + pixelDistance + MathF.Abs(_component.LeftXBound), _component.transform.position.Y);
+                    Console.WriteLine(_component.transform.position);
                     break;
                 case UiConstraintSide.Right:
                     _component.transform.position = new Vector2(RightWindowBound - pixelDistance - MathF.Abs(_component.RightXBound), _component.transform.position.Y);
