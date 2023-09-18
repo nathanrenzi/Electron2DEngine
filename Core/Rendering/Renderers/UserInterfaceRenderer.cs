@@ -8,9 +8,9 @@ using static Electron2D.OpenGL.GL;
 namespace Electron2D.Core.Rendering
 {
     /// <summary>
-    /// A renderer that specializes in custom shapes, with a tiling texture.
+    /// A renderer that specializes in rendering UI elements with a 9-sliced texture setup (NOT IMPLEMENTED, ONLY FLAT COLORS WORK).
     /// </summary>
-    public class TexturedVertexRenderer : IRenderer
+    public class UserInterfaceRenderer : IRenderer
     {
         private float[] vertices;
         private uint[] indices;
@@ -41,7 +41,7 @@ namespace Electron2D.Core.Rendering
         public bool isDirty { get; set; } = false;
         public bool isLoaded { get; set; } = false;
 
-        public TexturedVertexRenderer(Transform _transform, Shader _shader = null)
+        public UserInterfaceRenderer(Transform _transform, Shader _shader = null)
         {
             transform = _transform;
             if (_shader == null)

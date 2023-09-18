@@ -9,19 +9,12 @@ namespace Electron2D.Build.Resources.Objects
     {
         private Color startColor;
 
-        public TestUi(Color _startColor) : base()
+        public TestUi(Color _startColor, int _sizeX, int _sizeY) : base(0, _sizeX, _sizeY)
         {
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
             startColor = _startColor;
-        }
-
-        private void SetColor(Color _color)
-        {
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorR, _color.R / 255f);
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorG, _color.G / 255f);
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorB, _color.B / 255f);
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorA, _color.A / 255f);
+            SetColor(_startColor);
         }
 
         protected override void OnUiEvent(UiEvent _event)

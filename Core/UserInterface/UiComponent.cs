@@ -17,7 +17,7 @@ namespace Electron2D.Core.UI
         public float sizeY;
         public Vector2 anchor;
         public IRenderer renderer;
-        public TexturedVertexRenderer rendererReference { get; private set; }
+        public UserInterfaceRenderer rendererReference { get; private set; }
         public int uiRenderLayer { get; private set; }
         public List<UiListener> listeners { get; private set; } = new List<UiListener>();
 
@@ -56,7 +56,7 @@ namespace Electron2D.Core.UI
             }
         }
 
-        public UiComponent(int _uiRenderLayer = 0, IRenderer _customRenderer = null)
+        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, IRenderer _customRenderer = null)
         {
             constraints = new UiConstraints(this);
             uiRenderLayer = _uiRenderLayer;
@@ -67,17 +67,22 @@ namespace Electron2D.Core.UI
             }
             else
             {
-                // Must implement seperate UI Shader and Renderer, ex. for rounded corners
-                rendererReference = new TexturedVertexRenderer(transform);
+                // Must implement seperate UI Shader for things such as rounded corners, although this could be done with a 9-sliced texture
+                rendererReference = new UserInterfaceRenderer(transform);
                 renderer = rendererReference;
                 rendererReference.useUnscaledProjectionMatrix = true;
             }
+
+            sizeX = _sizeX;
+            sizeY = _sizeY;
+            if (_initialize) Initialize();
+            SetColor(Color.White); // Setting the default color
 
             RenderLayerManager.OrderRenderable(this);
             UiMaster.display.RegisterUiComponent(this);
         }
 
-        public void Load()
+        public void Initialize()
         {
             GenerateMesh();
             ApplyConstraints();
@@ -88,6 +93,14 @@ namespace Electron2D.Core.UI
                 InvokeUiAction(UiEvent.Load);
                 isLoaded = true;
             }
+        }
+
+        protected void SetColor(Color _color)
+        {
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorR, _color.R / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorG, _color.G / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorB, _color.B / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorA, _color.A / 255f);
         }
 
         protected virtual void GenerateMesh()
@@ -156,7 +169,7 @@ namespace Electron2D.Core.UI
 
         public virtual void Render()
         {
-            renderer.Render();
+            if(visible) renderer.Render();
         }
 
         public int GetRenderLayer() => uiRenderLayer + (int)RenderLayer.Interface;

@@ -26,16 +26,13 @@ namespace Electron2D.Build
             Console.WriteLine("Game Started");
         }
 
-        protected override void LoadContent()
+        protected override void Start()
         {
             // First spritesheet
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/basicSpritesheet1.png");
             SpritesheetManager.Add(2, 1);
 
-            UiComponent ui = new TestUi(Color.Black);
-            ui.sizeX = 200;
-            ui.sizeY = 100;
-            ui.Load();
+            UiComponent ui = new TestUi(Color.Black, 200, 100);
         }
 
         protected override void Update()

@@ -46,7 +46,7 @@ namespace Electron2D.Core
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             // -----------
 
-            LoadContent();
+            Start();
             onStartEvent?.Invoke();
             GameObjectManager.StartGameObjects();
             UiMaster.display.Initialize();
@@ -84,7 +84,6 @@ namespace Electron2D.Core
 
                 Render();
                 RenderLayerManager.RenderAllLayers();
-                //GameObjectManager.RenderGameObjects();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.window);
                 PerformanceTimings.renderMilliseconds = (Glfw.Time - rendST) * 1000;
@@ -95,10 +94,9 @@ namespace Electron2D.Core
             DisplayManager.CloseWindow();
         }
 
-        protected abstract void Initialize();
-        protected abstract void LoadContent();
-
-        protected abstract void Update();
-        protected abstract void Render();
+        protected abstract void Initialize();   // This is ran when the Game is first initialized
+        protected abstract void Start();        // This is ran when the Game is ready to load content
+        protected abstract void Update();       // This is ran every frame before Render()
+        protected abstract void Render();       // This is ran every frame after Update()
     }
 }
