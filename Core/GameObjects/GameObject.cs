@@ -45,7 +45,7 @@ namespace Electron2D.Core.GameObjects
             queuedSpriteCol = _col;
             queuedSpriteRow = _row;
 
-            if (renderer.isLoaded)
+            if (renderer.IsLoaded)
             {
                 renderer.SetSprite(_spritesheetIndex, _col, _row);
                 hasFinishedSetSprite = true;

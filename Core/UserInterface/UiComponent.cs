@@ -56,8 +56,15 @@ namespace Electron2D.Core.UI
             }
         }
 
-        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, IRenderer _customRenderer = null)
+        public UiComponent(float[] _vertices, uint[] _indices, float[] _defaultUV,
+            int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, IRenderer _customRenderer = null)
         {
+            if(_vertices == null || _indices == null || _defaultUV == null)
+            {
+                Console.WriteLine("Error: Not enough vertex data passed to UiComponent. Cannot build mesh.");
+                return;
+            }
+
             constraints = new UiConstraints(this);
             uiRenderLayer = _uiRenderLayer;
 
@@ -68,9 +75,9 @@ namespace Electron2D.Core.UI
             else
             {
                 // Must implement seperate UI Shader for things such as rounded corners, although this could be done with a 9-sliced texture
-                rendererReference = new UserInterfaceRenderer(transform);
+                rendererReference = new UserInterfaceRenderer(transform, _vertices, _indices, _defaultUV);
                 renderer = rendererReference;
-                rendererReference.useUnscaledProjectionMatrix = true;
+                rendererReference.UseUnscaledProjectionMatrix = true;
             }
 
             sizeX = _sizeX;
@@ -84,7 +91,6 @@ namespace Electron2D.Core.UI
 
         public void Initialize()
         {
-            GenerateMesh();
             ApplyConstraints();
 
             if (isLoaded == false)
@@ -103,20 +109,21 @@ namespace Electron2D.Core.UI
             rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorA, _color.A / 255f);
         }
 
-        protected virtual void GenerateMesh()
-        {
-            rendererReference.ClearTempLists();
+        // No longer needed since vertex / UV / index arrays are preset into each UI component
+        //protected virtual void GenerateMesh()
+        //{
+        //    rendererReference.ClearTempLists();
 
-            rendererReference.AddVertex(new Vector2(LeftXBound * 2, BottomYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 0)), Color.White, 0);  // b-left
-            rendererReference.AddVertex(new Vector2(LeftXBound * 2, TopYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 1)), Color.White, 0);     // t-left
-            rendererReference.AddVertex(new Vector2(RightXBound * 2, TopYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 1)), Color.White, 0);    // t-right
-            rendererReference.AddVertex(new Vector2(RightXBound * 2, BottomYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 0)), Color.White, 0); // b-right
+        //    rendererReference.AddVertex(new Vector2(LeftXBound * 2, BottomYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 0)), Color.White, 0);  // b-left
+        //    rendererReference.AddVertex(new Vector2(LeftXBound * 2, TopYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 1)), Color.White, 0);     // t-left
+        //    rendererReference.AddVertex(new Vector2(RightXBound * 2, TopYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 1)), Color.White, 0);    // t-right
+        //    rendererReference.AddVertex(new Vector2(RightXBound * 2, BottomYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 0)), Color.White, 0); // b-right
 
-            rendererReference.AddTriangle(3, 1, 0, 0);
-            rendererReference.AddTriangle(3, 2, 1, 0);
+        //    rendererReference.AddTriangle(3, 1, 0, 0);
+        //    rendererReference.AddTriangle(3, 2, 1, 0);
 
-            rendererReference.FinalizeVertices();
-        }
+        //    rendererReference.FinalizeVertices();
+        //}
 
         protected virtual void ApplyConstraints()
         {

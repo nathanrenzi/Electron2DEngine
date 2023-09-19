@@ -29,8 +29,8 @@ namespace Electron2D.Core.Rendering
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
         /// </summary>
         public bool useUnscaledProjectionMatrix = false;
-        public bool isDirty { get; set; } = false;
-        public bool isLoaded { get; set; } = false;
+        public bool IsDirty { get; set; } = false;
+        public bool IsLoaded { get; set; } = false;
 
         public VertexRenderer(Transform _transform, Shader _shader)
         {
@@ -87,7 +87,7 @@ namespace Electron2D.Core.Rendering
         {
             vertices = tempVertices.ToArray();
             indices = tempIndices.ToArray();
-            isDirty = true;
+            IsDirty = true;
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Electron2D.Core.Rendering
             shader.Use();
             indexBuffer = new IndexBuffer(indices);
 
-            isLoaded = true;
+            IsLoaded = true;
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Electron2D.Core.Rendering
                 vertices[(i * layout.GetRawStride()) + _type] = _value;
             }
 
-            isDirty = true;
+            IsDirty = true;
         }
 
         /// <summary>
@@ -147,15 +147,15 @@ namespace Electron2D.Core.Rendering
 
         public unsafe void Render()
         {
-            if (!isLoaded || shader.compiled == false) return;
+            if (!IsLoaded || shader.compiled == false) return;
 
-            if (isDirty)
+            if (IsDirty)
             {
                 // Setting a new vertex buffer if the vertices have been updated
                 indexBuffer = new IndexBuffer(indices);
                 vertexBuffer = new VertexBuffer(vertices);
                 vertexArray.AddBuffer(vertexBuffer, layout);
-                isDirty = false;
+                IsDirty = false;
             }
 
             shader.Use();

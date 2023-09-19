@@ -14,9 +14,7 @@ namespace Electron2D.Core.Rendering
     {
         private float[] vertices;
         private uint[] indices;
-
-        private List<float> tempVertices = new List<float>();
-        private List<uint> tempIndices = new List<uint>();
+        private float[] defaultUV;
 
         private VertexBuffer vertexBuffer;
         private VertexArray vertexArray;
@@ -26,24 +24,20 @@ namespace Electron2D.Core.Rendering
         private Transform transform;
         private Shader shader;
 
-        //private readonly float[] defaultUV =
-        //{
-        //    1.0f, 1.0f,
-        //    1.0f, 0.0f,
-        //    0.0f, 0.0f,
-        //    0.0f, 1.0f,
-        //};
-
         /// <summary>
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
         /// </summary>
-        public bool useUnscaledProjectionMatrix = false;
-        public bool isDirty { get; set; } = false;
-        public bool isLoaded { get; set; } = false;
+        public bool UseUnscaledProjectionMatrix = true;
+        public bool IsDirty { get; set; } = false;
+        public bool IsLoaded { get; set; } = false;
 
-        public UserInterfaceRenderer(Transform _transform, Shader _shader = null)
+        public UserInterfaceRenderer(Transform _transform, float[] _vertices, uint[] _indices, float[] _defaultUV, Shader _shader = null)
         {
             transform = _transform;
+            vertices = _vertices;
+            indices = _indices;
+            defaultUV = _defaultUV;
+
             if (_shader == null)
             {
                 shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"));
@@ -55,58 +49,6 @@ namespace Electron2D.Core.Rendering
         }
 
         public Shader GetShader() => shader;
-
-        /// <summary>
-        /// Clears the temp vertices and indices lists.
-        /// </summary>
-        public void ClearTempLists()
-        {
-            tempVertices.Clear();
-            tempIndices.Clear();
-        }
-
-        /// <summary>
-        /// Adds a vertex to the temp vertex list, which will be used when FinalizeVertices() is called.
-        /// </summary>
-        /// <param name="_position">The position of the vertex, from 1,1 to -1,-1.</param>
-        /// <param name="_color">The color of the vertex.</param>
-        public void AddVertex(Vector2 _position, Vector2 _uv, Color _color, int _textureIndex)
-        {
-            tempVertices.Add(_position.X);
-            tempVertices.Add(_position.Y);
-            tempVertices.Add(_uv.X);
-            tempVertices.Add(_uv.Y);
-            tempVertices.Add(_color.R);
-            tempVertices.Add(_color.G);
-            tempVertices.Add(_color.B);
-            tempVertices.Add(_color.A);
-            tempVertices.Add(_textureIndex);
-        }
-
-        /// <summary>
-        /// Adds a triangle to the temp indices list, which will be used when FinalizeVertices() is called.
-        /// </summary>
-        /// <param name="_vert1">The first vertex in the triangle.</param>
-        /// <param name="_vert2">The second vertex in the triangle.</param>
-        /// <param name="_vert3">The third vertex in the triangle.</param>
-        /// <param name="_offset">The offset which is added to the previous indices to specify which vertices are being referenced.
-        /// EX: 0, 1, 2 with an offset of 10 would be 10, 11, 12 in the vertex array.</param>
-        public void AddTriangle(uint _vert1, uint _vert2, uint _vert3, uint _offset)
-        {
-            tempIndices.Add(_vert1 + _offset);
-            tempIndices.Add(_vert2 + _offset);
-            tempIndices.Add(_vert3 + _offset);
-        }
-
-        /// <summary>
-        /// Sends the current temp vertices and indices to their respective arrays, ready for loading.
-        /// </summary>
-        public void FinalizeVertices()
-        {
-            vertices = tempVertices.ToArray();
-            indices = tempIndices.ToArray();
-            isDirty = true;
-        }
 
         /// <summary>
         /// Loads all resources necessary for the renderer, such as the shader and buffers.
@@ -132,7 +74,7 @@ namespace Electron2D.Core.Rendering
             shader.Use();
             indexBuffer = new IndexBuffer(indices);
 
-            isLoaded = true;
+            IsLoaded = true;
         }
 
         /// <summary>
@@ -150,7 +92,7 @@ namespace Electron2D.Core.Rendering
                 vertices[(i * layout.GetRawStride()) + _type] = _value;
             }
 
-            isDirty = true;
+            IsDirty = true;
         }
 
         /// <summary>
@@ -163,46 +105,46 @@ namespace Electron2D.Core.Rendering
             return vertices[(_vertex * layout.GetRawStride()) + _type];
         }
 
-        //public void SetSprite(int _spritesheetIndex, int _col, int _row)
-        //{
-        //    int loops = vertices.Length / layout.GetRawStride();
-        //    Vector2 newUV;
-        //    for (int i = 0; i < loops; i++)
-        //    {
-        //        // Getting the new UV from the spritesheet
-        //        newUV = SpritesheetManager.GetVertexUV(_spritesheetIndex, _col, _row, GetDefaultUV(i));
+        public void SetSprite(int _spritesheetIndex, int _col, int _row)
+        {
+            int loops = vertices.Length / layout.GetRawStride();
+            Vector2 newUV;
+            for (int i = 0; i < loops; i++)
+            {
+                // Getting the new UV from the spritesheet
+                newUV = SpritesheetManager.GetVertexUV(_spritesheetIndex, _col, _row, GetDefaultUV(i));
 
-        //        // Setting the new UV
-        //        vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvX] = newUV.X;
-        //        vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvY] = newUV.Y;
-        //    }
+                // Setting the new UV
+                vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvX] = newUV.X;
+                vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvY] = newUV.Y;
+            }
 
-        //    // Setting the texture index
-        //    SetVertexValueAll((int)SpriteVertexAttribute.TextureIndex, _spritesheetIndex);
-        //    isDirty = true;
-        //}
+            // Setting the texture index
+            SetVertexValueAll((int)SpriteVertexAttribute.TextureIndex, _spritesheetIndex);
+            IsDirty = true;
+        }
 
         /// <summary>
         /// Returns the default texture UV associated with the vertex inputted.
         /// </summary>
         /// <param name="_vertex">The vertex to get the UV of.</param>
         /// <returns></returns>
-        //public Vector2 GetDefaultUV(int _vertex = 0)
-        //{
-        //    return new Vector2(defaultUV[_vertex * 2], defaultUV[(_vertex * 2) + 1]);
-        //}
+        public Vector2 GetDefaultUV(int _vertex = 0)
+        {
+            return new Vector2(defaultUV[_vertex * 2], defaultUV[(_vertex * 2) + 1]);
+        }
 
         public unsafe void Render()
         {
-            if (!isLoaded || shader.compiled == false) return;
+            if (!IsLoaded || shader.compiled == false) return;
 
-            if (isDirty)
+            if (IsDirty)
             {
                 // Setting a new vertex buffer if the vertices have been updated
                 indexBuffer = new IndexBuffer(indices);
                 vertexBuffer = new VertexBuffer(vertices);
                 vertexArray.AddBuffer(vertexBuffer, layout);
-                isDirty = false;
+                IsDirty = false;
             }
 
             shader.Use();
@@ -210,14 +152,9 @@ namespace Electron2D.Core.Rendering
             vertexArray.Bind();
             indexBuffer.Bind();
 
-            shader.SetMatrix4x4("projection", useUnscaledProjectionMatrix ? Camera2D.main.GetUnscaledProjectionMatrix() : Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
+            shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.main.GetUnscaledProjectionMatrix() : Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
 
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
-        }
-
-        public void SetSprite(int _spritesheetIndex, int _col, int _row)
-        {
-            Console.WriteLine("Trying to set sprite on a textured vertex renderer. This cannot be done.");
         }
     }
 

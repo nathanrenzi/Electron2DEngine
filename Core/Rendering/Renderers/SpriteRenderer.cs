@@ -43,8 +43,8 @@ namespace Electron2D.Core.Rendering
         private Transform transform;
         private Shader shader;
 
-        public bool isDirty { get; set; } = false;
-        public bool isLoaded { get; set; } = false;
+        public bool IsDirty { get; set; } = false;
+        public bool IsLoaded { get; set; } = false;
 
         public SpriteRenderer(Transform _transform, Shader _shader)
         {
@@ -82,7 +82,7 @@ namespace Electron2D.Core.Rendering
             int[] samplers = new int[3] { 0, 1, 2 };
             glUniform1iv(textureSampleUniformLocation, samplers.Length, samplers);
 
-            isLoaded = true;
+            IsLoaded = true;
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Electron2D.Core.Rendering
         /// <param name="_value">The value to set.</param>
         public void SetVertexValueAll(int _type, float _value)
         {
-            if(!isLoaded)
+            if(!IsLoaded)
             {
                 Console.WriteLine("Trying to set vertex data when renderer has not been initialized yet.");
                 return;
@@ -107,7 +107,7 @@ namespace Electron2D.Core.Rendering
             }
 
             // The vertex buffer will be updated before rendering
-            isDirty = true;
+            IsDirty = true;
         }
 
         /// <summary>
@@ -152,18 +152,18 @@ namespace Electron2D.Core.Rendering
 
             // Setting the texture index
             SetVertexValueAll((int)SpriteVertexAttribute.TextureIndex, _spritesheetIndex);
-            isDirty = true;
+            IsDirty = true;
         }
 
         public unsafe void Render()
         {
-            if (!isLoaded || shader.compiled == false) return;
+            if (!IsLoaded || shader.compiled == false) return;
 
-            if(isDirty)
+            if(IsDirty)
             {
                 // Updating the vertex buffer
                 vertexBuffer.UpdateData(vertices);
-                isDirty = false;
+                IsDirty = false;
             }
 
             shader.Use();

@@ -17,7 +17,7 @@ namespace Electron2D.Core.Rendering
         /// <summary>
         /// This is true if the vertex data has been updated this frame
         /// </summary>
-        public bool isDirty { get; set; }
-        public bool isLoaded { get; set; }
+        public bool IsDirty { get; set; }
+        public bool IsLoaded { get; set; }
     }
 }
