@@ -37,7 +37,7 @@ namespace Electron2D.Build
 
             Random rand = new Random();
             int environmentScale = 50;
-            int tiles = 20;
+            int tiles = 1;
             for (int x = -tiles; x <= tiles; x++)
             {
                 for (int y = -tiles; y <= tiles; y++)
@@ -65,7 +65,7 @@ namespace Electron2D.Build
         protected override void Update()
         {
             CameraMovement();
-            //Console.WriteLine($"Render Time: {PerformanceTimings.renderMilliseconds} ms  |  GO Time: {PerformanceTimings.gameObjectMilliseconds} ms");
+            Console.WriteLine($"FPS: {PerformanceTimings.framesPerSecond}");
         }
 
         private void SpawnNewPhysicsObj(Vector2 _position)
