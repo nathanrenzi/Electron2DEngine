@@ -145,13 +145,25 @@ namespace Electron2D.Core.Rendering.Shaders
         public void SetMatrix4x4(string _uniformName, Matrix4x4 _mat)
         {
             // Finding where location is in memory
-            int location = glGetUniformLocation(programID, _uniformName);
+            int location;
+            if (!uniforms.TryGetValue(_uniformName, out location))
+            {
+                // If the uniform isnt saved to memory, find and save it
+                location = glGetUniformLocation(programID, _uniformName);
+                uniforms.Add(_uniformName, location);
+            }
             glUniformMatrix4fv(location, 1, false, GetMatrix4x4Values(_mat));
         }
 
         public void SetFloat(string _uniformName, float _value)
         {
-            int location = glGetUniformLocation(programID, _uniformName);
+            int location;
+            if (!uniforms.TryGetValue(_uniformName, out location))
+            {
+                // If the uniform isnt saved to memory, find and save it
+                location = glGetUniformLocation(programID, _uniformName);
+                uniforms.Add(_uniformName, location);
+            }
             glUniform1f(location, _value);
         }
 

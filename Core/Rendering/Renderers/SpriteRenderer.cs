@@ -59,7 +59,7 @@ namespace Electron2D.Core.Rendering
         /// </summary>
         public void Load()
         {
-            if (!shader.CompileShader())
+            if (shader.compiled == false && !shader.CompileShader())
             {
                 Console.WriteLine("Failed to compile shader.");
                 return;

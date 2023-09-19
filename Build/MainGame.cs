@@ -11,11 +11,14 @@ using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Audio;
 using Electron2D.Core.Physics;
 using Electron2D.Core.UI;
+using Electron2D.Core.Misc;
 
 namespace Electron2D.Build
 {
     public class MainGame : Game
     {
+        private List<GameObject> environmentTiles = new List<GameObject>();
+
         public MainGame(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle) : base(_initialWindowWidth, _initialWindowHeight, _initialWindowTitle)
         {
 
@@ -28,24 +31,41 @@ namespace Electron2D.Build
 
         protected override void Start()
         {
-            // First spritesheet
-            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/basicSpritesheet1.png");
-            SpritesheetManager.Add(2, 1);
+            // Environment Spritesheet
+            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
+            SpritesheetManager.Add(13, 11);
 
-            UiComponent ui = new TestUi(Color.Black, 200, 100);
+            Random rand = new Random();
+            int environmentScale = 50;
+            int tiles = 20;
+            for (int x = -tiles; x <= tiles; x++)
+            {
+                for (int y = -tiles; y <= tiles; y++)
+                {
+                    GameObject tile = new GameObject(-1);
+                    //tile.renderer = new BatchedSpriteRenderer(tile.transform);
+                    tile.transform.position = new Vector2(x, y) * environmentScale;
+                    tile.transform.scale = Vector2.One * environmentScale;
+                    environmentTiles.Add(tile);
+
+                    if(rand.Next(2) == 1)
+                    {
+                        tile.SetSprite(0, 2, 9);
+                    }
+                    else
+                    {
+                        tile.SetSprite(0, 3, 9);
+                    }
+                }
+            }
+
+            UiComponent ui = new TestUi(Color.White, 200, 100);
         }
 
         protected override void Update()
         {
             CameraMovement();
-            if(Input.GetMouseButtonDown(MouseButton.Left))
-            {
-                SpawnNewPhysicsObj(Input.GetMouseWorldPosition());
-            }
-            if (Input.GetMouseButton(MouseButton.Right))
-            {
-                SpawnNewPhysicsObj(Input.GetMouseWorldPosition());
-            }
+            //Console.WriteLine($"Render Time: {PerformanceTimings.renderMilliseconds} ms  |  GO Time: {PerformanceTimings.gameObjectMilliseconds} ms");
         }
 
         private void SpawnNewPhysicsObj(Vector2 _position)
@@ -61,7 +81,7 @@ namespace Electron2D.Build
         private void CameraMovement()
         {
             Camera2D.main.zoom += Input.scrollDelta;
-            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 1, 10);
+            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 0.5f, 2);
 
             float moveSpeed = 1000;
             if (Input.GetKey(Keys.W))

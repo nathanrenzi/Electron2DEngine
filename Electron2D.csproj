@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,13 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Build\Resources\Shaders\**" />
+    <EmbeddedResource Remove="Build\Resources\Shaders\**" />
+    <None Remove="Build\Resources\Shaders\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Build\Resources\Audio\SFX\testsfx.mp3" />
-    <None Remove="Build\Resources\Shaders\DefaultTexture.glsl" />
-    <None Remove="Build\Resources\Shaders\DefaultVertex.glsl" />
     <None Remove="Build\Resources\Textures\basicSpritesheet1.png" />
     <None Remove="Build\Resources\Textures\boid1.png" />
     <None Remove="Build\Resources\Textures\boid2.png" />
     <None Remove="Build\Resources\Textures\boidSpritesheet.png" />
+    <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
     <None Remove="Core\Rendering\Shaders\DefaultBatchTexture.glsl" />
     <None Remove="Core\Rendering\Shaders\DefaultUserInterface.glsl" />
@@ -25,7 +30,7 @@
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\basicSpritesheet1.png">
+    <EmbeddedResource Include="Build\Resources\Textures\EnvironmentTiles.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultBatchTexture.glsl">
@@ -37,19 +42,7 @@
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultVertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\boid1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\boid2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultTexture.glsl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\boidSpritesheet.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\mouseBorder.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
@@ -66,10 +59,6 @@
     <None Update="Build\Resources\Textures\test2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Build\Resources\Shaders\" />
   </ItemGroup>
 
 </Project>

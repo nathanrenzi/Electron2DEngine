@@ -5,6 +5,9 @@ using System.Numerics;
 
 namespace Electron2D.Core.Rendering
 {
+    // Create a way to do this without having to create an entire new renderer object
+    // Instead use structs in Batch.cs that contain all of the necessary data
+    // To access data stored on Batch.cs, use an ID number for the struct to access and replace it
     public class BatchedSpriteRenderer : IRenderer
     {
         public readonly float[] vertices =
@@ -39,7 +42,7 @@ namespace Electron2D.Core.Rendering
         public BatchedSpriteRenderer(Transform _transform)
         {
             transform = _transform;
-            GlobalBatches.staticBackgroundBatch.AddRenderer(this);
+            GlobalBatches.StaticBackgroundBatch.AddRenderer(this);
 
             layout = new BufferLayout();
             layout.Add<float>(4);
@@ -130,7 +133,7 @@ namespace Electron2D.Core.Rendering
 
         public Shader GetShader()
         {
-            return GlobalBatches.staticBackgroundBatch.shader;
+            return GlobalBatches.StaticBackgroundBatch.shader;
         }
     }
 

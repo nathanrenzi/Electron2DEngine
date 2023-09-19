@@ -159,7 +159,7 @@ namespace Electron2D.Core.Rendering
             }
             else
             {
-                vertexBuffer.UpdateData(tempVertexBuffer.ToArray());
+                vertexBuffer.UpdateData(tempVertexBuffer.ToArray()); // Very performance intensive
                 indexBuffer.UpdateData(tempIndexBuffer.ToArray());
             }
         }

@@ -107,10 +107,10 @@ namespace Electron2D.Core.UI
         {
             rendererReference.ClearTempLists();
 
-            rendererReference.AddVertex(new Vector2(LeftXBound, BottomYBound), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 0)), Color.White, 0);  // b-left
-            rendererReference.AddVertex(new Vector2(LeftXBound, TopYBound), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 1)), Color.White, 0);     // t-left
-            rendererReference.AddVertex(new Vector2(RightXBound, TopYBound), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 1)), Color.White, 0);    // t-right
-            rendererReference.AddVertex(new Vector2(RightXBound, BottomYBound), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 0)), Color.White, 0); // b-right
+            rendererReference.AddVertex(new Vector2(LeftXBound * 2, BottomYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 0)), Color.White, 0);  // b-left
+            rendererReference.AddVertex(new Vector2(LeftXBound * 2, TopYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 1)), Color.White, 0);     // t-left
+            rendererReference.AddVertex(new Vector2(RightXBound * 2, TopYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 1)), Color.White, 0);    // t-right
+            rendererReference.AddVertex(new Vector2(RightXBound * 2, BottomYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 0)), Color.White, 0); // b-right
 
             rendererReference.AddTriangle(3, 1, 0, 0);
             rendererReference.AddTriangle(3, 2, 1, 0);
