@@ -27,8 +27,7 @@ namespace Electron2D.Core.GameObjects
             }
             else
             {
-                //renderer = new SpriteRenderer(transform, GlobalShaders.DefaultTexture);
-                renderer = new BatchedSpriteRenderer(transform);
+                renderer = new SpriteRenderer(transform, GlobalShaders.DefaultTexture);
             }
 
             RenderLayerManager.OrderRenderable(this);
