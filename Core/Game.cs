@@ -8,6 +8,7 @@ using Electron2D.Core.Physics;
 using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.UserInterface;
+using System.Drawing;
 
 namespace Electron2D.Core
 {
@@ -24,6 +25,8 @@ namespace Electron2D.Core
         public int currentWindowHeight { get; protected set; }
         public string currentWindowTitle { get; protected set; }
 
+        public static Color backgroundColor { get; private set; } = Color.Black;
+
         protected Camera2D startCamera;
 
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle)
@@ -31,6 +34,11 @@ namespace Electron2D.Core
             currentWindowWidth = _initialWindowWidth;
             currentWindowHeight = _initialWindowHeight;
             currentWindowTitle = _initialWindowTitle;
+        }
+
+        private void SetBackgroundColor(Color _backgroundColor)
+        {
+            backgroundColor = _backgroundColor;
         }
 
         public void Run()
@@ -80,7 +88,7 @@ namespace Electron2D.Core
                 // Rendering
                 double rendST = Glfw.Time;
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                glClearColor(0.2f, 0.2f, 0.2f, 1);
+                glClearColor(backgroundColor.R, backgroundColor.G, backgroundColor.B, 1);
 
                 Render();
                 RenderLayerManager.RenderAllLayers();
