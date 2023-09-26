@@ -56,15 +56,8 @@ namespace Electron2D.Core.UI
             }
         }
 
-        public UiComponent(float[] _vertices, uint[] _indices, float[] _defaultUV,
-            int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, IRenderer _customRenderer = null)
+        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, IRenderer _customRenderer = null)
         {
-            if(_vertices == null || _indices == null || _defaultUV == null)
-            {
-                Console.WriteLine("Error: Not enough vertex data passed to UiComponent. Cannot build mesh.");
-                return;
-            }
-
             constraints = new UiConstraints(this);
             uiRenderLayer = _uiRenderLayer;
 
@@ -74,8 +67,7 @@ namespace Electron2D.Core.UI
             }
             else
             {
-                // Must implement seperate UI Shader for things such as rounded corners, although this could be done with a 9-sliced texture
-                rendererReference = new UserInterfaceRenderer(transform, _vertices, _indices, _defaultUV);
+                rendererReference = new UserInterfaceRenderer(transform);
                 renderer = rendererReference;
                 rendererReference.UseUnscaledProjectionMatrix = true;
             }
@@ -103,10 +95,10 @@ namespace Electron2D.Core.UI
 
         protected void SetColor(Color _color)
         {
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorR, _color.R / 255f);
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorG, _color.G / 255f);
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorB, _color.B / 255f);
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorA, _color.A / 255f);
+            rendererReference.SetVertexValueAll((int)UserInterfaceVertexAttribute.ColorR, _color.R / 255f);
+            rendererReference.SetVertexValueAll((int)UserInterfaceVertexAttribute.ColorG, _color.G / 255f);
+            rendererReference.SetVertexValueAll((int)UserInterfaceVertexAttribute.ColorB, _color.B / 255f);
+            rendererReference.SetVertexValueAll((int)UserInterfaceVertexAttribute.ColorA, _color.A / 255f);
         }
 
         // No longer needed since vertex / UV / index arrays are preset into each UI component

@@ -35,37 +35,38 @@ namespace Electron2D.Build
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
             SpritesheetManager.Add(13, 11);
 
-            //Random rand = new Random();
-            //int environmentScale = 50;
-            //int tiles = 5;
-            //for (int x = -tiles; x <= tiles; x++)
-            //{
-            //    for (int y = -tiles; y <= tiles; y++)
-            //    {
-            //        GameObject tile = new GameObject(-1);
-            //        tile.renderer = new BatchedSpriteRenderer(tile.transform);
-            //        tile.transform.position = new Vector2(x, y) * environmentScale;
-            //        tile.transform.scale = Vector2.One * environmentScale;
-            //        environmentTiles.Add(tile);
+            Random rand = new Random();
+            int environmentScale = 50;
+            int tiles = 10;
+            for (int x = -tiles; x <= tiles; x++)
+            {
+                for (int y = -tiles; y <= tiles; y++)
+                {
+                    GameObject tile = new GameObject(-1);
+                    tile.transform.position = new Vector2(x, y) * environmentScale;
+                    tile.transform.scale = Vector2.One * environmentScale;
+                    environmentTiles.Add(tile);
 
-            //        if(rand.Next(2) == 1)
-            //        {
-            //            tile.SetSprite(0, 2, 9);
-            //        }
-            //        else
-            //        {
-            //            tile.SetSprite(0, 3, 9);
-            //        }
-            //    }
-            //}
+                    if (rand.Next(2) == 1)
+                    {
+                        tile.SetSprite(0, 2, 9);
+                    }
+                    else
+                    {
+                        tile.SetSprite(0, 3, 9);
+                    }
+                }
+            }
 
             UiComponent ui = new TestUi(Color.White, 200, 100);
+            ui.renderer.SetSprite(0, 0, 9);
+            //UI IS NOT WORKING BECAUSE THE VERTICES STAY AT -1 <=> 1, THEY ARE NEVER SCALED
         }
 
         protected override void Update()
         {
             CameraMovement();
-            Console.WriteLine($"FPS: {PerformanceTimings.framesPerSecond}");
+            //Console.WriteLine($"FPS: {PerformanceTimings.framesPerSecond}");
         }
 
         private void SpawnNewPhysicsObj(Vector2 _position)

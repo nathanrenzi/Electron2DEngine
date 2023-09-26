@@ -6,11 +6,11 @@ using System.Numerics;
 
 namespace Electron2D.Build.Resources.Objects
 {
-    public class TestUi : UiComponent
+    public class SlicedUiComponent : UiComponent
     {
         private Color startColor;
 
-        public static readonly float[] vertices =
+        public readonly float[] vertices =
         {
             // Positions    UV            Color                     TexIndex
              1f,  1f,       1.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top right - red
@@ -33,7 +33,7 @@ namespace Electron2D.Build.Resources.Objects
             1, 2, 3  // Triangle 2
         };
 
-        public TestUi(Color _startColor, int _sizeX, int _sizeY)
+        public SlicedUiComponent(Color _startColor, int _sizeX, int _sizeY)
             : base(_sizeX: _sizeX, _sizeY: _sizeY)
         {
             ResizeVertices();

@@ -28,15 +28,13 @@ namespace Electron2D.Core.Rendering
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
         /// </summary>
         public bool UseUnscaledProjectionMatrix = true;
+        public bool HasVertexData { get; private set; } = false;
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
 
-        public UserInterfaceRenderer(Transform _transform, float[] _vertices, uint[] _indices, float[] _defaultUV, Shader _shader = null)
+        public UserInterfaceRenderer(Transform _transform, Shader _shader = null)
         {
             transform = _transform;
-            vertices = _vertices;
-            indices = _indices;
-            defaultUV = _defaultUV;
 
             if (_shader == null)
             {
@@ -48,6 +46,16 @@ namespace Electron2D.Core.Rendering
             }
         }
 
+        public void SetVertexArrays(float[] _vertices, uint[] _indices, float[] _defaultUV, bool _loadOnSetArrays = true)
+        {
+            vertices = _vertices;
+            indices = _indices;
+            defaultUV = _defaultUV;
+
+            HasVertexData = true;
+            if(_loadOnSetArrays) Load();
+        }
+
         public Shader GetShader() => shader;
 
         /// <summary>
@@ -55,6 +63,7 @@ namespace Electron2D.Core.Rendering
         /// </summary>
         public void Load()
         {
+            if (!HasVertexData) return;
             if (!shader.CompileShader())
             {
                 Console.WriteLine("Failed to compile shader.");
@@ -84,6 +93,7 @@ namespace Electron2D.Core.Rendering
         /// <param name="_value">The value to set.</param>
         public void SetVertexValueAll(int _type, float _value)
         {
+            if (!HasVertexData) return;
             int loops = vertices.Length / layout.GetRawStride();
 
             // Setting the value for each vertex
@@ -107,6 +117,7 @@ namespace Electron2D.Core.Rendering
 
         public void SetSprite(int _spritesheetIndex, int _col, int _row)
         {
+            if (!HasVertexData) return;
             int loops = vertices.Length / layout.GetRawStride();
             Vector2 newUV;
             for (int i = 0; i < loops; i++)
@@ -136,6 +147,7 @@ namespace Electron2D.Core.Rendering
 
         public unsafe void Render()
         {
+            if (!HasVertexData) return;
             if (!IsLoaded || shader.compiled == false) return;
 
             if (IsDirty)
@@ -161,7 +173,7 @@ namespace Electron2D.Core.Rendering
     /// <summary>
     /// This enum corresponds to an attribute in a vertex for the renderer.
     /// </summary>
-    public enum TexturedVertexAttribute
+    public enum UserInterfaceVertexAttribute
     {
         PositionX = 0,
         PositionY = 1,

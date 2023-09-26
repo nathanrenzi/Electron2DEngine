@@ -55,6 +55,7 @@ namespace Electron2D.Core.Rendering
 
         private unsafe void OnUpdate()
         {
+            return;
             //CreateNewBufferData();
             //return;
 
