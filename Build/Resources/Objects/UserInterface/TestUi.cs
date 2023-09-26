@@ -8,8 +8,6 @@ namespace Electron2D.Build.Resources.Objects
 {
     public class TestUi : UiComponent
     {
-        private Color startColor;
-
         public static readonly float[] vertices =
         {
             // Positions    UV            Color                     TexIndex
@@ -41,8 +39,7 @@ namespace Electron2D.Build.Resources.Objects
 
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
-            startColor = _startColor;
-            SetColor(_startColor);
+            Color = _startColor;
         }
 
         /// <summary>
@@ -64,28 +61,27 @@ namespace Electron2D.Build.Resources.Objects
 
         protected override void OnUiEvent(UiEvent _event)
         {
-            if(_event == UiEvent.Load) SetColor(startColor);
-            if(_event == UiEvent.LeftClickDown)
+            if (_event == UiEvent.LeftClickDown)
             {
-                SetColor(Color.Sienna);
+                Color = Color.DarkGray;
             }
-            else if(_event == UiEvent.LeftClickUp)
+            else if (_event == UiEvent.LeftClickUp)
             {
-                SetColor(thisFrameData.isHovered ? Color.Wheat : Color.LightSkyBlue);
+                Color = thisFrameData.isHovered ? Color.LightGray : Color.White;
             }
 
-            if(_event == UiEvent.HoverStart)
+            if (_event == UiEvent.HoverStart)
             {
                 if (!thisFrameData.isLeftClicked)
                 {
-                    SetColor(Color.Wheat);
+                    Color = Color.LightGray;
                 }
             }
-            else if(_event == UiEvent.HoverEnd)
+            else if (_event == UiEvent.HoverEnd)
             {
                 if (!thisFrameData.isLeftClicked)
                 {
-                    SetColor(Color.LightSkyBlue);
+                    Color = Color.White;
                 }
             }
         }

@@ -17,6 +17,16 @@ namespace Electron2D.Core.UI
         public float sizeY;
         public Vector2 anchor;
         public IRenderer renderer;
+        public Color Color
+        {
+            get { return color; }
+            set
+            {
+                SetColor(value);
+                color = value;
+            }
+        }
+        private Color color;
         public UserInterfaceRenderer rendererReference { get; private set; }
         public int uiRenderLayer { get; private set; }
         public List<UiListener> listeners { get; private set; } = new List<UiListener>();
@@ -93,7 +103,7 @@ namespace Electron2D.Core.UI
             }
         }
 
-        protected void SetColor(Color _color)
+        private void SetColor(Color _color)
         {
             rendererReference.SetVertexValueAll((int)UserInterfaceVertexAttribute.ColorR, _color.R / 255f);
             rendererReference.SetVertexValueAll((int)UserInterfaceVertexAttribute.ColorG, _color.G / 255f);
