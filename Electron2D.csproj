@@ -21,7 +21,6 @@
     <None Remove="Build\Resources\Textures\boid2.png" />
     <None Remove="Build\Resources\Textures\boidSpritesheet.png" />
     <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
-    <None Remove="Build\Resources\Textures\LinearTiles.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
     <None Remove="Core\Rendering\Shaders\DefaultBatchTexture.glsl" />
     <None Remove="Core\Rendering\Shaders\DefaultUserInterface.glsl" />
@@ -51,12 +50,6 @@
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.1.0" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Build\Resources\Textures\LinearTiles.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

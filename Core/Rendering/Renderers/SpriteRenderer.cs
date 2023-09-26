@@ -167,6 +167,7 @@ namespace Electron2D.Core.Rendering
                 IsDirty = false;
             }
 
+            RenderLayerManager.SetTextureFiltering(UseLinearFiltering);
             shader.Use();
             shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
             vertexArray.Bind();
@@ -174,7 +175,6 @@ namespace Electron2D.Core.Rendering
 
             shader.SetMatrix4x4("projection", Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
 
-            RenderLayerManager.SetTextureFiltering(UseLinearFiltering);
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
     }

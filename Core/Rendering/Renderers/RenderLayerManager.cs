@@ -80,14 +80,16 @@ namespace Electron2D.Core.Rendering
             if(_linear && !wasLinearLastRenderCall)
             {
                 // Linear filtering should be used
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // https://community.khronos.org/t/changing-texture-filtering-on-the-fly/28226/4
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST); // https://community.khronos.org/t/changing-texture-filtering-on-the-fly/28226/4
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+                wasLinearLastRenderCall = true;
             }
             else if(!_linear && wasLinearLastRenderCall)
             {
                 // Nearest filtering should be used
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+                wasLinearLastRenderCall = false;
             }
         }
     }

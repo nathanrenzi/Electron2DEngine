@@ -35,9 +35,6 @@ namespace Electron2D.Build
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
             SpritesheetManager.Add(13, 11);
 
-            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/LinearTiles.png");
-            SpritesheetManager.Add(13, 11);
-
             Random rand = new Random();
             int environmentScale = 50;
             int tiles = 10;
@@ -64,7 +61,7 @@ namespace Electron2D.Build
             // NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
 
             //UiComponent ui = new TestUi(Color.White, 200, 100);
-            UiComponent ui = new SlicedUiComponent(Color.White, 100, 50, 10, 10, 10, 10, 1);
+            UiComponent ui = new SlicedUiComponent(Color.White, 100, 50, 10, 10, 10, 10, 10);
             ui.renderer.UseLinearFiltering = true;
             ui.renderer.SetSprite(0, 0, 3);
         }
@@ -72,7 +69,6 @@ namespace Electron2D.Build
         protected override void Update()
         {
             CameraMovement();
-            //Console.WriteLine($"FPS: {PerformanceTimings.framesPerSecond}");
         }
 
         private void CameraMovement()
