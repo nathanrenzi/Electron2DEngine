@@ -8,9 +8,9 @@ using static Electron2D.OpenGL.GL;
 namespace Electron2D.Core.Rendering
 {
     /// <summary>
-    /// A renderer that specializes in rendering UI elements with a 9-sliced texture setup (NOT IMPLEMENTED, ONLY FLAT COLORS WORK).
+    /// A renderer that specializes in rendering textured vertex objects.
     /// </summary>
-    public class UserInterfaceRenderer : IRenderer
+    public class TexturedVertexRenderer : IRenderer
     {
         private float[] vertices;
         private uint[] indices;
@@ -31,8 +31,9 @@ namespace Electron2D.Core.Rendering
         public bool HasVertexData { get; private set; } = false;
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
+        public bool UseLinearFiltering { get; set; }
 
-        public UserInterfaceRenderer(Transform _transform, Shader _shader = null)
+        public TexturedVertexRenderer(Transform _transform, Shader _shader = null)
         {
             transform = _transform;
 
@@ -46,6 +47,13 @@ namespace Electron2D.Core.Rendering
             }
         }
 
+        /// <summary>
+        /// This must be called to initialize the renderer.
+        /// </summary>
+        /// <param name="_vertices"></param>
+        /// <param name="_indices"></param>
+        /// <param name="_defaultUV"></param>
+        /// <param name="_loadOnSetArrays">Should the renderer be loaded when the arrays have been set (Should usually be left as true).</param>
         public void SetVertexArrays(float[] _vertices, uint[] _indices, float[] _defaultUV, bool _loadOnSetArrays = true)
         {
             vertices = _vertices;
@@ -126,12 +134,12 @@ namespace Electron2D.Core.Rendering
                 newUV = SpritesheetManager.GetVertexUV(_spritesheetIndex, _col, _row, GetDefaultUV(i));
 
                 // Setting the new UV
-                vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvX] = newUV.X;
-                vertices[(i * layout.GetRawStride()) + (int)SpriteVertexAttribute.UvY] = newUV.Y;
+                vertices[(i * layout.GetRawStride()) + (int)TexturedVertexAttribute.UvX] = newUV.X;
+                vertices[(i * layout.GetRawStride()) + (int)TexturedVertexAttribute.UvY] = newUV.Y;
             }
 
             // Setting the texture index
-            SetVertexValueAll((int)SpriteVertexAttribute.TextureIndex, _spritesheetIndex);
+            SetVertexValueAll((int)TexturedVertexAttribute.TextureIndex, _spritesheetIndex);
             IsDirty = true;
         }
 
@@ -166,6 +174,7 @@ namespace Electron2D.Core.Rendering
 
             shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.main.GetUnscaledProjectionMatrix() : Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
 
+            RenderLayerManager.SetTextureFiltering(UseLinearFiltering);
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
     }
@@ -173,7 +182,7 @@ namespace Electron2D.Core.Rendering
     /// <summary>
     /// This enum corresponds to an attribute in a vertex for the renderer.
     /// </summary>
-    public enum UserInterfaceVertexAttribute
+    public enum TexturedVertexAttribute
     {
         PositionX = 0,
         PositionY = 1,

@@ -10,14 +10,39 @@ namespace Electron2D.Build.Resources.Objects
     {
         public float[] vertices { get; private set; } = new float[36 * 9];
 
-        public static readonly float[] defaultUV = // 36 verts * 2 floats
-        {
-
-        };
+        public static float[] defaultUV { get; private set; } = new float[36 * 2];
 
         public static readonly uint[] indices = // 18 tris * 3 uints
         {
+            // Corners
+            1, 0, 3,
+            1, 2, 3,
 
+            5, 4, 7,
+            5, 7, 6,
+
+            9, 8, 11,
+            9, 11, 10,
+
+            13, 12, 15,
+            13, 15, 14,
+
+            // Sides
+            17, 16, 19,
+            17, 19, 18,
+
+            21, 20, 23,
+            21, 23, 22,
+
+            25, 24, 27,
+            25, 27, 26,
+
+            29, 28, 31,
+            29, 31, 30,
+
+            // Middle
+            33, 32, 35,
+            33, 35, 34
         };
 
         // MAKE THESE EDITABLE AFTER INITIALIZATION??
@@ -25,20 +50,34 @@ namespace Electron2D.Build.Resources.Objects
         public int Right { get; private set; }
         public int Top { get; private set; }
         public int Bottom { get; private set; }
-        public int PixelsPerUnit { get; private set; } = 100;
+        public int PaddingPixelScale { get; private set; } = 100;
 
+        private int stride = 9;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_startColor">The starting color of the UI component.</param>
+        /// <param name="_sizeX">The starting size on the X axis.</param>
+        /// <param name="_sizeY">The starting size on the Y axis.</param>
+        /// <param name="_left">The left padding of the 9-sliced texture.</param>
+        /// <param name="_right">The right padding of the 9-sliced texture.</param>
+        /// <param name="_top">The top padding of the 9-sliced texture.</param>
+        /// <param name="_bottom">The bottom padding of the 9-sliced texture.</param>
+        /// <param name="_paddingPixelScale">The scale of the padding UV's. A padding pixel scale of more than 1 will start to steal texture space from the middle and compress it into the sides.</param>
         public SlicedUiComponent(Color _startColor, int _sizeX, int _sizeY,
-            int _left, int _right, int _top, int _bottom, int _pixelsPerUnit = 100)
+            int _left, int _right, int _top, int _bottom, int _paddingPixelScale = 1)
             : base(_sizeX: _sizeX, _sizeY: _sizeY)
         {
-            Left= _left;
-            Right= _right;
-            Top= _top;
-            Bottom= _bottom;
-            PixelsPerUnit= _pixelsPerUnit;
+            Left = _left;
+            Right = _right;
+            Top = _top;
+            Bottom = _bottom;
+            PaddingPixelScale = _paddingPixelScale;
 
             BuildVertexMesh();
+            // Indices are pre-written, so they are not generated at runtime
+
             rendererReference.SetVertexArrays(vertices, indices, defaultUV);
 
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
@@ -51,18 +90,23 @@ namespace Electron2D.Build.Resources.Objects
         /// </summary>
         private void BuildVertexMesh()
         {
+            // UI must be scaled 2x to compensate for the Transform scaling (This will be fixed in the future)
             float sx = sizeX * 2;
             float sy = sizeY * 2;
 
+            // The positions of the padding
             float L = -sx + (Left * 2);
             float R = sx - (Right * 2);
             float T = sy - (Top * 2);
             float B = -sy + (Bottom * 2);
 
-            float LU = Math.Clamp((Left * 2) / PixelsPerUnit, 0, 0.5f);
-            float RU = 1 - Math.Clamp((Right * 2) / PixelsPerUnit, 0, 0.5f);
-            float TV = 1 - Math.Clamp((Top * 2) / PixelsPerUnit, 0, 0.5f);
-            float BV = Math.Clamp((Bottom * 2) / PixelsPerUnit, 0, 0.5f);
+            // Scaling the padding's UVs to match the size of the UI
+            float LU = Math.Clamp((Left * PaddingPixelScale) / sx, 0, 0.5f);
+            float RU = 1 - Math.Clamp((Right * PaddingPixelScale) / sx, 0, 0.5f);
+            float TV = 1 - Math.Clamp((Top * PaddingPixelScale) / sy, 0, 0.5f);
+            float BV = Math.Clamp((Bottom * PaddingPixelScale) / sy, 0, 0.5f);
+
+            //Console.WriteLine($"LU: {LU} RU: {RU} TV: {TV} BV: {BV}");
 
             AddVertex(0, -sx, sy,   0, 1, 1, 1, 1, 1, 0); 
             AddVertex(1, L, sy,     LU, 1, 1, 1, 1, 1, 0);   
@@ -100,12 +144,13 @@ namespace Electron2D.Build.Resources.Objects
             AddVertex(33, R, T,     RU, TV, 1, 1, 1, 1, 0);
             AddVertex(34, R, B,     RU, BV, 1, 1, 1, 1, 0);
             AddVertex(35, L, B,     LU, BV, 1, 1, 1, 1, 0);
+
+            InitializeDefaultUVArray();
         }
 
         private void AddVertex(int _index, float _x, float _y, float _u,
             float _v, float _r, float _g, float _b, float _a, float _tex)
         {
-            int stride = 9;
             vertices[(_index * stride) + 0] = _x;
             vertices[(_index * stride) + 1] = _y;
             vertices[(_index * stride) + 2] = _u;
@@ -115,6 +160,19 @@ namespace Electron2D.Build.Resources.Objects
             vertices[(_index * stride) + 6] = _b;
             vertices[(_index * stride) + 7] = _a;
             vertices[(_index * stride) + 8] = _tex;
+        }
+
+        /// <summary>
+        /// Used after initializing the vertex array. Grabs the UV's and stores them separately for texture coordinate calculation.
+        /// </summary>
+        private void InitializeDefaultUVArray()
+        {
+            int loops = vertices.Length / stride;
+            for (int i = 0; i < loops; i++)
+            {
+                defaultUV[(i * 2) + 0] = vertices[(i * stride) + (int)TexturedVertexAttribute.UvX];
+                defaultUV[(i * 2) + 1] = vertices[(i * stride) + (int)TexturedVertexAttribute.UvY];
+            }
         }
 
         protected override void OnUiEvent(UiEvent _event)

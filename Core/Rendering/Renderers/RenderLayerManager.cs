@@ -1,9 +1,16 @@
-﻿namespace Electron2D.Core.Rendering
+﻿using static Electron2D.OpenGL.GL;
+
+namespace Electron2D.Core.Rendering
 {
+    /// <summary>
+    /// Handles rendering every renderable object in the scene. All Render() functions are called from here.
+    /// </summary>
     public static class RenderLayerManager
     {
-        private static SortedList<int, List<IRenderable>> renderLayerOrderedList = new SortedList<int, List<IRenderable>>();
         public static event Action<int> onLayerRendered;
+
+        private static SortedList<int, List<IRenderable>> renderLayerOrderedList = new SortedList<int, List<IRenderable>>();
+        private static bool wasLinearLastRenderCall = false;
 
         /// <summary>
         /// Registers or reorders the IRenderable in the render layer sorted list.
@@ -64,6 +71,23 @@
                 {
                     pair.Value[i].Render();
                 }
+            }
+        }
+
+        public static void SetTextureFiltering(bool _linear)
+        {
+            // Currently not working - No changes observed after this was added
+            if(_linear && !wasLinearLastRenderCall)
+            {
+                // Linear filtering should be used
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // https://community.khronos.org/t/changing-texture-filtering-on-the-fly/28226/4
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            }
+            else if(!_linear && wasLinearLastRenderCall)
+            {
+                // Nearest filtering should be used
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             }
         }
     }

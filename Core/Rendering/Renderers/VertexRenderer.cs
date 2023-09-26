@@ -31,6 +31,7 @@ namespace Electron2D.Core.Rendering
         public bool useUnscaledProjectionMatrix = false;
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
+        public bool UseLinearFiltering { get; set; }
 
         public VertexRenderer(Transform _transform, Shader _shader)
         {
@@ -165,6 +166,7 @@ namespace Electron2D.Core.Rendering
 
             shader.SetMatrix4x4("projection", useUnscaledProjectionMatrix ? Camera2D.main.GetUnscaledProjectionMatrix() : Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
 
+            RenderLayerManager.SetTextureFiltering(UseLinearFiltering);
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
     }

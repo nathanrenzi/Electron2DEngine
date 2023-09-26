@@ -35,6 +35,9 @@ namespace Electron2D.Build
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
             SpritesheetManager.Add(13, 11);
 
+            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/LinearTiles.png");
+            SpritesheetManager.Add(13, 11);
+
             Random rand = new Random();
             int environmentScale = 50;
             int tiles = 10;
@@ -58,25 +61,18 @@ namespace Electron2D.Build
                 }
             }
 
-            UiComponent ui = new TestUi(Color.White, 200, 100);
-            ui.renderer.SetSprite(0, 0, 9);
-            //UI IS NOT WORKING BECAUSE THE VERTICES STAY AT -1 <=> 1, THEY ARE NEVER SCALED
+            // NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
+
+            //UiComponent ui = new TestUi(Color.White, 200, 100);
+            UiComponent ui = new SlicedUiComponent(Color.White, 100, 50, 10, 10, 10, 10, 1);
+            ui.renderer.UseLinearFiltering = true;
+            ui.renderer.SetSprite(0, 0, 3);
         }
 
         protected override void Update()
         {
             CameraMovement();
             //Console.WriteLine($"FPS: {PerformanceTimings.framesPerSecond}");
-        }
-
-        private void SpawnNewPhysicsObj(Vector2 _position)
-        {
-            GameObject obj = new GameObject(-1, false);
-            obj.renderer = new BatchedSpriteRenderer(obj.transform);
-            obj.transform.position = _position;
-            obj.SetSprite(0, 1, 0);
-
-            VerletBody body = new VerletBody(obj.transform);
         }
 
         private void CameraMovement()

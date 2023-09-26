@@ -19,5 +19,6 @@ namespace Electron2D.Core.Rendering
         /// </summary>
         public bool IsDirty { get; set; }
         public bool IsLoaded { get; set; }
+        public bool UseLinearFiltering { get; set; }
     }
 }

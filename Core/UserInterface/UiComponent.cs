@@ -27,7 +27,7 @@ namespace Electron2D.Core.UI
             }
         }
         private Color color;
-        public UserInterfaceRenderer rendererReference { get; private set; }
+        public TexturedVertexRenderer rendererReference { get; private set; }
         public int uiRenderLayer { get; private set; }
         public List<UiListener> listeners { get; private set; } = new List<UiListener>();
 
@@ -77,7 +77,7 @@ namespace Electron2D.Core.UI
             }
             else
             {
-                rendererReference = new UserInterfaceRenderer(transform);
+                rendererReference = new TexturedVertexRenderer(transform);
                 renderer = rendererReference;
                 rendererReference.UseUnscaledProjectionMatrix = true;
             }
@@ -105,10 +105,10 @@ namespace Electron2D.Core.UI
 
         private void SetColor(Color _color)
         {
-            rendererReference.SetVertexValueAll((int)UserInterfaceVertexAttribute.ColorR, _color.R / 255f);
-            rendererReference.SetVertexValueAll((int)UserInterfaceVertexAttribute.ColorG, _color.G / 255f);
-            rendererReference.SetVertexValueAll((int)UserInterfaceVertexAttribute.ColorB, _color.B / 255f);
-            rendererReference.SetVertexValueAll((int)UserInterfaceVertexAttribute.ColorA, _color.A / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorR, _color.R / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorG, _color.G / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorB, _color.B / 255f);
+            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorA, _color.A / 255f);
         }
 
         // No longer needed since vertex / UV / index arrays are preset into each UI component

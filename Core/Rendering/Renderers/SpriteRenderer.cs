@@ -45,6 +45,7 @@ namespace Electron2D.Core.Rendering
 
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
+        public bool UseLinearFiltering { get; set; }
 
         public SpriteRenderer(Transform _transform, Shader _shader)
         {
@@ -173,6 +174,7 @@ namespace Electron2D.Core.Rendering
 
             shader.SetMatrix4x4("projection", Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
 
+            RenderLayerManager.SetTextureFiltering(UseLinearFiltering);
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
     }

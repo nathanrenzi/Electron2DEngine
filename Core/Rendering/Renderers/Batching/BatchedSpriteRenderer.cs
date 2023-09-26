@@ -36,6 +36,7 @@ namespace Electron2D.Core.Rendering
         public Transform transform { get; private set; }
         public bool IsDirty { get; set; }
         public bool IsLoaded { get; set; } = true; // Batched renderers are always loaded
+        public bool UseLinearFiltering { get; set; } // Does not do anything in this case
 
         private BufferLayout layout;
 
