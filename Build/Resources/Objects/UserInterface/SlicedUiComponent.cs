@@ -85,6 +85,13 @@ namespace Electron2D.Build.Resources.Objects
             Color = _startColor;
         }
 
+        public void RebuildMesh()
+        {
+            BuildVertexMesh();
+            rendererReference.SetVertexArrays(vertices, indices, defaultUV, false);
+            renderer.IsDirty = true;
+        }
+
         /// <summary>
         /// Builds 9-sliced vertex arrays based on size and edge padding
         /// </summary>
@@ -100,55 +107,58 @@ namespace Electron2D.Build.Resources.Objects
             float T = sy - (Top * 2);
             float B = -sy + (Bottom * 2);
 
+            float xratio = sx > sy ? sx / sy : 1;
+            float yratio = sy > sx ? sy / sx : 1;
+
             // Scaling the padding's UVs to match the size of the UI
-            float LU = Math.Clamp((Left * PaddingPixelScale) / sx, 0, 0.5f);
-            float RU = 1 - Math.Clamp((Right * PaddingPixelScale) / sx, 0, 0.5f);
-            float TV = 1 - Math.Clamp((Top * PaddingPixelScale) / sy, 0, 0.5f);
-            float BV = Math.Clamp((Bottom * PaddingPixelScale) / sy, 0, 0.5f);
+            float LU = Math.Clamp((Left * PaddingPixelScale * xratio) / sx, 0, 0.5f);
+            float RU = 1 - Math.Clamp((Right * PaddingPixelScale * xratio) / sx, 0, 0.5f);
+            float TV = 1 - Math.Clamp((Top * PaddingPixelScale * yratio) / sy, 0, 0.5f);
+            float BV = Math.Clamp((Bottom * PaddingPixelScale * yratio) / sy, 0, 0.5f);
 
-            //Console.WriteLine($"LU: {LU} RU: {RU} TV: {TV} BV: {BV}");
+            Console.WriteLine($"LU: {LU} RU: {RU} TV: {TV} BV: {BV} Ratios: {xratio} - {yratio}");
 
-            AddVertex(0, -sx, sy,   0, 1, 1, 1, 1, 1, 0); 
-            AddVertex(1, L, sy,     LU, 1, 1, 1, 1, 1, 0);   
-            AddVertex(2, L, T,      LU, TV, 1, 1, 1, 1, 0);    
-            AddVertex(3, -sx, T,    0, TV, 1, 1, 1, 1, 0);  
-            AddVertex(4, R, sy,     RU, 1, 1, 1, 1, 1, 0);   
-            AddVertex(5, sx, sy,    1, 1, 1, 1, 1, 1, 0);  
-            AddVertex(6, sx, T,     1, TV, 1, 1, 1, 1, 0);   
-            AddVertex(7, R, T,      RU, TV, 1, 1, 1, 1, 0);    
-            AddVertex(8, R, B,      RU, BV, 1, 1, 1, 1, 0);    
-            AddVertex(9, sx, B,     1, BV, 1, 1, 1, 1, 0);   
-            AddVertex(10, sx, -sy,  1, 0, 1, 1, 1, 1, 0);  
-            AddVertex(11, R, -sy,   RU, 0, 1, 1, 1, 1, 0);   
-            AddVertex(12, -sx, B,   0, BV, 1, 1, 1, 1, 0);   
-            AddVertex(13, L, B,     LU, BV, 1, 1, 1, 1, 0);     
-            AddVertex(14, L, -sy,   LU, 0, 1, 1, 1, 1, 0);   
-            AddVertex(15, -sx, -sy, 0, 0, 1, 1, 1, 1, 0); 
-            AddVertex(16, L, sy,    LU, 1, 1, 1, 1, 1, 0);
-            AddVertex(17, R, sy,    RU, 1, 1, 1, 1, 1, 0);
-            AddVertex(18, R, T,     RU, TV, 1, 1, 1, 1, 0);
-            AddVertex(19, L, T,     LU, TV, 1, 1, 1, 1, 0);
-            AddVertex(20, R, T,     RU, TV, 1, 1, 1, 1, 0);
-            AddVertex(21, sx, T,    1, TV, 1, 1, 1, 1, 0);
-            AddVertex(22, sx, B,    1, BV, 1, 1, 1, 1, 0);
-            AddVertex(23, R, B,     RU, BV, 1, 1, 1, 1, 0);
-            AddVertex(24, L, B,     LU, BV, 1, 1, 1, 1, 0);
-            AddVertex(25, R, B,     RU, BV, 1, 1, 1, 1, 0);
-            AddVertex(26, R, -sy,   RU, 0, 1, 1, 1, 1, 0);
-            AddVertex(27, L, -sy,   LU, 0, 1, 1, 1, 1, 0);
-            AddVertex(28, -sx, T,   0, TV, 1, 1, 1, 1, 0);
-            AddVertex(29, L, T,     LU, TV, 1, 1, 1, 1, 0);
-            AddVertex(30, L, B,     LU, BV, 1, 1, 1, 1, 0);
-            AddVertex(31, -sx, B,   0, BV, 1, 1, 1, 1, 0);
-            AddVertex(32, L, T,     LU, TV, 1, 1, 1, 1, 0);
-            AddVertex(33, R, T,     RU, TV, 1, 1, 1, 1, 0);
-            AddVertex(34, R, B,     RU, BV, 1, 1, 1, 1, 0);
-            AddVertex(35, L, B,     LU, BV, 1, 1, 1, 1, 0);
+            SetVertex(0, -sx, sy,   0, 1, 1, 1, 1, 1, 0); 
+            SetVertex(1, L, sy,     LU, 1, 1, 1, 1, 1, 0);   
+            SetVertex(2, L, T,      LU, TV, 1, 1, 1, 1, 0);    
+            SetVertex(3, -sx, T,    0, TV, 1, 1, 1, 1, 0);  
+            SetVertex(4, R, sy,     RU, 1, 1, 1, 1, 1, 0);   
+            SetVertex(5, sx, sy,    1, 1, 1, 1, 1, 1, 0);  
+            SetVertex(6, sx, T,     1, TV, 1, 1, 1, 1, 0);   
+            SetVertex(7, R, T,      RU, TV, 1, 1, 1, 1, 0);    
+            SetVertex(8, R, B,      RU, BV, 1, 1, 1, 1, 0);    
+            SetVertex(9, sx, B,     1, BV, 1, 1, 1, 1, 0);   
+            SetVertex(10, sx, -sy,  1, 0, 1, 1, 1, 1, 0);  
+            SetVertex(11, R, -sy,   RU, 0, 1, 1, 1, 1, 0);   
+            SetVertex(12, -sx, B,   0, BV, 1, 1, 1, 1, 0);   
+            SetVertex(13, L, B,     LU, BV, 1, 1, 1, 1, 0);     
+            SetVertex(14, L, -sy,   LU, 0, 1, 1, 1, 1, 0);   
+            SetVertex(15, -sx, -sy, 0, 0, 1, 1, 1, 1, 0); 
+            SetVertex(16, L, sy,    LU, 1, 1, 1, 1, 1, 0);
+            SetVertex(17, R, sy,    RU, 1, 1, 1, 1, 1, 0);
+            SetVertex(18, R, T,     RU, TV, 1, 1, 1, 1, 0);
+            SetVertex(19, L, T,     LU, TV, 1, 1, 1, 1, 0);
+            SetVertex(20, R, T,     RU, TV, 1, 1, 1, 1, 0);
+            SetVertex(21, sx, T,    1, TV, 1, 1, 1, 1, 0);
+            SetVertex(22, sx, B,    1, BV, 1, 1, 1, 1, 0);
+            SetVertex(23, R, B,     RU, BV, 1, 1, 1, 1, 0);
+            SetVertex(24, L, B,     LU, BV, 1, 1, 1, 1, 0);
+            SetVertex(25, R, B,     RU, BV, 1, 1, 1, 1, 0);
+            SetVertex(26, R, -sy,   RU, 0, 1, 1, 1, 1, 0);
+            SetVertex(27, L, -sy,   LU, 0, 1, 1, 1, 1, 0);
+            SetVertex(28, -sx, T,   0, TV, 1, 1, 1, 1, 0);
+            SetVertex(29, L, T,     LU, TV, 1, 1, 1, 1, 0);
+            SetVertex(30, L, B,     LU, BV, 1, 1, 1, 1, 0);
+            SetVertex(31, -sx, B,   0, BV, 1, 1, 1, 1, 0);
+            SetVertex(32, L, T,     LU, TV, 1, 1, 1, 1, 0);
+            SetVertex(33, R, T,     RU, TV, 1, 1, 1, 1, 0);
+            SetVertex(34, R, B,     RU, BV, 1, 1, 1, 1, 0);
+            SetVertex(35, L, B,     LU, BV, 1, 1, 1, 1, 0);
 
             InitializeDefaultUVArray();
         }
 
-        private void AddVertex(int _index, float _x, float _y, float _u,
+        private void SetVertex(int _index, float _x, float _y, float _u,
             float _v, float _r, float _g, float _b, float _a, float _tex)
         {
             vertices[(_index * stride) + 0] = _x;

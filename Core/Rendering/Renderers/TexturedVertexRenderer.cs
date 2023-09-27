@@ -140,6 +140,7 @@ namespace Electron2D.Core.Rendering
 
             // Setting the texture index
             SetVertexValueAll((int)TexturedVertexAttribute.TextureIndex, _spritesheetIndex);
+            Console.WriteLine(vertices[(int)TexturedVertexAttribute.TextureIndex]);
             IsDirty = true;
         }
 

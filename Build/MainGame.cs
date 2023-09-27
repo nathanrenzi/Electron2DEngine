@@ -18,6 +18,7 @@ namespace Electron2D.Build
     public class MainGame : Game
     {
         private List<GameObject> environmentTiles = new List<GameObject>();
+        private SlicedUiComponent ui;
 
         public MainGame(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle) : base(_initialWindowWidth, _initialWindowHeight, _initialWindowTitle)
         {
@@ -34,6 +35,13 @@ namespace Electron2D.Build
             // Environment Spritesheet
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
             SpritesheetManager.Add(13, 11);
+
+            // UI Spritesheet
+            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
+            SpritesheetManager.Add(4, 4);
+
+            // FOUND ISSUE - THERE IS NO TEXTURE.USE() SYSTEM IN PLACE
+            // IMPLEMENT A TEXTURE SYSTEM WHERE RENDERABLES CAN USE TEXTURES
 
             Random rand = new Random();
             int environmentScale = 50;
@@ -60,15 +68,17 @@ namespace Electron2D.Build
 
             // NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
 
-            //UiComponent ui = new TestUi(Color.White, 200, 100);
-            UiComponent ui = new SlicedUiComponent(Color.White, 100, 50, 10, 10, 10, 10, 10);
-            ui.renderer.UseLinearFiltering = true;
-            ui.renderer.SetSprite(0, 0, 3);
+            ui = new SlicedUiComponent(Color.White, 100, 50, 10, 10, 10, 10, 2);
+            ui.renderer.UseLinearFiltering = false;
+            ui.renderer.SetSprite(0, 0, 10);
         }
 
         protected override void Update()
         {
             CameraMovement();
+            ui.sizeY = 50 + ((MathF.Sin(Time.totalElapsedSeconds / 2f) + 1) * 50);
+            ui.RebuildMesh();
+            ui.constraints.ApplyConstraints();
         }
 
         private void CameraMovement()

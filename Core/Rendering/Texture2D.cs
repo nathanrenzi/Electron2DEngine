@@ -33,7 +33,7 @@ namespace Electron2D.Core.Rendering
 
         public void Use()
         {
-            glActiveTexture(GL_TEXTURE0);
+            glActiveTexture(textureSlot);
             glBindTexture(GL_TEXTURE_2D, handle);
         }
 
