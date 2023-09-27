@@ -153,9 +153,10 @@ namespace Electron2D.Core.Rendering
             if (IsDirty)
             {
                 // Setting a new vertex buffer if the vertices have been updated
-                indexBuffer = new IndexBuffer(indices);
-                vertexBuffer = new VertexBuffer(vertices);
-                vertexArray.AddBuffer(vertexBuffer, layout);
+                // Huge memory leak when not using UpdateData()
+                //indexBuffer.UpdateData(indices); No need to update indices & vertex array, they will not be changing for now
+                vertexBuffer.UpdateData(vertices);
+                //vertexArray.AddBuffer(vertexBuffer, layout);
                 IsDirty = false;
             }
 

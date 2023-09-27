@@ -32,6 +32,9 @@ namespace Electron2D.Core.Rendering
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
         public bool UseLinearFiltering { get; set; }
+        public int SpriteCol { get; private set; }
+        public int SpriteRow { get; private set; }
+        public int SpriteIndex { get; private set; } = -1;
 
         public TexturedVertexRenderer(Transform _transform, Shader _shader = null)
         {
@@ -126,6 +129,11 @@ namespace Electron2D.Core.Rendering
         public void SetSprite(int _spritesheetIndex, int _col, int _row)
         {
             if (!HasVertexData) return;
+
+            SpriteCol = _col;
+            SpriteRow = _row;
+            SpriteIndex = _spritesheetIndex;
+
             int loops = vertices.Length / layout.GetRawStride();
             Vector2 newUV;
             for (int i = 0; i < loops; i++)
@@ -140,7 +148,6 @@ namespace Electron2D.Core.Rendering
 
             // Setting the texture index
             SetVertexValueAll((int)TexturedVertexAttribute.TextureIndex, _spritesheetIndex);
-            Console.WriteLine(vertices[(int)TexturedVertexAttribute.TextureIndex]);
             IsDirty = true;
         }
 
@@ -162,9 +169,10 @@ namespace Electron2D.Core.Rendering
             if (IsDirty)
             {
                 // Setting a new vertex buffer if the vertices have been updated
-                indexBuffer = new IndexBuffer(indices);
-                vertexBuffer = new VertexBuffer(vertices);
-                vertexArray.AddBuffer(vertexBuffer, layout);
+                // Huge memory leak when not using UpdateData()
+                //indexBuffer.UpdateData(indices); No need to update the index & vertex array, it wont be changing for now
+                vertexBuffer.UpdateData(vertices);
+                //vertexArray.AddBuffer(vertexBuffer, layout);
                 IsDirty = false;
             }
 

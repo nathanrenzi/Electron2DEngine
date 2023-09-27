@@ -1,10 +1,8 @@
 ﻿using System.Numerics;
 using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering;
-using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 using Electron2D.Core.UserInterface;
-using Electron2D.Core.Management.Textures;
 
 namespace Electron2D.Core.UI
 {

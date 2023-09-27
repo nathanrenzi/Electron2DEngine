@@ -1,7 +1,6 @@
 ﻿using GLFW;
 using Electron2D.Core;
 using Electron2D.Core.Management;
-using Electron2D.Build.Resources.Objects;
 using Electron2D.Core.GameObjects;
 using System.Numerics;
 using Electron2D.Core.Rendering;
@@ -12,6 +11,7 @@ using Electron2D.Core.Audio;
 using Electron2D.Core.Physics;
 using Electron2D.Core.UI;
 using Electron2D.Core.Misc;
+using Electron2D.Core.UserInterface;
 
 namespace Electron2D.Build
 {
@@ -68,17 +68,14 @@ namespace Electron2D.Build
 
             // NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
 
-            ui = new SlicedUiComponent(Color.White, 100, 50, 10, 10, 10, 10, 2);
-            ui.renderer.UseLinearFiltering = false;
+            ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
+            ui.renderer.UseLinearFiltering = true;
             ui.renderer.SetSprite(0, 0, 10);
         }
 
         protected override void Update()
         {
             CameraMovement();
-            ui.sizeY = 50 + ((MathF.Sin(Time.totalElapsedSeconds / 2f) + 1) * 50);
-            ui.RebuildMesh();
-            ui.constraints.ApplyConstraints();
         }
 
         private void CameraMovement()

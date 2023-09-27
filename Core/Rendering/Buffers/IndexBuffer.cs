@@ -14,11 +14,11 @@ namespace Electron2D.Core.Rendering
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.Length * sizeof(uint), i, GL_STATIC_DRAW);
         }
 
-        public unsafe void UpdateData(uint[] _vertices)
+        public unsafe void UpdateData(uint[] _indices)
         {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferID);
-            fixed (uint* v = &_vertices[0])
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, _vertices.Length * sizeof(uint), v, GL_STATIC_DRAW);
+            fixed (uint* v = &_indices[0])
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.Length * sizeof(uint), v, GL_STATIC_DRAW);
         }
 
         public void Bind()
