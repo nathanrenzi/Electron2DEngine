@@ -34,8 +34,9 @@ namespace Electron2D.Core.Rendering
         };
 
         public Transform transform { get; private set; }
-        public bool isDirty { get; set; }
-        public bool isLoaded { get; set; } = true; // Batched renderers are always loaded
+        public bool IsDirty { get; set; }
+        public bool IsLoaded { get; set; } = true; // Batched renderers are always loaded
+        public bool UseLinearFiltering { get; set; } // Does not do anything in this case
 
         private BufferLayout layout;
 
@@ -68,7 +69,7 @@ namespace Electron2D.Core.Rendering
         /// <param name="_value">The value to set.</param>
         public void SetVertexValueAll(int _type, float _value)
         {
-            if (!isLoaded)
+            if (!IsLoaded)
             {
                 Console.WriteLine("Trying to set vertex data when renderer has not been initialized yet.");
                 return;
@@ -83,7 +84,7 @@ namespace Electron2D.Core.Rendering
             }
 
             // The vertex buffer will be updated before rendering
-            isDirty = true;
+            IsDirty = true;
         }
 
         /// <summary>
@@ -128,7 +129,7 @@ namespace Electron2D.Core.Rendering
 
             // Setting the texture index
             SetVertexValueAll((int)BatchedVertexAttribute.TextureIndex, _spritesheetIndex);
-            isDirty = true;
+            IsDirty = true;
         }
 
         public Shader GetShader()

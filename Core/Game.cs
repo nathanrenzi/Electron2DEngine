@@ -63,6 +63,7 @@ namespace Electron2D.Core
             {
                 Time.deltaTime = (float)Glfw.Time - Time.totalElapsedSeconds;
                 Time.totalElapsedSeconds = (float)Glfw.Time;
+                PerformanceTimings.framesPerSecond = 1 / Time.deltaTime;
 
                 // Input
                 Input.ProcessInput();

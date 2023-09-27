@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -22,6 +22,7 @@
     <None Remove="Build\Resources\Textures\boidSpritesheet.png" />
     <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
+    <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
     <None Remove="Core\Rendering\Shaders\DefaultBatchTexture.glsl" />
     <None Remove="Core\Rendering\Shaders\DefaultUserInterface.glsl" />
   </ItemGroup>
@@ -31,6 +32,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\EnvironmentTiles.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\UserInterfaceTextures.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultBatchTexture.glsl">

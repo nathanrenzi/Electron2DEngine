@@ -2,53 +2,86 @@
 using Electron2D.Core.UI;
 using Electron2D.Core.UserInterface;
 using System.Drawing;
+using System.Numerics;
 
 namespace Electron2D.Build.Resources.Objects
 {
     public class TestUi : UiComponent
     {
-        private Color startColor;
-
-        public TestUi(Color _startColor, int _sizeX, int _sizeY) : base(0, _sizeX, _sizeY)
+        public static readonly float[] vertices =
         {
+            // Positions    UV            Color                     TexIndex
+             1f,  1f,       1.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top right - red
+             1f, -1f,       1.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // bottom right - green
+            -1f, -1f,       0.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // bottom left - blue
+            -1f,  1f,       0.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top left - white
+        };
+
+        public static readonly float[] defaultUV =
+        {
+            1.0f, 1.0f,
+            1.0f, 0.0f,
+            0.0f, 0.0f,
+            0.0f, 1.0f,
+        };
+
+        public static readonly uint[] indices =
+        {
+            0, 1, 3, // Triangle 1
+            1, 2, 3  // Triangle 2
+        };
+
+        public TestUi(Color _startColor, int _sizeX, int _sizeY)
+            : base(_sizeX: _sizeX, _sizeY: _sizeY)
+        {
+            ResizeVertices();
+            rendererReference.SetVertexArrays(vertices, indices, defaultUV);
+
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
-            startColor = _startColor;
-            SetColor(_startColor);
+            Color = _startColor;
+        }
+
+        /// <summary>
+        /// Resizes the vertex array to switch it from -1 to 1, to -size*2 to size*2 for rendering
+        /// </summary>
+        private void ResizeVertices()
+        {
+            int vertexStride = 9;
+            float sx = sizeX * 2;
+            float sy = sizeY * 2;
+            int loops = vertices.Length / vertexStride;
+
+            for (int i = 0; i < loops; i++)
+            {
+                vertices[0 + (i * vertexStride)] *= sx;
+                vertices[1 + (i * vertexStride)] *= sy;
+            }
         }
 
         protected override void OnUiEvent(UiEvent _event)
         {
-            if(_event == UiEvent.Load) SetColor(startColor);
-            if(_event == UiEvent.LeftClickDown)
+            if (_event == UiEvent.LeftClickDown)
             {
-                sizeX = 210;
-                sizeY = 110;
-                GenerateMesh();
-
-                SetColor(Color.Sienna);
+                Color = Color.DarkGray;
             }
-            else if(_event == UiEvent.LeftClickUp)
+            else if (_event == UiEvent.LeftClickUp)
             {
-                sizeX = 200;
-                sizeY = 100;
-                GenerateMesh();
-
-                SetColor(thisFrameData.isHovered ? Color.Wheat : Color.LightSkyBlue);
+                Color = thisFrameData.isHovered ? Color.LightGray : Color.White;
             }
 
-            if(_event == UiEvent.HoverStart)
+            if (_event == UiEvent.HoverStart)
             {
                 if (!thisFrameData.isLeftClicked)
                 {
-                    SetColor(Color.Wheat);
+                    Color = Color.LightGray;
                 }
             }
-            else if(_event == UiEvent.HoverEnd)
+            else if (_event == UiEvent.HoverEnd)
             {
                 if (!thisFrameData.isLeftClicked)
                 {
-                    SetColor(Color.LightSkyBlue);
+                    Color = Color.White;
                 }
             }
         }

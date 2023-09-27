@@ -1,0 +1,4 @@
+In the future, possibly consider switching to using only a few texture bind slots and just switching out each texture when it needs to be used.
+This would mean that only GL_MAX_TEXTURE_IMAGE_UNIT amount of textures can be used in one draw call, but this would eliminate
+the need for spritesheets for everything. For a 2D game, using spritesheets should be fine, but as more lighting maps are added it may
+become more complicated to handle having to edit large images to change / add new textures.

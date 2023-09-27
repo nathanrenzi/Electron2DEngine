@@ -1,7 +1,6 @@
 ﻿using GLFW;
 using Electron2D.Core;
 using Electron2D.Core.Management;
-using Electron2D.Build.Resources.Objects;
 using Electron2D.Core.GameObjects;
 using System.Numerics;
 using Electron2D.Core.Rendering;
@@ -12,12 +11,14 @@ using Electron2D.Core.Audio;
 using Electron2D.Core.Physics;
 using Electron2D.Core.UI;
 using Electron2D.Core.Misc;
+using Electron2D.Core.UserInterface;
 
 namespace Electron2D.Build
 {
     public class MainGame : Game
     {
         private List<GameObject> environmentTiles = new List<GameObject>();
+        private SlicedUiComponent ui;
 
         public MainGame(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle) : base(_initialWindowWidth, _initialWindowHeight, _initialWindowTitle)
         {
@@ -35,20 +36,26 @@ namespace Electron2D.Build
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
             SpritesheetManager.Add(13, 11);
 
+            // UI Spritesheet
+            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
+            SpritesheetManager.Add(4, 4);
+
+            // FOUND ISSUE - THERE IS NO TEXTURE.USE() SYSTEM IN PLACE
+            // IMPLEMENT A TEXTURE SYSTEM WHERE RENDERABLES CAN USE TEXTURES
+
             Random rand = new Random();
             int environmentScale = 50;
-            int tiles = 20;
+            int tiles = 10;
             for (int x = -tiles; x <= tiles; x++)
             {
                 for (int y = -tiles; y <= tiles; y++)
                 {
                     GameObject tile = new GameObject(-1);
-                    //tile.renderer = new BatchedSpriteRenderer(tile.transform);
                     tile.transform.position = new Vector2(x, y) * environmentScale;
                     tile.transform.scale = Vector2.One * environmentScale;
                     environmentTiles.Add(tile);
 
-                    if(rand.Next(2) == 1)
+                    if (rand.Next(2) == 1)
                     {
                         tile.SetSprite(0, 2, 9);
                     }
@@ -59,23 +66,16 @@ namespace Electron2D.Build
                 }
             }
 
-            UiComponent ui = new TestUi(Color.White, 200, 100);
+            // NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
+
+            ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
+            ui.renderer.UseLinearFiltering = true;
+            ui.renderer.SetSprite(0, 0, 10);
         }
 
         protected override void Update()
         {
             CameraMovement();
-            //Console.WriteLine($"Render Time: {PerformanceTimings.renderMilliseconds} ms  |  GO Time: {PerformanceTimings.gameObjectMilliseconds} ms");
-        }
-
-        private void SpawnNewPhysicsObj(Vector2 _position)
-        {
-            GameObject obj = new GameObject(-1, false);
-            obj.renderer = new BatchedSpriteRenderer(obj.transform);
-            obj.transform.position = _position;
-            obj.SetSprite(0, 1, 0);
-
-            VerletBody body = new VerletBody(obj.transform);
         }
 
         private void CameraMovement()

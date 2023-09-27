@@ -1,10 +1,8 @@
 ﻿using System.Numerics;
 using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering;
-using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 using Electron2D.Core.UserInterface;
-using Electron2D.Core.Management.Textures;
 
 namespace Electron2D.Core.UI
 {
@@ -17,7 +15,17 @@ namespace Electron2D.Core.UI
         public float sizeY;
         public Vector2 anchor;
         public IRenderer renderer;
-        public UserInterfaceRenderer rendererReference { get; private set; }
+        public Color Color
+        {
+            get { return color; }
+            set
+            {
+                SetColor(value);
+                color = value;
+            }
+        }
+        private Color color;
+        public TexturedVertexRenderer rendererReference { get; private set; }
         public int uiRenderLayer { get; private set; }
         public List<UiListener> listeners { get; private set; } = new List<UiListener>();
 
@@ -67,10 +75,9 @@ namespace Electron2D.Core.UI
             }
             else
             {
-                // Must implement seperate UI Shader for things such as rounded corners, although this could be done with a 9-sliced texture
-                rendererReference = new UserInterfaceRenderer(transform);
+                rendererReference = new TexturedVertexRenderer(transform);
                 renderer = rendererReference;
-                rendererReference.useUnscaledProjectionMatrix = true;
+                rendererReference.UseUnscaledProjectionMatrix = true;
             }
 
             sizeX = _sizeX;
@@ -84,7 +91,6 @@ namespace Electron2D.Core.UI
 
         public void Initialize()
         {
-            GenerateMesh();
             ApplyConstraints();
 
             if (isLoaded == false)
@@ -95,27 +101,12 @@ namespace Electron2D.Core.UI
             }
         }
 
-        protected void SetColor(Color _color)
+        private void SetColor(Color _color)
         {
             rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorR, _color.R / 255f);
             rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorG, _color.G / 255f);
             rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorB, _color.B / 255f);
             rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorA, _color.A / 255f);
-        }
-
-        protected virtual void GenerateMesh()
-        {
-            rendererReference.ClearTempLists();
-
-            rendererReference.AddVertex(new Vector2(LeftXBound * 2, BottomYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 0)), Color.White, 0);  // b-left
-            rendererReference.AddVertex(new Vector2(LeftXBound * 2, TopYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(0, 1)), Color.White, 0);     // t-left
-            rendererReference.AddVertex(new Vector2(RightXBound * 2, TopYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 1)), Color.White, 0);    // t-right
-            rendererReference.AddVertex(new Vector2(RightXBound * 2, BottomYBound * 2), SpritesheetManager.GetVertexUV(0, 0, 0, new Vector2(1, 0)), Color.White, 0); // b-right
-
-            rendererReference.AddTriangle(3, 1, 0, 0);
-            rendererReference.AddTriangle(3, 2, 1, 0);
-
-            rendererReference.FinalizeVertices();
         }
 
         protected virtual void ApplyConstraints()

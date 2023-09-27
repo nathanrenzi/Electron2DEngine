@@ -55,6 +55,7 @@ namespace Electron2D.Core.Rendering
 
         private unsafe void OnUpdate()
         {
+            return;
             //CreateNewBufferData();
             //return;
 
@@ -65,7 +66,7 @@ namespace Electron2D.Core.Rendering
                 isDirty = false;
                 for (int i = 0; i < renderers.Count; i++)
                 {
-                    renderers[i].isDirty = false;
+                    renderers[i].IsDirty = false;
                 }
 
                 return;
@@ -75,10 +76,10 @@ namespace Electron2D.Core.Rendering
             bool foundDirty = false;
             for (int i = 0; i < renderers.Count; i++)
             {
-                if (renderers[i].isDirty || renderers[i].transform.isDirty)
+                if (renderers[i].IsDirty || renderers[i].transform.isDirty)
                 {
                     //bufferUpdates.Add(new BufferUpdateItem(i * layout.GetRawStride(), renderers[i].vertices));
-                    renderers[i].isDirty = false;
+                    renderers[i].IsDirty = false;
                     renderers[i].transform.UnflagDirty();
                     foundDirty = true;
                 }

@@ -11,5 +11,6 @@ namespace Electron2D.Core.Misc
         public static double renderMilliseconds;
         public static double physicsMilliseconds;
         public static double gameObjectMilliseconds;
+        public static double framesPerSecond;
     }
 }
