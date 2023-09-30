@@ -21,7 +21,7 @@ namespace Electron2D.Core.Rendering
             -1f,  1f,       0.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top left - white
         };
 
-        private readonly float[] defaultUV =
+        private static readonly float[] defaultUV =
         {
             1.0f, 1.0f,
             1.0f, 0.0f,
@@ -29,7 +29,7 @@ namespace Electron2D.Core.Rendering
             0.0f, 1.0f,
         };
 
-        private readonly uint[] indices =
+        private static readonly uint[] indices =
         {
             0, 1, 3, // Triangle 1
             1, 2, 3  // Triangle 2

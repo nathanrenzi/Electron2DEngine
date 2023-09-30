@@ -33,19 +33,22 @@ namespace Electron2D.Build
         protected override void Start()
         {
             // Environment Spritesheet
-            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
+            Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
             SpritesheetManager.Add(13, 11);
+            //tex1.Use();
 
             // UI Spritesheet
-            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
+            Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
             SpritesheetManager.Add(4, 4);
+            //tex2.Use();
 
             // FOUND ISSUE - THERE IS NO TEXTURE.USE() SYSTEM IN PLACE
             // IMPLEMENT A TEXTURE SYSTEM WHERE RENDERABLES CAN USE TEXTURES
+            // Note 2: Texture system works perfectly for sprite renderers... not UI for some reason?
 
             Random rand = new Random();
             int environmentScale = 50;
-            int tiles = 10;
+            int tiles = 1;
             for (int x = -tiles; x <= tiles; x++)
             {
                 for (int y = -tiles; y <= tiles; y++)
@@ -57,11 +60,13 @@ namespace Electron2D.Build
 
                     if (rand.Next(2) == 1)
                     {
-                        tile.SetSprite(0, 2, 9);
+                        //tile.SetSprite(0, 2, 9);
+                        tile.SetSprite(1, 0, 1);
                     }
                     else
                     {
-                        tile.SetSprite(0, 3, 9);
+                        //tile.SetSprite(0, 3, 9);
+                        tile.SetSprite(1, 0, 3);
                     }
                 }
             }
@@ -70,7 +75,7 @@ namespace Electron2D.Build
 
             ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
             ui.renderer.UseLinearFiltering = true;
-            ui.renderer.SetSprite(0, 0, 10);
+            ui.renderer.SetSprite(1, 0, 1);
         }
 
         protected override void Update()

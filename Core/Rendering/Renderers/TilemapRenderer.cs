@@ -2,8 +2,8 @@
 {
     public class TilemapRenderer
     {
-        // Make a renderer that can generate an entire tilemap onto one mesh
+        // Make a renderer that can render an entire tilemap in large chunks - either handle this in parent class or in this renderer
         // This can also be hooked into the render batcher
-        // There should be helper functions to quickly swap out tiles, possible on a parent class Tilemap.cs?
+        // There should be functions to quickly swap out tiles abstracted out from the renderer, possible on a parent class Tilemap.cs?
     }
 }

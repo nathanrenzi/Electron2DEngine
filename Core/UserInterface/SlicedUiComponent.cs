@@ -87,6 +87,9 @@ namespace Electron2D.Core.UserInterface
             Color = _startColor;
         }
 
+        /// <summary>
+        /// Rebuilds the mesh of the UI to commit any changes of the sizeX/Y to the vertex array.
+        /// </summary>
         public void RebuildMesh()
         {
             BuildVertexMesh();

@@ -28,6 +28,12 @@ namespace Electron2D.Core.Management
             }
         }
 
+        /// <summary>
+        /// Loads a texture into memory and returns it.
+        /// After a texture is loaded, the already stored texture will be returned instead of creating a new Texture2D object.
+        /// </summary>
+        /// <param name="_textureFileName">The local file path of the sound. Ex. Build/Resources/Textures/TextureNameHere.png</param>
+        /// <returns></returns>
         public Texture2D LoadTexture(string _textureFileName)
         {
             textureCache.TryGetValue(_textureFileName, out var value);
@@ -41,6 +47,30 @@ namespace Electron2D.Core.Management
             return value;
         }
 
+        /// <summary>
+        /// Gets a texture from the texture cache using the texture slot instead of file directory.
+        /// </summary>
+        /// <param name="_textureSlot">The texture slot of the texture (Must already be loaded)</param>
+        /// <returns></returns>
+        public Texture2D GetTexture(int _textureSlot)
+        {
+            foreach (var texture in textureCache.Values)
+            {
+                if (texture.textureSlot == _textureSlot)
+                {
+                    return texture;
+                }
+            }
+
+            return textureCache.Values.First();
+        }
+
+        /// <summary>
+        /// Loads a sound into memory and returns it.
+        /// After a sound is loaded, the already stored sound will be returned instead of creating a new CachedSound object.
+        /// </summary>
+        /// <param name="_soundFileName">The local file path of the sound. Ex. Build/Resources/Audio/SFX/SoundFileNameHere.mp3</param>
+        /// <returns></returns>
         public CachedSound LoadSound(string _soundFileName)
         {
             soundCache.TryGetValue(_soundFileName, out var value);

@@ -26,7 +26,7 @@ in vec2 texCoord;
 in vec4 vertexColor;
 in float texIndex;
 
-uniform sampler2D u_Texture[3];
+uniform sampler2D u_Texture[2];
 
 void main() 
 {
