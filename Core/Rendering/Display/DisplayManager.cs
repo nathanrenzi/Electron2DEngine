@@ -60,7 +60,6 @@ namespace Electron2D.Core.Rendering
             Import(Glfw.GetProcAddress);
 
             glViewport(0, 0, _width, _height); // Call this again if window is resized
-            Glfw.SwapInterval(0); // 0 - VSYNC is off, 1 is on
         }
 
         public static void CloseWindow()

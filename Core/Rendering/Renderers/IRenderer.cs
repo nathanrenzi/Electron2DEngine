@@ -11,7 +11,6 @@ namespace Electron2D.Core.Rendering
         public void Render();
         public void SetVertexValueAll(int _type, float _value);
         public float GetVertexValue(int _type, int _vertex = 0);
-        public void SetSprite(int _spritesheetIndex, int _col, int _row);
         public void SetMaterial(Material _material);
         public Material GetMaterial();
 

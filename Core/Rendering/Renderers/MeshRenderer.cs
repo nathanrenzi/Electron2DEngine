@@ -8,7 +8,7 @@ namespace Electron2D.Core.Rendering
     /// <summary>
     /// A renderer that specializes in rendering textured vertex objects.
     /// </summary>
-    public class TexturedVertexRenderer : IRenderer
+    public class MeshRenderer : IRenderer
     {
         private float[] vertices;
         private uint[] indices;
@@ -18,6 +18,7 @@ namespace Electron2D.Core.Rendering
         private VertexArray vertexArray;
         private IndexBuffer indexBuffer;
         private BufferLayout layout;
+
         private Transform transform;
 
         private Material material;
@@ -33,7 +34,7 @@ namespace Electron2D.Core.Rendering
         public int SpriteRow { get; private set; }
         public int SpriteIndex { get; private set; } = -1;
 
-        public TexturedVertexRenderer(Transform _transform, Material _material)
+        public MeshRenderer(Transform _transform, Material _material)
         {
             transform = _transform;
             material = _material;
@@ -96,31 +97,28 @@ namespace Electron2D.Core.Rendering
             return vertices[(_vertex * layout.GetRawStride()) + _type];
         }
 
-        // Will likely be deprecated once new texture system is set up
-        public void SetSprite(int _spritesheetIndex, int _col, int _row)
-        {
-            if (!HasVertexData) return;
+        //public void SetSprite(int _spritesheetIndex, int _col, int _row)
+        //{
+        //    if (!HasVertexData) return;
 
-            SpriteCol = _col;
-            SpriteRow = _row;
-            SpriteIndex = _spritesheetIndex;
+        //    SpriteCol = _col;
+        //    SpriteRow = _row;
+        //    SpriteIndex = _spritesheetIndex;
 
-            int loops = vertices.Length / layout.GetRawStride();
-            Vector2 newUV;
-            for (int i = 0; i < loops; i++)
-            {
-                // Getting the new UV from the spritesheet
-                newUV = SpritesheetManager.GetVertexUV(_spritesheetIndex, _col, _row, GetDefaultUV(i));
+        //    int loops = vertices.Length / layout.GetRawStride();
+        //    Vector2 newUV;
+        //    for (int i = 0; i < loops; i++)
+        //    {
+        //        // Getting the new UV from the spritesheet
+        //        newUV = SpritesheetManager.GetVertexUV(_spritesheetIndex, _col, _row, GetDefaultUV(i));
 
-                // Setting the new UV
-                vertices[(i * layout.GetRawStride()) + (int)TexturedVertexAttribute.UvX] = newUV.X;
-                vertices[(i * layout.GetRawStride()) + (int)TexturedVertexAttribute.UvY] = newUV.Y;
-            }
+        //        // Setting the new UV
+        //        vertices[(i * layout.GetRawStride()) + (int)MeshVertexAttribute.UvX] = newUV.X;
+        //        vertices[(i * layout.GetRawStride()) + (int)MeshVertexAttribute.UvY] = newUV.Y;
+        //    }
 
-            // Setting the texture index - Removed for now since textures are bound based on materials.
-            //SetVertexValueAll((int)TexturedVertexAttribute.TextureIndex, _spritesheetIndex);
-            IsDirty = true;
-        }
+        //    IsDirty = true;
+        //}
 
         /// <summary>
         /// Returns the default texture UV associated with the vertex inputted.
@@ -154,8 +152,6 @@ namespace Electron2D.Core.Rendering
             layout = new BufferLayout();
             layout.Add<float>(2); // Position
             layout.Add<float>(2); // UV
-            layout.Add<float>(4); // Color
-            layout.Add<float>(1); // Texture Index
 
             vertexArray.AddBuffer(vertexBuffer, layout);
 
@@ -189,16 +185,11 @@ namespace Electron2D.Core.Rendering
     /// <summary>
     /// This enum corresponds to an attribute in a vertex for the renderer.
     /// </summary>
-    public enum TexturedVertexAttribute
+    public enum MeshVertexAttribute
     {
         PositionX = 0,
         PositionY = 1,
         UvX = 2,
         UvY = 3,
-        ColorR = 4,
-        ColorG = 5,
-        ColorB = 6,
-        ColorA = 7,
-        TextureIndex = 8
     }
 }

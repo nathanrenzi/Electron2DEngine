@@ -15,18 +15,7 @@ namespace Electron2D.Core.UI
         public float sizeX;
         public float sizeY;
         public Vector2 anchor;
-        public IRenderer renderer;
-        public Color Color
-        {
-            get { return color; }
-            set
-            {
-                SetColor(value);
-                color = value;
-            }
-        }
-        private Color color;
-        public TexturedVertexRenderer rendererReference { get; private set; }
+        public MeshRenderer renderer { get; private set; }
         public int uiRenderLayer { get; private set; }
         public List<UiListener> listeners { get; private set; } = new List<UiListener>();
 
@@ -65,21 +54,13 @@ namespace Electron2D.Core.UI
             }
         }
 
-        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, IRenderer _customRenderer = null)
+        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true)
         {
             constraints = new UiConstraints(this);
             uiRenderLayer = _uiRenderLayer;
 
-            if (_customRenderer != null)
-            {
-                renderer = _customRenderer;
-            }
-            else
-            {
-                rendererReference = new TexturedVertexRenderer(transform, Material.Create(GlobalShaders.DefaultTexture));
-                renderer = rendererReference;
-                rendererReference.UseUnscaledProjectionMatrix = true;
-            }
+            renderer = new MeshRenderer(transform, Material.Create(GlobalShaders.DefaultTexture));
+            renderer.UseUnscaledProjectionMatrix = true;
 
             sizeX = _sizeX;
             sizeY = _sizeY;
@@ -96,18 +77,16 @@ namespace Electron2D.Core.UI
 
             if (isLoaded == false)
             {
-                rendererReference.Load();
+                renderer.Load();
                 InvokeUiAction(UiEvent.Load);
                 isLoaded = true;
             }
         }
 
-        private void SetColor(Color _color)
+        public void SetColor(Color _color)
         {
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorR, _color.R / 255f);
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorG, _color.G / 255f);
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorB, _color.B / 255f);
-            rendererReference.SetVertexValueAll((int)TexturedVertexAttribute.ColorA, _color.A / 255f);
+            Material startMaterial = renderer.GetMaterial();
+            renderer.SetMaterial(Material.Create(startMaterial.Shader, startMaterial.MainTexture, _color, startMaterial.UseLinearFiltering));
         }
 
         protected virtual void ApplyConstraints()

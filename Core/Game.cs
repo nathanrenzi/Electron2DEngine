@@ -47,6 +47,7 @@ namespace Electron2D.Core
             startCamera = new Camera2D(Vector2.Zero, 1);
 
             DisplayManager.Instance.CreateWindow(currentWindowWidth, currentWindowHeight, currentWindowTitle);
+            Glfw.SwapInterval(1); // 0 - VSYNC is off, 1 is on
             Input.Initialize();
 
             // Setup

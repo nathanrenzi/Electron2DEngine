@@ -15,12 +15,12 @@ using Electron2D.Core.UserInterface;
 
 namespace Electron2D.Build
 {
-    public class MainGame : Game
+    public class GameBuild : Game
     {
         private List<GameObject> environmentTiles = new List<GameObject>();
         private SlicedUiComponent ui;
 
-        public MainGame(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle) : base(_initialWindowWidth, _initialWindowHeight, _initialWindowTitle)
+        public GameBuild(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle) : base(_initialWindowWidth, _initialWindowHeight, _initialWindowTitle)
         {
 
         }
@@ -40,37 +40,36 @@ namespace Electron2D.Build
             Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
             SpritesheetManager.Add(4, 4);
 
+            // Work on removing entire spritesheet system & SetSprite & SpriteRenderer
+            // Re-implement spritesheets using a system that works better with the new Material system
+
             Random rand = new Random();
             int environmentScale = 50;
-            int tiles = 1;
+            int tiles = 10;
             for (int x = -tiles; x <= tiles; x++)
             {
                 for (int y = -tiles; y <= tiles; y++)
                 {
                     GameObject tile = new GameObject(-1);
-                    tile.renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex2, true));
                     tile.transform.position = new Vector2(x, y) * environmentScale;
                     tile.transform.scale = Vector2.One * environmentScale;
                     environmentTiles.Add(tile);
 
                     if (rand.Next(2) == 1)
                     {
-                        //tile.SetSprite(0, 2, 9);
-                        tile.SetSprite(1, 0, 1);
+                        tile.renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex2, true));
                     }
                     else
                     {
-                        //tile.SetSprite(0, 3, 9);
-                        tile.SetSprite(1, 0, 3);
+                        tile.renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex1, false));
                     }
                 }
             }
 
             // NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
 
-            ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
-            ui.renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex1, false));
-            ui.renderer.SetSprite(0, 0, 10);
+            //ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
+            //ui.renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex1, false));
         }
 
         protected override void Update()

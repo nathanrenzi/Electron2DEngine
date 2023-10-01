@@ -10,10 +10,10 @@ namespace Electron2D.Core.GameObjects
         public int renderLayer { get; private set; }
         public bool useAutoInitialization { get; private set; }
 
-        private int queuedSpriteIndex;
-        private int queuedSpriteCol;
-        private int queuedSpriteRow;
-        private bool hasFinishedSetSprite = true;
+        //private int queuedSpriteIndex;
+        //private int queuedSpriteCol;
+        //private int queuedSpriteRow;
+        //private bool hasFinishedSetSprite = true;
 
         public GameObject(int _renderLayer = 0, bool _useAutoRendererInitialization = true, IRenderer _customRenderer = null)
         {
@@ -34,23 +34,23 @@ namespace Electron2D.Core.GameObjects
             GameObjectManager.RegisterGameObject(this);
         }
 
-        /// <summary>
-        /// Safer to use than IRenderer.SetSprite(). Will queue until the renderer has loaded. 
-        /// </summary>
-        public void SetSprite(int _spritesheetIndex, int _col, int _row)
-        {
-            hasFinishedSetSprite = false;
+        ///// <summary>
+        ///// Safer to use than IRenderer.SetSprite(). Will queue until the renderer has loaded. 
+        ///// </summary>
+        //public void SetSprite(int _spritesheetIndex, int _col, int _row)
+        //{
+        //    hasFinishedSetSprite = false;
 
-            queuedSpriteIndex = _spritesheetIndex;
-            queuedSpriteCol = _col;
-            queuedSpriteRow = _row;
+        //    queuedSpriteIndex = _spritesheetIndex;
+        //    queuedSpriteCol = _col;
+        //    queuedSpriteRow = _row;
 
-            if (renderer.IsLoaded)
-            {
-                renderer.SetSprite(_spritesheetIndex, _col, _row);
-                hasFinishedSetSprite = true;
-            }
-        }
+        //    if (renderer.IsLoaded)
+        //    {
+        //        renderer.SetSprite(_spritesheetIndex, _col, _row);
+        //        hasFinishedSetSprite = true;
+        //    }
+        //}
 
         public void SetRenderLayer(int _renderLayer)
         {
@@ -72,11 +72,11 @@ namespace Electron2D.Core.GameObjects
         public void InitializeMeshRenderer()
         {
             renderer.Load();
-            if(!hasFinishedSetSprite)
-            {
-                renderer.SetSprite(queuedSpriteIndex, queuedSpriteCol, queuedSpriteRow);
-                hasFinishedSetSprite = true;
-            }
+            //if(!hasFinishedSetSprite)
+            //{
+            //    renderer.SetSprite(queuedSpriteIndex, queuedSpriteCol, queuedSpriteRow);
+            //    hasFinishedSetSprite = true;
+            //}
         }
 
         public virtual void Render()

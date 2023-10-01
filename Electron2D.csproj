@@ -9,13 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Build\Resources\Shaders\**" />
-    <EmbeddedResource Remove="Build\Resources\Shaders\**" />
-    <None Remove="Build\Resources\Shaders\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="Build\Resources\Audio\SFX\testsfx.mp3" />
+    <None Remove="Build\Resources\Shaders\FunShader.glsl" />
     <None Remove="Build\Resources\Textures\basicSpritesheet1.png" />
     <None Remove="Build\Resources\Textures\boid1.png" />
     <None Remove="Build\Resources\Textures\boid2.png" />
@@ -37,6 +32,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Shaders\FunShader.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\EnvironmentTiles.png">
@@ -68,6 +66,10 @@
     <None Update="Build\Resources\Textures\test2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Build\Resources\Textures\Tiles\" />
   </ItemGroup>
 
 </Project>

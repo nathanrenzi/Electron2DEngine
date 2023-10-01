@@ -10,7 +10,7 @@ namespace Electron2D.Core.UserInterface
     /// </summary>
     public class SlicedUiComponent : UiComponent
     {
-        public float[] vertices { get; private set; } = new float[36 * 9];
+        public float[] vertices { get; private set; } = new float[36 * 4];
 
         public static float[] defaultUV { get; private set; } = new float[36 * 2];
 
@@ -54,11 +54,8 @@ namespace Electron2D.Core.UserInterface
         public int Bottom { get; private set; }
         public float PaddingPixelScale { get; private set; }
 
-        private int stride = 9;
+        private int stride = 4; // This should be equal to how many floats are associated with each vertex
 
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="_startColor">The starting color of the UI component.</param>
         /// <param name="_sizeX">The starting size on the X axis.</param>
         /// <param name="_sizeY">The starting size on the Y axis.</param>
@@ -80,11 +77,11 @@ namespace Electron2D.Core.UserInterface
             BuildVertexMesh();
             // Indices are pre-written, so they are not generated at runtime
 
-            rendererReference.SetVertexArrays(vertices, indices, defaultUV);
+            renderer.SetVertexArrays(vertices, indices, defaultUV);
+            SetColor(_startColor);
 
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
             constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
-            Color = _startColor;
         }
 
         /// <summary>
@@ -93,10 +90,10 @@ namespace Electron2D.Core.UserInterface
         public void RebuildMesh()
         {
             BuildVertexMesh();
-            rendererReference.SetVertexArrays(vertices, indices, defaultUV, false);
+            renderer.SetVertexArrays(vertices, indices, defaultUV, false);
             // If the sprite has already been set, THEN fix the sprite, otherwise don't touch the sprite at all
-            if (rendererReference.SpriteIndex != -1)
-                rendererReference.SetSprite(rendererReference.SpriteIndex, rendererReference.SpriteCol, rendererReference.SpriteRow);
+            //if (renderer.SpriteIndex != -1)
+            //    renderer.SetSprite(renderer.SpriteIndex, renderer.SpriteCol, renderer.SpriteRow);
             renderer.IsDirty = true;
         }
 
@@ -125,58 +122,52 @@ namespace Electron2D.Core.UserInterface
             float TV = 1 - Math.Clamp(Top * scaleY / sy, 0, 1f);
             float BV = Math.Clamp(Bottom * scaleY / sy, 0, 1f);
 
-            SetVertex(0, -sx, sy, 0, 1, 1, 1, 1, 1, 0);
-            SetVertex(1, L, sy, LU, 1, 1, 1, 1, 1, 0);
-            SetVertex(2, L, T, LU, TV, 1, 1, 1, 1, 0);
-            SetVertex(3, -sx, T, 0, TV, 1, 1, 1, 1, 0);
-            SetVertex(4, R, sy, RU, 1, 1, 1, 1, 1, 0);
-            SetVertex(5, sx, sy, 1, 1, 1, 1, 1, 1, 0);
-            SetVertex(6, sx, T, 1, TV, 1, 1, 1, 1, 0);
-            SetVertex(7, R, T, RU, TV, 1, 1, 1, 1, 0);
-            SetVertex(8, R, B, RU, BV, 1, 1, 1, 1, 0);
-            SetVertex(9, sx, B, 1, BV, 1, 1, 1, 1, 0);
-            SetVertex(10, sx, -sy, 1, 0, 1, 1, 1, 1, 0);
-            SetVertex(11, R, -sy, RU, 0, 1, 1, 1, 1, 0);
-            SetVertex(12, -sx, B, 0, BV, 1, 1, 1, 1, 0);
-            SetVertex(13, L, B, LU, BV, 1, 1, 1, 1, 0);
-            SetVertex(14, L, -sy, LU, 0, 1, 1, 1, 1, 0);
-            SetVertex(15, -sx, -sy, 0, 0, 1, 1, 1, 1, 0);
-            SetVertex(16, L, sy, LU, 1, 1, 1, 1, 1, 0);
-            SetVertex(17, R, sy, RU, 1, 1, 1, 1, 1, 0);
-            SetVertex(18, R, T, RU, TV, 1, 1, 1, 1, 0);
-            SetVertex(19, L, T, LU, TV, 1, 1, 1, 1, 0);
-            SetVertex(20, R, T, RU, TV, 1, 1, 1, 1, 0);
-            SetVertex(21, sx, T, 1, TV, 1, 1, 1, 1, 0);
-            SetVertex(22, sx, B, 1, BV, 1, 1, 1, 1, 0);
-            SetVertex(23, R, B, RU, BV, 1, 1, 1, 1, 0);
-            SetVertex(24, L, B, LU, BV, 1, 1, 1, 1, 0);
-            SetVertex(25, R, B, RU, BV, 1, 1, 1, 1, 0);
-            SetVertex(26, R, -sy, RU, 0, 1, 1, 1, 1, 0);
-            SetVertex(27, L, -sy, LU, 0, 1, 1, 1, 1, 0);
-            SetVertex(28, -sx, T, 0, TV, 1, 1, 1, 1, 0);
-            SetVertex(29, L, T, LU, TV, 1, 1, 1, 1, 0);
-            SetVertex(30, L, B, LU, BV, 1, 1, 1, 1, 0);
-            SetVertex(31, -sx, B, 0, BV, 1, 1, 1, 1, 0);
-            SetVertex(32, L, T, LU, TV, 1, 1, 1, 1, 0);
-            SetVertex(33, R, T, RU, TV, 1, 1, 1, 1, 0);
-            SetVertex(34, R, B, RU, BV, 1, 1, 1, 1, 0);
-            SetVertex(35, L, B, LU, BV, 1, 1, 1, 1, 0);
+            SetVertex(0, -sx, sy, 0, 1);
+            SetVertex(1, L, sy, LU, 1);
+            SetVertex(2, L, T, LU, TV);
+            SetVertex(3, -sx, T, 0, TV);
+            SetVertex(4, R, sy, RU, 1);
+            SetVertex(5, sx, sy, 1, 1);
+            SetVertex(6, sx, T, 1, TV);
+            SetVertex(7, R, T, RU, TV);
+            SetVertex(8, R, B, RU, BV);
+            SetVertex(9, sx, B, 1, BV);
+            SetVertex(10, sx, -sy, 1, 0);
+            SetVertex(11, R, -sy, RU, 0);
+            SetVertex(12, -sx, B, 0, BV);
+            SetVertex(13, L, B, LU, BV);
+            SetVertex(14, L, -sy, LU, 0);
+            SetVertex(15, -sx, -sy, 0, 0);
+            SetVertex(16, L, sy, LU, 1);
+            SetVertex(17, R, sy, RU, 1);
+            SetVertex(18, R, T, RU, TV);
+            SetVertex(19, L, T, LU, TV);
+            SetVertex(20, R, T, RU, TV);
+            SetVertex(21, sx, T, 1, TV);
+            SetVertex(22, sx, B, 1, BV);
+            SetVertex(23, R, B, RU, BV);
+            SetVertex(24, L, B, LU, BV);
+            SetVertex(25, R, B, RU, BV);
+            SetVertex(26, R, -sy, RU, 0);
+            SetVertex(27, L, -sy, LU, 0 );
+            SetVertex(28, -sx, T, 0, TV);
+            SetVertex(29, L, T, LU, TV);
+            SetVertex(30, L, B, LU, BV);
+            SetVertex(31, -sx, B, 0, BV);
+            SetVertex(32, L, T, LU, TV);
+            SetVertex(33, R, T, RU, TV);
+            SetVertex(34, R, B, RU, BV);
+            SetVertex(35, L, B, LU, BV);
 
             InitializeDefaultUVArray();
         }
 
-        private void SetVertex(int _index, float _x, float _y, float _u,
-            float _v, float _r, float _g, float _b, float _a, float _tex)
+        private void SetVertex(int _index, float _x, float _y, float _u, float _v)
         {
             vertices[_index * stride + 0] = _x;
             vertices[_index * stride + 1] = _y;
             vertices[_index * stride + 2] = _u;
             vertices[_index * stride + 3] = _v;
-            vertices[_index * stride + 4] = _r;
-            vertices[_index * stride + 5] = _g;
-            vertices[_index * stride + 6] = _b;
-            vertices[_index * stride + 7] = _a;
-            vertices[_index * stride + 8] = _tex;
         }
 
         /// <summary>
@@ -187,35 +178,8 @@ namespace Electron2D.Core.UserInterface
             int loops = vertices.Length / stride;
             for (int i = 0; i < loops; i++)
             {
-                defaultUV[i * 2 + 0] = vertices[i * stride + (int)TexturedVertexAttribute.UvX];
-                defaultUV[i * 2 + 1] = vertices[i * stride + (int)TexturedVertexAttribute.UvY];
-            }
-        }
-
-        protected override void OnUiEvent(UiEvent _event)
-        {
-            if (_event == UiEvent.LeftClickDown)
-            {
-                Color = Color.DarkGray;
-            }
-            else if (_event == UiEvent.LeftClickUp)
-            {
-                Color = thisFrameData.isHovered ? Color.LightGray : Color.White;
-            }
-
-            if (_event == UiEvent.HoverStart)
-            {
-                if (!thisFrameData.isLeftClicked)
-                {
-                    Color = Color.LightGray;
-                }
-            }
-            else if (_event == UiEvent.HoverEnd)
-            {
-                if (!thisFrameData.isLeftClicked)
-                {
-                    Color = Color.White;
-                }
+                defaultUV[i * 2 + 0] = vertices[i * stride + (int)MeshVertexAttribute.UvX];
+                defaultUV[i * 2 + 1] = vertices[i * stride + (int)MeshVertexAttribute.UvY];
             }
         }
     }
