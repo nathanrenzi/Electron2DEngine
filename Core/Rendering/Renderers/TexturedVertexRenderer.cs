@@ -1,7 +1,5 @@
 ﻿using Electron2D.Core.GameObjects;
 using Electron2D.Core.Management.Textures;
-using Electron2D.Core.Rendering.Shaders;
-using System.Drawing;
 using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
@@ -20,9 +18,9 @@ namespace Electron2D.Core.Rendering
         private VertexArray vertexArray;
         private IndexBuffer indexBuffer;
         private BufferLayout layout;
-
         private Transform transform;
-        private Shader shader;
+
+        private Material material;
 
         /// <summary>
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
@@ -31,24 +29,26 @@ namespace Electron2D.Core.Rendering
         public bool HasVertexData { get; private set; } = false;
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
-        public bool UseLinearFiltering { get; set; }
         public int SpriteCol { get; private set; }
         public int SpriteRow { get; private set; }
         public int SpriteIndex { get; private set; } = -1;
 
-        public TexturedVertexRenderer(Transform _transform, Shader _shader = null)
+        public TexturedVertexRenderer(Transform _transform, Material _material)
         {
             transform = _transform;
-
-            if (_shader == null)
-            {
-                shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"));
-            }
-            else
-            {
-                shader = _shader;
-            }
+            material = _material;
         }
+
+        #region Materials
+        public void SetMaterial(Material _material)
+        {
+            material = _material;
+        }
+
+        public Material GetMaterial() => material;
+        #endregion
+
+        #region Vertex Manipulation
 
         /// <summary>
         /// This must be called to initialize the renderer.
@@ -64,37 +64,7 @@ namespace Electron2D.Core.Rendering
             defaultUV = _defaultUV;
 
             HasVertexData = true;
-            if(_loadOnSetArrays) Load();
-        }
-
-        public Shader GetShader() => shader;
-
-        /// <summary>
-        /// Loads all resources necessary for the renderer, such as the shader and buffers.
-        /// </summary>
-        public void Load()
-        {
-            if (!HasVertexData) return;
-            if (!shader.CompileShader())
-            {
-                Console.WriteLine("Failed to compile shader.");
-                return;
-            }
-
-            vertexArray = new VertexArray();
-            vertexBuffer = new VertexBuffer(vertices);
-
-            layout = new BufferLayout();
-            layout.Add<float>(2); // Position
-            layout.Add<float>(2); // UV
-            layout.Add<float>(4); // Color
-            layout.Add<float>(1); // Texture Index
-
-            vertexArray.AddBuffer(vertexBuffer, layout);
-            shader.Use();
-            indexBuffer = new IndexBuffer(indices);
-
-            IsLoaded = true;
+            if (_loadOnSetArrays) Load();
         }
 
         /// <summary>
@@ -126,6 +96,7 @@ namespace Electron2D.Core.Rendering
             return vertices[(_vertex * layout.GetRawStride()) + _type];
         }
 
+        // Will likely be deprecated once new texture system is set up
         public void SetSprite(int _spritesheetIndex, int _col, int _row)
         {
             if (!HasVertexData) return;
@@ -146,8 +117,8 @@ namespace Electron2D.Core.Rendering
                 vertices[(i * layout.GetRawStride()) + (int)TexturedVertexAttribute.UvY] = newUV.Y;
             }
 
-            // Setting the texture index
-            SetVertexValueAll((int)TexturedVertexAttribute.TextureIndex, _spritesheetIndex);
+            // Setting the texture index - Removed for now since textures are bound based on materials.
+            //SetVertexValueAll((int)TexturedVertexAttribute.TextureIndex, _spritesheetIndex);
             IsDirty = true;
         }
 
@@ -161,29 +132,56 @@ namespace Electron2D.Core.Rendering
             return new Vector2(defaultUV[_vertex * 2], defaultUV[(_vertex * 2) + 1]);
         }
 
+        #endregion
+
+        /// <summary>
+        /// Loads all resources necessary for the renderer, such as the shader and buffers.
+        /// </summary>
+        public void Load()
+        {
+            if (!HasVertexData) return;
+            if (!material.Shader.compiled && !material.Shader.CompileShader())
+            {
+                Console.WriteLine("Failed to compile shader.");
+                return;
+            }
+
+            vertexArray = new VertexArray();
+            vertexBuffer = new VertexBuffer(vertices);
+            indexBuffer = new IndexBuffer(indices);
+
+            // Telling the vertex array how the vertices are structured
+            layout = new BufferLayout();
+            layout.Add<float>(2); // Position
+            layout.Add<float>(2); // UV
+            layout.Add<float>(4); // Color
+            layout.Add<float>(1); // Texture Index
+
+            vertexArray.AddBuffer(vertexBuffer, layout);
+
+            IsLoaded = true;
+        }
+
         public unsafe void Render()
         {
             if (!HasVertexData) return;
-            if (!IsLoaded || shader.compiled == false) return;
+            if (!IsLoaded || material.Shader.compiled == false) return;
 
             if (IsDirty)
             {
-                // Setting a new vertex buffer if the vertices have been updated
-                // Huge memory leak when not using UpdateData()
-                //indexBuffer.UpdateData(indices); No need to update the index & vertex array, it wont be changing for now
+                // Huge memory leak when creating new buffer instead of updating data.
                 vertexBuffer.UpdateData(vertices);
-                //vertexArray.AddBuffer(vertexBuffer, layout);
+                // If index array also needs to be updated at some point, add a check here for that
                 IsDirty = false;
             }
 
-            shader.Use();
-            shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
+            material.Use();
+            material.Shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
             vertexArray.Bind();
             indexBuffer.Bind();
 
-            shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.main.GetUnscaledProjectionMatrix() : Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
+            material.Shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.main.GetUnscaledProjectionMatrix() : Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
 
-            RenderLayerManager.SetTextureFiltering(UseLinearFiltering);
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
     }

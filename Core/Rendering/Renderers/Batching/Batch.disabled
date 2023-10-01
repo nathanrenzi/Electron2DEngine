@@ -41,9 +41,9 @@ namespace Electron2D.Core.Rendering
             layout.Add<float>(4); // Color
             layout.Add<float>(1); // Texture Index
 
-            var textureSampleUniformLocation = shader.GetUniformLocation("u_Texture[0]");
-            int[] samplers = new int[3] { 0, 1, 2 };
-            glUniform1iv(textureSampleUniformLocation, samplers.Length, samplers);
+            ///var textureSampleUniformLocation = shader.GetUniformLocation("u_Texture[0]");
+            ///int[] samplers = new int[3] { 0, 1, 2 };
+            ///glUniform1iv(textureSampleUniformLocation, samplers.Length, samplers);
 
             RenderLayerManager.OrderRenderable(this);
         }

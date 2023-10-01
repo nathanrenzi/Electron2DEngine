@@ -3,6 +3,7 @@ using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering;
 using System.Drawing;
 using Electron2D.Core.UserInterface;
+using Electron2D.Core.Rendering.Shaders;
 
 namespace Electron2D.Core.UI
 {
@@ -75,7 +76,7 @@ namespace Electron2D.Core.UI
             }
             else
             {
-                rendererReference = new TexturedVertexRenderer(transform);
+                rendererReference = new TexturedVertexRenderer(transform, Material.Create(GlobalShaders.DefaultTexture));
                 renderer = rendererReference;
                 rendererReference.UseUnscaledProjectionMatrix = true;
             }

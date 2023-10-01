@@ -2,6 +2,7 @@
 using GLFW;
 using System.Diagnostics;
 using System.Numerics;
+using System.Drawing;
 
 namespace Electron2D.Core.Rendering.Shaders
 {
@@ -165,6 +166,24 @@ namespace Electron2D.Core.Rendering.Shaders
                 uniforms.Add(_uniformName, location);
             }
             glUniform1f(location, _value);
+        }
+
+        /// <summary>
+        /// Sets a color uniform in the shader.
+        /// </summary>
+        /// <param name="_uniformName"></param>
+        /// <param name="_value"></param>
+        public void SetColor(string _uniformName, Color _value)
+        {
+            int location;
+            if (!uniforms.TryGetValue(_uniformName, out location))
+            {
+                // If the uniform isnt saved to memory, find and save it
+                location = glGetUniformLocation(programID, _uniformName);
+                uniforms.Add(_uniformName, location);
+            }
+            float[] colArray = { _value.R / 255f, _value.G / 255f, _value.B / 255f, _value.A / 255f };
+            glUniform4fv(location, 1, colArray);
         }
 
         private float[] GetMatrix4x4Values(Matrix4x4 m)

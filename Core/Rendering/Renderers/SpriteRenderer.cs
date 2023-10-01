@@ -41,26 +41,24 @@ namespace Electron2D.Core.Rendering
         private BufferLayout layout;
 
         private Transform transform;
-        private Shader shader;
+
+        private Material material;
 
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
-        public bool UseLinearFiltering { get; set; }
 
-        public SpriteRenderer(Transform _transform, Shader _shader)
+        public SpriteRenderer(Transform _transform, Material _material)
         {
             transform = _transform;
-            shader = _shader;
+            material = _material;
         }
-
-        public Shader GetShader() => shader;
 
         /// <summary>
         /// Loads all resources necessary for the renderer, such as the shader and all buffers.
         /// </summary>
         public void Load()
         {
-            if (shader.compiled == false && !shader.CompileShader())
+            if (material.Shader.compiled == false && !material.Shader.CompileShader())
             {
                 Console.WriteLine("Failed to compile shader.");
                 return;
@@ -76,12 +74,12 @@ namespace Electron2D.Core.Rendering
             layout.Add<float>(1);
 
             vertexArray.AddBuffer(vertexBuffer, layout);
-            shader.Use();
+            material.Use();
             indexBuffer = new IndexBuffer(indices);
 
-            var textureSampleUniformLocation = shader.GetUniformLocation("u_Texture[0]");
-            int[] samplers = new int[3] { 0, 1, 2 };
-            glUniform1iv(textureSampleUniformLocation, samplers.Length, samplers);
+            //var textureSampleUniformLocation = shader.GetUniformLocation("u_Texture[0]"); // This is why UI texture swapping was not working!!!
+            //int[] samplers = new int[3] { 0, 1, 2 };
+            //glUniform1iv(textureSampleUniformLocation, samplers.Length, samplers);
 
             IsLoaded = true;
         }
@@ -158,7 +156,7 @@ namespace Electron2D.Core.Rendering
 
         public unsafe void Render()
         {
-            if (!IsLoaded || shader.compiled == false) return;
+            if (!IsLoaded || material.Shader.compiled == false) return;
 
             if(IsDirty)
             {
@@ -167,16 +165,22 @@ namespace Electron2D.Core.Rendering
                 IsDirty = false;
             }
 
-            shader.Use();
-            shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
+            material.Use();
+            material.Shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
             vertexArray.Bind();
             indexBuffer.Bind();
 
-            shader.SetMatrix4x4("projection", Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
+            material.Shader.SetMatrix4x4("projection", Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
 
-            RenderLayerManager.SetTextureFiltering(UseLinearFiltering);
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
+
+        public void SetMaterial(Material _material)
+        {
+            material = _material;
+        }
+
+        public Material GetMaterial() => material;
     }
     
     /// <summary>

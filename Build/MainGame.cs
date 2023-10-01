@@ -35,16 +35,10 @@ namespace Electron2D.Build
             // Environment Spritesheet
             Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
             SpritesheetManager.Add(13, 11);
-            //tex1.Use();
 
             // UI Spritesheet
             Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
             SpritesheetManager.Add(4, 4);
-            //tex2.Use();
-
-            // FOUND ISSUE - THERE IS NO TEXTURE.USE() SYSTEM IN PLACE
-            // IMPLEMENT A TEXTURE SYSTEM WHERE RENDERABLES CAN USE TEXTURES
-            // Note 2: Texture system works perfectly for sprite renderers... not UI for some reason?
 
             Random rand = new Random();
             int environmentScale = 50;
@@ -54,6 +48,7 @@ namespace Electron2D.Build
                 for (int y = -tiles; y <= tiles; y++)
                 {
                     GameObject tile = new GameObject(-1);
+                    tile.renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex2, true));
                     tile.transform.position = new Vector2(x, y) * environmentScale;
                     tile.transform.scale = Vector2.One * environmentScale;
                     environmentTiles.Add(tile);
@@ -74,8 +69,8 @@ namespace Electron2D.Build
             // NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
 
             ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
-            ui.renderer.UseLinearFiltering = true;
-            ui.renderer.SetSprite(1, 0, 1);
+            ui.renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex1, false));
+            ui.renderer.SetSprite(0, 0, 10);
         }
 
         protected override void Update()

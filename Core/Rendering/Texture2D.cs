@@ -8,7 +8,7 @@ namespace Electron2D.Core.Rendering
         public uint handle { get; private set; }
         public int width { get; set; }
         public int height { get; set; }
-        public int textureSlot { get; set; } = GL_TEXTURE0;
+        public int textureSlot { get; set; } = GL_TEXTURE0; // See note below, might want to remove in favor of material system
 
         public Texture2D(uint _handle)
         {
@@ -31,9 +31,10 @@ namespace Electron2D.Core.Rendering
             Dispose(false);
         }
 
-        public void Use()
+        public void Use() => Use(textureSlot); // Might want to remove default texture slot, since material system is replacing that
+        public void Use(int _textureSlot)
         {
-            glActiveTexture(textureSlot);
+            glActiveTexture(_textureSlot);
             glBindTexture(GL_TEXTURE_2D, handle);
         }
 

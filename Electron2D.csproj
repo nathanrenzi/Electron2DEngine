@@ -23,7 +23,16 @@
     <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
     <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
+    <None Remove="Core\Rendering\Renderers\Batching\Batch.disabled" />
+    <None Remove="Core\Rendering\Renderers\Batching\BatchedSpriteRenderer.disabled" />
+    <None Remove="Core\Rendering\Renderers\Batching\GlobalBatches.disabled" />
     <None Remove="Core\Rendering\Shaders\DefaultBatchTexture.glsl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Core\Rendering\Renderers\Batching\Batch.disabled" />
+    <Compile Include="Core\Rendering\Renderers\Batching\BatchedSpriteRenderer.disabled" />
+    <Compile Include="Core\Rendering\Renderers\Batching\GlobalBatches.disabled" />
   </ItemGroup>
 
   <ItemGroup>
