@@ -5,7 +5,7 @@ using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Core.Rendering
 {
-    public struct Material
+    public class Material
     {
         // The last used shader by the material class - Will not call Shader.Use() again if the correct one is already in use.
         private static Shader shaderInUse = null;
