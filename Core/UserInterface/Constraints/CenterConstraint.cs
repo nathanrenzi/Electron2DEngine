@@ -10,9 +10,9 @@ namespace Electron2D.Core.UserInterface
         public override void ApplyConstraint(UiComponent _component)
         {
             float x, y;
-            x = side == UiConstraintSide.Left || side == UiConstraintSide.Right ? 0 : _component.transform.position.X;
-            y = side == UiConstraintSide.Top || side == UiConstraintSide.Bottom ? 0 : _component.transform.position.Y;
-            _component.transform.position = new Vector2(x, y);
+            x = side == UiConstraintSide.Left || side == UiConstraintSide.Right ? 0 : _component.Transform.Position.X;
+            y = side == UiConstraintSide.Top || side == UiConstraintSide.Bottom ? 0 : _component.Transform.Position.Y;
+            _component.Transform.Position = new Vector2(x, y);
         }
     }
 }

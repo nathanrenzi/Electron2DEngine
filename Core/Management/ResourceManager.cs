@@ -48,24 +48,6 @@ namespace Electron2D.Core.Management
         }
 
         /// <summary>
-        /// Gets a texture from the texture cache using the texture slot instead of file directory.
-        /// </summary>
-        /// <param name="_textureSlot">The texture slot of the texture (Must already be loaded)</param>
-        /// <returns></returns>
-        public Texture2D GetTexture(int _textureSlot)
-        {
-            foreach (var texture in textureCache.Values)
-            {
-                if (texture.textureSlot == _textureSlot)
-                {
-                    return texture;
-                }
-            }
-
-            return textureCache.Values.First();
-        }
-
-        /// <summary>
         /// Loads a sound into memory and returns it.
         /// After a sound is loaded, the already stored sound will be returned instead of creating a new CachedSound object.
         /// </summary>

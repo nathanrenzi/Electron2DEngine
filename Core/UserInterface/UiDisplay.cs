@@ -42,10 +42,10 @@ namespace Electron2D.Core.UI
             for (int i = 0; i < activeComponents.Count; i++)
             {
                 UiComponent component = activeComponents[i];
-                UiFrameTickData lastFrame = activeComponents[i].lastFrameData;
-                UiFrameTickData thisFrame = activeComponents[i].thisFrameData;
+                UiFrameTickData lastFrame = activeComponents[i].LastFrameData;
+                UiFrameTickData thisFrame = activeComponents[i].ThisFrameData;
 
-                thisFrame.isHovered = activeComponents[i].CheckBounds(activeComponents[i].useScreenPosition ? mousePosScreen : mousePos);
+                thisFrame.isHovered = activeComponents[i].CheckBounds(activeComponents[i].UseScreenPosition ? mousePosScreen : mousePos);
                 if (thisFrame.isHovered)
                 {
                     // Mouse is hovering over UI component

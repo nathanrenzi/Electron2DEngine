@@ -8,8 +8,8 @@ namespace Electron2D.Core.Rendering.Shaders
 {
     public class Shader
     {
-        public uint programID { get; private set; }
-        public bool compiled { get; private set; }
+        public uint ProgramID { get; private set; }
+        public bool Compiled { get; private set; }
         private readonly IDictionary<string, int> uniforms = new Dictionary<string, int>();
 
         private ShaderProgramSource shaderProgramSource { get; }
@@ -61,7 +61,7 @@ namespace Electron2D.Core.Rendering.Shaders
 
         public unsafe bool CompileShader()
         {
-            if(compiled)
+            if(Compiled)
             {
                 Console.WriteLine("Trying to compile shader when it has already been compiled.");
                 return false;
@@ -105,27 +105,27 @@ namespace Electron2D.Core.Rendering.Shaders
             }
             // ------------------
 
-            programID = glCreateProgram();
-            glAttachShader(programID, vs);
-            glAttachShader(programID, fs);
-            glLinkProgram(programID);
+            ProgramID = glCreateProgram();
+            glAttachShader(ProgramID, vs);
+            glAttachShader(ProgramID, fs);
+            glLinkProgram(ProgramID);
 
             // Delete Shaders
-            glDetachShader(programID, vs);
-            glDetachShader(programID, fs);
+            glDetachShader(ProgramID, vs);
+            glDetachShader(ProgramID, fs);
             glDeleteShader(vs);
             glDeleteShader(fs);
 
-            int[] count = glGetProgramiv(programID, GL_ACTIVE_UNIFORMS, 1);
+            int[] count = glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, 1);
             for (int i = 0; i < count[0]; i++)
             {
                 string key;
-                glGetActiveUniform(programID, (uint)i, 20, out _, out _, out _, out key);
-                int location = glGetUniformLocation(programID, key);
+                glGetActiveUniform(ProgramID, (uint)i, 20, out _, out _, out _, out key);
+                int location = glGetUniformLocation(ProgramID, key);
                 uniforms.Add(key, location);
             }
 
-            compiled = true;
+            Compiled = true;
             return true;
         }
 
@@ -133,9 +133,9 @@ namespace Electron2D.Core.Rendering.Shaders
 
         public void Use()
         {
-            if(compiled)
+            if(Compiled)
             {
-                glUseProgram(programID);
+                glUseProgram(ProgramID);
             }
             else
             {
@@ -150,7 +150,7 @@ namespace Electron2D.Core.Rendering.Shaders
             if (!uniforms.TryGetValue(_uniformName, out location))
             {
                 // If the uniform isnt saved to memory, find and save it
-                location = glGetUniformLocation(programID, _uniformName);
+                location = glGetUniformLocation(ProgramID, _uniformName);
                 uniforms.Add(_uniformName, location);
             }
             glUniformMatrix4fv(location, 1, false, GetMatrix4x4Values(_mat));
@@ -162,7 +162,7 @@ namespace Electron2D.Core.Rendering.Shaders
             if (!uniforms.TryGetValue(_uniformName, out location))
             {
                 // If the uniform isnt saved to memory, find and save it
-                location = glGetUniformLocation(programID, _uniformName);
+                location = glGetUniformLocation(ProgramID, _uniformName);
                 uniforms.Add(_uniformName, location);
             }
             glUniform1f(location, _value);
@@ -179,7 +179,7 @@ namespace Electron2D.Core.Rendering.Shaders
             if (!uniforms.TryGetValue(_uniformName, out location))
             {
                 // If the uniform isnt saved to memory, find and save it
-                location = glGetUniformLocation(programID, _uniformName);
+                location = glGetUniformLocation(ProgramID, _uniformName);
                 uniforms.Add(_uniformName, location);
             }
             float[] colArray = { _value.R / 255f, _value.G / 255f, _value.B / 255f, _value.A / 255f };

@@ -34,7 +34,7 @@
             }
         }
 
-        // GameObject rendering is handled in the RenderLayerManager
+        // GameObject rendering is handled in RenderLayerManager - Remove gameobjects from rendering process altogether and swap with renderers
 
         public static void StartGameObjects()
         {
@@ -47,7 +47,6 @@
 
         private static void DoStartGameObject(int _i)
         {
-            if (gameObjectsInScene[_i].useAutoInitialization) gameObjectsInScene[_i].InitializeMeshRenderer();
             gameObjectsInScene[_i].Start();
         }
 

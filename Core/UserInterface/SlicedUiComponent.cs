@@ -10,11 +10,11 @@ namespace Electron2D.Core.UserInterface
     /// </summary>
     public class SlicedUiComponent : UiComponent
     {
-        public float[] vertices { get; private set; } = new float[36 * 4];
+        private float[] vertices = new float[36 * 4];
 
-        public static float[] defaultUV { get; private set; } = new float[36 * 2];
+        private static float[] defaultUV = new float[36 * 2];
 
-        public static readonly uint[] indices = // 18 tris * 3 uints
+        private static readonly uint[] indices = // 18 tris * 3 uints
         {
             // Corners
             1, 0, 3,
@@ -47,7 +47,6 @@ namespace Electron2D.Core.UserInterface
             33, 35, 34
         };
 
-        // MAKE THESE EDITABLE AFTER INITIALIZATION??
         public int Left { get; private set; }
         public int Right { get; private set; }
         public int Top { get; private set; }
@@ -77,11 +76,11 @@ namespace Electron2D.Core.UserInterface
             BuildVertexMesh();
             // Indices are pre-written, so they are not generated at runtime
 
-            renderer.SetVertexArrays(vertices, indices, defaultUV);
+            Renderer.SetVertexArrays(vertices, indices, defaultUV);
             SetColor(_startColor);
 
-            constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
-            constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
+            Constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
+            Constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
         }
 
         /// <summary>
@@ -90,11 +89,8 @@ namespace Electron2D.Core.UserInterface
         public void RebuildMesh()
         {
             BuildVertexMesh();
-            renderer.SetVertexArrays(vertices, indices, defaultUV, false);
-            // If the sprite has already been set, THEN fix the sprite, otherwise don't touch the sprite at all
-            //if (renderer.SpriteIndex != -1)
-            //    renderer.SetSprite(renderer.SpriteIndex, renderer.SpriteCol, renderer.SpriteRow);
-            renderer.IsDirty = true;
+            Renderer.SetVertexArrays(vertices, indices, defaultUV, false);
+            Renderer.IsDirty = true;
         }
 
         /// <summary>
@@ -103,8 +99,8 @@ namespace Electron2D.Core.UserInterface
         private void BuildVertexMesh()
         {
             // UI must be scaled 2x to compensate for the Transform scaling (This will be fixed in the future)
-            float sx = sizeX * 2;
-            float sy = sizeY * 2;
+            float sx = SizeX * 2;
+            float sy = SizeY * 2;
 
             // The positions of the padding
             float L = -sx + Left * 2;

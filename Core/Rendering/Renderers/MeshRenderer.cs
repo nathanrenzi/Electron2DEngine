@@ -6,47 +6,44 @@ using static Electron2D.OpenGL.GL;
 namespace Electron2D.Core.Rendering
 {
     /// <summary>
-    /// A renderer that specializes in rendering textured vertex objects.
+    /// A multi-purpose mesh renderer.
     /// </summary>
-    public class MeshRenderer : IRenderer
+    public class MeshRenderer
     {
-        private float[] vertices;
-        private uint[] indices;
-        private float[] defaultUV;
+        public float[] vertices;
+        public uint[] indices;
+        public float[] defaultUV;
 
-        private VertexBuffer vertexBuffer;
-        private VertexArray vertexArray;
-        private IndexBuffer indexBuffer;
-        private BufferLayout layout;
+        public VertexBuffer vertexBuffer;
+        public VertexArray vertexArray;
+        public IndexBuffer indexBuffer;
+        public BufferLayout layout;
+
+        public Material Material;
 
         private Transform transform;
-
-        private Material material;
 
         /// <summary>
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
         /// </summary>
-        public bool UseUnscaledProjectionMatrix = true;
+        public bool UseUnscaledProjectionMatrix = false;
         public bool HasVertexData { get; private set; } = false;
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
-        public int SpriteCol { get; private set; }
-        public int SpriteRow { get; private set; }
-        public int SpriteIndex { get; private set; } = -1;
 
         public MeshRenderer(Transform _transform, Material _material)
         {
             transform = _transform;
-            material = _material;
+            Material = _material;
         }
 
         #region Materials
         public void SetMaterial(Material _material)
         {
-            material = _material;
+            Material = _material;
         }
 
-        public Material GetMaterial() => material;
+        public Material GetMaterial() => Material;
         #endregion
 
         #region Vertex Manipulation
@@ -97,29 +94,6 @@ namespace Electron2D.Core.Rendering
             return vertices[(_vertex * layout.GetRawStride()) + _type];
         }
 
-        //public void SetSprite(int _spritesheetIndex, int _col, int _row)
-        //{
-        //    if (!HasVertexData) return;
-
-        //    SpriteCol = _col;
-        //    SpriteRow = _row;
-        //    SpriteIndex = _spritesheetIndex;
-
-        //    int loops = vertices.Length / layout.GetRawStride();
-        //    Vector2 newUV;
-        //    for (int i = 0; i < loops; i++)
-        //    {
-        //        // Getting the new UV from the spritesheet
-        //        newUV = SpritesheetManager.GetVertexUV(_spritesheetIndex, _col, _row, GetDefaultUV(i));
-
-        //        // Setting the new UV
-        //        vertices[(i * layout.GetRawStride()) + (int)MeshVertexAttribute.UvX] = newUV.X;
-        //        vertices[(i * layout.GetRawStride()) + (int)MeshVertexAttribute.UvY] = newUV.Y;
-        //    }
-
-        //    IsDirty = true;
-        //}
-
         /// <summary>
         /// Returns the default texture UV associated with the vertex inputted.
         /// </summary>
@@ -138,7 +112,7 @@ namespace Electron2D.Core.Rendering
         public void Load()
         {
             if (!HasVertexData) return;
-            if (!material.Shader.compiled && !material.Shader.CompileShader())
+            if (!Material.Shader.Compiled && !Material.Shader.CompileShader())
             {
                 Console.WriteLine("Failed to compile shader.");
                 return;
@@ -161,7 +135,7 @@ namespace Electron2D.Core.Rendering
         public unsafe void Render()
         {
             if (!HasVertexData) return;
-            if (!IsLoaded || material.Shader.compiled == false) return;
+            if (!IsLoaded || Material.Shader.Compiled == false) return;
 
             if (IsDirty)
             {
@@ -171,12 +145,12 @@ namespace Electron2D.Core.Rendering
                 IsDirty = false;
             }
 
-            material.Use();
-            material.Shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
+            Material.Use();
+            Material.Shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
             vertexArray.Bind();
             indexBuffer.Bind();
 
-            material.Shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.main.GetUnscaledProjectionMatrix() : Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
+            Material.Shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.main.GetUnscaledProjectionMatrix() : Camera2D.main.GetProjectionMatrix()); // MUST be set after Use is called
 
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }

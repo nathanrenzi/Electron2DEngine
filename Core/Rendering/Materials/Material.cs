@@ -61,6 +61,10 @@ namespace Electron2D.Core.Rendering
                     MainTexture.Use(GL_TEXTURE0);
                     //textureInUse = MainTexture;
                 }
+                else if(MainTexture == null)
+                {
+
+                }
             }
 
             // RenderLayerManager handles checking to see if the correct filtering type is already being used.

@@ -35,10 +35,10 @@ namespace Electron2D.Build.Resources.Objects
             : base(_sizeX: _sizeX, _sizeY: _sizeY)
         {
             ResizeVertices();
-            renderer.SetVertexArrays(vertices, indices, defaultUV);
+            Renderer.SetVertexArrays(vertices, indices, defaultUV);
 
-            constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
-            constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
+            Constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
+            Constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
             SetColor(_startColor);
         }
 
@@ -48,8 +48,8 @@ namespace Electron2D.Build.Resources.Objects
         private void ResizeVertices()
         {
             int vertexStride = 9;
-            float sx = sizeX * 2;
-            float sy = sizeY * 2;
+            float sx = SizeX * 2;
+            float sy = SizeY * 2;
             int loops = vertices.Length / vertexStride;
 
             for (int i = 0; i < loops; i++)
@@ -67,19 +67,19 @@ namespace Electron2D.Build.Resources.Objects
             }
             else if (_event == UiEvent.LeftClickUp)
             {
-                SetColor(thisFrameData.isHovered ? Color.LightGray : Color.White);
+                SetColor(ThisFrameData.isHovered ? Color.LightGray : Color.White);
             }
 
             if (_event == UiEvent.HoverStart)
             {
-                if (!thisFrameData.isLeftClicked)
+                if (!ThisFrameData.isLeftClicked)
                 {
                     SetColor(Color.LightGray);
                 }
             }
             else if (_event == UiEvent.HoverEnd)
             {
-                if (!thisFrameData.isLeftClicked)
+                if (!ThisFrameData.isLeftClicked)
                 {
                     SetColor(Color.White);
                 }

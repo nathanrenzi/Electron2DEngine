@@ -15,12 +15,15 @@ using Electron2D.Core.UserInterface;
 
 namespace Electron2D.Build
 {
-    public class GameBuild : Game
+    public class Build : Game
     {
+        // Testing objects
         private List<GameObject> environmentTiles = new List<GameObject>();
         private SlicedUiComponent ui;
+        private Texture2D tex1, tex2;
+        // ---------------
 
-        public GameBuild(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle) : base(_initialWindowWidth, _initialWindowHeight, _initialWindowTitle)
+        public Build(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle) : base(_initialWindowWidth, _initialWindowHeight, _initialWindowTitle)
         {
 
         }
@@ -33,15 +36,12 @@ namespace Electron2D.Build
         protected override void Start()
         {
             // Environment Spritesheet
-            Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
-            SpritesheetManager.Add(13, 11);
+            tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
+            SpritesheetManager.Add(tex1, 13, 11);
 
             // UI Spritesheet
-            Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
-            SpritesheetManager.Add(4, 4);
-
-            // Work on removing entire spritesheet system & SetSprite & SpriteRenderer
-            // Re-implement spritesheets using a system that works better with the new Material system
+            tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
+            SpritesheetManager.Add(tex2, 4, 4);
 
             Random rand = new Random();
             int environmentScale = 50;
@@ -50,26 +50,22 @@ namespace Electron2D.Build
             {
                 for (int y = -tiles; y <= tiles; y++)
                 {
-                    GameObject tile = new GameObject(-1);
-                    tile.transform.position = new Vector2(x, y) * environmentScale;
-                    tile.transform.scale = Vector2.One * environmentScale;
+                    GameObject tile = new GameObject(Material.Create(GlobalShaders.DefaultTexture, tex1, false), -1);
+                    tile.Transform.Position = new Vector2(x, y) * environmentScale;
+                    tile.Transform.Scale = Vector2.One * environmentScale;
                     environmentTiles.Add(tile);
 
                     if (rand.Next(2) == 1)
                     {
-                        tile.renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex2, true));
-                    }
-                    else
-                    {
-                        tile.renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex1, false));
+                        tile.Renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex2, true));
                     }
                 }
             }
 
             // NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
 
-            //ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
-            //ui.renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex1, false));
+            ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
+            ui.Renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex1, false));
         }
 
         protected override void Update()

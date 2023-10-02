@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Core\Rendering\Renderers\Batching\**" />
+    <EmbeddedResource Remove="Core\Rendering\Renderers\Batching\**" />
+    <None Remove="Core\Rendering\Renderers\Batching\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Build\Resources\Audio\SFX\testsfx.mp3" />
     <None Remove="Build\Resources\Shaders\FunShader.glsl" />
     <None Remove="Build\Resources\Textures\basicSpritesheet1.png" />
@@ -18,16 +24,7 @@
     <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
     <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
-    <None Remove="Core\Rendering\Renderers\Batching\Batch.disabled" />
-    <None Remove="Core\Rendering\Renderers\Batching\BatchedSpriteRenderer.disabled" />
-    <None Remove="Core\Rendering\Renderers\Batching\GlobalBatches.disabled" />
     <None Remove="Core\Rendering\Shaders\DefaultBatchTexture.glsl" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Core\Rendering\Renderers\Batching\Batch.disabled" />
-    <Compile Include="Core\Rendering\Renderers\Batching\BatchedSpriteRenderer.disabled" />
-    <Compile Include="Core\Rendering\Renderers\Batching\GlobalBatches.disabled" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,6 +67,7 @@
 
   <ItemGroup>
     <Folder Include="Build\Resources\Textures\Tiles\" />
+    <Folder Include="Core\Rendering\CoreTextures\" />
   </ItemGroup>
 
 </Project>

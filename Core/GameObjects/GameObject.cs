@@ -1,87 +1,49 @@
 ﻿using Electron2D.Core.Rendering;
-using Electron2D.Core.Rendering.Shaders;
 
 namespace Electron2D.Core.GameObjects
 {
-    public class GameObject : IRenderable
+    public class GameObject : IRenderable // Remove GameObject from rendering and just use renderers in future
     {
-        public Transform transform = new Transform();
-        public IRenderer renderer;
-        public int renderLayer { get; private set; }
-        public bool useAutoInitialization { get; private set; }
+        public Transform Transform = new Transform();
+        public MeshRenderer Renderer;
 
-        //private int queuedSpriteIndex;
-        //private int queuedSpriteCol;
-        //private int queuedSpriteRow;
-        //private bool hasFinishedSetSprite = true;
+        public int RenderLayer { get; private set; }
 
-        public GameObject(int _renderLayer = 0, bool _useAutoRendererInitialization = true, IRenderer _customRenderer = null)
+        public GameObject(Material _material, int _renderLayer = 0, MeshRenderer _customRenderer = null)
         {
-            renderLayer = _renderLayer;
-            useAutoInitialization = _useAutoRendererInitialization;
+            RenderLayer = _renderLayer;
 
             // Initializing the renderer
             if (_customRenderer != null)
             {
-                renderer = _customRenderer;
+                Renderer = _customRenderer;
             }
             else
             {
-                renderer = new SpriteRenderer(transform, Material.Create(GlobalShaders.DefaultTexture));
+                Renderer = new SpriteRenderer(Transform, _material);
             }
 
             RenderLayerManager.OrderRenderable(this);
             GameObjectManager.RegisterGameObject(this);
         }
 
-        ///// <summary>
-        ///// Safer to use than IRenderer.SetSprite(). Will queue until the renderer has loaded. 
-        ///// </summary>
-        //public void SetSprite(int _spritesheetIndex, int _col, int _row)
-        //{
-        //    hasFinishedSetSprite = false;
-
-        //    queuedSpriteIndex = _spritesheetIndex;
-        //    queuedSpriteCol = _col;
-        //    queuedSpriteRow = _row;
-
-        //    if (renderer.IsLoaded)
-        //    {
-        //        renderer.SetSprite(_spritesheetIndex, _col, _row);
-        //        hasFinishedSetSprite = true;
-        //    }
-        //}
-
         public void SetRenderLayer(int _renderLayer)
         {
-            if (renderLayer == _renderLayer) return;
-            RenderLayerManager.OrderRenderable(this, true, renderLayer, _renderLayer);
-            renderLayer = _renderLayer;
+            if (RenderLayer == _renderLayer) return;
+            RenderLayerManager.OrderRenderable(this, true, RenderLayer, _renderLayer);
+            RenderLayer = _renderLayer;
         }
 
-        public int GetRenderLayer() => renderLayer;
+        public int GetRenderLayer() => RenderLayer;
 
         public virtual void Start()
         {
 
         }
 
-        /// <summary>
-        /// Called automatically after Start if rendering is enabled. Initializes the mesh renderer and sets the sprite if it has not been set yet.
-        /// </summary>
-        public void InitializeMeshRenderer()
-        {
-            renderer.Load();
-            //if(!hasFinishedSetSprite)
-            //{
-            //    renderer.SetSprite(queuedSpriteIndex, queuedSpriteCol, queuedSpriteRow);
-            //    hasFinishedSetSprite = true;
-            //}
-        }
-
         public virtual void Render()
         {
-            if (renderer != null) renderer.Render();
+            if (Renderer != null) Renderer.Render();
         }
 
         public virtual void Update()

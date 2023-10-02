@@ -59,7 +59,7 @@ namespace Electron2D.Core.Rendering
         }
 
         /// <summary>
-        /// Called by the main game loop to render all current render layers. Should not be called manually.
+        /// Called by the game loop to render all current render layers. Should not be called manually.
         /// </summary>
         public static void RenderAllLayers()
         {

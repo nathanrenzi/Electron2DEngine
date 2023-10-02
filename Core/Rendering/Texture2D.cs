@@ -5,25 +5,21 @@ namespace Electron2D.Core.Rendering
     public class Texture2D : IDisposable
     {
         private bool _disposed;
-        public uint handle { get; private set; }
-        public int width { get; set; }
-        public int height { get; set; }
-        public int textureSlot { get; set; } = GL_TEXTURE0; // See note below, might want to remove in favor of material system
+        public uint Handle { get; private set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+
+        public static Texture2D Blank { get; set; } // Still need to implement
 
         public Texture2D(uint _handle)
         {
-            handle = _handle;
+            Handle = _handle;
         }
 
         public Texture2D(uint _handle, int _width, int _height) : this(_handle)
         {
-            width = _width;
-            height = _height;
-        }
-
-        public Texture2D(uint _handle, int _width, int _height,  int _textureSlot) : this(_handle, _width, _height)
-        {
-            textureSlot = _textureSlot;
+            Width = _width;
+            Height = _height;
         }
 
         ~Texture2D()
@@ -31,18 +27,17 @@ namespace Electron2D.Core.Rendering
             Dispose(false);
         }
 
-        public void Use() => Use(textureSlot); // Might want to remove default texture slot, since material system is replacing that
         public void Use(int _textureSlot)
         {
             glActiveTexture(_textureSlot);
-            glBindTexture(GL_TEXTURE_2D, handle);
+            glBindTexture(GL_TEXTURE_2D, Handle);
         }
 
         public void Dispose(bool _disposing)
         {
             if(!_disposed)
             {
-                glDeleteTexture(handle);
+                glDeleteTexture(Handle);
                 _disposed = true;
             }
         }

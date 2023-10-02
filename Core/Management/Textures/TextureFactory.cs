@@ -7,16 +7,10 @@ namespace Electron2D.Core.Management
 {
     public static class TextureFactory
     {
-        private static int textureCursor = 0;
-
         public static Texture2D Load(string _textureName)
         {
             uint handle = glGenTexture();
-            int textureUnit = GL_TEXTURE0 + textureCursor;
-            if(textureUnit > GL_TEXTURE31)
-            {
-                throw new Exception($"Exceeded maximum texture slots that OpenGL can natively support: {textureCursor}");
-            }
+            int textureUnit = GL_TEXTURE0;
             glActiveTexture(textureUnit);
             glBindTexture(GL_TEXTURE_2D, handle);
             using var image = new Bitmap(_textureName);
@@ -33,8 +27,7 @@ namespace Electron2D.Core.Management
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glGenerateMipmap(GL_TEXTURE_2D);
-            textureCursor++;
-            return new Texture2D(handle, image.Width, image.Height, textureUnit);
+            return new Texture2D(handle, image.Width, image.Height);
         }
     }
 }
