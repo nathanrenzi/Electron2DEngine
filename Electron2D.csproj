@@ -17,6 +17,7 @@
   <ItemGroup>
     <None Remove="Build\Resources\Audio\SFX\testsfx.mp3" />
     <None Remove="Build\Resources\Shaders\FunShader.glsl" />
+    <None Remove="Build\Resources\Shaders\LitShader.glsl" />
     <None Remove="Build\Resources\Textures\basicSpritesheet1.png" />
     <None Remove="Build\Resources\Textures\boid1.png" />
     <None Remove="Build\Resources\Textures\boid2.png" />
@@ -29,6 +30,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Shaders\LitShader.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Shaders\FunShader.glsl">

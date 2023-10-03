@@ -36,7 +36,7 @@ namespace Electron2D.Core
             currentWindowTitle = _initialWindowTitle;
         }
 
-        private void SetBackgroundColor(Color _backgroundColor)
+        public void SetBackgroundColor(Color _backgroundColor)
         {
             backgroundColor = _backgroundColor;
         }
@@ -90,7 +90,7 @@ namespace Electron2D.Core
                 // Rendering
                 double rendST = Glfw.Time;
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                glClearColor(backgroundColor.R, backgroundColor.G, backgroundColor.B, 1);
+                glClearColor(backgroundColor.R / 255f, backgroundColor.G / 255f, backgroundColor.B / 255f, 1);
 
                 Render();
                 RenderLayerManager.RenderAllLayers();

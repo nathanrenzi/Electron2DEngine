@@ -43,6 +43,7 @@ namespace Electron2D.Build
             tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
             SpritesheetManager.Add(tex2, 4, 4);
 
+            Shader diffuseShader = new Shader(Shader.ParseShader("Build/Resources/Shaders/LitShader.glsl"));
             Random rand = new Random();
             int environmentScale = 50;
             int tiles = 10;
@@ -50,22 +51,24 @@ namespace Electron2D.Build
             {
                 for (int y = -tiles; y <= tiles; y++)
                 {
-                    GameObject tile = new GameObject(Material.Create(GlobalShaders.DefaultTexture, tex1, false), -1);
+                    GameObject tile = new GameObject(Material.Create(diffuseShader, tex1, false), -1);
+                    tile.Renderer.SetSubSprite(2, 8);
                     tile.Transform.Position = new Vector2(x, y) * environmentScale;
                     tile.Transform.Scale = Vector2.One * environmentScale;
                     environmentTiles.Add(tile);
 
                     if (rand.Next(2) == 1)
                     {
-                        tile.Renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex2, true));
+                        tile.Renderer.SetMaterial(Material.Create(diffuseShader, tex1, true));
+                        tile.Renderer.SetSubSprite(3, 7);
                     }
                 }
             }
 
-            // NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
+            //// NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
 
-            ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
-            ui.Renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex1, false));
+            //ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
+            //ui.Renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex1, false));
         }
 
         protected override void Update()

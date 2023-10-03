@@ -2,14 +2,16 @@
 
 namespace Electron2D.Core.GameObjects
 {
+    // Add ECS in the future - It's a pain manually referencing child types, it would be easier to have them as a component
     public class GameObject : IRenderable // Remove GameObject from rendering and just use renderers in future
     {
         public Transform Transform = new Transform();
-        public MeshRenderer Renderer;
+        public SpriteRenderer Renderer;
+        //public MeshRenderer Renderer;
 
         public int RenderLayer { get; private set; }
 
-        public GameObject(Material _material, int _renderLayer = 0, MeshRenderer _customRenderer = null)
+        public GameObject(Material _material, int _renderLayer = 0, SpriteRenderer _customRenderer = null)
         {
             RenderLayer = _renderLayer;
 

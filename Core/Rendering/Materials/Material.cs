@@ -8,7 +8,7 @@ namespace Electron2D.Core.Rendering
     public class Material
     {
         // The last used shader by the material class - Will not call Shader.Use() again if the correct one is already in use.
-        private static Shader shaderInUse = null;
+        private static Shader shaderInUse = null;     // Include a list of tags that can be applied that will auto set certain uniforms (ex. cam pos, time, etc)
         private static Texture2D textureInUse = null; // Replace with texture-sorted rendering system
 
         public Shader Shader;
@@ -16,7 +16,6 @@ namespace Electron2D.Core.Rendering
         public Color MainColor;
         public bool UseLinearFiltering;
         // Add normal & roughness maps here once they are needed
-
         private Material(Shader _shader, Texture2D _mainTexture, Color _mainColor, bool _useLinearFiltering = false)
         {
             Shader = _shader;
