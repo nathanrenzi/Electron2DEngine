@@ -34,7 +34,7 @@ namespace Electron2D.Core.Management
         /// </summary>
         /// <param name="_textureFileName">The local file path of the sound. Ex. Build/Resources/Textures/TextureNameHere.png</param>
         /// <returns></returns>
-        public Texture2D LoadTexture(string _textureFileName)
+        public Texture2D LoadTexture(string _textureFileName, bool _loadAsNonSRGBA = false)
         {
             textureCache.TryGetValue(_textureFileName, out var value);
             if(value is not null)
@@ -42,7 +42,7 @@ namespace Electron2D.Core.Management
                 return value;
             }
 
-            value = TextureFactory.Load(_textureFileName);
+            value = TextureFactory.Load(_textureFileName, _loadAsNonSRGBA);
             textureCache.Add(_textureFileName, value);
             return value;
         }

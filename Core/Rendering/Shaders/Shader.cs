@@ -25,10 +25,6 @@ namespace Electron2D.Core.Rendering.Shaders
             {
                 CompileShader();
             }
-            if(_useLightData)
-            {
-                ShaderLightDataUpdater.RegisterShader(this);
-            }
         }
 
         ~Shader()
@@ -144,6 +140,13 @@ namespace Electron2D.Core.Rendering.Shaders
             //}
 
             Compiled = true;
+
+            // Registering the shader to receive light data now that it is compiled
+            if (useLightData)
+            {
+                ShaderLightDataUpdater.RegisterShader(this);
+            }
+
             return true;
         }
 
@@ -172,6 +175,18 @@ namespace Electron2D.Core.Rendering.Shaders
                 uniforms.Add(_uniformName, location);
             }
             glUniformMatrix4fv(location, 1, false, GetMatrix4x4Values(_mat));
+        }
+
+        public void SetInt(string _uniformName, int _value)
+        {
+            int location;
+            if (!uniforms.TryGetValue(_uniformName, out location))
+            {
+                // If the uniform isnt saved to memory, find and save it
+                location = glGetUniformLocation(ProgramID, _uniformName);
+                uniforms.Add(_uniformName, location);
+            }
+            glUniform1i(location, _value);
         }
 
         public void SetFloat(string _uniformName, float _value)

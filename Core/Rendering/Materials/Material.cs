@@ -8,41 +8,42 @@ namespace Electron2D.Core.Rendering
 {
     public class Material
     {
-        // The last used shader by the material class - Will not call Shader.Use() again if the correct one is already in use.
-        private static Shader shaderInUse = null;     // Include a list of tags that can be applied that will auto set certain uniforms (ex. cam pos, time, etc)
-        private static Texture2D textureInUse = null; // Replace with texture-sorted rendering system
         private static Texture2D blankTexture = null;
+        private static Texture2D blankNormal = null;
 
         public Shader Shader;
+        private static Shader shaderInUse = null;
+
         public Texture2D MainTexture;
+        private static Texture2D mainTextureInUse = null;
+
+        public Texture2D NormalTexture;
+        private static Texture2D normalTextureInUse = null;
+
         public Color MainColor;
         public bool UseLinearFiltering;
-        // Add normal & roughness maps here once they are needed
-        private Material(Shader _shader, Texture2D _mainTexture, Color _mainColor, bool _useLinearFiltering = false)
+        // Add normal & roughness & specular & metallic maps here once they are needed
+        private Material(Shader _shader, Texture2D _mainTexture, Texture2D _normalTexture, Color _mainColor, bool _useLinearFiltering = false)
         {
             Shader = _shader;
             MainTexture = _mainTexture;
+            NormalTexture = _normalTexture;
             MainColor = _mainColor;
             UseLinearFiltering = _useLinearFiltering;
         }
 
         #region Static Methods
-        public static Material Create(Shader _shader)
-        {
-            if(blankTexture == null)
-                blankTexture = ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/Blank.png");
-            return Create(_shader, blankTexture, Color.White);
-        }
-        public static Material Create(Shader _shader, Color _color)
+        public static Material Create(Shader _shader, Texture2D _mainTexture = null, Texture2D _normalTexture = null, bool _useLinearFiltering = false)
+            => Create(_shader, Color.White, _mainTexture, _normalTexture, _useLinearFiltering);
+        public static Material Create(Shader _shader, Color _mainColor, Texture2D _mainTexture = null, Texture2D _normalTexture = null, bool _useLinearFiltering = false)
         {
             if (blankTexture == null)
-                blankTexture = ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/Blank.png");
-            return Create(_shader, blankTexture, _color);
-        }
-        public static Material Create(Shader _shader, Texture2D _mainTexture, bool _useLinearFiltering = false) => Create(_shader, _mainTexture, Color.White, _useLinearFiltering);
-        public static Material Create(Shader _shader, Texture2D _mainTexture, Color _mainColor, bool _useLinearFiltering = false)
-        {
-            return new Material(_shader, _mainTexture, _mainColor, _useLinearFiltering);
+                blankTexture = ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/BlankTexture.png");
+
+            if (blankNormal == null)
+                blankNormal = ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/BlankNormal.png", true);
+
+            return new Material(_shader, (_mainTexture == null ? blankTexture : _mainTexture), (_normalTexture == null ? blankNormal : _normalTexture), _mainColor, _useLinearFiltering);
         }
         #endregion
 
@@ -61,21 +62,23 @@ namespace Electron2D.Core.Rendering
                 if (shaderInUse != Shader)
                 {
                     Shader.Use();
-                    //shaderInUse = Shader;
+                    shaderInUse = Shader;
                 }
             }
 
             if(!_skipTextureBinding)
             {
                 // If the last used texture is the same, skipping .Use()
-                if (MainTexture != null && textureInUse != MainTexture)
+                if (mainTextureInUse != MainTexture)
                 {
-                    MainTexture.Use(GL_TEXTURE0);
-                    //textureInUse = MainTexture;
+                    MainTexture.Use(GL_TEXTURE0);   // Main textures get bound to texture slot 0
+                    //mainTextureInUse = MainTexture;
                 }
-                else if(MainTexture == null)
+
+                if (normalTextureInUse != NormalTexture)
                 {
-                    // Use a blank texture / set a flag in the shader?
+                    NormalTexture.Use(GL_TEXTURE1); // Normals get bound to texture slot 1
+                    //normalTextureInUse = NormalTexture;
                 }
             }
 

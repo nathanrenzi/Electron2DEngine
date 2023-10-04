@@ -89,8 +89,7 @@ namespace Electron2D.Core.UI
 
         public void SetColor(Color _color)
         {
-            Material startMaterial = Renderer.GetMaterial();
-            Renderer.SetMaterial(Material.Create(startMaterial.Shader, startMaterial.MainTexture, _color, startMaterial.UseLinearFiltering));
+            Renderer.Material.MainColor = _color;
         }
 
         protected virtual void ApplyConstraints()

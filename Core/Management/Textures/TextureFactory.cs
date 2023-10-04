@@ -7,7 +7,7 @@ namespace Electron2D.Core.Management
 {
     public static class TextureFactory
     {
-        public static Texture2D Load(string _textureName)
+        public static Texture2D Load(string _textureName, bool _loadAsNonSRGBA)
         {
             uint handle = glGenTexture();
             int textureUnit = GL_TEXTURE0;
@@ -20,7 +20,7 @@ namespace Electron2D.Core.Management
                 ImageLockMode.ReadOnly,
                 System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.Width, image.Height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
+            glTexImage2D(GL_TEXTURE_2D, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

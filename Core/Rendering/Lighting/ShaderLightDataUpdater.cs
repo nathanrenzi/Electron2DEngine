@@ -9,7 +9,7 @@ namespace Electron2D.Core.Rendering.Lighting
 
         public static void Initialize()
         {
-            Light.OnLightsUpdated += UpdateShaders;
+            //Light.OnLightsUpdated += UpdateShaders; - Add light IsDirty detection, doesn't update after lights are moved
             Game.OnUpdateEvent += UpdateShaders;
         }
 
@@ -19,6 +19,10 @@ namespace Electron2D.Core.Rendering.Lighting
             UpdateShader(_shader, Light.LightType.Point);
             UpdateShader(_shader, Light.LightType.Spot);
             UpdateShader(_shader, Light.LightType.Directional);
+
+            _shader.Use();
+            _shader.SetInt("mainTextureSampler", 0);
+            _shader.SetInt("normalTextureSampler", 1);
         }
 
         public static void UnregisterShader(Shader _shader)
@@ -40,6 +44,7 @@ namespace Electron2D.Core.Rendering.Lighting
 
         private static void UpdateShader(Shader _shader, Light.LightType _type)
         {
+            _shader.Use();
             switch(_type)
             {
                 case Light.LightType.Point:

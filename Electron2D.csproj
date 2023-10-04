@@ -24,8 +24,10 @@
     <None Remove="Build\Resources\Textures\boidSpritesheet.png" />
     <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
+    <None Remove="Build\Resources\Textures\TestNormal.jpg" />
     <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
-    <None Remove="Core\Rendering\CoreTextures\Blank.png" />
+    <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
+    <None Remove="Core\Rendering\CoreTextures\BlankTexture.png" />
     <None Remove="Core\Rendering\Shaders\DefaultBatchTexture.glsl" />
   </ItemGroup>
 
@@ -33,7 +35,13 @@
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\CoreTextures\Blank.png">
+    <EmbeddedResource Include="Build\Resources\Textures\TestNormal.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Rendering\CoreTextures\BlankNormal.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Rendering\CoreTextures\BlankTexture.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\LitShader.glsl">
