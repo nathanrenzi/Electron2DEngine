@@ -7,6 +7,7 @@ using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.Management.Textures;
 using Electron2D.Core.UserInterface;
 using Electron2D.Core.ECS;
+using System.Drawing;
 
 namespace Electron2D.Build
 {
@@ -16,6 +17,8 @@ namespace Electron2D.Build
         private SlicedUiComponent ui;
         private Texture2D tex1, tex2;
         private Entity lightObj;
+        private Entity lightObj2;
+        private Entity lightObj3;
         // ---------------
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight, "Test Game!")
@@ -34,10 +37,6 @@ namespace Electron2D.Build
             tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
             SpritesheetManager.Add(tex1, 13, 11);
 
-            // UI Spritesheet
-            tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
-            SpritesheetManager.Add(tex2, 4, 4);
-
             Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/LitShader.glsl"), _useLightData: true);
             Random rand = new Random();
             int environmentScale = 50;
@@ -46,27 +45,33 @@ namespace Electron2D.Build
             {
                 for (int y = -tiles; y <= tiles; y++)
                 {
-                    Sprite tile = new Sprite(Material.Create(diffuseShader, tex1, false), -1);
-                    tile.Renderer.SetSubSprite(2, 8);
+                    Sprite tile = new Sprite(Material.Create(diffuseShader), -1);
                     tile.Transform.Position = new Vector2(x, y) * environmentScale;
                     tile.Transform.Scale = Vector2.One * environmentScale;
-
-                    if (rand.Next(2) == 1)
-                    {
-                        tile.Renderer.SetMaterial(Material.Create(diffuseShader, tex1, true));
-                        tile.Renderer.SetSubSprite(3, 7);
-                    }
                 }
             }
 
             lightObj = new Entity();
             lightObj.AddComponent(new Transform());
             lightObj.AddComponent(new Light(lightObj.GetComponent<Transform>(), System.Drawing.Color.LightSalmon, 400));
+            lightObj.GetComponent<Transform>().Position = new Vector2(-400, 100);
+
+            lightObj2 = new Entity();
+            lightObj2.AddComponent(new Transform());
+            lightObj2.AddComponent(new Light(lightObj2.GetComponent<Transform>(), System.Drawing.Color.FloralWhite, 200));
+            lightObj2.GetComponent<Transform>().Position = new Vector2(300, 300);
+
+            lightObj3 = new Entity();
+            lightObj3.AddComponent(new Transform());
+            lightObj3.AddComponent(new Light(lightObj3.GetComponent<Transform>(), System.Drawing.Color.MediumPurple, 200));
+            lightObj3.GetComponent<Transform>().Position = new Vector2(100, -400);
         }
 
         protected override void Update()
         {
             CameraMovement();
+            lightObj.GetComponent<Transform>().Position = new Vector2(MathF.Sin(Time.totalElapsedSeconds * 3)
+                * 300, MathF.Cos(Time.totalElapsedSeconds * 3) * 300);
         }
 
         private void CameraMovement()

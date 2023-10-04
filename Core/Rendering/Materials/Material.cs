@@ -1,4 +1,5 @@
-﻿using Electron2D.Core.Rendering.Shaders;
+﻿using Electron2D.Core.Management;
+using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 
 using static Electron2D.OpenGL.GL;
@@ -10,6 +11,7 @@ namespace Electron2D.Core.Rendering
         // The last used shader by the material class - Will not call Shader.Use() again if the correct one is already in use.
         private static Shader shaderInUse = null;     // Include a list of tags that can be applied that will auto set certain uniforms (ex. cam pos, time, etc)
         private static Texture2D textureInUse = null; // Replace with texture-sorted rendering system
+        private static Texture2D blankTexture = null;
 
         public Shader Shader;
         public Texture2D MainTexture;
@@ -25,7 +27,18 @@ namespace Electron2D.Core.Rendering
         }
 
         #region Static Methods
-        public static Material Create(Shader _shader) => Create(_shader, null, Color.White);
+        public static Material Create(Shader _shader)
+        {
+            if(blankTexture == null)
+                blankTexture = ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/Blank.png");
+            return Create(_shader, blankTexture, Color.White);
+        }
+        public static Material Create(Shader _shader, Color _color)
+        {
+            if (blankTexture == null)
+                blankTexture = ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/Blank.png");
+            return Create(_shader, blankTexture, _color);
+        }
         public static Material Create(Shader _shader, Texture2D _mainTexture, bool _useLinearFiltering = false) => Create(_shader, _mainTexture, Color.White, _useLinearFiltering);
         public static Material Create(Shader _shader, Texture2D _mainTexture, Color _mainColor, bool _useLinearFiltering = false)
         {

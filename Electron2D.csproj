@@ -25,11 +25,15 @@
     <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
     <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
+    <None Remove="Core\Rendering\CoreTextures\Blank.png" />
     <None Remove="Core\Rendering\Shaders\DefaultBatchTexture.glsl" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Rendering\CoreTextures\Blank.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\LitShader.glsl">
@@ -72,7 +76,6 @@
   <ItemGroup>
     <Folder Include="Build\Resources\Textures\Tiles\" />
     <Folder Include="Core\Physics\" />
-    <Folder Include="Core\Rendering\CoreTextures\" />
   </ItemGroup>
 
 </Project>
