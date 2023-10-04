@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering;
 using GLFW;
 
@@ -35,7 +34,7 @@ namespace Electron2D.Core
             }
 
             scrollCallback = new MouseCallback(ScrollCallback);
-            Glfw.SetScrollCallback(DisplayManager.Instance.window, scrollCallback);
+            Glfw.SetScrollCallback(DisplayManager.Instance.Window, scrollCallback);
         }
 
         public static void ScrollCallback(Window _window, double _xOffset, double _yOffset)
@@ -67,12 +66,12 @@ namespace Electron2D.Core
             for (int i = 0; i < totalKeyCount; i++)
             {
                 if ((int)keyValues[i] == -1) continue; // Passing Unknown (-1) into the GetKey function causes an error
-                KEYS[i] = Glfw.GetKey(DisplayManager.Instance.window, keyValues[i]) == InputState.Press;
+                KEYS[i] = Glfw.GetKey(DisplayManager.Instance.Window, keyValues[i]) == InputState.Press;
             }
             for (int i = 0; i < MOUSE.Length; i++)
             {
                 // Mouse presses
-                MOUSE[i] = Glfw.GetMouseButton(DisplayManager.Instance.window, (MouseButton)i);
+                MOUSE[i] = Glfw.GetMouseButton(DisplayManager.Instance.Window, (MouseButton)i);
             }
 
             scrollCallbackFrame = false;
@@ -134,10 +133,10 @@ namespace Electron2D.Core
         {
             double x;
             double y;
-            Glfw.GetCursorPosition(DisplayManager.Instance.window, out x, out y);
+            Glfw.GetCursorPosition(DisplayManager.Instance.Window, out x, out y);
 
-            Vector2 offset = offsetToMiddle ? new Vector2(Program.game.currentWindowWidth / 2f, Program.game.currentWindowHeight / 2f) : Vector2.Zero;
-            return new Vector2((float)x - offset.X, DisplayManager.Instance.windowSize.Y - (float)y - offset.Y);
+            Vector2 offset = offsetToMiddle ? new Vector2(Program.game.CurrentWindowWidth / 2f, Program.game.CurrentWindowHeight / 2f) : Vector2.Zero;
+            return new Vector2((float)x - offset.X, DisplayManager.Instance.WindowSize.Y - (float)y - offset.Y);
         }
 
         public static Vector2 GetMouseScreenPositionScaled(bool offsetToMiddle = false) => GetMouseScreenPositionRaw(offsetToMiddle) / Game.WINDOW_SCALE;
@@ -147,8 +146,8 @@ namespace Electron2D.Core
             Vector2 worldPosition = GetMouseScreenPositionRaw();
 
             // Centering the position
-            worldPosition.Y -= Program.game.currentWindowHeight / 2;
-            worldPosition.X -= Program.game.currentWindowWidth / 2;
+            worldPosition.Y -= Program.game.CurrentWindowHeight / 2;
+            worldPosition.X -= Program.game.CurrentWindowWidth / 2;
             // ----------------------
 
             // Scaling the cursor

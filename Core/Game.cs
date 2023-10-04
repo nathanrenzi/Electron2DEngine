@@ -1,10 +1,8 @@
 ﻿using GLFW;
-using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering;
 using static Electron2D.OpenGL.GL;
 using System.Numerics;
 using Electron2D.Core.Audio;
-using Electron2D.Core.Physics;
 using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.UserInterface;
@@ -14,31 +12,31 @@ namespace Electron2D.Core
 {
     public abstract class Game
     {
-        public static event Action onStartEvent;
-        public static event Action onUpdateEvent;
-        public static event Action onLateUpdateEvent;
+        public static event Action OnStartEvent;
+        public static event Action OnUpdateEvent;
+        public static event Action OnLateUpdateEvent;
         public static readonly float REFERENCE_WINDOW_WIDTH = 1920f;
         public static readonly float REFERENCE_WINDOW_HEIGHT = 1080f;
-        public static float WINDOW_SCALE { get { return Program.game.currentWindowWidth / REFERENCE_WINDOW_WIDTH; } }
+        public static float WINDOW_SCALE { get { return Program.game.CurrentWindowWidth / REFERENCE_WINDOW_WIDTH; } }
 
-        public int currentWindowWidth { get; protected set; }
-        public int currentWindowHeight { get; protected set; }
-        public string currentWindowTitle { get; protected set; }
+        public int CurrentWindowWidth { get; protected set; }
+        public int CurrentWindowHeight { get; protected set; }
+        public string CurrentWindowTitle { get; protected set; }
 
-        public static Color backgroundColor { get; private set; } = Color.Black;
+        public static Color BackgroundColor { get; private set; } = Color.Black;
 
         protected Camera2D startCamera;
 
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle)
         {
-            currentWindowWidth = _initialWindowWidth;
-            currentWindowHeight = _initialWindowHeight;
-            currentWindowTitle = _initialWindowTitle;
+            CurrentWindowWidth = _initialWindowWidth;
+            CurrentWindowHeight = _initialWindowHeight;
+            CurrentWindowTitle = _initialWindowTitle;
         }
 
         public void SetBackgroundColor(Color _backgroundColor)
         {
-            backgroundColor = _backgroundColor;
+            BackgroundColor = _backgroundColor;
         }
 
         public void Run()
@@ -46,7 +44,7 @@ namespace Electron2D.Core
             Initialize();
             startCamera = new Camera2D(Vector2.Zero, 1);
 
-            DisplayManager.Instance.CreateWindow(currentWindowWidth, currentWindowHeight, currentWindowTitle);
+            DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle);
             Glfw.SwapInterval(1); // 0 - VSYNC is off, 1 is on
             Input.Initialize();
 
@@ -56,11 +54,17 @@ namespace Electron2D.Core
             // -----------
 
             Start();
-            onStartEvent?.Invoke();
-            GameObjectManager.StartGameObjects();
-            UiMaster.display.Initialize();
+            OnStartEvent?.Invoke();
 
-            while (!Glfw.WindowShouldClose(DisplayManager.Instance.window))
+            // Starting Entity Systems
+            TransformSystem.Start();
+            MeshRendererSystem.Start();
+            LightSystem.Start();
+            // -----------------
+
+            UiMaster.Display.Initialize();
+
+            while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
             {
                 Time.deltaTime = (float)Glfw.Time - Time.totalElapsedSeconds;
                 Time.totalElapsedSeconds = (float)Glfw.Time;
@@ -73,16 +77,17 @@ namespace Electron2D.Core
                 // Updating
                 double goST = Glfw.Time;
                 Update();
-                onUpdateEvent?.Invoke();
-                GameObjectManager.UpdateGameObjects();
-                onLateUpdateEvent?.Invoke();
+                OnUpdateEvent?.Invoke();
+                TransformSystem.Update();
+                MeshRendererSystem.Update();
+                LightSystem.Update();
+                OnLateUpdateEvent?.Invoke();
                 PerformanceTimings.gameObjectMilliseconds = (Glfw.Time - goST) * 1000;
                 // -------------------------------
 
 
                 // Physics
                 double phyST = Glfw.Time;
-                VerletWorld.Step();
                 PerformanceTimings.physicsMilliseconds = (Glfw.Time - phyST) * 1000;
                 // -------------------------------
 
@@ -90,12 +95,12 @@ namespace Electron2D.Core
                 // Rendering
                 double rendST = Glfw.Time;
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                glClearColor(backgroundColor.R / 255f, backgroundColor.G / 255f, backgroundColor.B / 255f, 1);
+                glClearColor(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, 1);
 
                 Render();
                 RenderLayerManager.RenderAllLayers();
 
-                Glfw.SwapBuffers(DisplayManager.Instance.window);
+                Glfw.SwapBuffers(DisplayManager.Instance.Window);
                 PerformanceTimings.renderMilliseconds = (Glfw.Time - rendST) * 1000;
                 // -------------------------------
             }

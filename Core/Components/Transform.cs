@@ -1,56 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Electron2D.Core.ECS;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Electron2D.Core.GameObjects
+namespace Electron2D.Core
 {
-    public class Transform
+    public class TransformSystem : BaseSystem<Transform> { }
+    public class Transform : Component
     {
         public Vector2 Position;
         public Vector2 Scale = new Vector2(100, 100);
         public Vector2 PivotPoint;
         public float Rotation;
-        public bool IsDirty { get; private set; } = true;
-
-        // Checking for changed values
-        private Vector2 lastPosition;
-        private Vector2 lastScale;
-        private Vector2 lastPivotPoint;
-        private float lastRotation;
-        // ---------------------------
 
         public Transform()
         {
             PivotPoint = Vector2.Zero;
             Scale = Vector2.One;
+            TransformSystem.Register(this);
+        }
 
-            Game.onLateUpdateEvent += CheckForNewValues;
+        ~Transform() 
+        {
+            TransformSystem.Unregister(this);
         }
 
         public Vector2 up { get { return NormalizeVector(new Vector2(MathF.Cos(Rotation * MathF.PI / 180), MathF.Sin(Rotation * MathF.PI / 180))); } }
         public Vector2 right { get { return NormalizeVector(new Vector2(MathF.Cos((Rotation - 90) * MathF.PI / 180), MathF.Sin((Rotation - 90) * MathF.PI / 180))); } }
-
-        /// <summary>
-        /// Checks to see if values have been updated, and if so mark the transform as dirty.
-        /// </summary>
-        private void CheckForNewValues()
-        {
-            if(lastPosition != Position ||
-                lastScale != Scale ||
-                lastPivotPoint != PivotPoint ||
-                lastRotation != Rotation)
-            {
-                IsDirty = true;
-            }
-
-            lastPosition = Position;
-            lastScale = Scale;
-            lastPivotPoint = PivotPoint;
-            lastRotation = Rotation;
-        }
 
         public Matrix4x4 GetPositionMatrix()
         {
@@ -77,7 +51,5 @@ namespace Electron2D.Core.GameObjects
             float length = MathF.Sqrt(_vector.X * _vector.X + _vector.Y * _vector.Y);
             return _vector / length;
         }
-
-        public void UnflagDirty() => IsDirty = false;
     }
 }

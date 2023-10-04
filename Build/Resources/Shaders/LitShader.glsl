@@ -4,7 +4,7 @@ layout (location = 0) in vec2 aPosition;
 layout (location = 1) in vec2 aTexCoord;
 
 out vec2 texCoord;
-out vec4 vertexColor;
+out vec4 texColor;
 out vec4 position;
     
 uniform vec4 mainColor;
@@ -15,7 +15,7 @@ uniform mat4 model;
 void main() 
 {
     texCoord = aTexCoord;
-    vertexColor = mainColor;
+    texColor = mainColor;
     gl_Position = projection * model * vec4(aPosition.xy, 0.0, 1.0);
 
     position = model * vec4(aPosition.xy, 0.0, 1.0);
@@ -26,25 +26,39 @@ void main()
 out vec4 FragColor;
 
 in vec2 texCoord;
-in vec4 vertexColor;
+in vec4 texColor;
 in vec4 position;
 
-uniform vec2 lightPosition;
 uniform sampler2D mainTextureSampler;
+
+struct PointLight {    
+    vec2 position;  
+    float radius;
+    float intensity;
+    vec3 color;
+};  
+
+#define MAX_POINT_LIGHTS 256  
+uniform PointLight pointLights[MAX_POINT_LIGHTS];
+
+vec3 CalcPointLight(PointLight light, vec2 fragPos)
+{
+    float distance = length(light.position - fragPos);
+    //float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
+    float attenuation = 1.0 / (1 + 0 * distance + 1 * (distance * distance));
+
+    return light.color * light.intensity * attenuation;
+} 
 
 void main() 
 {
-    vec4 objectColor = texture(mainTextureSampler, texCoord) * vertexColor;
-    vec4 lightColor = vec4(1, 0.9, 0.8, 1.0);
+    vec4 objectColor = texture(mainTextureSampler, texCoord) * texColor;
 
-    float ambientStrength = 0.3;
-    float lightDistance = 400;
-    float lightIntensity = 1.5;
-    float d = distance(position.xy, lightPosition);
-    float p = pow(1 - (clamp(d / lightDistance, 0, 1)), 2);
+    vec3 result = vec3(0.0);
+    for(int i = 0; i < MAX_POINT_LIGHTS; i++)
+    {
+        result += CalcPointLight(pointLights[i], position.xy);
+    }
 
-    vec4 ambient = ambientStrength * lightColor;
-    vec4 result = objectColor * clamp((lightColor * lightIntensity) * p, ambient, vec4(1.0));
-
-    FragColor = result;
+    FragColor = vec4(objectColor * result, 1.0);
 }

@@ -168,6 +168,42 @@ namespace Electron2D.Core.Rendering.Shaders
             glUniform1f(location, _value);
         }
 
+        public void SetVector2(string _uniformName, Vector2 _value)
+        {
+            int location;
+            if (!uniforms.TryGetValue(_uniformName, out location))
+            {
+                // If the uniform isnt saved to memory, find and save it
+                location = glGetUniformLocation(ProgramID, _uniformName);
+                uniforms.Add(_uniformName, location);
+            }
+            glUniform2f(location, _value.X, _value.Y);
+        }
+
+        public void SetVector3(string _uniformName, Vector3 _value)
+        {
+            int location;
+            if (!uniforms.TryGetValue(_uniformName, out location))
+            {
+                // If the uniform isnt saved to memory, find and save it
+                location = glGetUniformLocation(ProgramID, _uniformName);
+                uniforms.Add(_uniformName, location);
+            }
+            glUniform3f(location, _value.X, _value.Y, _value.Z);
+        }
+
+        public void SetVector4(string _uniformName, Vector4 _value)
+        {
+            int location;
+            if (!uniforms.TryGetValue(_uniformName, out location))
+            {
+                // If the uniform isnt saved to memory, find and save it
+                location = glGetUniformLocation(ProgramID, _uniformName);
+                uniforms.Add(_uniformName, location);
+            }
+            glUniform4f(location, _value.X, _value.Y, _value.Z, _value.W);
+        }
+
         /// <summary>
         /// Sets a color uniform in the shader.
         /// </summary>

@@ -1,8 +1,8 @@
-﻿using Electron2D.Core.GameObjects;
-using Electron2D.Core.Management.Textures;
+﻿using Electron2D.Core.Management.Textures;
+using Electron2D.Core.Rendering;
 using System.Numerics;
 
-namespace Electron2D.Core.Rendering
+namespace Electron2D.Core
 {
     /// <summary>
     /// A renderer specializing in displaying images, and using spritesheets.
@@ -34,7 +34,7 @@ namespace Electron2D.Core.Rendering
         public int CurrentColumn { get; private set; }
         public int CurrentRow { get; private set; }
 
-        public SpriteRenderer(Transform _transform, Material _material) : base(_transform, _material)
+        public SpriteRenderer(Transform _transform, Material _material, int _renderLayer = 1) : base(_transform, _material, _renderLayer)
         {
             // Must be called in order for HasVertexData to be true
             SetVertexArrays(vertices, indices, defaultUV);

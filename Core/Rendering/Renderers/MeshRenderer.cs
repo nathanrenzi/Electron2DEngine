@@ -1,14 +1,14 @@
-﻿using Electron2D.Core.GameObjects;
-using Electron2D.Core.Management.Textures;
+﻿using Electron2D.Core.ECS;
 using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Core.Rendering
 {
+    public class MeshRendererSystem : BaseSystem<MeshRenderer> { }
     /// <summary>
     /// A multi-purpose mesh renderer.
     /// </summary>
-    public class MeshRenderer
+    public class MeshRenderer : Component, IRenderable
     {
         public float[] vertices;
         public uint[] indices;
@@ -18,8 +18,8 @@ namespace Electron2D.Core.Rendering
         public VertexArray vertexArray;
         public IndexBuffer indexBuffer;
         public BufferLayout layout;
-
         public Material Material;
+        public int RenderLayer;
 
         private Transform transform;
 
@@ -31,10 +31,19 @@ namespace Electron2D.Core.Rendering
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
 
-        public MeshRenderer(Transform _transform, Material _material)
+        public MeshRenderer(Transform _transform, Material _material, int _renderLayer = 1)
         {
             transform = _transform;
             Material = _material;
+            RenderLayer = _renderLayer;
+
+            MeshRendererSystem.Register(this);
+            RenderLayerManager.OrderRenderable(this);
+        }
+
+        ~MeshRenderer()
+        {
+            MeshRendererSystem.Unregister(this);
         }
 
         #region Materials
@@ -154,6 +163,8 @@ namespace Electron2D.Core.Rendering
 
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
+
+        public int GetRenderLayer() => RenderLayer;
     }
 
     /// <summary>

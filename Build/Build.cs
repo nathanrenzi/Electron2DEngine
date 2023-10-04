@@ -1,16 +1,10 @@
 ﻿using GLFW;
 using Electron2D.Core;
 using Electron2D.Core.Management;
-using Electron2D.Core.GameObjects;
 using System.Numerics;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
-using System.Drawing;
 using Electron2D.Core.Management.Textures;
-using Electron2D.Core.Audio;
-using Electron2D.Core.Physics;
-using Electron2D.Core.UI;
-using Electron2D.Core.Misc;
 using Electron2D.Core.UserInterface;
 
 namespace Electron2D.Build
@@ -18,7 +12,6 @@ namespace Electron2D.Build
     public class Build : Game
     {
         // Testing objects
-        private List<GameObject> environmentTiles = new List<GameObject>();
         private SlicedUiComponent ui;
         private Texture2D tex1, tex2;
         // ---------------
@@ -51,11 +44,10 @@ namespace Electron2D.Build
             {
                 for (int y = -tiles; y <= tiles; y++)
                 {
-                    GameObject tile = new GameObject(Material.Create(diffuseShader, tex1, false), -1);
+                    Sprite tile = new Sprite(Material.Create(diffuseShader, tex1, false), -1);
                     tile.Renderer.SetSubSprite(2, 8);
                     tile.Transform.Position = new Vector2(x, y) * environmentScale;
                     tile.Transform.Scale = Vector2.One * environmentScale;
-                    environmentTiles.Add(tile);
 
                     if (rand.Next(2) == 1)
                     {
@@ -64,11 +56,6 @@ namespace Electron2D.Build
                     }
                 }
             }
-
-            //// NOTE - CAMERA POSITION IS NOT RELATIVE TO SCREEN SIZE - MOVES FASTER / SLOWER BASED ON SCREEN SIZE
-
-            //ui = new SlicedUiComponent(Color.White, 100, 100, 30, 30, 30, 30, 100);
-            //ui.Renderer.SetMaterial(Material.Create(GlobalShaders.DefaultTexture, tex1, false));
         }
 
         protected override void Update()

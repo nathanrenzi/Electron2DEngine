@@ -12,6 +12,12 @@
             _component.Entity = this;
         }
 
+        public void RemoveComponent(Component _component)
+        {
+            components.Remove(_component);
+            _component.Entity = null;
+        }
+
         public T GetComponent<T>() where T : Component
         {
             foreach (Component component in components)

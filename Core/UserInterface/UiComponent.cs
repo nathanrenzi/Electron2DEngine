@@ -1,20 +1,20 @@
 ﻿using System.Numerics;
-using Electron2D.Core.GameObjects;
 using Electron2D.Core.Rendering;
 using System.Drawing;
 using Electron2D.Core.UserInterface;
 using Electron2D.Core.Rendering.Shaders;
+using Electron2D.Core.ECS;
 
 namespace Electron2D.Core.UI
 {
-    public class UiComponent : IRenderable
+    public class UiComponent : Entity, IRenderable
     {
-        public Transform Transform { get; private set; } = new Transform();
         public bool Visible = true;
         public bool UseScreenPosition = true; // Add functionality to make this editable at runtime
         public float SizeX;
         public float SizeY;
         public Vector2 Anchor;
+        public Transform Transform;
         public MeshRenderer Renderer { get; private set; }
         public int UiRenderLayer { get; private set; }
         public List<UiListener> Listeners { get; private set; } = new List<UiListener>();
@@ -56,6 +56,9 @@ namespace Electron2D.Core.UI
 
         public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, bool _useScreenPosition = true)
         {
+            Transform = new Transform();
+            AddComponent(Transform);
+
             Constraints = new UiConstraints(this);
             UiRenderLayer = _uiRenderLayer;
             UseScreenPosition = _useScreenPosition;
@@ -69,7 +72,7 @@ namespace Electron2D.Core.UI
             SetColor(Color.White); // Setting the default color
 
             RenderLayerManager.OrderRenderable(this);
-            UiMaster.display.RegisterUiComponent(this);
+            UiMaster.Display.RegisterUiComponent(this);
         }
 
         public void Initialize()
@@ -98,7 +101,7 @@ namespace Electron2D.Core.UI
         ~UiComponent()
         {
             RenderLayerManager.RemoveRenderable(this);
-            UiMaster.display.UnregisterUiComponent(this);
+            UiMaster.Display.UnregisterUiComponent(this);
         }
 
         public void SetRenderLayer(int _uiRenderLayer)

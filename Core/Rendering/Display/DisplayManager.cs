@@ -9,8 +9,8 @@ namespace Electron2D.Core.Rendering
     {
         private static DisplayManager instance = null;
         private static readonly object loc = new();
-        public Window window;
-        public Vector2 windowSize;
+        public Window Window;
+        public Vector2 WindowSize;
 
         public static DisplayManager Instance
         {
@@ -29,7 +29,7 @@ namespace Electron2D.Core.Rendering
 
         public void CreateWindow(int _width, int _height, string _title)
         {
-            windowSize = new Vector2(_width, _height);
+            WindowSize = new Vector2(_width, _height);
 
             Glfw.Init();
 
@@ -41,9 +41,9 @@ namespace Electron2D.Core.Rendering
             Glfw.WindowHint(Hint.Focused, true);
             Glfw.WindowHint(Hint.Resizable, false);
 
-            window = Glfw.CreateWindow(_width, _height, _title, GLFW.Monitor.None, Window.None);
+            Window = Glfw.CreateWindow(_width, _height, _title, GLFW.Monitor.None, Window.None);
 
-            if (window == Window.None)
+            if (Window == Window.None)
             {
                 // Error creating window
                 Console.WriteLine("Error creating window.");
@@ -54,9 +54,9 @@ namespace Electron2D.Core.Rendering
             Rectangle screen = Glfw.PrimaryMonitor.WorkArea;
             int x = (screen.Width - _width) / 2;
             int y = (screen.Height - _height) / 2;
-            Glfw.SetWindowPosition(window, x, y);
+            Glfw.SetWindowPosition(Window, x, y);
 
-            Glfw.MakeContextCurrent(window);
+            Glfw.MakeContextCurrent(Window);
             Import(Glfw.GetProcAddress);
 
             glViewport(0, 0, _width, _height); // Call this again if window is resized

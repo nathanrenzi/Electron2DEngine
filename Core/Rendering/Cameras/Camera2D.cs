@@ -20,10 +20,10 @@ namespace Electron2D.Core.Rendering
 
         public Matrix4x4 GetProjectionMatrix()
         {
-            float left = position.X - DisplayManager.Instance.windowSize.X / 2f;
-            float right = position.X + DisplayManager.Instance.windowSize.X / 2f;
-            float top = position.Y + DisplayManager.Instance.windowSize.Y / 2f;
-            float bottom = position.Y - DisplayManager.Instance.windowSize.Y / 2f;
+            float left = position.X - DisplayManager.Instance.WindowSize.X / 2f;
+            float right = position.X + DisplayManager.Instance.WindowSize.X / 2f;
+            float top = position.Y + DisplayManager.Instance.WindowSize.Y / 2f;
+            float bottom = position.Y - DisplayManager.Instance.WindowSize.Y / 2f;
 
             Matrix4x4 orthoMatrix = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, 0.01f, 100f);
             Matrix4x4 zoomMatrix = Matrix4x4.CreateScale(zoom);
@@ -37,10 +37,10 @@ namespace Electron2D.Core.Rendering
         /// <returns></returns>
         public Matrix4x4 GetUnscaledProjectionMatrix()
         {
-            float left = 0 - DisplayManager.Instance.windowSize.X / 2f;
-            float right = 0 + DisplayManager.Instance.windowSize.X / 2f;
-            float top = 0 + DisplayManager.Instance.windowSize.Y / 2f;
-            float bottom = 0 - DisplayManager.Instance.windowSize.Y / 2f;
+            float left = 0 - DisplayManager.Instance.WindowSize.X / 2f;
+            float right = 0 + DisplayManager.Instance.WindowSize.X / 2f;
+            float top = 0 + DisplayManager.Instance.WindowSize.Y / 2f;
+            float bottom = 0 - DisplayManager.Instance.WindowSize.Y / 2f;
 
             Matrix4x4 orthoMatrix = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, 0.01f, 100f);
             Matrix4x4 zoomMatrix = Matrix4x4.CreateScale(1);

@@ -71,6 +71,7 @@
 
   <ItemGroup>
     <Folder Include="Build\Resources\Textures\Tiles\" />
+    <Folder Include="Core\Physics\" />
     <Folder Include="Core\Rendering\CoreTextures\" />
   </ItemGroup>
 
