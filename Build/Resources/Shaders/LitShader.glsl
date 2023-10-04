@@ -52,7 +52,7 @@ vec3 CalcPointLight(PointLight light, vec2 fragPos)
 
 void main() 
 {
-    vec4 objectColor = texture(mainTextureSampler, texCoord) * texColor;
+    vec3 objectColor = vec3(texture(mainTextureSampler, texCoord) * texColor);
 
     vec3 result = vec3(0.0);
     for(int i = 0; i < MAX_POINT_LIGHTS; i++)
