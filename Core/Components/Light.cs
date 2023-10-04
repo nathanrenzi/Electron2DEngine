@@ -8,14 +8,14 @@ namespace Electron2D.Core
     public class LightSystem : BaseSystem<Light> { }
     public class Light : Component
     {
-        public const int MAX_POINT_LIGHTS = 256;
-        public static List<Light> pointLightsInScene = new List<Light>();
+        public const int MAX_POINT_LIGHTS = 16;
+        public static List<Light> PointLightsInScene = new List<Light>();
 
-        public const int MAX_SPOTLIGHTS = 256;
-        public static List<Light> spotlightsInScene = new List<Light>();
+        public const int MAX_SPOTLIGHTS = 16;
+        public static List<Light> SpotLightsInScene = new List<Light>();
 
         public const int MAX_DIRECTIONAL_LIGHTS = 1;
-        public static List<Light> directionalLightsInScene = new List<Light>();
+        public static List<Light> DirectionalLightsInScene = new List<Light>();
 
         public static Action<LightType> OnLightsUpdated;
 
@@ -38,18 +38,18 @@ namespace Electron2D.Core
             switch (Type)
             {
                 case LightType.Point:
-                    pointLightsInScene.Add(this);
+                    PointLightsInScene.Add(this);
                     break;
                 case LightType.Spot:
-                    spotlightsInScene.Add(this);
+                    SpotLightsInScene.Add(this);
                     break;
                 case LightType.Directional:
-                    directionalLightsInScene.Add(this);
+                    DirectionalLightsInScene.Add(this);
                     break;
             }
-            OnLightsUpdated?.Invoke(Type);
-
             LightSystem.Register(this);
+
+            OnLightsUpdated?.Invoke(Type);
         }
 
         protected override void OnDispose()
@@ -57,13 +57,13 @@ namespace Electron2D.Core
             switch (Type)
             {
                 case LightType.Point:
-                    pointLightsInScene.Remove(this);
+                    PointLightsInScene.Remove(this);
                     break;
                 case LightType.Spot:
-                    spotlightsInScene.Remove(this);
+                    SpotLightsInScene.Remove(this);
                     break;
                 case LightType.Directional:
-                    directionalLightsInScene.Remove(this);
+                    DirectionalLightsInScene.Remove(this);
                     break;
             }
             OnLightsUpdated?.Invoke(Type);
@@ -73,18 +73,22 @@ namespace Electron2D.Core
 
         public void ApplyValues(Shader _shader, int _index)
         {
-            int max = Type == LightType.Point ? MAX_POINT_LIGHTS : Type == LightType.Spot ? MAX_SPOTLIGHTS : MAX_DIRECTIONAL_LIGHTS;
-            if(_index < max)
+            switch(Type)
             {
-                _shader.SetVector2($"pointLights[{_index}].position", transform.Position);
-                _shader.SetFloat($"pointLights[{_index}].radius", Radius);
-                _shader.SetFloat($"pointLights[{_index}].intensity", Intensity);
-                _shader.SetVector3($"pointLights[{_index}].color",
-                    new Vector3(Color.R / 255f, Color.G / 255f, Color.B / 255f));
-            }
-            else
-            {
-                Console.WriteLine($"Hit the maximum {Type} light limit! Number of lights: {_index + 1}");
+                case LightType.Point:
+                    if (_index < MAX_POINT_LIGHTS)
+                    {
+                        _shader.SetVector2($"pointLights[{_index}].position", transform.Position);
+                        _shader.SetFloat($"pointLights[{_index}].radius", Radius);
+                        _shader.SetFloat($"pointLights[{_index}].intensity", Intensity);
+                        _shader.SetVector3($"pointLights[{_index}].color",
+                            new Vector3(Color.R / 255f, Color.G / 255f, Color.B / 255f));
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Hit the maximum {Type} light limit! Number of lights: {_index + 1}");
+                    }
+                    break;
             }
         }
     }

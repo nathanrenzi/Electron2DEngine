@@ -10,6 +10,7 @@ namespace Electron2D.Core.Rendering.Lighting
         public static void Initialize()
         {
             Light.OnLightsUpdated += UpdateShaders;
+            Game.OnUpdateEvent += UpdateShaders;
         }
 
         public static void RegisterShader(Shader _shader)
@@ -25,6 +26,10 @@ namespace Electron2D.Core.Rendering.Lighting
             litShaders.Remove(_shader);
         }
 
+        public static void UpdateShaders() // Temp
+        {
+            UpdateShaders(Light.LightType.Point);
+        }
         public static void UpdateShaders(Light.LightType _type)
         {
             foreach (Shader shader in litShaders)
@@ -35,9 +40,14 @@ namespace Electron2D.Core.Rendering.Lighting
 
         private static void UpdateShader(Shader _shader, Light.LightType _type)
         {
-            for (int i = 0; i < Light.pointLightsInScene.Count; i++)
+            switch(_type)
             {
-                Light.pointLightsInScene[i].ApplyValues(_shader, i);
+                case Light.LightType.Point:
+                    for (int i = 0; i < Light.PointLightsInScene.Count; i++)
+                    {
+                        Light.PointLightsInScene[i].ApplyValues(_shader, i);
+                    }
+                    break;
             }
         }
     }

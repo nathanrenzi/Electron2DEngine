@@ -38,14 +38,15 @@ struct PointLight {
     vec3 color;
 };  
 
-#define MAX_POINT_LIGHTS 256  
+#define MAX_POINT_LIGHTS 16  
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 
 vec3 CalcPointLight(PointLight light, vec2 fragPos)
 {
     float distance = length(light.position - fragPos);
     //float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
-    float attenuation = 1.0 / (1 + 0 * distance + 1 * (distance * distance));
+    //float attenuation = 1.0 / (1 + 0 * distance + 1 * (distance * distance));
+    float attenuation = clamp(1 - (distance / light.radius), 0, 1);
 
     return light.color * light.intensity * attenuation;
 } 
@@ -60,5 +61,5 @@ void main()
         result += CalcPointLight(pointLights[i], position.xy);
     }
 
-    FragColor = vec4(pointLights[0].intensity * vec3(1.0), 1.0); //objectColor * result
+    FragColor = vec4(objectColor * result, 1.0);
 }

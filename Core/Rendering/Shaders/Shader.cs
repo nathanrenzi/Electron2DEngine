@@ -132,14 +132,16 @@ namespace Electron2D.Core.Rendering.Shaders
             glDeleteShader(vs);
             glDeleteShader(fs);
 
-            int[] count = glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, 1);
-            for (int i = 0; i < count[0]; i++)
-            {
-                string key;
-                glGetActiveUniform(ProgramID, (uint)i, 20, out _, out _, out _, out key);
-                int location = glGetUniformLocation(ProgramID, key);
-                uniforms.Add(key, location);
-            }
+            // Pre-grabbing uniforms - Keep this here in case it is worth it for performance - Up the buffer size if used
+
+            //int[] count = glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, 1);
+            //for (int i = 0; i < count[0]; i++)
+            //{
+            //    string key;
+            //    glGetActiveUniform(ProgramID, (uint)i, 20, out _, out _, out _, out key);
+            //    int location = glGetUniformLocation(ProgramID, key);
+            //    uniforms.Add(key, location);
+            //}
 
             Compiled = true;
             return true;
