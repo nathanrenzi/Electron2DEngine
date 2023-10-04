@@ -3,6 +3,7 @@ using GLFW;
 using System.Diagnostics;
 using System.Numerics;
 using System.Drawing;
+using Electron2D.Core.Rendering.Lighting;
 
 namespace Electron2D.Core.Rendering.Shaders
 {
@@ -13,13 +14,28 @@ namespace Electron2D.Core.Rendering.Shaders
         private readonly IDictionary<string, int> uniforms = new Dictionary<string, int>();
 
         private ShaderProgramSource shaderProgramSource { get; }
+        private bool useLightData;
 
-        public Shader(ShaderProgramSource _shaderProgramSource, bool _compile = false)
+        public Shader(ShaderProgramSource _shaderProgramSource, bool _compile = false, bool _useLightData = false)
         {
             shaderProgramSource = _shaderProgramSource;
+            useLightData = _useLightData;
+
             if(_compile)
             {
                 CompileShader();
+            }
+            if(_useLightData)
+            {
+                ShaderLightDataUpdater.RegisterShader(this);
+            }
+        }
+
+        ~Shader()
+        {
+            if(useLightData)
+            {
+                ShaderLightDataUpdater.UnregisterShader(this);
             }
         }
 

@@ -62,7 +62,7 @@ namespace Electron2D.Core.Rendering
                 }
                 else if(MainTexture == null)
                 {
-
+                    // Use a blank texture / set a flag in the shader?
                 }
             }
 

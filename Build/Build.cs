@@ -6,6 +6,7 @@ using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.Management.Textures;
 using Electron2D.Core.UserInterface;
+using Electron2D.Core.ECS;
 
 namespace Electron2D.Build
 {
@@ -14,9 +15,10 @@ namespace Electron2D.Build
         // Testing objects
         private SlicedUiComponent ui;
         private Texture2D tex1, tex2;
+        private Entity lightObj;
         // ---------------
 
-        public Build(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle) : base(_initialWindowWidth, _initialWindowHeight, _initialWindowTitle)
+        public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight, "Test Game!")
         {
 
         }
@@ -36,7 +38,7 @@ namespace Electron2D.Build
             tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/UserInterfaceTextures.png");
             SpritesheetManager.Add(tex2, 4, 4);
 
-            Shader diffuseShader = new Shader(Shader.ParseShader("Build/Resources/Shaders/LitShader.glsl"));
+            Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/LitShader.glsl"), _useLightData: true);
             Random rand = new Random();
             int environmentScale = 50;
             int tiles = 10;
@@ -56,6 +58,10 @@ namespace Electron2D.Build
                     }
                 }
             }
+
+            lightObj = new Entity();
+            lightObj.AddComponent(new Transform());
+            lightObj.AddComponent(new Light(lightObj.GetComponent<Transform>(), System.Drawing.Color.LightSalmon, 100));
         }
 
         protected override void Update()

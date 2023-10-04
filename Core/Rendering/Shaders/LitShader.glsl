@@ -54,11 +54,11 @@ void main()
 {
     vec3 objectColor = vec3(texture(mainTextureSampler, texCoord) * texColor);
 
-    vec3 result = vec3(0.0);
+    vec3 result = vec3(0.0); // Add ambient here
     for(int i = 0; i < MAX_POINT_LIGHTS; i++)
     {
         result += CalcPointLight(pointLights[i], position.xy);
     }
 
-    FragColor = vec4(objectColor * result, 1.0);
+    FragColor = vec4(pointLights[0].intensity * vec3(1.0), 1.0); //objectColor * result
 }

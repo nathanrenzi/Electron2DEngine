@@ -27,16 +27,15 @@ namespace Electron2D.Core
 
         private Transform transform;
 
-        public Light(LightType _type, Color _color, float _radius, float _intensity = 1)
+        public Light(Transform _transform, Color _color, float _radius, LightType _type = LightType.Point, float _intensity = 1)
         {
             Type = _type;
             Color = _color;
             Radius = _radius;
             Intensity = _intensity;
+            transform = _transform;
 
-            transform = Entity.GetComponent<Transform>();
-
-            switch(Type)
+            switch (Type)
             {
                 case LightType.Point:
                     pointLightsInScene.Add(this);
@@ -85,7 +84,7 @@ namespace Electron2D.Core
             }
             else
             {
-                Console.WriteLine($"Hit the maximum {Type} light limit! Number of lights: {_index}");
+                Console.WriteLine($"Hit the maximum {Type} light limit! Number of lights: {_index + 1}");
             }
         }
     }
