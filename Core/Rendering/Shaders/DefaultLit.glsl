@@ -31,9 +31,11 @@ in vec4 position;
 
 uniform sampler2D mainTextureSampler;
 uniform sampler2D normalTextureSampler;
+uniform float normalScale = 1.0;
 
 struct PointLight {    
-    vec2 position;  
+    vec2 position;
+    float height;
     float radius;
     float intensity;
     vec3 color;
@@ -44,20 +46,20 @@ uniform PointLight pointLights[MAX_POINT_LIGHTS];
 
 vec3 CalcPointLight(PointLight light, vec2 fragPos, vec3 normal)
 {
-    vec3 lightDirection = vec3(normalize(light.position - fragPos), 0.0); // Could raise or lower height of light here?? Or if a height value is added replace 0.0 with z position
+    vec3 lightDirection = normalize(vec3(normalize(light.position - fragPos), light.height));
     float distance = length(light.position - fragPos);
     //float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     float attenuation = 1.0 / (1 + 0 * distance + 3/(light.radius * light.radius) * (distance * distance));
 
-    float diffuse = max(dot(normal, lightDirection), 0.0);
+    float NdotL = max(dot(normal, lightDirection), 0.0);
 
-    return light.color * light.intensity * attenuation * diffuse;
+    return light.color * light.intensity * attenuation * NdotL;
 } 
 
 void main() 
 {
     vec3 normal = vec3(texture(normalTextureSampler, texCoord));
-    normal = normalize(normal * 2.0 - 1.0);
+    normal = normalize(normal * 2.0 - 1.0) * normalScale;
 
     vec3 objectColor = vec3(texture(mainTextureSampler, texCoord) * texColor);
 

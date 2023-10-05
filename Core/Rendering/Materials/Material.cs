@@ -19,17 +19,19 @@ namespace Electron2D.Core.Rendering
 
         public Texture2D NormalTexture;
         private static Texture2D normalTextureInUse = null;
+        public float NormalScale;
 
         public Color MainColor;
         public bool UseLinearFiltering;
         // Add normal & roughness & specular & metallic maps here once they are needed
-        private Material(Shader _shader, Texture2D _mainTexture, Texture2D _normalTexture, Color _mainColor, bool _useLinearFiltering = false)
+        private Material(Shader _shader, Texture2D _mainTexture, Texture2D _normalTexture, Color _mainColor, bool _useLinearFiltering = false, float _normalScale = 1)
         {
             Shader = _shader;
             MainTexture = _mainTexture;
             NormalTexture = _normalTexture;
             MainColor = _mainColor;
             UseLinearFiltering = _useLinearFiltering;
+            NormalScale = _normalScale;
         }
 
         #region Static Methods
@@ -86,6 +88,7 @@ namespace Electron2D.Core.Rendering
             RenderLayerManager.SetTextureFiltering(UseLinearFiltering);
 
             Shader.SetColor("mainColor", MainColor);
+            Shader.SetFloat("normalScale", NormalScale);
         }
     }
 }

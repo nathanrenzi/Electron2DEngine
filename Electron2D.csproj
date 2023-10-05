@@ -44,7 +44,7 @@
     <EmbeddedResource Include="Core\Rendering\CoreTextures\BlankTexture.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\LitShader.glsl">
+    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultLit.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Shaders\FunShader.glsl">
