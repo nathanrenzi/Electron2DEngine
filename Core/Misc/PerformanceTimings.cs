@@ -8,9 +8,9 @@ namespace Electron2D.Core.Misc
 {
     public static class PerformanceTimings
     {
-        public static double renderMilliseconds;
-        public static double physicsMilliseconds;
-        public static double gameObjectMilliseconds;
-        public static double framesPerSecond;
+        public static double RenderMilliseconds;
+        public static double PhysicsMilliseconds;
+        public static double GameObjectMilliseconds;
+        public static double FramesPerSecond;
     }
 }

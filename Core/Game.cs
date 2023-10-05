@@ -69,9 +69,9 @@ namespace Electron2D.Core
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
             {
-                Time.deltaTime = (float)Glfw.Time - Time.totalElapsedSeconds;
-                Time.totalElapsedSeconds = (float)Glfw.Time;
-                PerformanceTimings.framesPerSecond = 1 / Time.deltaTime;
+                Time.DeltaTime = (float)Glfw.Time - Time.TotalElapsedSeconds;
+                Time.TotalElapsedSeconds = (float)Glfw.Time;
+                PerformanceTimings.FramesPerSecond = 1 / Time.DeltaTime;
 
                 // Input
                 Input.ProcessInput();
@@ -85,13 +85,13 @@ namespace Electron2D.Core
                 MeshRendererSystem.Update();
                 LightSystem.Update();
                 OnLateUpdateEvent?.Invoke();
-                PerformanceTimings.gameObjectMilliseconds = (Glfw.Time - goST) * 1000;
+                PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
                 // -------------------------------
 
 
                 // Physics
                 double phyST = Glfw.Time;
-                PerformanceTimings.physicsMilliseconds = (Glfw.Time - phyST) * 1000;
+                PerformanceTimings.PhysicsMilliseconds = (Glfw.Time - phyST) * 1000;
                 // -------------------------------
 
 
@@ -104,7 +104,7 @@ namespace Electron2D.Core
                 RenderLayerManager.RenderAllLayers();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
-                PerformanceTimings.renderMilliseconds = (Glfw.Time - rendST) * 1000;
+                PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
                 // -------------------------------
             }
 
