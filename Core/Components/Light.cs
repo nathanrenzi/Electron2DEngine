@@ -23,15 +23,17 @@ namespace Electron2D.Core
         public LightType Type;
         public Color Color;
         public float Radius;
+        public float Height;
         public float Intensity;
 
         private Transform transform;
 
-        public Light(Transform _transform, Color _color, float _radius, LightType _type = LightType.Point, float _intensity = 1)
+        public Light(Transform _transform, Color _color, float _radius, float _height, LightType _type = LightType.Point, float _intensity = 1)
         {
             Type = _type;
             Color = _color;
             Radius = _radius;
+            Height = _height;
             Intensity = _intensity;
             transform = _transform;
 
@@ -79,6 +81,7 @@ namespace Electron2D.Core
                     if (_index < MAX_POINT_LIGHTS)
                     {
                         _shader.SetVector2($"pointLights[{_index}].position", transform.Position);
+                        _shader.SetFloat($"pointLights[{_index}].height", Height);
                         _shader.SetFloat($"pointLights[{_index}].radius", Radius);
                         _shader.SetFloat($"pointLights[{_index}].intensity", Intensity);
                         _shader.SetVector3($"pointLights[{_index}].color",

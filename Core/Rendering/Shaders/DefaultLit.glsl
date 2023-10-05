@@ -51,7 +51,7 @@ vec3 CalcPointLight(PointLight light, vec2 fragPos, vec3 normal)
     //float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     float attenuation = 1.0 / (1 + 0 * distance + 3/(light.radius * light.radius) * (distance * distance));
 
-    float NdotL = max(dot(normal, lightDirection), 0.0);
+    float NdotL = max(dot(mix(vec3(0,0,1), normal, normalScale), lightDirection), 0.0);
 
     return light.color * light.intensity * attenuation * NdotL;
 } 
@@ -59,7 +59,7 @@ vec3 CalcPointLight(PointLight light, vec2 fragPos, vec3 normal)
 void main() 
 {
     vec3 normal = vec3(texture(normalTextureSampler, texCoord));
-    normal = normalize(normal * 2.0 - 1.0) * normalScale;
+    normal = normalize(normal * 2.0 - 1.0);
 
     vec3 objectColor = vec3(texture(mainTextureSampler, texCoord) * texColor);
 

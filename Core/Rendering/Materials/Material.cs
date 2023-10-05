@@ -24,7 +24,7 @@ namespace Electron2D.Core.Rendering
         public Color MainColor;
         public bool UseLinearFiltering;
         // Add normal & roughness & specular & metallic maps here once they are needed
-        private Material(Shader _shader, Texture2D _mainTexture, Texture2D _normalTexture, Color _mainColor, bool _useLinearFiltering = false, float _normalScale = 1)
+        private Material(Shader _shader, Texture2D _mainTexture, Texture2D _normalTexture, Color _mainColor, bool _useLinearFiltering, float _normalScale)
         {
             Shader = _shader;
             MainTexture = _mainTexture;
@@ -35,9 +35,9 @@ namespace Electron2D.Core.Rendering
         }
 
         #region Static Methods
-        public static Material Create(Shader _shader, Texture2D _mainTexture = null, Texture2D _normalTexture = null, bool _useLinearFiltering = false)
-            => Create(_shader, Color.White, _mainTexture, _normalTexture, _useLinearFiltering);
-        public static Material Create(Shader _shader, Color _mainColor, Texture2D _mainTexture = null, Texture2D _normalTexture = null, bool _useLinearFiltering = false)
+        public static Material Create(Shader _shader, Texture2D _mainTexture = null, Texture2D _normalTexture = null, bool _useLinearFiltering = false, float _normalScale = 1)
+            => Create(_shader, Color.White, _mainTexture, _normalTexture, _useLinearFiltering, _normalScale);
+        public static Material Create(Shader _shader, Color _mainColor, Texture2D _mainTexture = null, Texture2D _normalTexture = null, bool _useLinearFiltering = false, float _normalScale = 1)
         {
             if (blankTexture == null)
                 blankTexture = ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/BlankTexture.png");
@@ -45,7 +45,7 @@ namespace Electron2D.Core.Rendering
             if (blankNormal == null)
                 blankNormal = ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/BlankNormal.png", true);
 
-            return new Material(_shader, (_mainTexture == null ? blankTexture : _mainTexture), (_normalTexture == null ? blankNormal : _normalTexture), _mainColor, _useLinearFiltering);
+            return new Material(_shader, (_mainTexture == null ? blankTexture : _mainTexture), (_normalTexture == null ? blankNormal : _normalTexture), _mainColor, _useLinearFiltering, _normalScale);
         }
         #endregion
 

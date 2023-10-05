@@ -59,7 +59,7 @@ namespace Electron2D.Build
 
             lightObj3 = new Entity();
             lightObj3.AddComponent(new Transform());
-            lightObj3.AddComponent(new Light(lightObj3.GetComponent<Transform>(), Color.Tan, 300));
+            lightObj3.AddComponent(new Light(lightObj3.GetComponent<Transform>(), Color.Tan, 300, 2));
         }
 
         protected override void Update()
