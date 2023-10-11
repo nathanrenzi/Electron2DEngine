@@ -51,6 +51,7 @@ namespace Electron2D.Core
 
             // Setup
             glEnable(GL_BLEND);
+            glEnable(GL_FRAMEBUFFER_SRGB); // Gamma-corrects lighting and improves overall scene
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             // -----------
 

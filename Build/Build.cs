@@ -4,8 +4,6 @@ using Electron2D.Core.Management;
 using System.Numerics;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
-using Electron2D.Core.Management.Textures;
-using Electron2D.Core.UserInterface;
 using Electron2D.Core.ECS;
 using System.Drawing;
 using Electron2D.Core.Misc;
@@ -16,8 +14,6 @@ namespace Electron2D.Build
     {
         // Testing objects
         private Entity lightObj;
-        private Entity lightObj2;
-        private Entity lightObj3;
         private List<Sprite> tilesList = new List<Sprite>();
         // ---------------
 
@@ -33,7 +29,6 @@ namespace Electron2D.Build
 
         protected override void Start()
         {
-            // Environment Spritesheet
             Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/TestNormal.jpg", true);
 
             Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"), _useLightData: true);
@@ -43,7 +38,7 @@ namespace Electron2D.Build
             {
                 for (int y = -tiles; y <= tiles; y++)
                 {
-                    Sprite tile = new Sprite(Material.Create(diffuseShader, _normalTexture: tex1), -1);
+                    Sprite tile = new Sprite(Material.Create(diffuseShader, _normalTexture: tex1, _useLinearFiltering: true), -1);
                     tile.Transform.Position = new Vector2(x, y) * environmentScale;
                     tile.Transform.Scale = Vector2.One * environmentScale;
                     tilesList.Add(tile);
@@ -52,17 +47,8 @@ namespace Electron2D.Build
 
             lightObj = new Entity();
             lightObj.AddComponent(new Transform());
-            lightObj.AddComponent(new Light(lightObj.GetComponent<Transform>(), Color.LightSalmon, 400, 2));
+            lightObj.AddComponent(new Light(lightObj.GetComponent<Transform>(), Color.LightSalmon, 400, 4));
             lightObj.GetComponent<Transform>().Position = new Vector2(-400, 100);
-
-            lightObj2 = new Entity();
-            lightObj2.AddComponent(new Transform());
-            lightObj2.AddComponent(new Light(lightObj2.GetComponent<Transform>(), Color.FloralWhite, 200, 2));
-            lightObj2.GetComponent<Transform>().Position = new Vector2(300, 300);
-
-            lightObj3 = new Entity();
-            lightObj3.AddComponent(new Transform());
-            lightObj3.AddComponent(new Light(lightObj3.GetComponent<Transform>(), Color.Tan, 300, 2));
         }
 
         protected override void Update()
@@ -75,7 +61,6 @@ namespace Electron2D.Build
             CameraMovement();
             lightObj.GetComponent<Transform>().Position = new Vector2(MathF.Sin(Time.TotalElapsedSeconds * 3)
                 * 300, MathF.Cos(Time.TotalElapsedSeconds * 3) * 300);
-            Console.WriteLine(PerformanceTimings.FramesPerSecond);
         }
 
         private void CameraMovement()
