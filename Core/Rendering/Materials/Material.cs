@@ -23,7 +23,7 @@ namespace Electron2D.Core.Rendering
 
         public Color MainColor;
         public bool UseLinearFiltering;
-        // Add normal & roughness & specular & metallic maps here once they are needed
+
         private Material(Shader _shader, Texture2D _mainTexture, Texture2D _normalTexture, Color _mainColor, bool _useLinearFiltering, float _normalScale)
         {
             Shader = _shader;
@@ -32,6 +32,20 @@ namespace Electron2D.Core.Rendering
             MainColor = _mainColor;
             UseLinearFiltering = _useLinearFiltering;
             NormalScale = _normalScale;
+
+            // Compiling and setting up the shader if not done already.
+            if (!_shader.Compiled)
+            {
+                if(!_shader.CompileShader())
+                {
+                    Console.WriteLine("Material: Failed to compile shader.");
+                    return;
+                }
+
+                _shader.Use();
+                _shader.SetInt("mainTextureSampler", 0);
+                _shader.SetInt("normalTextureSampler", 1);
+            }
         }
 
         #region Static Methods

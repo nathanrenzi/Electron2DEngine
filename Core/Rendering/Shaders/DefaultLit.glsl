@@ -29,6 +29,9 @@ in vec2 texCoord;
 in vec4 texColor;
 in vec4 position;
 
+// Global Uniforms
+uniform float time = 0.0;
+
 uniform sampler2D mainTextureSampler;
 uniform sampler2D normalTextureSampler;
 uniform float normalScale = 1.0;
@@ -48,7 +51,7 @@ vec3 CalcPointLight(PointLight light, vec2 fragPos, vec3 normal)
 {
     vec3 lightDirection = normalize(vec3(normalize(light.position - fragPos), light.height));
     float distance = length(light.position - fragPos);
-    //float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
+    //float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
     float attenuation = 1.0 / (1 + 0 * distance + 3/(light.radius * light.radius) * (distance * distance));
 
     float NdotL = max(dot(mix(vec3(0,0,1), normal, normalScale), lightDirection), 0.0);

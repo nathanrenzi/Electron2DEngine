@@ -27,5 +27,10 @@
         }
 
         protected virtual void OnDispose() { }
+
+        public T GetComponent<T>() where T : Component
+        {
+            return Entity.GetComponent<T>();
+        }
     }
 }

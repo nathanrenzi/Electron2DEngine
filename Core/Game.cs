@@ -7,7 +7,6 @@ using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.UserInterface;
 using System.Drawing;
-using Electron2D.Core.Rendering.Lighting;
 
 namespace Electron2D.Core
 {
@@ -55,14 +54,16 @@ namespace Electron2D.Core
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             // -----------
 
-            OnStartEvent?.Invoke();
-            ShaderLightDataUpdater.Initialize();
-
             // Starting Entity Systems
             TransformSystem.Start();
             MeshRendererSystem.Start();
             LightSystem.Start();
             // -----------------
+            OnStartEvent?.Invoke();
+
+            ShaderGlobalUniforms.Initialize();
+            ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
+            ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
 
             UiMaster.Display.Initialize();
 

@@ -121,11 +121,6 @@ namespace Electron2D.Core.Rendering
         public void Load()
         {
             if (!HasVertexData) return;
-            if (!Material.Shader.Compiled && !Material.Shader.CompileShader())
-            {
-                Console.WriteLine("Failed to compile shader.");
-                return;
-            }
 
             vertexArray = new VertexArray();
             vertexBuffer = new VertexBuffer(vertices);

@@ -1,9 +1,7 @@
 ﻿using static Electron2D.OpenGL.GL;
-using GLFW;
 using System.Diagnostics;
 using System.Numerics;
 using System.Drawing;
-using Electron2D.Core.Rendering.Lighting;
 
 namespace Electron2D.Core.Rendering.Shaders
 {
@@ -11,15 +9,20 @@ namespace Electron2D.Core.Rendering.Shaders
     {
         public uint ProgramID { get; private set; }
         public bool Compiled { get; private set; }
-        private readonly IDictionary<string, int> uniforms = new Dictionary<string, int>();
+        public string[] GlobalUniformTags { get; private set; }
+
+        private readonly IDictionary<string, int> localUniforms = new Dictionary<string, int>();
 
         private ShaderProgramSource shaderProgramSource { get; }
-        private bool useLightData;
 
-        public Shader(ShaderProgramSource _shaderProgramSource, bool _compile = false, bool _useLightData = false)
+        public Shader(ShaderProgramSource _shaderProgramSource, bool _compile = false, string[] _globalUniformTags = null)
         {
             shaderProgramSource = _shaderProgramSource;
-            useLightData = _useLightData;
+
+            if(_globalUniformTags != null)
+            {
+                GlobalUniformTags = _globalUniformTags;
+            }
 
             if(_compile)
             {
@@ -29,10 +32,7 @@ namespace Electron2D.Core.Rendering.Shaders
 
         ~Shader()
         {
-            if(useLightData)
-            {
-                ShaderLightDataUpdater.UnregisterShader(this);
-            }
+            ShaderGlobalUniforms.UnregisterShader(this);
         }
 
         public static ShaderProgramSource ParseShader(string _filePath)
@@ -128,7 +128,8 @@ namespace Electron2D.Core.Rendering.Shaders
             glDeleteShader(vs);
             glDeleteShader(fs);
 
-            // Pre-grabbing uniforms - Keep this here in case it is worth it for performance - Up the buffer size if used
+            // Pre-grabbing uniforms - Keep this here in case it is worth it for performance
+            // Up the buffer size (one of the parameters) if used because uniforms are being cut short
 
             //int[] count = glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, 1);
             //for (int i = 0; i < count[0]; i++)
@@ -141,16 +142,13 @@ namespace Electron2D.Core.Rendering.Shaders
 
             Compiled = true;
 
-            // Registering the shader to receive light data now that it is compiled
-            if (useLightData)
-            {
-                ShaderLightDataUpdater.RegisterShader(this);
-            }
+            // Registering the shader to receive uniform data now that it is compiled
+            ShaderGlobalUniforms.RegisterShader(this);
 
             return true;
         }
 
-        public int GetUniformLocation(string _uniformName) => uniforms[_uniformName];
+        public int GetUniformLocation(string _uniformName) => localUniforms[_uniformName];
 
         public void Use()
         {
@@ -168,11 +166,11 @@ namespace Electron2D.Core.Rendering.Shaders
         {
             // Finding where location is in memory
             int location;
-            if (!uniforms.TryGetValue(_uniformName, out location))
+            if (!localUniforms.TryGetValue(_uniformName, out location))
             {
                 // If the uniform isnt saved to memory, find and save it
                 location = glGetUniformLocation(ProgramID, _uniformName);
-                uniforms.Add(_uniformName, location);
+                localUniforms.Add(_uniformName, location);
             }
             glUniformMatrix4fv(location, 1, false, GetMatrix4x4Values(_mat));
         }
@@ -180,11 +178,11 @@ namespace Electron2D.Core.Rendering.Shaders
         public void SetInt(string _uniformName, int _value)
         {
             int location;
-            if (!uniforms.TryGetValue(_uniformName, out location))
+            if (!localUniforms.TryGetValue(_uniformName, out location))
             {
                 // If the uniform isnt saved to memory, find and save it
                 location = glGetUniformLocation(ProgramID, _uniformName);
-                uniforms.Add(_uniformName, location);
+                localUniforms.Add(_uniformName, location);
             }
             glUniform1i(location, _value);
         }
@@ -192,11 +190,11 @@ namespace Electron2D.Core.Rendering.Shaders
         public void SetFloat(string _uniformName, float _value)
         {
             int location;
-            if (!uniforms.TryGetValue(_uniformName, out location))
+            if (!localUniforms.TryGetValue(_uniformName, out location))
             {
                 // If the uniform isnt saved to memory, find and save it
                 location = glGetUniformLocation(ProgramID, _uniformName);
-                uniforms.Add(_uniformName, location);
+                localUniforms.Add(_uniformName, location);
             }
             glUniform1f(location, _value);
         }
@@ -204,11 +202,11 @@ namespace Electron2D.Core.Rendering.Shaders
         public void SetVector2(string _uniformName, Vector2 _value)
         {
             int location;
-            if (!uniforms.TryGetValue(_uniformName, out location))
+            if (!localUniforms.TryGetValue(_uniformName, out location))
             {
                 // If the uniform isnt saved to memory, find and save it
                 location = glGetUniformLocation(ProgramID, _uniformName);
-                uniforms.Add(_uniformName, location);
+                localUniforms.Add(_uniformName, location);
             }
             glUniform2f(location, _value.X, _value.Y);
         }
@@ -216,11 +214,11 @@ namespace Electron2D.Core.Rendering.Shaders
         public void SetVector3(string _uniformName, Vector3 _value)
         {
             int location;
-            if (!uniforms.TryGetValue(_uniformName, out location))
+            if (!localUniforms.TryGetValue(_uniformName, out location))
             {
                 // If the uniform isnt saved to memory, find and save it
                 location = glGetUniformLocation(ProgramID, _uniformName);
-                uniforms.Add(_uniformName, location);
+                localUniforms.Add(_uniformName, location);
             }
             glUniform3f(location, _value.X, _value.Y, _value.Z);
         }
@@ -228,11 +226,11 @@ namespace Electron2D.Core.Rendering.Shaders
         public void SetVector4(string _uniformName, Vector4 _value)
         {
             int location;
-            if (!uniforms.TryGetValue(_uniformName, out location))
+            if (!localUniforms.TryGetValue(_uniformName, out location))
             {
                 // If the uniform isnt saved to memory, find and save it
                 location = glGetUniformLocation(ProgramID, _uniformName);
-                uniforms.Add(_uniformName, location);
+                localUniforms.Add(_uniformName, location);
             }
             glUniform4f(location, _value.X, _value.Y, _value.Z, _value.W);
         }
@@ -245,11 +243,11 @@ namespace Electron2D.Core.Rendering.Shaders
         public void SetColor(string _uniformName, Color _value)
         {
             int location;
-            if (!uniforms.TryGetValue(_uniformName, out location))
+            if (!localUniforms.TryGetValue(_uniformName, out location))
             {
                 // If the uniform isnt saved to memory, find and save it
                 location = glGetUniformLocation(ProgramID, _uniformName);
-                uniforms.Add(_uniformName, location);
+                localUniforms.Add(_uniformName, location);
             }
             float[] colArray = { _value.R / 255f, _value.G / 255f, _value.B / 255f, _value.A / 255f };
             glUniform4fv(location, 1, colArray);

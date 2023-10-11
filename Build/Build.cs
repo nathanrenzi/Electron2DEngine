@@ -31,7 +31,8 @@ namespace Electron2D.Build
         {
             Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/TestNormal.jpg", true);
 
-            Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"), _useLightData: true);
+            Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"),
+                _globalUniformTags: new string[] { "lights" });
             int environmentScale = 50;
             int tiles = 10;
             for (int x = -tiles; x <= tiles; x++)
@@ -47,16 +48,16 @@ namespace Electron2D.Build
 
             lightObj = new Entity();
             lightObj.AddComponent(new Transform());
-            lightObj.AddComponent(new Light(lightObj.GetComponent<Transform>(), Color.LightSalmon, 400, 4));
+            lightObj.AddComponent(new Light(Color.LightSalmon, 400, 4));
             lightObj.GetComponent<Transform>().Position = new Vector2(-400, 100);
         }
 
         protected override void Update()
         {
-            for (int i = 0; i < tilesList.Count; i++)
-            {
-                tilesList[i].Renderer.Material.NormalScale = MathF.Sin(Time.TotalElapsedSeconds) / 2 + 0.5f;
-            }
+            //for (int i = 0; i < tilesList.Count; i++)
+            //{
+            //    tilesList[i].Renderer.Material.NormalScale = MathF.Sin(Time.TotalElapsedSeconds) / 2 + 0.5f;
+            //}
 
             CameraMovement();
             lightObj.GetComponent<Transform>().Position = new Vector2(MathF.Sin(Time.TotalElapsedSeconds * 3)
