@@ -30,13 +30,13 @@ namespace Electron2D.Core.Management.Textures
             if(!spritesheets.ContainsKey(_texture))
             {
                 Console.WriteLine("Requested a spritesheet that does not exist.");
-                return Vector2.Zero;
+                return _localUV;
             }
 
             if (_col >= spritesheets[_texture].totalSpriteColumns || _row >= spritesheets[_texture].totalSpriteRows)
             {
                 Console.WriteLine("Requested a sprite that is out of the bounds of it's texture.");
-                return Vector2.Zero;
+                return _localUV;
             }
 
             // The UV stride of each sprite in the spritesheet

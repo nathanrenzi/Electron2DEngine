@@ -12,7 +12,6 @@ namespace Electron2D.Core.Rendering
     {
         public float[] vertices;
         public uint[] indices;
-        //public float[] defaultUV;
 
         public VertexBuffer vertexBuffer;
         public VertexArray vertexArray;
@@ -62,9 +61,8 @@ namespace Electron2D.Core.Rendering
         /// </summary>
         /// <param name="_vertices"></param>
         /// <param name="_indices"></param>
-        /// <param name="_defaultUV"></param>
         /// <param name="_loadOnSetArrays">Should the renderer be loaded when the arrays have been set (Should usually be left as true).</param>
-        public void SetVertexArrays(float[] _vertices, uint[] _indices, /*float[] _defaultUV,*/ bool _loadOnSetArrays = true)
+        public void SetVertexArrays(float[] _vertices, uint[] _indices, bool _loadOnSetArrays = true)
         {
             vertices = _vertices;
             indices = _indices;
@@ -102,16 +100,6 @@ namespace Electron2D.Core.Rendering
         {
             return vertices[(_vertex * layout.GetRawStride()) + _type];
         }
-
-        ///// <summary>
-        ///// Returns the default texture UV associated with the vertex inputted.
-        ///// </summary>
-        ///// <param name="_vertex">The vertex to get the UV of.</param>
-        ///// <returns></returns>
-        //public Vector2 GetDefaultUV(int _vertex = 0)
-        //{
-        //    return new Vector2(defaultUV[_vertex * 2], defaultUV[(_vertex * 2) + 1]);
-        //}
 
         #endregion
 
