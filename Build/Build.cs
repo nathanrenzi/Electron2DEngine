@@ -14,7 +14,7 @@ namespace Electron2D.Build
     {
         // Testing objects
         private Entity lightObj;
-        private List<Sprite> tilesList = new List<Sprite>();
+        private Tilemap tilemap;
         // ---------------
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight, "Test Game!")
@@ -32,20 +32,21 @@ namespace Electron2D.Build
             Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/TestNormal.jpg", true);
 
             Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"),
-                _globalUniformTags: new string[] { "lights" });
+                _globalUniformTags: new string[] { "lights", "time" });
 
-            int environmentScale = 50;
-            int tiles = 10;
-            for (int x = -tiles; x <= tiles; x++)
-            {
-                for (int y = -tiles; y <= tiles; y++)
-                {
-                    Sprite tile = new Sprite(Material.Create(diffuseShader, _normalTexture: tex1, _useLinearFiltering: true), -1);
-                    tile.Transform.Position = new Vector2(x, y) * environmentScale;
-                    tile.Transform.Scale = Vector2.One * environmentScale;
-                    tilesList.Add(tile);
-                }
-            }
+            tilemap = new Tilemap(Material.Create(diffuseShader, _normalTexture: tex1, _useLinearFiltering: true),
+                new TileData[] { new TileData("Test", 0, 0) }, 100, 10, 10,
+                new byte[]
+              { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,});
 
             lightObj = new Entity();
             lightObj.AddComponent(new Transform());

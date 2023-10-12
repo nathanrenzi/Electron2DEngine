@@ -79,6 +79,7 @@
 
   <ItemGroup>
     <Folder Include="Build\Resources\Textures\Tiles\" />
+    <Folder Include="Core\Mapping\" />
     <Folder Include="Core\Physics\" />
   </ItemGroup>
 
