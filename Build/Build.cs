@@ -33,6 +33,7 @@ namespace Electron2D.Build
 
             Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"),
                 _globalUniformTags: new string[] { "lights" });
+
             int environmentScale = 50;
             int tiles = 10;
             for (int x = -tiles; x <= tiles; x++)
@@ -54,12 +55,8 @@ namespace Electron2D.Build
 
         protected override void Update()
         {
-            //for (int i = 0; i < tilesList.Count; i++)
-            //{
-            //    tilesList[i].Renderer.Material.NormalScale = MathF.Sin(Time.TotalElapsedSeconds) / 2 + 0.5f;
-            //}
-
             CameraMovement();
+
             lightObj.GetComponent<Transform>().Position = new Vector2(MathF.Sin(Time.TotalElapsedSeconds * 3)
                 * 300, MathF.Cos(Time.TotalElapsedSeconds * 3) * 300);
         }

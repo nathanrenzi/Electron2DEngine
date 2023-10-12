@@ -28,7 +28,6 @@
     <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankTexture.png" />
-    <None Remove="Core\Rendering\Shaders\DefaultBatchTexture.glsl" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,9 +53,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\UserInterfaceTextures.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultBatchTexture.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultVertex.glsl">
