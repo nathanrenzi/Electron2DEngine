@@ -76,7 +76,7 @@ namespace Electron2D.Core.UserInterface
             BuildVertexMesh();
             // Indices are pre-written, so they are not generated at runtime
 
-            Renderer.SetVertexArrays(vertices, indices, defaultUV);
+            Renderer.SetVertexArrays(vertices, indices);
             SetColor(_startColor);
 
             Constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
@@ -89,7 +89,7 @@ namespace Electron2D.Core.UserInterface
         public void RebuildMesh()
         {
             BuildVertexMesh();
-            Renderer.SetVertexArrays(vertices, indices, defaultUV, false);
+            Renderer.SetVertexArrays(vertices, indices, false);
             Renderer.IsDirty = true;
         }
 

@@ -37,7 +37,7 @@ namespace Electron2D.Core
         public SpriteRenderer(Transform _transform, Material _material, int _renderLayer = 1) : base(_transform, _material, _renderLayer)
         {
             // Must be called in order for HasVertexData to be true
-            SetVertexArrays(vertices, indices, defaultUV);
+            SetVertexArrays(vertices, indices);
         }
 
         public void SetSubSprite(int _column, int _row)
@@ -60,6 +60,16 @@ namespace Electron2D.Core
             }
 
             IsDirty = true;
+        }
+
+        /// <summary>
+        /// Returns the default texture UV associated with the vertex inputted.
+        /// </summary>
+        /// <param name="_vertex">The vertex to get the UV of.</param>
+        /// <returns></returns>
+        public Vector2 GetDefaultUV(int _vertex = 0)
+        {
+            return new Vector2(defaultUV[_vertex * 2], defaultUV[(_vertex * 2) + 1]);
         }
     }
 }

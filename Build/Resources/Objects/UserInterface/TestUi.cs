@@ -35,7 +35,7 @@ namespace Electron2D.Build.Resources.Objects
             : base(_sizeX: _sizeX, _sizeY: _sizeY)
         {
             ResizeVertices();
-            Renderer.SetVertexArrays(vertices, indices, defaultUV);
+            Renderer.SetVertexArrays(vertices, indices);
 
             Constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
             Constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
