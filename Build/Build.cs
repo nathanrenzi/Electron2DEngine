@@ -7,6 +7,7 @@ using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.ECS;
 using System.Drawing;
 using Electron2D.Core.Misc;
+using Electron2D.Core.Management.Textures;
 
 namespace Electron2D.Build
 {
@@ -30,27 +31,38 @@ namespace Electron2D.Build
         protected override void Start()
         {
             Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/TestNormal.jpg", true);
+            Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
+            SpritesheetManager.Add(tex2, 13, 11);
 
             Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"),
-                _globalUniformTags: new string[] { "lights", "time" });
+                _globalUniformTags: new string[] { "lights" });
 
-            tilemap = new Tilemap(Material.Create(diffuseShader, _normalTexture: tex1, _useLinearFiltering: true),
-                new TileData[] { new TileData("Test", 0, 0) }, 100, 10, 10,
-                new byte[]
-              { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,});
+            //tilemap = new Tilemap(Material.Create(diffuseShader, _mainTexture: tex2, _useLinearFiltering: false, _normalScale: 0),
+            //    new TileData[] { new TileData("Grass1", 1, 7), new TileData("Grass2", 2, 9), new TileData("Pebble", 4, 2) }, 108, 10, 10,
+            //    new byte[]
+            //  { 0, 1, 0, 0, 1, 1, 0, 0, 2, 0,
+            //    2, 0, 1, 1, 0, 1, 1, 0, 1, 1,
+            //    1, 1, 0, 0, 0, 1, 0, 2, 0, 0,
+            //    1, 0, 1, 1, 0, 1, 0, 0, 1, 1,
+            //    1, 1, 0, 1, 0, 1, 0, 2, 0, 1,
+            //    0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+            //    0, 0, 2, 0, 0, 1, 1, 0, 0, 2,
+            //    0, 1, 1, 1, 0, 2, 1, 1, 1, 1,
+            //    1, 0, 1, 0, 0, 1, 0, 0, 0, 1,
+            //    0, 1, 1, 0, 1, 0, 0, 1, 1, 0,});
+
+            //tilemap.GetComponent<Transform>().Position = new Vector2(-540, -540);
+
+            //StreamWriter writer = new StreamWriter("C:/Users/Nathan/source/repos/Electron2D/Build/Resources/map.txt");
+            //Console.WriteLine(tilemap.ToJson());
+            //writer.Write(tilemap.ToJson());
+            //writer.Close();
+
+            tilemap = Tilemap.FromJson("C:/Users/Nathan/source/repos/Electron2D/Build/Resources/map.txt");
 
             lightObj = new Entity();
             lightObj.AddComponent(new Transform());
-            lightObj.AddComponent(new Light(Color.LightSalmon, 400, 4));
+            lightObj.AddComponent(new Light(Color.White, 400, 4, Light.LightType.Point, 2));
             lightObj.GetComponent<Transform>().Position = new Vector2(-400, 100);
         }
 

@@ -1,7 +1,9 @@
 ﻿using Electron2D.Core.ECS;
 using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Rendering;
+using Newtonsoft.Json;
 using System.Numerics;
+using System.Text;
 
 namespace Electron2D.Core
 {
@@ -21,13 +23,11 @@ namespace Electron2D.Core
 
     public class Tilemap : Entity
     {
-        // Add chunking - will need a TileChunk class with it's own meshrenderer
-
         public TileData[] TileData { get; private set; }
-        private int sizeX;
-        private int sizeY;
-        private byte[] tiles;
-        private int tilePixelSize;
+        public int sizeX { get; set; }
+        public int sizeY { get; set; }
+        public byte[] tiles { get; set; }
+        public int tilePixelSize { get; set; }
 
         private Transform transform;
         private MeshRenderer renderer;
@@ -36,7 +36,7 @@ namespace Electron2D.Core
 
         public Tilemap(Material _material, TileData[] _tileData, int _tilePixelSize, int _sizeX, int _sizeY, byte[] _tileArray, int _renderLayer = -1)
         {
-            tilePixelSize = _tilePixelSize;
+            tilePixelSize = _tilePixelSize * 2; // Compensating for Transform 0.5x scaling
             TileData = _tileData;
             sizeX = _sizeX;
             sizeY = _sizeY;
@@ -51,6 +51,50 @@ namespace Electron2D.Core
             isDirty = true;
 
             Game.OnUpdateEvent += RegenerateMesh;
+        }
+
+        public string ToJson()
+        {
+            //JsonSerializer serializer = new JsonSerializer();
+            //serializer.NullValueHandling = NullValueHandling.Ignore;
+            //serializer.Formatting = Formatting.Indented;
+
+            //using (StringWriter sw = new StringWriter())
+            //using (JsonWriter writer = new JsonTextWriter(sw))
+            //{
+            //    serializer.Serialize(writer, TileData);
+            //    serializer.Serialize(writer, sizeX);
+            //    serializer.Serialize(writer, sizeY);
+            //    serializer.Serialize(writer, tiles);
+            //    serializer.Serialize(writer, tilePixelSize);
+            //    return sw.ToString();
+            //}
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
+        }
+
+        public static Tilemap FromJson(string _filePath)
+        {
+            if(File.Exists(_filePath))
+            {
+                string jsonString = File.ReadAllText(_filePath);
+
+                //JsonSerializer serializer = new JsonSerializer();
+                //serializer.NullValueHandling = NullValueHandling.Ignore;
+                //serializer.Formatting = Formatting.Indented;
+
+                //using (StringReader sr = new StringReader(jsonString))
+                //using (JsonReader reader = new JsonTextReader(sr))
+                //{
+                //    return serializer.Deserialize<Tilemap>(reader);
+                //}
+
+                return JsonConvert.DeserializeObject<Tilemap>(jsonString, new JsonSerializerSettings() { });
+            }
+            else
+            {
+                Console.WriteLine($"Tilemap JSON file does not exist! Incorrect path: {_filePath}");
+                return null;
+            }
         }
 
         private void RegenerateMesh()

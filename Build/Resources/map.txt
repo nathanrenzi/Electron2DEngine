@@ -1,0 +1,24 @@
+{
+  "TileData": [
+    {
+      "Name": "Grass1",
+      "SpriteColumn": 1,
+      "SpriteRow": 7
+    },
+    {
+      "Name": "Grass2",
+      "SpriteColumn": 2,
+      "SpriteRow": 9
+    },
+    {
+      "Name": "Pebble",
+      "SpriteColumn": 4,
+      "SpriteRow": 2
+    }
+  ],
+  "sizeX": 10,
+  "sizeY": 10,
+  "tiles": "AAEAAAEBAAACAAIAAQEAAQEAAQEBAQAAAAEAAgAAAQABAQABAAABAQEBAAEAAQACAAEAAQAAAQAAAQAAAAACAAABAQAAAgABAQEAAgEBAQEBAAEAAAEAAAABAAEBAAEAAAEBAA==",
+  "tilePixelSize": 216,
+  "ID": 0
+}

@@ -9,8 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Core\Mapping\**" />
+    <Compile Remove="Core\Physics\**" />
     <Compile Remove="Core\Rendering\Renderers\Batching\**" />
+    <EmbeddedResource Remove="Core\Mapping\**" />
+    <EmbeddedResource Remove="Core\Physics\**" />
     <EmbeddedResource Remove="Core\Rendering\Renderers\Batching\**" />
+    <None Remove="Core\Mapping\**" />
+    <None Remove="Core\Physics\**" />
     <None Remove="Core\Rendering\Renderers\Batching\**" />
   </ItemGroup>
 
@@ -65,6 +71,7 @@
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>
 
@@ -79,8 +86,6 @@
 
   <ItemGroup>
     <Folder Include="Build\Resources\Textures\Tiles\" />
-    <Folder Include="Core\Mapping\" />
-    <Folder Include="Core\Physics\" />
   </ItemGroup>
 
 </Project>
