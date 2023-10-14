@@ -34,7 +34,7 @@ namespace Electron2D.Core
             }
         }
 
-        public const int MAX_POINT_LIGHTS = 16;
+        public const int MAX_POINT_LIGHTS = 64;
         public List<Light> PointLightsInScene = new List<Light>();
 
         public const int MAX_SPOTLIGHTS = 16;

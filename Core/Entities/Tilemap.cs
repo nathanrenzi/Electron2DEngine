@@ -9,10 +9,11 @@ namespace Electron2D.Core
 {
     public struct TileData
     {
-        public string Name { get; private set; }
-        public int SpriteColumn { get; private set; }
-        public int SpriteRow { get; private set; }
+        public string Name { get; set; } = "";
+        public int SpriteColumn { get; set; } = 0;
+        public int SpriteRow { get; set; } = 0;
 
+        public TileData() { }
         public TileData(string _name, int _spriteColumn, int _spriteRow)
         {
             Name = _name;
@@ -23,10 +24,11 @@ namespace Electron2D.Core
 
     public class Tilemap : Entity
     {
-        public TileData[] TileData { get; private set; }
+        public TileData[] TileTypes { get; set; }
         public int sizeX { get; set; }
         public int sizeY { get; set; }
-        public byte[] tiles { get; set; }
+        public int[] tiles { get; set; }
+        // Add color array, maybe use alpha to pick which tile it's applied to?
         public int tilePixelSize { get; set; }
 
         private Transform transform;
@@ -34,10 +36,10 @@ namespace Electron2D.Core
 
         private bool isDirty = false;
 
-        public Tilemap(Material _material, TileData[] _tileData, int _tilePixelSize, int _sizeX, int _sizeY, byte[] _tileArray, int _renderLayer = -1)
+        public Tilemap(Material _material, TileData[] _tileTypes, int _tilePixelSize, int _sizeX, int _sizeY, int[] _tileArray, int _renderLayer = -1)
         {
             tilePixelSize = _tilePixelSize * 2; // Compensating for Transform 0.5x scaling
-            TileData = _tileData;
+            TileTypes = _tileTypes;
             sizeX = _sizeX;
             sizeY = _sizeY;
             tiles = _tileArray;
@@ -55,40 +57,17 @@ namespace Electron2D.Core
 
         public string ToJson()
         {
-            //JsonSerializer serializer = new JsonSerializer();
-            //serializer.NullValueHandling = NullValueHandling.Ignore;
-            //serializer.Formatting = Formatting.Indented;
-
-            //using (StringWriter sw = new StringWriter())
-            //using (JsonWriter writer = new JsonTextWriter(sw))
-            //{
-            //    serializer.Serialize(writer, TileData);
-            //    serializer.Serialize(writer, sizeX);
-            //    serializer.Serialize(writer, sizeY);
-            //    serializer.Serialize(writer, tiles);
-            //    serializer.Serialize(writer, tilePixelSize);
-            //    return sw.ToString();
-            //}
             return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
 
-        public static Tilemap FromJson(string _filePath)
+        public static Tilemap FromJson(string _filePath, Material _material) // Temporary material assignment, will be done through JSON / specific material loading from disk system
         {
             if(File.Exists(_filePath))
             {
                 string jsonString = File.ReadAllText(_filePath);
-
-                //JsonSerializer serializer = new JsonSerializer();
-                //serializer.NullValueHandling = NullValueHandling.Ignore;
-                //serializer.Formatting = Formatting.Indented;
-
-                //using (StringReader sr = new StringReader(jsonString))
-                //using (JsonReader reader = new JsonTextReader(sr))
-                //{
-                //    return serializer.Deserialize<Tilemap>(reader);
-                //}
-
-                return JsonConvert.DeserializeObject<Tilemap>(jsonString, new JsonSerializerSettings() { });
+                Tilemap tilemap = JsonConvert.DeserializeObject<Tilemap>(jsonString);
+                tilemap.renderer.SetMaterial(_material);
+                return tilemap;
             }
             else
             {
@@ -145,7 +124,7 @@ namespace Electron2D.Core
                     // Add submesh sprite support here using the 0, 1 values generated
                     float u = xMod / tilePixelSize;
                     float v = yMod / tilePixelSize;
-                    TileData data = TileData[tiles[i]];
+                    TileData data = TileTypes[tiles[i]];
                     Vector2 newUV = SpritesheetManager.spritesheets.ContainsKey(renderer.Material.MainTexture) ? 
                         SpritesheetManager.GetVertexUV(renderer.Material.MainTexture,
                         data.SpriteColumn, data.SpriteRow, new Vector2(u, v)) : 
@@ -172,7 +151,7 @@ namespace Electron2D.Core
         }
 
         public void SetTileID(int _x, int _y, byte _tileID) { tiles[_x + _y * sizeY] = _tileID; isDirty = true; }
-        public byte GetTileID(int _x, int _y) => tiles[_x + _y * sizeY];
-        public TileData GetTileData(int _x, int _y) => TileData[GetTileID(_x, _y)];
+        public int GetTileID(int _x, int _y) => tiles[_x + _y * sizeY];
+        public TileData GetTileData(int _x, int _y) => TileTypes[GetTileID(_x, _y)];
     }
 }

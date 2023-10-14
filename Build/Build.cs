@@ -14,7 +14,7 @@ namespace Electron2D.Build
     public class Build : Game
     {
         // Testing objects
-        private Entity lightObj;
+        private List<Entity> lightObj = new List<Entity>();
         private Tilemap tilemap;
         // ---------------
 
@@ -30,26 +30,24 @@ namespace Electron2D.Build
 
         protected override void Start()
         {
-            Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/TestNormal.jpg", true);
-            Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
-            SpritesheetManager.Add(tex2, 13, 11);
+            Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
+            Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTilesNormal.png", true);
+            SpritesheetManager.Add(tex1, 13, 11);
 
             Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"),
                 _globalUniformTags: new string[] { "lights" });
 
-            //tilemap = new Tilemap(Material.Create(diffuseShader, _mainTexture: tex2, _useLinearFiltering: false, _normalScale: 0),
-            //    new TileData[] { new TileData("Grass1", 1, 7), new TileData("Grass2", 2, 9), new TileData("Pebble", 4, 2) }, 108, 10, 10,
-            //    new byte[]
-            //  { 0, 1, 0, 0, 1, 1, 0, 0, 2, 0,
-            //    2, 0, 1, 1, 0, 1, 1, 0, 1, 1,
-            //    1, 1, 0, 0, 0, 1, 0, 2, 0, 0,
-            //    1, 0, 1, 1, 0, 1, 0, 0, 1, 1,
-            //    1, 1, 0, 1, 0, 1, 0, 2, 0, 1,
-            //    0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
-            //    0, 0, 2, 0, 0, 1, 1, 0, 0, 2,
-            //    0, 1, 1, 1, 0, 2, 1, 1, 1, 1,
-            //    1, 0, 1, 0, 0, 1, 0, 0, 0, 1,
-            //    0, 1, 1, 0, 1, 0, 0, 1, 1, 0,});
+            int size = 100;
+            int[] tiles = new int[size * size];
+            Random random = new Random();
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                tiles[i] = random.Next(0, 2) == 0 ? 0 : (random.Next(0, 6) > 0 ? 1 : 2);
+            }
+
+            int tilePixelSize = 100;
+            tilemap = new Tilemap(Material.Create(diffuseShader, _mainTexture: tex1, _normalTexture: tex2, _useLinearFiltering: false, _normalScale: 1),
+                new TileData[] { new TileData("Grass1", 1, 7), new TileData("Grass2", 2, 9), new TileData("Pebble", 4, 2) }, tilePixelSize, size, size, tiles);
 
             //tilemap.GetComponent<Transform>().Position = new Vector2(-540, -540);
 
@@ -58,20 +56,29 @@ namespace Electron2D.Build
             //writer.Write(tilemap.ToJson());
             //writer.Close();
 
-            tilemap = Tilemap.FromJson("C:/Users/Nathan/source/repos/Electron2D/Build/Resources/map.txt");
+            //tilemap = Tilemap.FromJson("C:/Users/Nathan/source/repos/Electron2D/Build/Resources/map.txt",
+            //    Material.Create(diffuseShader, _mainTexture: tex2, _useLinearFiltering: false, _normalScale: 0));
+            //tilemap.GetComponent<Transform>().Position = new Vector2(-540, -540);
 
-            lightObj = new Entity();
-            lightObj.AddComponent(new Transform());
-            lightObj.AddComponent(new Light(Color.White, 400, 4, Light.LightType.Point, 2));
-            lightObj.GetComponent<Transform>().Position = new Vector2(-400, 100);
+
+            int numLights = 64;
+            for (int i = 0; i < numLights; i++)
+            {
+                Entity light = new Entity();
+                light.AddComponent(new Transform());
+                light.AddComponent(new Light(Color.FromArgb(255, random.Next(0, 256), random.Next(0, 256), random.Next(0, 256)),
+                    random.Next(1, 8) * 100, random.Next(1, 3), Light.LightType.Point, 2));
+                light.GetComponent<Transform>().Position = new Vector2(random.Next(0, size * tilePixelSize), random.Next(0, size * tilePixelSize));
+
+                lightObj.Add(light);
+            }
         }
 
         protected override void Update()
         {
             CameraMovement();
 
-            lightObj.GetComponent<Transform>().Position = new Vector2(MathF.Sin(Time.TotalElapsedSeconds * 3)
-                * 300, MathF.Cos(Time.TotalElapsedSeconds * 3) * 300);
+            Console.WriteLine(PerformanceTimings.FramesPerSecond);
         }
 
         private void CameraMovement()

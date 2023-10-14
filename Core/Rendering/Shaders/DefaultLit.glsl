@@ -44,7 +44,7 @@ struct PointLight {
     vec3 color;
 };  
 
-#define MAX_POINT_LIGHTS 16  
+#define MAX_POINT_LIGHTS 64
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 
 vec3 CalcPointLight(PointLight light, vec2 fragPos, vec3 normal)

@@ -9,12 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Build\Resources\Textures\Tiles\**" />
     <Compile Remove="Core\Mapping\**" />
     <Compile Remove="Core\Physics\**" />
     <Compile Remove="Core\Rendering\Renderers\Batching\**" />
+    <EmbeddedResource Remove="Build\Resources\Textures\Tiles\**" />
     <EmbeddedResource Remove="Core\Mapping\**" />
     <EmbeddedResource Remove="Core\Physics\**" />
     <EmbeddedResource Remove="Core\Rendering\Renderers\Batching\**" />
+    <None Remove="Build\Resources\Textures\Tiles\**" />
     <None Remove="Core\Mapping\**" />
     <None Remove="Core\Physics\**" />
     <None Remove="Core\Rendering\Renderers\Batching\**" />
@@ -29,6 +32,7 @@
     <None Remove="Build\Resources\Textures\boid2.png" />
     <None Remove="Build\Resources\Textures\boidSpritesheet.png" />
     <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
+    <None Remove="Build\Resources\Textures\EnvironmentTilesNormal.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
     <None Remove="Build\Resources\Textures\TestNormal.jpg" />
     <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
@@ -38,6 +42,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\EnvironmentTilesNormal.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\TestNormal.jpg">
@@ -82,10 +89,6 @@
     <None Update="Build\Resources\Textures\test2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Build\Resources\Textures\Tiles\" />
   </ItemGroup>
 
 </Project>
