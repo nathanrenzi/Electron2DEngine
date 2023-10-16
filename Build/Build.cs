@@ -30,9 +30,9 @@ namespace Electron2D.Build
 
         protected override void Start()
         {
-            Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTiles.png");
-            Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/EnvironmentTilesNormal.png", true);
-            SpritesheetManager.Add(tex1, 13, 11);
+            Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/tiles1.png");
+            Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/tilesNormal1.png", true);
+            SpritesheetManager.Add(tex1, 2, 2);
 
             Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"),
                 _globalUniformTags: new string[] { "lights" });
@@ -47,9 +47,9 @@ namespace Electron2D.Build
 
             int tilePixelSize = 100;
             tilemap = new Tilemap(Material.Create(diffuseShader, _mainTexture: tex1, _normalTexture: tex2, _useLinearFiltering: false, _normalScale: 1),
-                new TileData[] { new TileData("Grass1", 1, 7), new TileData("Grass2", 2, 9), new TileData("Pebble", 4, 2) }, tilePixelSize, size, size, tiles);
+                new TileData[] { new TileData("Grass1", 0, 1), new TileData("Grass2", 1, 1), new TileData("Pebble", 0, 0) }, tilePixelSize, size, size, tiles);
 
-            //tilemap.GetComponent<Transform>().Position = new Vector2(-540, -540);
+            tilemap.GetComponent<Transform>().Position = new Vector2(-540, -540);
 
             //StreamWriter writer = new StreamWriter("C:/Users/Nathan/source/repos/Electron2D/Build/Resources/map.txt");
             //Console.WriteLine(tilemap.ToJson());
@@ -66,8 +66,7 @@ namespace Electron2D.Build
             {
                 Entity light = new Entity();
                 light.AddComponent(new Transform());
-                light.AddComponent(new Light(Color.FromArgb(255, random.Next(0, 256), random.Next(0, 256), random.Next(0, 256)),
-                    random.Next(1, 8) * 100, random.Next(1, 3), Light.LightType.Point, 2));
+                light.AddComponent(new Light(Color.White, random.Next(1, 8) * 100, random.Next(1, 3), Light.LightType.Point, 2));
                 light.GetComponent<Transform>().Position = new Vector2(random.Next(0, size * tilePixelSize), random.Next(0, size * tilePixelSize));
 
                 lightObj.Add(light);

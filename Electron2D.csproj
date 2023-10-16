@@ -31,10 +31,16 @@
     <None Remove="Build\Resources\Textures\boid1.png" />
     <None Remove="Build\Resources\Textures\boid2.png" />
     <None Remove="Build\Resources\Textures\boidSpritesheet.png" />
+    <None Remove="Build\Resources\Textures\brick.png" />
+    <None Remove="Build\Resources\Textures\brickNormal.png" />
     <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
     <None Remove="Build\Resources\Textures\EnvironmentTilesNormal.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
+    <None Remove="Build\Resources\Textures\rubble.png" />
+    <None Remove="Build\Resources\Textures\rubbleNormal.png" />
     <None Remove="Build\Resources\Textures\TestNormal.jpg" />
+    <None Remove="Build\Resources\Textures\tiles1.png" />
+    <None Remove="Build\Resources\Textures\tilesNormal1.png" />
     <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankTexture.png" />
@@ -44,10 +50,28 @@
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\brick.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\brickNormal.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\EnvironmentTilesNormal.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\rubble.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\rubbleNormal.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\TestNormal.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\tiles1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\tilesNormal1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\CoreTextures\BlankNormal.png">
@@ -79,6 +103,7 @@
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SharpFont" Version="4.0.1" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>
 
