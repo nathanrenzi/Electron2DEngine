@@ -31,10 +31,12 @@ namespace Electron2D.Core.Rendering
 
         public unsafe void SetData(Rectangle _bounds, byte[] _data)
         {
-            Use(GL_TEXTURE0);
-            fixed(byte* ptr = _data)
+            // Using not in-use texture slot since this does not cache itself as the last used texture anywhere
+            Use(GL_TEXTURE5);
+
+            fixed (byte* ptr = _data)
             {
-                glTexSubImage2D(GL_TEXTURE_2D, 0, _bounds.Left, _bounds.Top, _bounds.Width, _bounds.Height, GL_BGRA, GL_UNSIGNED_BYTE, new IntPtr(ptr));
+                glTexSubImage2D(GL_TEXTURE_2D, 0, _bounds.Left, _bounds.Top, _bounds.Width, _bounds.Height, GL_BGRA, GL_UNSIGNED_BYTE, ptr);
             }
         }
 

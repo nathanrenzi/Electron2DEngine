@@ -30,20 +30,12 @@ namespace Electron2D.Core.Management
             return new Texture2D(handle, image.Width, image.Height);
         }
 
-        public static Texture2D Create(int _width, int _height)
+        public static unsafe Texture2D Create(int _width, int _height)
         {
             uint handle = glGenTexture();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, handle);
-
-            using var image = new Bitmap(_width, _height);
-            var data = image.LockBits(
-                new Rectangle(0, 0, image.Width, image.Height),
-                ImageLockMode.ReadOnly,
-                PixelFormat.Format32bppArgb);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, _width, _height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
-            image.UnlockBits(data);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_BGRA, GL_UNSIGNED_BYTE, (void*)0);
 
             return new Texture2D(handle, _width, _height);
         }

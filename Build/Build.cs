@@ -40,7 +40,7 @@ namespace Electron2D.Build
             };
 
             fontSystem = new FontSystem(settings);
-            fontSystem.AddFont(File.ReadAllBytes(@"Build/Resources/Fonts/FreeSans/FreeSans.ttf"));
+            fontSystem.AddFont(File.ReadAllBytes("Build/Resources/Fonts/FreeSans/FreeSans.ttf"));
 
             renderer = new TextRenderer(new Transform(), Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"))));
             Material m = Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl")));
@@ -80,7 +80,7 @@ namespace Electron2D.Build
 
         protected unsafe override void Render()
         {
-            var text = "The quick brown fox jumps over the lazy dog.";
+            var text = "A";
             var scale = new Vector2(4, 4);
 
             var font = fontSystem.GetFont(32);
@@ -89,7 +89,7 @@ namespace Electron2D.Build
             var origin = new Vector2(size.X / scale.X, size.Y / scale.Y);
 
             renderer.Begin();
-            font.DrawText(renderer, text, new Vector2(0, 0), FSColor.DarkGray, scale, origin: origin);
+            font.DrawText(renderer, text, new Vector2(0, 0), FSColor.White, scale, origin: origin);
             renderer.End();
             sprite.Renderer.Material.MainTexture = ResourceManager.Instance.GetTexture(3);
         }
