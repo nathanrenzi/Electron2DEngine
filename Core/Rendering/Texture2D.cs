@@ -34,7 +34,7 @@ namespace Electron2D.Core.Rendering
             // Using not in-use texture slot since this does not cache itself as the last used texture anywhere
             Use(GL_TEXTURE5);
 
-            fixed (byte* ptr = _data)
+            fixed (byte* ptr = &_data[0])
             {
                 glTexSubImage2D(GL_TEXTURE_2D, 0, _bounds.Left, _bounds.Top, _bounds.Width, _bounds.Height, GL_BGRA, GL_UNSIGNED_BYTE, ptr);
             }

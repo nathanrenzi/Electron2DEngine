@@ -108,12 +108,28 @@ namespace Electron2D.Core
                 RenderLayerManager.RenderAllLayers();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
+                LogErrors();
                 PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
                 // -------------------------------
             }
 
             AudioPlayback.Instance.Dispose();
             DisplayManager.CloseWindow();
+        }
+
+        private void LogErrors()
+        {
+            int errorCode = GetError();
+            if (errorCode != GL_NO_ERROR)
+                Console.WriteLine($"OPENGL ERROR: {errorCode}");
+
+            string description;
+            ErrorCode code = Glfw.GetError(out description);
+            while (code != ErrorCode.None)
+            {
+                code = Glfw.GetError(out description);
+                Console.WriteLine($"GLFW ERROR: {description} | {code}");
+            }
         }
 
         protected abstract void Initialize();   // This is ran when the Game is first initialized
