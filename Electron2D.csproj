@@ -25,6 +25,14 @@
 
   <ItemGroup>
     <None Remove="Build\Resources\Audio\SFX\testsfx.mp3" />
+    <None Remove="Build\Resources\Fonts\FreeSans\FreeSans.otf" />
+    <None Remove="Build\Resources\Fonts\FreeSans\FreeSans.ttf" />
+    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansBold.otf" />
+    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansBold.ttf" />
+    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansBoldOblique.otf" />
+    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansBoldOblique.ttf" />
+    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansOblique.otf" />
+    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansOblique.ttf" />
     <None Remove="Build\Resources\Shaders\FunShader.glsl" />
     <None Remove="Build\Resources\Shaders\LitShader.glsl" />
     <None Remove="Build\Resources\Textures\basicSpritesheet1.png" />
@@ -44,10 +52,35 @@
     <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankTexture.png" />
+    <None Remove="Core\Rendering\Shaders\DefaultText.glsl" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSans.otf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSans.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansBold.otf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansBold.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansBoldOblique.otf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansBoldOblique.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansOblique.otf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansOblique.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\brick.png">
@@ -92,6 +125,9 @@
     <EmbeddedResource Include="Build\Resources\Textures\UserInterfaceTextures.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultText.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultVertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -101,9 +137,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FontStashSharp" Version="1.2.8" />
     <PackageReference Include="NAudio" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="SharpFont" Version="4.0.1" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>
 

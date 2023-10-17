@@ -1,4 +1,5 @@
-﻿using static Electron2D.OpenGL.GL;
+﻿using Electron2D.Core.Management;
+using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Core.Rendering
 {
@@ -8,8 +9,6 @@ namespace Electron2D.Core.Rendering
         public uint Handle { get; private set; }
         public int Width { get; set; }
         public int Height { get; set; }
-
-        public static Texture2D Blank { get; set; } // Still need to implement
 
         public Texture2D(uint _handle)
         {
@@ -38,6 +37,7 @@ namespace Electron2D.Core.Rendering
             if(!_disposed)
             {
                 glDeleteTexture(Handle);
+                ResourceManager.Instance.RemoveTexture(this);
                 _disposed = true;
             }
         }

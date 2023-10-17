@@ -1,16 +1,18 @@
 ﻿using Electron2D.Core.Audio;
 using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Rendering;
+using FontStashSharp.Interfaces;
+using System.Drawing;
+using System.Linq;
 
 namespace Electron2D.Core.Management
 {
-    // MAKE LOADING HAPPEN DURING THE LOADING PHASE USING A MAP FILE THAT CONTAINS ALL SOUNDS AND TEXTURES THAT WILL NEED TO BE LOADED
-    // THERE IS CURRENTLY LAG HAPPENING WHEN TEXTURES AND ESPECIALLY SOUNDS ARE LOADED IN AT RUNTIME
-    public sealed class ResourceManager
+    public sealed class ResourceManager : ITexture2DManager
     {
         private static ResourceManager instance = null;
         private static readonly object loc = new();
         private IDictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
+        private IDictionary<uint, Texture2D> textureHandleCache = new Dictionary<uint, Texture2D>();
         private IDictionary<string, CachedSound> soundCache = new Dictionary<string, CachedSound>();
 
         public static ResourceManager Instance
@@ -44,7 +46,24 @@ namespace Electron2D.Core.Management
 
             value = TextureFactory.Load(_textureFileName, _loadAsNonSRGBA);
             textureCache.Add(_textureFileName, value);
+            textureHandleCache.Add(value.Handle, value);
             return value;
+        }
+
+        /// <summary>
+        /// Removes a texture from the cache. This is called from <see cref="Texture2D.Dispose()"/>
+        /// </summary>
+        /// <param name="_texture">The texture to remove from the cache.</param>
+        public void RemoveTexture(Texture2D _texture)
+        {
+            textureHandleCache.Remove(_texture.Handle);
+            foreach (var pair in textureCache)
+            {
+                if(pair.Value == _texture)
+                {
+                    textureCache.Remove(pair.Key);
+                }
+            }
         }
 
         /// <summary>
@@ -64,6 +83,40 @@ namespace Electron2D.Core.Management
             value = new CachedSound(_soundFileName);
             soundCache.Add(_soundFileName, value);
             return value;
+        }
+
+        /// <summary>
+        /// Creates a blank texture object.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        public object CreateTexture(int width, int height)
+        {
+            return TextureFactory.Create(width, height).Handle;
+        }
+
+        /// <summary>
+        /// Returns the size of a texture. Used by <see cref="ITexture2DManager"/>.
+        /// </summary>
+        /// <param name="texture"></param>
+        /// <returns></returns>
+        public Point GetTextureSize(object texture)
+        {
+            if(textureHandleCache.TryGetValue((uint)texture, out Texture2D tex))
+            {
+                return new Point(tex.Width, tex.Height);
+            }
+            else
+            {
+                Console.WriteLine("Error. Texture handle is not registered");
+                return new Point(0, 0);
+            }
+        }
+
+        public void SetTextureData(object texture, Rectangle bounds, byte[] data)
+        {
+            
         }
     }
 }

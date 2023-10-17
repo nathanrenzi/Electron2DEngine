@@ -62,9 +62,12 @@ namespace Electron2D.Core.Rendering
         public static void UpdateShader(Shader _shader)
         {
             _shader.Use();
-            for (int x = 0; x < _shader.GlobalUniformTags.Length; x++)
+            if(_shader.GlobalUniformTags != null)
             {
-                SetUniform(_shader.GlobalUniformTags[x], _shader);
+                for (int x = 0; x < _shader.GlobalUniformTags.Length; x++)
+                {
+                    SetUniform(_shader.GlobalUniformTags[x], _shader);
+                }
             }
         }
 

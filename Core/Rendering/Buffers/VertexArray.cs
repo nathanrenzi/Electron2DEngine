@@ -40,5 +40,10 @@ namespace Electron2D.Core.Rendering
         {
             glBindVertexArray(0);
         }
+
+        public void Dispose()
+        {
+            glDeleteBuffer(bufferID);
+        }
     }
 }

@@ -40,8 +40,12 @@ namespace Electron2D.Core.Rendering
             RenderLayerManager.OrderRenderable(this);
         }
 
-        ~MeshRenderer()
+        protected override void OnDispose()
         {
+            vertexBuffer.Dispose();
+            vertexArray.Dispose();
+            indexBuffer.Dispose();
+
             MeshRendererSystem.Unregister(this);
         }
 

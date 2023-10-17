@@ -52,6 +52,9 @@ namespace Electron2D.Core
             glEnable(GL_BLEND);
             glEnable(GL_FRAMEBUFFER_SRGB); // Gamma-corrects lighting and improves overall scene
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            //glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction - used for text rendering https://learnopengl.com/In-Practice/Text-Rendering
             // -----------
 
             // Starting Entity Systems
@@ -67,6 +70,7 @@ namespace Electron2D.Core
 
             UiMaster.Display.Initialize();
 
+            GC.Collect();
             Start();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))

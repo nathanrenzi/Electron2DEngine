@@ -8,15 +8,14 @@ using Electron2D.Core.ECS;
 using System.Drawing;
 using Electron2D.Core.Misc;
 using Electron2D.Core.Management.Textures;
+using FontStashSharp;
 
 namespace Electron2D.Build
 {
     public class Build : Game
     {
-        // Testing objects
-        private List<Entity> lightObj = new List<Entity>();
-        private Tilemap tilemap;
-        // ---------------
+        private FontSystem fontSystem;
+        private TextRenderer renderer;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight, "Test Game!")
         {
@@ -30,47 +29,17 @@ namespace Electron2D.Build
 
         protected override void Start()
         {
-            Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/tiles1.png");
-            Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/tilesNormal1.png", true);
-            SpritesheetManager.Add(tex1, 2, 2);
-
-            Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"),
-                _globalUniformTags: new string[] { "lights" });
-
-            int size = 100;
-            int[] tiles = new int[size * size];
-            Random random = new Random();
-            for (int i = 0; i < tiles.Length; i++)
+            var settings = new FontSystemSettings()
             {
-                tiles[i] = random.Next(0, 2) == 0 ? 0 : (random.Next(0, 6) > 0 ? 1 : 2);
-            }
+                FontResolutionFactor = 2,
+                KernelWidth = 2,
+                KernelHeight = 1
+            };
 
-            int tilePixelSize = 100;
-            tilemap = new Tilemap(Material.Create(diffuseShader, _mainTexture: tex1, _normalTexture: tex2, _useLinearFiltering: false, _normalScale: 1),
-                new TileData[] { new TileData("Grass1", 0, 1), new TileData("Grass2", 1, 1), new TileData("Pebble", 0, 0) }, tilePixelSize, size, size, tiles);
+            fontSystem = new FontSystem(settings);
+            fontSystem.AddFont(File.ReadAllBytes(@"Build/Resources/Fonts/FreeSans/FreeSans.ttf"));
 
-            tilemap.GetComponent<Transform>().Position = new Vector2(-540, -540);
-
-            //StreamWriter writer = new StreamWriter("C:/Users/Nathan/source/repos/Electron2D/Build/Resources/map.txt");
-            //Console.WriteLine(tilemap.ToJson());
-            //writer.Write(tilemap.ToJson());
-            //writer.Close();
-
-            //tilemap = Tilemap.FromJson("C:/Users/Nathan/source/repos/Electron2D/Build/Resources/map.txt",
-            //    Material.Create(diffuseShader, _mainTexture: tex2, _useLinearFiltering: false, _normalScale: 0));
-            //tilemap.GetComponent<Transform>().Position = new Vector2(-540, -540);
-
-
-            int numLights = 64;
-            for (int i = 0; i < numLights; i++)
-            {
-                Entity light = new Entity();
-                light.AddComponent(new Transform());
-                light.AddComponent(new Light(Color.White, random.Next(1, 8) * 100, random.Next(1, 3), Light.LightType.Point, 2));
-                light.GetComponent<Transform>().Position = new Vector2(random.Next(0, size * tilePixelSize), random.Next(0, size * tilePixelSize));
-
-                lightObj.Add(light);
-            }
+            renderer = new TextRenderer(new Transform(), Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"))));
         }
 
         protected override void Update()
@@ -106,7 +75,16 @@ namespace Electron2D.Build
 
         protected unsafe override void Render()
         {
+            var text = "The quick brown fox jumps over the lazy dog.";
+            var scale = new Vector2(2, 2);
 
+            var font = fontSystem.GetFont(32);
+
+            var size = font.MeasureString(text, scale);
+            var origin = new Vector2(size.X / 2.0f, size.Y / 2.0f);
+
+
+            //font.DrawText()
         }
     }
 }

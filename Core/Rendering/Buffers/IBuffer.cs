@@ -5,5 +5,6 @@
         uint bufferID { get; }
         void Bind();
         void Unbind();
+        void Dispose();
     }
 }

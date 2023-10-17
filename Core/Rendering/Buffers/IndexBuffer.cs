@@ -30,5 +30,10 @@ namespace Electron2D.Core.Rendering
         {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
+
+        public void Dispose()
+        {
+            glDeleteBuffer(bufferID);
+        }
     }
 }
