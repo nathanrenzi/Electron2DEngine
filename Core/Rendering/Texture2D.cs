@@ -1,4 +1,5 @@
 ﻿using Electron2D.Core.Management;
+using System.Drawing;
 using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Core.Rendering
@@ -10,13 +11,9 @@ namespace Electron2D.Core.Rendering
         public int Width { get; set; }
         public int Height { get; set; }
 
-        public Texture2D(uint _handle)
+        public Texture2D(uint _handle, int _width, int _height)
         {
             Handle = _handle;
-        }
-
-        public Texture2D(uint _handle, int _width, int _height) : this(_handle)
-        {
             Width = _width;
             Height = _height;
         }
@@ -30,6 +27,15 @@ namespace Electron2D.Core.Rendering
         {
             glActiveTexture(_textureSlot);
             glBindTexture(GL_TEXTURE_2D, Handle);
+        }
+
+        public unsafe void SetData(Rectangle _bounds, byte[] _data)
+        {
+            Use(GL_TEXTURE0);
+            fixed(byte* ptr = _data)
+            {
+                glTexSubImage2D(GL_TEXTURE_2D, 0, _bounds.Left, _bounds.Top, _bounds.Width, _bounds.Height, GL_BGRA, GL_UNSIGNED_BYTE, new IntPtr(ptr));
+            }
         }
 
         public void Dispose(bool _disposing)

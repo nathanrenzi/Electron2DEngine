@@ -91,9 +91,11 @@ namespace Electron2D.Core.Management
         /// <param name="width"></param>
         /// <param name="height"></param>
         /// <returns></returns>
-        public object CreateTexture(int width, int height)
+        public object CreateTexture(int _width, int _height)
         {
-            return TextureFactory.Create(width, height).Handle;
+            Texture2D texture = TextureFactory.Create(_width, _height);
+            textureHandleCache.Add(texture.Handle, texture);
+            return texture.Handle;
         }
 
         /// <summary>
@@ -101,22 +103,35 @@ namespace Electron2D.Core.Management
         /// </summary>
         /// <param name="texture"></param>
         /// <returns></returns>
-        public Point GetTextureSize(object texture)
+        public Point GetTextureSize(object _texture)
         {
-            if(textureHandleCache.TryGetValue((uint)texture, out Texture2D tex))
+            if(textureHandleCache.TryGetValue((uint)_texture, out Texture2D tex))
             {
                 return new Point(tex.Width, tex.Height);
             }
             else
             {
-                Console.WriteLine("Error. Texture handle is not registered");
+                Console.WriteLine("Error. Texture handle is not registered, cannot get size.");
                 return new Point(0, 0);
             }
         }
 
-        public void SetTextureData(object texture, Rectangle bounds, byte[] data)
+        /// <summary>
+        /// Sets the pixel data of a texture.
+        /// </summary>
+        /// <param name="_texture"></param>
+        /// <param name="_bounds"></param>
+        /// <param name="_data"></param>
+        public void SetTextureData(object _texture, Rectangle _bounds, byte[] _data)
         {
-            
+            if (textureHandleCache.TryGetValue((uint)_texture, out Texture2D tex))
+            {
+                tex.SetData(_bounds, _data);
+            }
+            else
+            {
+                Console.WriteLine("Error. Texture handle is not registered, cannot set data.");
+            }
         }
     }
 }

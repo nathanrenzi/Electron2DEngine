@@ -5,10 +5,11 @@ using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Core.Rendering
 {
+    //https://github.com/FontStashSharp/FontStashSharp/tree/main/samples/FontStashSharp.Samples.OpenTK
     public class TextRenderer : Component, IFontStashRenderer2
     {
-        private const int MAX_SPRITES = 2048;
-        private const int MAX_VERTICES = MAX_SPRITES * 4;
+        private const int MAX_SPRITES = 128;
+        private const int MAX_VERTICES = MAX_SPRITES * 8 * 4;
         private const int MAX_INDICES = MAX_SPRITES * 6;
 
         private readonly float[] vertices;
@@ -100,7 +101,7 @@ namespace Electron2D.Core.Rendering
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture);
 
-            glDrawElements(GL_TRIANGLES, vertexIndex / 4, GL_UNSIGNED_INT, (void*)0);
+            glDrawElements(GL_TRIANGLES, vertexIndex / 8, GL_UNSIGNED_INT, (void*)0);
             vertexIndex = 0;
         }
 

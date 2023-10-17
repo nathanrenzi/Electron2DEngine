@@ -29,6 +29,8 @@ namespace Electron2D.Build
 
         protected override void Start()
         {
+            SetBackgroundColor(Color.LightBlue);
+
             var settings = new FontSystemSettings()
             {
                 FontResolutionFactor = 2,
@@ -45,8 +47,6 @@ namespace Electron2D.Build
         protected override void Update()
         {
             CameraMovement();
-
-            Console.WriteLine(PerformanceTimings.FramesPerSecond);
         }
 
         private void CameraMovement()
@@ -83,8 +83,9 @@ namespace Electron2D.Build
             var size = font.MeasureString(text, scale);
             var origin = new Vector2(size.X / 2.0f, size.Y / 2.0f);
 
-
-            //font.DrawText()
+            renderer.Begin();
+            font.DrawText(renderer, "A", new Vector2(0, 0), FSColor.DarkGray, scale, origin: origin);
+            renderer.End();
         }
     }
 }

@@ -21,7 +21,12 @@ namespace Electron2D.Core.Management
                 PixelFormat.Format32bppArgb);
 
             glTexImage2D(GL_TEXTURE_2D, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
+            image.UnlockBits(data);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glGenerateMipmap(GL_TEXTURE_2D);
+
             return new Texture2D(handle, image.Width, image.Height);
         }
 
@@ -34,10 +39,12 @@ namespace Electron2D.Core.Management
             using var image = new Bitmap(_width, _height);
             var data = image.LockBits(
                 new Rectangle(0, 0, image.Width, image.Height),
-                ImageLockMode.ReadWrite,
+                ImageLockMode.ReadOnly,
                 PixelFormat.Format32bppArgb);
 
             glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, _width, _height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
+            image.UnlockBits(data);
+
             return new Texture2D(handle, _width, _height);
         }
     }
