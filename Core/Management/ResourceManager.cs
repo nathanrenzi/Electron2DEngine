@@ -30,6 +30,7 @@ namespace Electron2D.Core.Management
             }
         }
 
+        #region Textures
         /// <summary>
         /// Loads a texture into memory and returns it.
         /// After a texture is loaded, the already stored texture will be returned instead of creating a new Texture2D object.
@@ -51,6 +52,23 @@ namespace Electron2D.Core.Management
         }
 
         /// <summary>
+        /// Returns a previously loaded texture using it's OpenGL handle.
+        /// </summary>
+        /// <param name="_handle"></param>
+        /// <returns></returns>
+        public Texture2D GetTexture(uint _handle)
+        {
+            textureHandleCache.TryGetValue(_handle, out var value);
+            if (value is not null)
+            {
+                return value;
+            }
+
+            Console.WriteLine($"Texture with handle {_handle} does not exist.");
+            return null;
+        }
+
+        /// <summary>
         /// Removes a texture from the cache. This is called from <see cref="Texture2D.Dispose()"/>
         /// </summary>
         /// <param name="_texture">The texture to remove from the cache.</param>
@@ -64,25 +82,6 @@ namespace Electron2D.Core.Management
                     textureCache.Remove(pair.Key);
                 }
             }
-        }
-
-        /// <summary>
-        /// Loads a sound into memory and returns it.
-        /// After a sound is loaded, the already stored sound will be returned instead of creating a new CachedSound object.
-        /// </summary>
-        /// <param name="_soundFileName">The local file path of the sound. Ex. Build/Resources/Audio/SFX/SoundFileNameHere.mp3</param>
-        /// <returns></returns>
-        public CachedSound LoadSound(string _soundFileName)
-        {
-            soundCache.TryGetValue(_soundFileName, out var value);
-            if(value is not null)
-            {
-                return value;
-            }
-
-            value = new CachedSound(_soundFileName);
-            soundCache.Add(_soundFileName, value);
-            return value;
         }
 
         /// <summary>
@@ -133,5 +132,27 @@ namespace Electron2D.Core.Management
                 Console.WriteLine("Error. Texture handle is not registered, cannot set data.");
             }
         }
+        #endregion
+
+        #region Audio
+        /// <summary>
+        /// Loads a sound into memory and returns it.
+        /// After a sound is loaded, the already stored sound will be returned instead of creating a new CachedSound object.
+        /// </summary>
+        /// <param name="_soundFileName">The local file path of the sound. Ex. Build/Resources/Audio/SFX/SoundFileNameHere.mp3</param>
+        /// <returns></returns>
+        public CachedSound LoadSound(string _soundFileName)
+        {
+            soundCache.TryGetValue(_soundFileName, out var value);
+            if (value is not null)
+            {
+                return value;
+            }
+
+            value = new CachedSound(_soundFileName);
+            soundCache.Add(_soundFileName, value);
+            return value;
+        }
+        #endregion
     }
 }

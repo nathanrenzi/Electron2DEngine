@@ -16,6 +16,7 @@ namespace Electron2D.Build
     {
         private FontSystem fontSystem;
         private TextRenderer renderer;
+        private Sprite sprite;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight, "Test Game!")
         {
@@ -35,13 +36,17 @@ namespace Electron2D.Build
             {
                 FontResolutionFactor = 2,
                 KernelWidth = 2,
-                KernelHeight = 1
+                KernelHeight = 2
             };
 
             fontSystem = new FontSystem(settings);
             fontSystem.AddFont(File.ReadAllBytes(@"Build/Resources/Fonts/FreeSans/FreeSans.ttf"));
 
             renderer = new TextRenderer(new Transform(), Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"))));
+            Material m = Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl")));
+            sprite = new Sprite(m);
+            sprite.Transform.Position = new Vector2(0, 300);
+            sprite.Transform.Scale = new Vector2(400, 400);
         }
 
         protected override void Update()
@@ -86,6 +91,7 @@ namespace Electron2D.Build
             renderer.Begin();
             font.DrawText(renderer, text, new Vector2(0, 0), FSColor.DarkGray, scale, origin: origin);
             renderer.End();
+            sprite.Renderer.Material.MainTexture = ResourceManager.Instance.GetTexture(3);
         }
     }
 }
