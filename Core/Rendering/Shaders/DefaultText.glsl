@@ -1,8 +1,8 @@
 #shader vertex
 #version 330 core
 layout (location = 0) in vec2 aPosition;
-layout (location = 1) in vec4 aColor;
-layout (location = 2) in vec2 aTexCoord;
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec4 aColor;
 
 out vec2 texCoord;
 out vec4 vertexColor;
@@ -30,5 +30,5 @@ uniform sampler2D mainTextureSampler;
 
 void main() 
 {
-    FragColor = vertexColor; //texture(mainTextureSampler, texCoord) * vertexColor;
+    FragColor = texture(mainTextureSampler, texCoord) * vertexColor;
 }

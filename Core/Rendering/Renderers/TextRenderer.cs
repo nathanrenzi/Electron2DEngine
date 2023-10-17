@@ -36,9 +36,9 @@ namespace Electron2D.Core.Rendering
             indexBuffer = new IndexBuffer(indices);
 
             layout = new BufferLayout();
-            layout.Add<float>(3);
-            layout.Add<float>(4);
             layout.Add<float>(2);
+            layout.Add<float>(2);
+            layout.Add<float>(4);
 
             vertexArray = new VertexArray();
             vertexArray.AddBuffer(vertexBuffer, layout);
@@ -50,6 +50,7 @@ namespace Electron2D.Core.Rendering
         {
             Material.Use();
             Material.Shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix());
+            Material.Shader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
             vertexArray.Bind();
             indexBuffer.Bind();
             vertexBuffer.Bind();
@@ -73,13 +74,13 @@ namespace Electron2D.Core.Rendering
         private void SetVertexData(ref VertexPositionColorTexture _data)
         {
             vertices[vertexIndex++] = _data.Position.X;
-            vertices[vertexIndex++] = _data.Position.Y;
+            vertices[vertexIndex++] = -_data.Position.Y; // Vertically flipping the mesh
+            vertices[vertexIndex++] = _data.TextureCoordinate.X;
+            vertices[vertexIndex++] = _data.TextureCoordinate.Y;
             vertices[vertexIndex++] = _data.Color.R;
             vertices[vertexIndex++] = _data.Color.G;
             vertices[vertexIndex++] = _data.Color.B;
             vertices[vertexIndex++] = _data.Color.A;
-            vertices[vertexIndex++] = _data.TextureCoordinate.X;
-            vertices[vertexIndex++] = _data.TextureCoordinate.Y;
         }
 
         public void End()
@@ -101,7 +102,8 @@ namespace Electron2D.Core.Rendering
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture);
 
-            glDrawElements(GL_TRIANGLES, vertexIndex / 8, GL_UNSIGNED_INT, (void*)0);
+            // There are 8 floats * 4 vertices per quad, and 6 indices per quad
+            glDrawElements(GL_TRIANGLES, vertexIndex / 32 * 6, GL_UNSIGNED_INT, (void*)0);
             vertexIndex = 0;
         }
 

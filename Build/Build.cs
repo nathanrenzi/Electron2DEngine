@@ -76,15 +76,15 @@ namespace Electron2D.Build
         protected unsafe override void Render()
         {
             var text = "The quick brown fox jumps over the lazy dog.";
-            var scale = new Vector2(2, 2);
+            var scale = new Vector2(4, 4);
 
             var font = fontSystem.GetFont(32);
 
             var size = font.MeasureString(text, scale);
-            var origin = new Vector2(size.X / 2.0f, size.Y / 2.0f);
+            var origin = new Vector2(size.X / scale.X, size.Y / scale.Y);
 
             renderer.Begin();
-            font.DrawText(renderer, "A", new Vector2(0, 0), FSColor.DarkGray, scale, origin: origin);
+            font.DrawText(renderer, text, new Vector2(0, 0), FSColor.DarkGray, scale, origin: origin);
             renderer.End();
         }
     }
