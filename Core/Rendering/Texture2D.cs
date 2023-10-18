@@ -32,11 +32,29 @@ namespace Electron2D.Core.Rendering
         public unsafe void SetData(Rectangle _bounds, byte[] _data)
         {
             // Using not in-use texture slot since this does not cache itself as the last used texture anywhere
-            Use(GL_TEXTURE5);
+            Use(GL_TEXTURE0);
 
             fixed (byte* ptr = &_data[0])
             {
                 glTexSubImage2D(GL_TEXTURE_2D, 0, _bounds.Left, _bounds.Top, _bounds.Width, _bounds.Height, GL_BGRA, GL_UNSIGNED_BYTE, ptr);
+            }
+        }
+
+        public void SetFilteringMode(bool _linear)
+        {
+            Use(GL_TEXTURE0);
+
+            if (_linear)
+            {
+                // Linear filtering
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            }
+            else
+            {
+                // Nearest filtering
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             }
         }
 

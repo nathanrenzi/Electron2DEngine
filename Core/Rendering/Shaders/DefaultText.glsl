@@ -28,7 +28,7 @@ in vec4 vertexColor;
 
 uniform sampler2D mainTextureSampler;
 
-void main() 
+void main()
 {
     FragColor = texture(mainTextureSampler, texCoord) * vertexColor;
 }

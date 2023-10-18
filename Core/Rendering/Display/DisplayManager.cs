@@ -37,7 +37,7 @@ namespace Electron2D.Core.Rendering
             Glfw.WindowHint(Hint.ContextVersionMajor, 3);
             Glfw.WindowHint(Hint.ContextVersionMinor, 3);
             Glfw.WindowHint(Hint.OpenglProfile, Profile.Core);
-
+            Glfw.WindowHint(Hint.OpenglDebugContext, true);
             Glfw.WindowHint(Hint.Focused, true);
             Glfw.WindowHint(Hint.Resizable, false);
 
