@@ -64,7 +64,7 @@ namespace Electron2D.Core.Management
                 return value;
             }
 
-            Console.WriteLine($"Texture with handle {_handle} does not exist.");
+            Debug.LogError($"Texture with handle {_handle} does not exist.");
             return null;
         }
 
@@ -110,7 +110,7 @@ namespace Electron2D.Core.Management
             }
             else
             {
-                Console.WriteLine("Error. Texture handle is not registered, cannot get size.");
+                Debug.LogError($"Texture handle {_texture} is not registered, cannot get size.");
                 return new Point(0, 0);
             }
         }
@@ -129,7 +129,7 @@ namespace Electron2D.Core.Management
             }
             else
             {
-                Console.WriteLine("Error. Texture handle is not registered, cannot set data.");
+                Debug.LogError($"Texture handle {_texture} is not registered, cannot set data.");
             }
         }
         #endregion

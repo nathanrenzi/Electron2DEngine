@@ -76,13 +76,13 @@ namespace Electron2D.Core.Rendering.Shaders
         {
             if(Compiled)
             {
-                Console.WriteLine("Trying to compile shader when it has already been compiled.");
+                Debug.LogError("Trying to compile shader when it has already been compiled.");
                 return false;
             }
 
             if (shaderProgramSource == null)
             {
-                Console.WriteLine("Could not load shader. Source is null.");
+                Debug.LogError("Could not load shader. Source is null.");
                 return false;
             }
 
@@ -98,7 +98,7 @@ namespace Electron2D.Core.Rendering.Shaders
             {
                 // Failed to compile
                 string error = glGetShaderInfoLog(vs);
-                Debug.WriteLine("ERROR COMPILING VERTEX SHADER: " + error);
+                Debug.LogError("ERROR COMPILING VERTEX SHADER: " + error);
                 return false;
             }
             // ------------------
@@ -113,7 +113,7 @@ namespace Electron2D.Core.Rendering.Shaders
             {
                 // Failed to compile
                 string error = glGetShaderInfoLog(fs);
-                Debug.WriteLine("ERROR COMPILING VERTEX SHADER: " + error);
+                Debug.LogError("ERROR COMPILING VERTEX SHADER: " + error);
                 return false;
             }
             // ------------------
@@ -159,7 +159,7 @@ namespace Electron2D.Core.Rendering.Shaders
             }
             else
             {
-                Console.WriteLine("Shader has not been compiled yet, cannot use.");
+                Debug.LogError("Shader has not been compiled yet, cannot use.");
             }
         }
 

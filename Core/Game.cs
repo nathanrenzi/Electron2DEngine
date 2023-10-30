@@ -41,6 +41,7 @@ namespace Electron2D.Core
 
         public void Run()
         {
+            Debug.Log("Starting initialization...");
             Initialize();
             startCamera = new Camera2D(Vector2.Zero, 1);
 
@@ -69,6 +70,9 @@ namespace Electron2D.Core
             UiMaster.Display.Initialize();
 
             GC.Collect();
+
+            Debug.Log("Initialization complete");
+
             Start();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
@@ -121,14 +125,14 @@ namespace Electron2D.Core
         {
             int errorCode = GetError();
             if (errorCode != GL_NO_ERROR)
-                Console.WriteLine($"OPENGL ERROR: {errorCode}");
+                Debug.LogError($"OPENGL {errorCode}");
 
             string description;
             ErrorCode code = Glfw.GetError(out description);
             while (code != ErrorCode.None)
             {
                 code = Glfw.GetError(out description);
-                Console.WriteLine($"GLFW ERROR: {description} | {code}");
+                Debug.LogError($"GLFW {description} | {code}");
             }
         }
 
