@@ -10,7 +10,6 @@ namespace Electron2D.Core.Rendering
         public static event Action<int> onLayerRendered;
 
         private static SortedList<int, List<IRenderable>> renderLayerOrderedList = new SortedList<int, List<IRenderable>>();
-        private static bool wasLinearLastRenderCall = false;
 
         /// <summary>
         /// Registers or reorders the IRenderable in the render layer sorted list.

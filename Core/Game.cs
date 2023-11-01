@@ -120,7 +120,7 @@ namespace Electron2D.Core
             AudioPlayback.Instance.Dispose();
             DisplayManager.CloseWindow();
         }
-
+        
         private void LogErrors()
         {
             int errorCode = GetError();

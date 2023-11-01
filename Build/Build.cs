@@ -67,44 +67,47 @@ namespace Electron2D.Build
 
             SetBackgroundColor(Color.LightBlue);
 
-            var settings = new FontSystemSettings()
-            {
-                FontResolutionFactor = 2,
-                KernelWidth = 2,
-                KernelHeight = 2
-            };
+            //var settings = new FontSystemSettings()
+            //{
+            //    FontResolutionFactor = 2,
+            //    KernelWidth = 2,
+            //    KernelHeight = 2
+            //};
 
-            fontSystem = new FontSystem(settings);
-            fontSystem.AddFont(File.ReadAllBytes("Build/Resources/Fonts/FreeSans/FreeSans.ttf"));
+            //fontSystem = new FontSystem(settings);
+            //fontSystem.AddFont(File.ReadAllBytes("Build/Resources/Fonts/FreeSans/FreeSans.ttf"));
 
-            renderer = new TextRenderer(new Transform(), Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"))));
-            Material m = Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl")));
+            //renderer = new TextRenderer(new Transform(), Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"))));
+            
+            Material m = Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl")),
+                _mainTexture: ResourceManager.Instance.GetTexture((uint)ResourceManager.Instance.CreateTexture(200, 200)));
             sprite = new Sprite(m);
             sprite.Transform.Position = new Vector2(0, 300);
             sprite.Transform.Scale = new Vector2(400, 400);
             int width = m.MainTexture.Width;
             int height = m.MainTexture.Height;
+            Debug.Log(width + " " + height);
             byte[] data = new byte[width * height * 4];
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    if(x % 2 == 0)
-                    {
-                        data[(x * 4) + (y * height) + 2] = 255; // Rs
-                        data[(x * 4) + (y * height) + 1] = 0;   // G
-                        data[(x * 4) + (y * height) + 0] = 0;   // B
-                        data[(x * 4) + (y * height) + 3] = 255; // A
-                    }
-                    else
-                    {
-                        data[(x * 4) + (y * height) + 2] = 0;   // R
-                        data[(x * 4) + (y * height) + 1] = 0;   // G
-                        data[(x * 4) + (y * height) + 0] = 0;   // B
-                        data[(x * 4) + (y * height) + 3] = 255; // A
-                    }
-                }
-            }
+            //for (int x = 0; x < width; x++)
+            //{
+            //    for (int y = 0; y < height; y++)
+            //    {
+            //        if(x % 2 == 0)
+            //        {
+            //            data[(x * 4) + (y * height) + 2] = 255; // Rs
+            //            data[(x * 4) + (y * height) + 1] = 0;   // G
+            //            data[(x * 4) + (y * height) + 0] = 0;   // B
+            //            data[(x * 4) + (y * height) + 3] = 255; // A
+            //        }
+            //        else
+            //        {
+            //            data[(x * 4) + (y * height) + 2] = 0;   // R
+            //            data[(x * 4) + (y * height) + 1] = 0;   // G
+            //            data[(x * 4) + (y * height) + 0] = 0;   // B
+            //            data[(x * 4) + (y * height) + 3] = 255; // A
+            //        }
+            //    }
+            //}
             m.MainTexture.SetData(new Rectangle(0, 0, m.MainTexture.Width, m.MainTexture.Height), data);
         }
 

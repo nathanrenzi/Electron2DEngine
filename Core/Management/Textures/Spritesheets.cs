@@ -11,7 +11,7 @@ namespace Electron2D.Core.Management.Textures
     /// <summary>
     /// This class allows for spritesheet calculations and stores the data of all active spritesheets
     /// </summary>
-    public static class SpritesheetManager
+    public static class Spritesheets
     {
         public static IDictionary<Texture2D, SpritesheetElement> spritesheets = new Dictionary<Texture2D, SpritesheetElement>();
 

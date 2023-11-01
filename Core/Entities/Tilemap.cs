@@ -125,8 +125,8 @@ namespace Electron2D.Core
                     float u = xMod / tilePixelSize;
                     float v = yMod / tilePixelSize;
                     TileData data = TileTypes[tiles[i]];
-                    Vector2 newUV = SpritesheetManager.spritesheets.ContainsKey(renderer.Material.MainTexture) ? 
-                        SpritesheetManager.GetVertexUV(renderer.Material.MainTexture,
+                    Vector2 newUV = Spritesheets.spritesheets.ContainsKey(renderer.Material.MainTexture) ? 
+                        Spritesheets.GetVertexUV(renderer.Material.MainTexture,
                         data.SpriteColumn, data.SpriteRow, new Vector2(u, v)) : 
                         new Vector2(u, v);
 
