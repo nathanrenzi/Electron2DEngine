@@ -35,7 +35,6 @@ namespace Electron2D.Core.Rendering
             Use(GL_TEXTURE0);
             fixed (byte* ptr = _data)
             {
-                //Debug.Log(Width + " " + Height + " " + _bounds.Width + " " + _bounds.Height);
                 glTexSubImage2D(GL_TEXTURE_2D, 0, _bounds.Left, _bounds.Top, _bounds.Width, _bounds.Height, GL_RGBA, GL_UNSIGNED_BYTE, ptr);
             }
         }

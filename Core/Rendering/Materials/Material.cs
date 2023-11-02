@@ -22,7 +22,7 @@ namespace Electron2D.Core.Rendering
         public float NormalScale;
 
         public Color MainColor;
-        public bool UseLinearFiltering { get; private set; }
+        public bool UsingLinearFiltering { get; }
 
         private Material(Shader _shader, Texture2D _mainTexture, Texture2D _normalTexture, Color _mainColor, bool _useLinearFiltering, float _normalScale)
         {
@@ -30,7 +30,7 @@ namespace Electron2D.Core.Rendering
             MainTexture = _mainTexture;
             NormalTexture = _normalTexture;
             MainColor = _mainColor;
-            UseLinearFiltering = _useLinearFiltering;
+            UsingLinearFiltering = _useLinearFiltering;
             NormalScale = _normalScale;
 
             // Compiling and setting up the shader if not done already.
@@ -47,8 +47,8 @@ namespace Electron2D.Core.Rendering
                 _shader.SetInt("normalTextureSampler", 1);
             }
 
-            MainTexture.SetFilteringMode(UseLinearFiltering);
-            NormalTexture.SetFilteringMode(UseLinearFiltering);
+            MainTexture.SetFilteringMode(UsingLinearFiltering);
+            NormalTexture.SetFilteringMode(UsingLinearFiltering);
         }
 
         #region Static Methods

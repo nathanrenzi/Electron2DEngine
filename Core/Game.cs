@@ -41,6 +41,7 @@ namespace Electron2D.Core
 
         public void Run()
         {
+            Debug.OpenLogFile();
             Debug.Log("Starting initialization...");
             Initialize();
             startCamera = new Camera2D(Vector2.Zero, 1);
@@ -51,8 +52,8 @@ namespace Electron2D.Core
 
             // Setup
             glEnable(GL_BLEND);
-            glEnable(GL_FRAMEBUFFER_SRGB); // Gamma-corrects lighting and improves overall scene
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnable(GL_FRAMEBUFFER_SRGB); // Gamma-corrects lighting and improves overall scene
             //glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction - used for text rendering https://learnopengl.com/In-Practice/Text-Rendering
             // -----------
 
@@ -73,7 +74,7 @@ namespace Electron2D.Core
 
             Debug.Log("Initialization complete");
 
-            Start();
+            Load();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
             {
@@ -117,6 +118,7 @@ namespace Electron2D.Core
                 // -------------------------------
             }
 
+            Debug.CloseLogFile();
             AudioPlayback.Instance.Dispose();
             DisplayManager.CloseWindow();
         }
@@ -137,7 +139,7 @@ namespace Electron2D.Core
         }
 
         protected abstract void Initialize();   // This is ran when the Game is first initialized
-        protected abstract void Start();        // This is ran when the Game is ready to load content
+        protected abstract void Load();        // This is ran when the Game is ready to load content
         protected abstract void Update();       // This is ran every frame before Render()
         protected abstract void Render();       // This is ran every frame after Update()
     }

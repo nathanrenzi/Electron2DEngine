@@ -1,5 +1,4 @@
-﻿using Electron2D.Core;
-using GLFW;
+﻿using GLFW;
 
 namespace Electron2D
 {
@@ -13,9 +12,10 @@ namespace Electron2D
         private static string lastMessage = "";
         private static int messageCount = 1;
         private static bool hasLoggedMessage = false;
+        private static StreamWriter logFile = null;
 
         /// <summary>
-        /// Used to log formatted and togglable messages to the console. Ex: "Physics System Enabled!"
+        /// Used to log formatted and togglable messages to the console and the latest log file.
         /// </summary>
         /// <param name="_message"></param>
         public static void Log(string _message)
@@ -28,7 +28,7 @@ namespace Electron2D
         }
 
         /// <summary>
-        /// Used to log formatted and togglable error messages to the console that won't throw an exception.
+        /// Used to log formatted and togglable error messages to the console and the latest log file.
         /// </summary>
         /// <param name="_message"></param>
         public static void LogError(string _message)
@@ -45,13 +45,24 @@ namespace Electron2D
             if (lastMessage.Equals(_message))
             {
                 messageCount++;
-                Console.Write($"\r[{GetTimeString()}] {_message} (x{messageCount})");
+
+                string m = $"\r[{GetTimeString()}] {_message} (x{messageCount})";
+                Console.Write(m);
+                logFile?.Write(m);
             }
             else
             {
                 messageCount = 1;
-                if (hasLoggedMessage) Console.WriteLine();
-                Console.Write($"[{GetTimeString()}] {_message}");
+
+                if (hasLoggedMessage)
+                {
+                    Console.WriteLine();
+                    logFile?.WriteLine();
+                }
+
+                string m = $"[{GetTimeString()}] {_message}";
+                Console.Write(m);
+                logFile?.Write(m);
             }
 
             lastMessage = _message;
@@ -61,6 +72,21 @@ namespace Electron2D
         private static string GetTimeString()
         {
             return TimeSpan.FromSeconds(Glfw.Time).ToString();
+        }
+
+        public static void OpenLogFile()
+        {
+            if(!Directory.Exists("Logs"))
+            {
+                Directory.CreateDirectory("Logs");
+            }
+            logFile = new StreamWriter(File.Create("Logs/latest.txt")); 
+        }
+
+        public static void CloseLogFile()
+        {
+            logFile.Close();
+            logFile = null;
         }
     }
 }
