@@ -118,6 +118,8 @@ namespace Electron2D.Core
                 // -------------------------------
             }
 
+            OnGameClose();
+
             Debug.CloseLogFile();
             AudioPlayback.Instance.Dispose();
             DisplayManager.CloseWindow();
@@ -139,8 +141,9 @@ namespace Electron2D.Core
         }
 
         protected abstract void Initialize();   // This is ran when the Game is first initialized
-        protected abstract void Load();        // This is ran when the Game is ready to load content
+        protected abstract void Load();         // This is ran when the Game is ready to load content
         protected abstract void Update();       // This is ran every frame before Render()
         protected abstract void Render();       // This is ran every frame after Update()
+        protected abstract void OnGameClose();  // This is ran when the game is closing
     }
 }

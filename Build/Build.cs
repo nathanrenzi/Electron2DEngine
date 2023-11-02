@@ -127,7 +127,12 @@ namespace Electron2D.Build
             renderer.Begin();
             font.DrawText(renderer, text, new Vector2(0, 0), FSColor.White, scale, origin: origin);
             renderer.End();
-            sprite.Renderer.Material.MainTexture = ResourceManager.Instance.GetTexture(3);
+            sprite.Renderer.Material.MainTexture = ResourceManager.Instance.GetTexture(renderer.Material.MainTexture.Handle);
+        }
+
+        protected override void OnGameClose()
+        {
+            renderer.Dispose();
         }
     }
 }

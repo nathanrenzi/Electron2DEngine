@@ -123,7 +123,6 @@ namespace Electron2D.Core.Management
         /// <param name="_data"></param>
         public void SetTextureData(object _texture, Rectangle _bounds, byte[] _data)
         {
-            Debug.Log(_bounds.Width + " " + _bounds.Height + " " + _data.Length);
             if (textureHandleCache.TryGetValue((uint)_texture, out Texture2D tex))
             {
                 tex.SetData(_bounds, _data);

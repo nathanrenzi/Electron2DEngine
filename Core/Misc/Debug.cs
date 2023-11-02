@@ -18,12 +18,12 @@ namespace Electron2D
         /// Used to log formatted and togglable messages to the console and the latest log file.
         /// </summary>
         /// <param name="_message"></param>
-        public static void Log(string _message)
+        public static void Log(object _message)
         {
             if (!DebuggingEnabled || !EnableLogMessages) return;
 
             Console.ForegroundColor = ConsoleColor.Gray;
-            Write(_message);
+            Write($"{_message}");
             Console.ForegroundColor = ConsoleColor.White;
         }
 
@@ -31,7 +31,7 @@ namespace Electron2D
         /// Used to log formatted and togglable error messages to the console and the latest log file.
         /// </summary>
         /// <param name="_message"></param>
-        public static void LogError(string _message)
+        public static void LogError(object _message)
         {
             if (!DebuggingEnabled || !EnableErrorMessages) return;
 
