@@ -140,10 +140,10 @@ namespace Electron2D.Core
             }
         }
 
-        protected abstract void Initialize();   // This is ran when the Game is first initialized
-        protected abstract void Load();         // This is ran when the Game is ready to load content
-        protected abstract void Update();       // This is ran every frame before Render()
-        protected abstract void Render();       // This is ran every frame after Update()
-        protected abstract void OnGameClose();  // This is ran when the game is closing
+        protected virtual void Initialize() { }      // This is ran when the Game is first initialized
+        protected virtual void Load() { }            // This is ran when the Game is ready to load content
+        protected virtual void Update() { }          // This is ran every frame before Render()
+        protected virtual void Render() { }          // This is ran every frame after Update()
+        protected virtual void OnGameClose() { }     // This is ran when the game is closing
     }
 }

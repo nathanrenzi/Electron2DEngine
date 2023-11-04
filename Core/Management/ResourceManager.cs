@@ -1,13 +1,12 @@
 ﻿using Electron2D.Core.Audio;
 using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Rendering;
-using FontStashSharp.Interfaces;
 using System.Drawing;
 using System.Linq;
 
 namespace Electron2D.Core.Management
 {
-    public sealed class ResourceManager : ITexture2DManager
+    public sealed class ResourceManager
     {
         private static ResourceManager instance = null;
         private static readonly object loc = new();
