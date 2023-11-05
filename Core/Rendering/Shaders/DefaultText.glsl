@@ -2,12 +2,7 @@
 #version 330 core
 layout (location = 0) in vec2 aPosition;
 layout (location = 1) in vec2 aTexCoord;
-layout (location = 2) in vec4 aColor;
-
 out vec2 texCoord;
-out vec4 vertexColor;
-    
-uniform vec4 mainColor;
 
 uniform mat4 projection;
 uniform mat4 model;
@@ -15,7 +10,6 @@ uniform mat4 model;
 void main() 
 {
     texCoord = aTexCoord;
-    vertexColor = vec4(1, 1, 1, 1);// * aColor;
     gl_Position = projection * model * vec4(aPosition.xy, 0.0, 1.0);
 }
 
@@ -24,11 +18,11 @@ void main()
 out vec4 FragColor;
 
 in vec2 texCoord;
-in vec4 vertexColor;
 
+uniform vec4 mainColor;
 uniform sampler2D mainTextureSampler;
 
 void main()
 {
-    FragColor = texture(mainTextureSampler, texCoord) * vertexColor;
+    FragColor = texture(mainTextureSampler, texCoord) * mainColor;
 }

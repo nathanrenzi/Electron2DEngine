@@ -5,6 +5,8 @@ using Electron2D.Core.Rendering;
 using System.Drawing;
 using FreeTypeSharp.Native;
 using static FreeTypeSharp.Native.FT;
+using Electron2D.Core.Rendering.Text;
+using Electron2D.Core.Management;
 
 namespace Electron2D.Build
 {
@@ -21,7 +23,7 @@ namespace Electron2D.Build
 
         private void InitializeFreeType()
         {
-
+            FontGlyphStore d = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/FreeSans/FreeSans.ttf", 30);
         }
 
         protected override void Update()

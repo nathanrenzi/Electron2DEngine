@@ -42,7 +42,7 @@ namespace Electron2D.Core.Rendering.Shaders
             eShaderType shaderType = eShaderType.NONE;
             if(!File.Exists(_filePath))
             {
-                Console.WriteLine("Shader does not exist: " + _filePath);
+                Debug.LogError("Shader does not exist: " + _filePath);
                 return null;
             }
             var allLines = File.ReadAllLines(_filePath);
@@ -61,7 +61,7 @@ namespace Electron2D.Core.Rendering.Shaders
                     }
                     else
                     {
-                        Console.WriteLine("Error. No shader type has been supplied for: " + _filePath);
+                        Debug.LogError("No shader type has been supplied for: " + _filePath);
                     }
                 }
                 else

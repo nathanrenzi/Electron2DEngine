@@ -1,6 +1,7 @@
 ﻿using Electron2D.Core.Audio;
 using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Rendering;
+using Electron2D.Core.Rendering.Text;
 using System.Drawing;
 using System.Linq;
 
@@ -12,6 +13,7 @@ namespace Electron2D.Core.Management
         private static readonly object loc = new();
         private IDictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
         private IDictionary<uint, Texture2D> textureHandleCache = new Dictionary<uint, Texture2D>();
+        private IDictionary<FontArguments, FontGlyphStore> fontCache = new Dictionary<FontArguments, FontGlyphStore>();
         private IDictionary<string, CachedSound> soundCache = new Dictionary<string, CachedSound>();
 
         public static ResourceManager Instance
@@ -130,6 +132,23 @@ namespace Electron2D.Core.Management
             {
                 Debug.LogError($"Texture handle {_texture} is not registered, cannot set data.");
             }
+        }
+        #endregion
+
+        #region Fonts
+        public FontGlyphStore LoadFont(string _fontFile, int _fontSize)
+        {
+            string[] s = _fontFile.Split('/');
+            FontArguments args = new FontArguments() { FontName = s[s.Length - 1], FontSize = _fontSize };
+            fontCache.TryGetValue(args, out var value);
+            if (value is not null)
+            {
+                return value;
+            }
+
+            value = FontGlyphFactory.Load(_fontFile, _fontSize);
+            fontCache.Add(args, value);
+            return value;
         }
         #endregion
 

@@ -1,15 +1,15 @@
-﻿using FreeTypeSharp.Native;
-using static FreeTypeSharp.Native.FT;
-using static Electron2D.OpenGL.GL;
+﻿using Electron2D.Core.Rendering.Text;
 using FreeTypeSharp;
-using Electron2D.Core.Rendering.Text;
+using FreeTypeSharp.Native;
 using System.Numerics;
+using static Electron2D.OpenGL.GL;
+using static FreeTypeSharp.Native.FT;
 
 namespace Electron2D.Core.Management
 {
     public static class FontGlyphFactory
     {
-        public static FontGlyphStore LoadFont(string _fontFile, int _fontSize)
+        public static FontGlyphStore Load(string _fontFile, int _fontSize)
         {
             FontGlyphStore store = new FontGlyphStore(_fontSize, _fontFile);
 
