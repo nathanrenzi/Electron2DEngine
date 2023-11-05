@@ -7,11 +7,14 @@ using FreeTypeSharp.Native;
 using static FreeTypeSharp.Native.FT;
 using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.Management;
+using Electron2D.Core.Rendering.Shaders;
 
 namespace Electron2D.Build
 {
     public class Build : Game
     {
+        private Sprite sprite;
+
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight, "Test Game!") { }
 
         protected override void Load()
@@ -23,12 +26,18 @@ namespace Electron2D.Build
 
         private void InitializeFreeType()
         {
-            FontGlyphStore d = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/FreeSans/FreeSans.ttf", 30);
+            FontGlyphStore d = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/FreeSans/FreeSans.ttf", 100);
+
+            sprite = new Sprite(Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"))));
+            sprite.Transform.Scale = new Vector2(100, 100);
         }
 
+        int i = 0;
         protected override void Update()
         {
             CameraMovement();
+            sprite.Renderer.Material.MainTexture = new Texture2D((uint)i, 100, 100);
+            i = i > 100 ? 0 : i + 1;
         }
 
         private void CameraMovement()
