@@ -36,7 +36,7 @@ namespace Electron2D.Core.Rendering
             // Compiling and setting up the shader if not done already.
             if (!_shader.Compiled)
             {
-                if(!_shader.CompileShader())
+                if(!_shader.Compile())
                 {
                     Console.WriteLine("Material: Failed to compile shader.");
                     return;

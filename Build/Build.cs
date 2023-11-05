@@ -8,13 +8,12 @@ using static FreeTypeSharp.Native.FT;
 using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.Management;
 using Electron2D.Core.Rendering.Shaders;
+using Electron2D.Core.Rendering.Renderers;
 
 namespace Electron2D.Build
 {
     public class Build : Game
     {
-        private Sprite sprite;
-
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight, "Test Game!") { }
 
         protected override void Load()
@@ -24,20 +23,20 @@ namespace Electron2D.Build
             InitializeFreeType();
         }
 
+        TestTextRenderer renderer;
+        FontGlyphStore fgh;
+        Shader shader;
         private void InitializeFreeType()
         {
-            FontGlyphStore d = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/FreeSans/FreeSans.ttf", 100);
-
-            sprite = new Sprite(Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"))));
-            sprite.Transform.Scale = new Vector2(100, 100);
+            fgh = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/FreeSans/FreeSans.ttf", 60);
+            shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"));
+            shader.Compile();
+            renderer = new TestTextRenderer();
         }
 
-        int i = 0;
         protected override void Update()
         {
             CameraMovement();
-            sprite.Renderer.Material.MainTexture = new Texture2D((uint)i, 100, 100);
-            i = i > 100 ? 0 : i + 1;
         }
 
         private void CameraMovement()
@@ -66,7 +65,9 @@ namespace Electron2D.Build
 
         protected unsafe override void Render()
         {
-
+            shader.Use();
+            shader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
+            renderer.Render(fgh, shader, "Electron2D", -(1920/2) + 20, -(1080/2) + 20, 1, Color.Red);
         }
     }
 }

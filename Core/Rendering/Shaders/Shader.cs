@@ -27,7 +27,7 @@ namespace Electron2D.Core.Rendering.Shaders
 
             if(_compile)
             {
-                CompileShader();
+                Compile();
             }
         }
 
@@ -72,7 +72,7 @@ namespace Electron2D.Core.Rendering.Shaders
             return new ShaderProgramSource(shaderSource[(int)eShaderType.VERTEX], shaderSource[(int)eShaderType.FRAGMENT]);
         }
 
-        public unsafe bool CompileShader()
+        public unsafe bool Compile()
         {
             if(Compiled)
             {
