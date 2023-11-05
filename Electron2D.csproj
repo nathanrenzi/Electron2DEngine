@@ -25,14 +25,7 @@
 
   <ItemGroup>
     <None Remove="Build\Resources\Audio\SFX\testsfx.mp3" />
-    <None Remove="Build\Resources\Fonts\FreeSans\FreeSans.otf" />
-    <None Remove="Build\Resources\Fonts\FreeSans\FreeSans.ttf" />
-    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansBold.otf" />
-    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansBold.ttf" />
-    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansBoldOblique.otf" />
-    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansBoldOblique.ttf" />
-    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansOblique.otf" />
-    <None Remove="Build\Resources\Fonts\FreeSans\FreeSansOblique.ttf" />
+    <None Remove="Build\Resources\Fonts\OpenSans.ttf" />
     <None Remove="Build\Resources\Shaders\FunShader.glsl" />
     <None Remove="Build\Resources\Shaders\LitShader.glsl" />
     <None Remove="Build\Resources\Textures\basicSpritesheet1.png" />
@@ -59,28 +52,7 @@
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSans.otf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSans.ttf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansBold.otf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansBold.ttf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansBoldOblique.otf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansBoldOblique.ttf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansOblique.otf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Fonts\FreeSans\FreeSansOblique.ttf">
+    <EmbeddedResource Include="Build\Resources\Fonts\OpenSans.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\brick.png">

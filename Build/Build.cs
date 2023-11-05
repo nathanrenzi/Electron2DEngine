@@ -28,7 +28,7 @@ namespace Electron2D.Build
         Shader shader;
         private void InitializeFreeType()
         {
-            fgh = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/FreeSans/FreeSans.ttf", 60);
+            fgh = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/OpenSans.ttf", 100);
             shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"));
             shader.Compile();
             renderer = new TestTextRenderer();

@@ -37,7 +37,8 @@ namespace Electron2D.Core.Rendering.Renderers
                 Character ch = _fgh.Characters[_text[i]];
 
                 float xpos = nx + ch.Bearing.X * _scale;
-                float ypos = _y - (ch.Size.Y - ch.Bearing.Y) * _scale;
+                //float ypos = _y - (ch.Size.Y - ch.Bearing.Y == 1 ? 0 : ch.Size.Y - ch.Bearing.Y) * _scale; // Fix this being offset slightly
+                float ypos = _y - (ch.Size.Y - ch.Bearing.Y) * _scale; // Fix this being offset slightly
 
                 float w = ch.Size.X * _scale;
                 float h = ch.Size.Y * _scale;
