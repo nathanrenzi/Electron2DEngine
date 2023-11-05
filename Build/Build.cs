@@ -9,6 +9,7 @@ using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.Management;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.Rendering.Renderers;
+using System.Text;
 
 namespace Electron2D.Build
 {
@@ -23,7 +24,7 @@ namespace Electron2D.Build
             InitializeFreeType();
         }
 
-        TestTextRenderer renderer;
+        TextRenderer renderer;
         FontGlyphStore fgh;
         Shader shader;
         private void InitializeFreeType()
@@ -31,7 +32,7 @@ namespace Electron2D.Build
             fgh = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/OpenSans.ttf", 100);
             shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"));
             shader.Compile();
-            renderer = new TestTextRenderer();
+            renderer = new TextRenderer();
         }
 
         protected override void Update()
@@ -63,11 +64,17 @@ namespace Electron2D.Build
             }
         }
 
+        StringBuilder b = new StringBuilder();
         protected unsafe override void Render()
         {
+            double t = Glfw.Time;
             shader.Use();
             shader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
-            renderer.Render(fgh, shader, "Electron2D", -(1920/2) + 20, -(1080/2) + 20, 1, Color.Red);
+            //if(Input.GetKeyDown(Keys.D))
+            //{
+            //    b.Append("B");
+            //}
+            renderer.Render(fgh, shader, "AVAV", -(1920/2) + 20, -(1080/2) + 20, 1, Color.Red);
         }
     }
 }

@@ -1,17 +1,18 @@
 ﻿using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.Rendering.Text;
 using System.Drawing;
-using System.Numerics;
 using static Electron2D.OpenGL.GL;
+using FreeTypeSharp.Native;
+using static FreeTypeSharp.Native.FT;
+using System.Runtime.InteropServices;
 
 namespace Electron2D.Core.Rendering.Renderers
 {
-    public class TestTextRenderer
+    public class TextRenderer
     {
-        public Material Material;
         private uint VAO, VBO;
 
-        public unsafe TestTextRenderer()
+        public unsafe TextRenderer()
         {
             VAO = glGenVertexArray();
             VBO = glGenBuffer();
@@ -26,19 +27,36 @@ namespace Electron2D.Core.Rendering.Renderers
 
         public unsafe void Render(FontGlyphStore _fgh, Shader _shader, string _text, float _x, float _y, float _scale, Color _color)
         {
-            float nx = _x;
             _shader.Use();
             _shader.SetColor("mainColor", _color);
             glActiveTexture(GL_TEXTURE0);
             glBindVertexArray(VAO);
 
+            uint previousIndex = 0;
+            uint glyphIndex = 0;
+
             for (int i = 0; i < _text.Length; i++)
             {
                 Character ch = _fgh.Characters[_text[i]];
+                glyphIndex = FT_Get_Char_Index(_fgh.Face, _text[i]);
 
-                float xpos = nx + ch.Bearing.X * _scale;
-                //float ypos = _y - (ch.Size.Y - ch.Bearing.Y == 1 ? 0 : ch.Size.Y - ch.Bearing.Y) * _scale; // Fix this being offset slightly
-                float ypos = _y - (ch.Size.Y - ch.Bearing.Y) * _scale; // Fix this being offset slightly
+                // Kerning (space between characters)
+                if (_fgh.UseKerning)
+                {
+                    if(FT_Get_Kerning(_fgh.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                    {
+                        long* temp = (long*)delta.x;
+                        long res = *temp;
+                        _x += res;
+                    }
+                    else
+                    {
+                        Debug.LogError($"FREETYPE: Unable to get kerning for font {_fgh.Arguments.FontName}");
+                    }
+                }
+
+                float xpos = _x + ch.Bearing.X * _scale;
+                float ypos = _y - (ch.Size.Y - ch.Bearing.Y) * _scale; // Causes text to be slightly vertically offset by 1 pixel
 
                 float w = ch.Size.X * _scale;
                 float h = ch.Size.Y * _scale;
@@ -60,7 +78,9 @@ namespace Electron2D.Core.Rendering.Renderers
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glDrawArrays(GL_TRIANGLES, 0, 6);
 
-                nx += ch.Advance * _scale;
+                _x += ch.Advance * _scale;
+
+                previousIndex = glyphIndex;
             }
 
             glBindVertexArray(0);

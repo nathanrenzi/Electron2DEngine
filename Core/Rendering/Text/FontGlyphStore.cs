@@ -1,4 +1,6 @@
-﻿using static Electron2D.OpenGL.GL;
+﻿using static FreeTypeSharp.Native.FT;
+using static Electron2D.OpenGL.GL;
+using FreeTypeSharp;
 
 namespace Electron2D.Core.Rendering.Text
 {
@@ -9,9 +11,16 @@ namespace Electron2D.Core.Rendering.Text
 
         public Dictionary<char, Character> Characters { get; } = new Dictionary<char, Character>();
         public FontArguments Arguments { get; }
+        public FreeTypeLibrary Library { get; }
+        public IntPtr Face { get; }
+        public bool UseKerning { get; }
 
-        public FontGlyphStore(int _fontSize, string _fontFile)
+        public FontGlyphStore(int _fontSize, string _fontFile, FreeTypeLibrary _library, IntPtr _face, bool _useKerning)
         {
+            Library = _library;
+            Face = _face;
+            UseKerning = _useKerning;
+
             string[] split = _fontFile.Split("/");
             string fontName = split[split.Length - 1];
             Arguments = new FontArguments() { FontSize = _fontSize, FontName = fontName };
@@ -38,6 +47,8 @@ namespace Electron2D.Core.Rendering.Text
                 Characters.Clear();
             }
 
+            FT_Done_Face(Face);
+            Library.Dispose();
             disposed = true;
         }
     }

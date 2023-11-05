@@ -11,8 +11,6 @@ namespace Electron2D.Core.Management
     {
         public static FontGlyphStore Load(string _fontFile, int _fontSize)
         {
-            FontGlyphStore store = new FontGlyphStore(_fontSize, _fontFile);
-
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
             FreeTypeLibrary library = new FreeTypeLibrary();
@@ -35,6 +33,7 @@ namespace Electron2D.Core.Management
             FT_Set_Pixel_Sizes(face, 0, (uint)_fontSize);
 
             FreeTypeFaceFacade f = new FreeTypeFaceFacade(library, face);
+            FontGlyphStore store = new FontGlyphStore(_fontSize, _fontFile, library, face, f.HasKerningFlag);
 
             for (uint c = 0; c < 128; c++)
             {
@@ -59,8 +58,6 @@ namespace Electron2D.Core.Management
                 store.AddCharacter((char)c, character);
             }
 
-            FT_Done_Face(face);
-            library.Dispose();
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
             return store;
