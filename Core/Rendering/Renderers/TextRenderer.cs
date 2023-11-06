@@ -5,15 +5,31 @@ using static Electron2D.OpenGL.GL;
 using FreeTypeSharp.Native;
 using static FreeTypeSharp.Native.FT;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace Electron2D.Core.Rendering.Renderers
 {
     public class TextRenderer
     {
+        public FontGlyphStore FontGlyphStore;
+        public Shader TextShader;
+        public Vector2 Position;
+        public float Scale;
+        public Color TextColor;
+        public Color OutlineColor;
+        public int OutlineWidth => FontGlyphStore.Arguments.OutlineWidth;
+
         private uint VAO, VBO;
 
-        public unsafe TextRenderer()
+        public unsafe TextRenderer(FontGlyphStore _fontGlyphStore, Shader _shader, Vector2 _position, float _scale, Color _textColor, Color _outlineColor)
         {
+            FontGlyphStore = _fontGlyphStore;
+            TextShader = _shader;
+            Position = _position;
+            Scale = _scale;
+            TextColor = _textColor;
+            OutlineColor = _outlineColor;
+
             VAO = glGenVertexArray();
             VBO = glGenBuffer();
             glBindVertexArray(VAO);
@@ -25,25 +41,27 @@ namespace Electron2D.Core.Rendering.Renderers
             glBindVertexArray(0);
         }
 
-        public unsafe void Render(FontGlyphStore _fgh, Shader _shader, string _text, float _x, float _y, float _scale, Color _color)
+        public unsafe void Render(string _text)
         {
-            _shader.Use();
-            _shader.SetColor("mainColor", _color);
+            TextShader.Use();
+            TextShader.SetColor("mainColor", TextColor);
+            TextShader.SetColor("outlineColor", OutlineColor);
             glActiveTexture(GL_TEXTURE0);
             glBindVertexArray(VAO);
 
             uint previousIndex = 0;
             uint glyphIndex = 0;
 
+            float _x = Position.X;
             for (int i = 0; i < _text.Length; i++)
             {
-                Character ch = _fgh.Characters[_text[i]];
-                glyphIndex = FT_Get_Char_Index(_fgh.Face, _text[i]);
+                Character ch = FontGlyphStore.Characters[_text[i]];
+                glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, _text[i]);
 
-                // Kerning (space between characters)
-                if (_fgh.UseKerning)
+                // Kerning (space between certain characters)
+                if (FontGlyphStore.UseKerning)
                 {
-                    if(FT_Get_Kerning(_fgh.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                    if(FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
                     {
                         long* temp = (long*)delta.x;
                         long res = *temp;
@@ -51,15 +69,15 @@ namespace Electron2D.Core.Rendering.Renderers
                     }
                     else
                     {
-                        Debug.LogError($"FREETYPE: Unable to get kerning for font {_fgh.Arguments.FontName}");
+                        Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontName}");
                     }
                 }
 
-                float xpos = _x + ch.Bearing.X * _scale;
-                float ypos = _y - (ch.Size.Y - ch.Bearing.Y) * _scale; // Causes text to be slightly vertically offset by 1 pixel
+                float xpos = _x + ch.Bearing.X * Scale;
+                float ypos = Position.Y - (ch.Size.Y - ch.Bearing.Y) * Scale; // Causes text to be slightly vertically offset by 1 pixel
 
-                float w = ch.Size.X * _scale;
-                float h = ch.Size.Y * _scale;
+                float w = ch.Size.X * Scale;
+                float h = ch.Size.Y * Scale;
 
                 float[,] vertices = new float[6,4] {
                     { xpos,     ypos + h,   0.0f, 0.0f },
@@ -78,7 +96,7 @@ namespace Electron2D.Core.Rendering.Renderers
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glDrawArrays(GL_TRIANGLES, 0, 6);
 
-                _x += ch.Advance * _scale;
+                _x += ch.Advance * Scale;
 
                 previousIndex = glyphIndex;
             }

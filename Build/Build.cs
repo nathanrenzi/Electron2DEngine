@@ -1,15 +1,13 @@
-﻿using GLFW;
-using Electron2D.Core;
-using System.Numerics;
-using Electron2D.Core.Rendering;
-using System.Drawing;
-using FreeTypeSharp.Native;
-using static FreeTypeSharp.Native.FT;
-using Electron2D.Core.Rendering.Text;
+﻿using Electron2D.Core;
 using Electron2D.Core.Management;
-using Electron2D.Core.Rendering.Shaders;
+using Electron2D.Core.Misc;
+using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Renderers;
-using System.Text;
+using Electron2D.Core.Rendering.Shaders;
+using Electron2D.Core.Rendering.Text;
+using GLFW;
+using System.Drawing;
+using System.Numerics;
 
 namespace Electron2D.Build
 {
@@ -29,10 +27,10 @@ namespace Electron2D.Build
         Shader shader;
         private void InitializeFreeType()
         {
-            fgh = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/OpenSans.ttf", 100);
+            fgh = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/NotoSans.ttf", 40, 0);
             shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"));
             shader.Compile();
-            renderer = new TextRenderer();
+            renderer = new TextRenderer(fgh, shader, new Vector2(-(1920 / 2) + 3, (1080 / 2) - fgh.Arguments.FontSize), 1, Color.Maroon, Color.Black);
         }
 
         protected override void Update()
@@ -64,17 +62,23 @@ namespace Electron2D.Build
             }
         }
 
-        StringBuilder b = new StringBuilder();
+        float fpsTime = 0;
+        int frames = 0;
+        int fps = 0;
         protected unsafe override void Render()
         {
-            double t = Glfw.Time;
+            fpsTime += Time.DeltaTime;
+            if (fpsTime >= 1)
+            {
+                fpsTime -= 1;
+                fps = frames;
+                frames = 0;
+            }
+            frames++;
+
             shader.Use();
             shader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
-            //if(Input.GetKeyDown(Keys.D))
-            //{
-            //    b.Append("B");
-            //}
-            renderer.Render(fgh, shader, "AVAV", -(1920/2) + 20, -(1080/2) + 20, 1, Color.Red);
+            renderer.Render($"FPS: {fps}");
         }
     }
 }

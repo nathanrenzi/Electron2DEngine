@@ -4,5 +4,6 @@
     {
         public string FontName;
         public int FontSize;
+        public int OutlineWidth;
     }
 }

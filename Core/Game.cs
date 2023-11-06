@@ -53,8 +53,7 @@ namespace Electron2D.Core
             // Setup
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glEnable(GL_FRAMEBUFFER_SRGB); // Gamma-corrects lighting and improves overall scene
-            //glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction - used for text rendering https://learnopengl.com/In-Practice/Text-Rendering
+            glEnable(GL_FRAMEBUFFER_SRGB); // Gamma-corrects lighting
             // -----------
 
             // Starting Entity Systems

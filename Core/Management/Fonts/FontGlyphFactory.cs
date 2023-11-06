@@ -1,6 +1,7 @@
 ﻿using Electron2D.Core.Rendering.Text;
 using FreeTypeSharp;
 using FreeTypeSharp.Native;
+using System.Drawing;
 using System.Numerics;
 using static Electron2D.OpenGL.GL;
 using static FreeTypeSharp.Native.FT;
@@ -9,7 +10,7 @@ namespace Electron2D.Core.Management
 {
     public static class FontGlyphFactory
     {
-        public static FontGlyphStore Load(string _fontFile, int _fontSize)
+        public static FontGlyphStore Load(string _fontFile, int _fontSize, int _outlineWidth)
         {
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -34,6 +35,14 @@ namespace Electron2D.Core.Management
 
             FreeTypeFaceFacade f = new FreeTypeFaceFacade(library, face);
             FontGlyphStore store = new FontGlyphStore(_fontSize, _fontFile, library, face, f.HasKerningFlag);
+
+            // Stroker is used for outline
+            IntPtr stroker = IntPtr.Zero;
+            if (_outlineWidth > 0)
+            {
+                FT_Stroker_New(library.Native, out stroker);
+                FT_Stroker_Set(stroker, _outlineWidth, FT_Stroker_LineCap.FT_STROKER_LINECAP_ROUND, FT_Stroker_LineJoin.FT_STROKER_LINEJOIN_ROUND, IntPtr.Zero);
+            }
 
             for (uint c = 0; c < 128; c++)
             {

@@ -136,7 +136,7 @@ namespace Electron2D.Core.Management
         #endregion
 
         #region Fonts
-        public FontGlyphStore LoadFont(string _fontFile, int _fontSize)
+        public FontGlyphStore LoadFont(string _fontFile, int _fontSize, int _outlineSize)
         {
             string[] s = _fontFile.Split('/');
             FontArguments args = new FontArguments() { FontName = s[s.Length - 1], FontSize = _fontSize };
@@ -146,7 +146,7 @@ namespace Electron2D.Core.Management
                 return value;
             }
 
-            value = FontGlyphFactory.Load(_fontFile, _fontSize);
+            value = FontGlyphFactory.Load(_fontFile, _fontSize, _outlineSize);
             fontCache.Add(args, value);
             return value;
         }
