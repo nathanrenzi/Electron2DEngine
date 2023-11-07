@@ -12,8 +12,6 @@ namespace Electron2D.Core.Management
     {
         public static FontGlyphStore Load(string _fontFile, int _fontSize, int _outlineWidth)
         {
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
             FreeTypeLibrary library = new FreeTypeLibrary();
             IntPtr face;
             FT_Error error;
@@ -44,6 +42,7 @@ namespace Electron2D.Core.Management
                 FT_Stroker_Set(stroker, _outlineWidth, FT_Stroker_LineCap.FT_STROKER_LINECAP_ROUND, FT_Stroker_LineJoin.FT_STROKER_LINEJOIN_ROUND, IntPtr.Zero);
             }
 
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             for (uint c = 0; c < 128; c++)
             {
                 if (FT_Load_Char(face, c, FT_LOAD_RENDER) != FT_Error.FT_Err_Ok)
@@ -66,7 +65,6 @@ namespace Electron2D.Core.Management
                     new Vector2(f.GlyphBitmapLeft, f.GlyphBitmapTop), (uint)f.GlyphMetricHorizontalAdvance);
                 store.AddCharacter((char)c, character);
             }
-
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
             return store;
