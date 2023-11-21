@@ -25,12 +25,17 @@ namespace Electron2D.Build
         TextRenderer renderer;
         FontGlyphStore fgh;
         Shader shader;
+        Sprite s;
         private void InitializeFreeType()
         {
             fgh = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/NotoSans.ttf", 40, 0);
             shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"));
             shader.Compile();
-            renderer = new TextRenderer(fgh, shader, new Vector2(-(1920 / 2) + 3, (1080 / 2) - fgh.Arguments.FontSize), 1, Color.Maroon, Color.Black);
+            renderer = new TextRenderer(fgh, shader);
+
+            s = new Sprite(Material.Create(new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"))), 0);
+            s.Renderer.Material.MainColor = Color.Black;
+            s.Transform.Scale = new Vector2(100, 1);
         }
 
         protected override void Update()
@@ -78,7 +83,8 @@ namespace Electron2D.Build
 
             shader.Use();
             shader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
-            renderer.Render($"FPS: {fps}");
+            renderer.Render($"FPS: {fps}", new Vector2(-(1920 / 2) + 3, (1080 / 2) - fgh.Arguments.FontSize), 1, Color.Red, Color.Blue);
+            renderer.Render("Test", new Vector2(0, 0), 1, Color.Red, Color.Blue);
         }
     }
 }

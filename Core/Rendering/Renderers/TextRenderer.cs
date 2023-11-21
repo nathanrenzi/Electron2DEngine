@@ -13,22 +13,14 @@ namespace Electron2D.Core.Rendering.Renderers
     {
         public FontGlyphStore FontGlyphStore;
         public Shader TextShader;
-        public Vector2 Position;
-        public float Scale;
-        public Color TextColor;
-        public Color OutlineColor;
         public int OutlineWidth => FontGlyphStore.Arguments.OutlineWidth;
 
         private uint VAO, VBO;
 
-        public unsafe TextRenderer(FontGlyphStore _fontGlyphStore, Shader _shader, Vector2 _position, float _scale, Color _textColor, Color _outlineColor)
+        public unsafe TextRenderer(FontGlyphStore _fontGlyphStore, Shader _shader)
         {
             FontGlyphStore = _fontGlyphStore;
             TextShader = _shader;
-            Position = _position;
-            Scale = _scale;
-            TextColor = _textColor;
-            OutlineColor = _outlineColor;
 
             VAO = glGenVertexArray();
             VBO = glGenBuffer();
@@ -41,18 +33,18 @@ namespace Electron2D.Core.Rendering.Renderers
             glBindVertexArray(0);
         }
 
-        public unsafe void Render(string _text)
+        public unsafe void Render(string _text, Vector2 _position, float _scale, Color _textColor, Color _outlineColor)
         {
             TextShader.Use();
-            TextShader.SetColor("mainColor", TextColor);
-            TextShader.SetColor("outlineColor", OutlineColor);
+            TextShader.SetColor("mainColor", _textColor);
+            TextShader.SetColor("outlineColor", _outlineColor);
             glActiveTexture(GL_TEXTURE0);
             glBindVertexArray(VAO);
 
             uint previousIndex = 0;
             uint glyphIndex = 0;
 
-            float _x = Position.X;
+            float _x = _position.X;
             for (int i = 0; i < _text.Length; i++)
             {
                 Character ch = FontGlyphStore.Characters[_text[i]];
@@ -73,11 +65,11 @@ namespace Electron2D.Core.Rendering.Renderers
                     }
                 }
 
-                float xpos = _x + ch.Bearing.X * Scale;
-                float ypos = Position.Y - (ch.Size.Y - ch.Bearing.Y) * Scale; // Causes text to be slightly vertically offset by 1 pixel
+                float xpos = _x + ch.Bearing.X * _scale;
+                float ypos = _position.Y - (ch.Size.Y - ch.Bearing.Y) * _scale; // Causes text to be slightly vertically offset by 1 pixel
 
-                float w = ch.Size.X * Scale;
-                float h = ch.Size.Y * Scale;
+                float w = ch.Size.X * _scale;
+                float h = ch.Size.Y * _scale;
 
                 float[,] vertices = new float[6,4] {
                     { xpos,     ypos + h,   0.0f, 0.0f },
@@ -96,7 +88,7 @@ namespace Electron2D.Core.Rendering.Renderers
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glDrawArrays(GL_TRIANGLES, 0, 6);
 
-                _x += ch.Advance * Scale;
+                _x += ch.Advance * _scale;
 
                 previousIndex = glyphIndex;
             }
