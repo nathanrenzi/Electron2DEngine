@@ -34,13 +34,13 @@ namespace Electron2D.Core.Management
             FreeTypeFaceFacade f = new FreeTypeFaceFacade(library, face);
             FontGlyphStore store = new FontGlyphStore(_fontSize, _fontFile, library, face, f.HasKerningFlag);
 
-            // Stroker is used for outline
-            IntPtr stroker = IntPtr.Zero;
-            if (_outlineWidth > 0)
-            {
-                FT_Stroker_New(library.Native, out stroker);
-                FT_Stroker_Set(stroker, _outlineWidth, FT_Stroker_LineCap.FT_STROKER_LINECAP_ROUND, FT_Stroker_LineJoin.FT_STROKER_LINEJOIN_ROUND, IntPtr.Zero);
-            }
+            //// Stroker is used for outline
+            //IntPtr stroker = IntPtr.Zero;
+            //if (_outlineWidth > 0)
+            //{
+            //    FT_Stroker_New(library.Native, out stroker);
+            //    FT_Stroker_Set(stroker, _outlineWidth, FT_Stroker_LineCap.FT_STROKER_LINECAP_ROUND, FT_Stroker_LineJoin.FT_STROKER_LINEJOIN_ROUND, IntPtr.Zero);
+            //}
 
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             for (uint c = 0; c < 128; c++)
