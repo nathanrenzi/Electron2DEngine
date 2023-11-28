@@ -83,8 +83,8 @@ namespace Electron2D.Build
 
             shader.Use();
             shader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
-            renderer.Render($"FPS: {fps}", new Vector2(-(1920 / 2) + 3, (1080 / 2) - fgh.Arguments.FontSize), 1, Color.Red, Color.Blue);
-            renderer.Render("Test", new Vector2(0, 0), 1, Color.Red, Color.Blue);
+            renderer.Render($"FPS: {fps}", new Vector2(-(1920 / 2) + 3, (1080 / 2) - fgh.Arguments.FontSize), 1, Color.Red, Color.White);
+            renderer.Render("Test", new Vector2(0, 0), 1, Color.Red, Color.White);
         }
     }
 }

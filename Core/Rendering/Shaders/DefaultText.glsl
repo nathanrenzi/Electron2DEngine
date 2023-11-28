@@ -25,5 +25,6 @@ void main()
 {
     vec4 textC = vec4(1.0, 1.0, 1.0, texture(mainTextureSampler, texCoord).r);
     vec4 outlineC = vec4(1.0, 1.0, 1.0, texture(mainTextureSampler, texCoord).g);
-    FragColor = (textC * mainColor) + (outlineC * outlineColor);
+    //FragColor = (textC * mainColor) + (outlineC * outlineColor);
+    FragColor = (textC * mainColor);
 }
