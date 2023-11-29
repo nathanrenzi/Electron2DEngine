@@ -31,7 +31,8 @@ namespace Electron2D.Build
             fgh = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/NotoSans.ttf", 40, 0);
             shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"));
             shader.Compile();
-            renderer = new TextRenderer(fgh, shader, Vector2.Zero, new Rectangle(0, 0, 300, 300), TextAlignment.Center);
+            renderer = new TextRenderer(fgh, shader, Vector2.Zero, new Rectangle(0, 0, 300, 300),
+                TextAlignment.Left, TextAlignment.Bottom, TextAlignmentMode.Geometry);
         }
 
         protected override void Update()
@@ -79,7 +80,7 @@ namespace Electron2D.Build
 
             shader.Use();
             shader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
-            renderer.Render("This is a test of the newline system...", 1, Color.Red, Color.White);
+            renderer.Render("The quick brown fox jumps over the lazy dog...", 1, Color.Red, Color.White);
             renderer.Position.X = MathF.Sin(Time.TotalElapsedSeconds / 2f) * 200;
         }
     }

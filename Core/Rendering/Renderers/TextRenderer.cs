@@ -18,14 +18,20 @@ namespace Electron2D.Core.Rendering.Renderers
         public float LineHeightMultiplier = 1.35f;
         public TextAlignment HorizontalAlignment;
         public TextAlignment VerticalAlignment;
+        public TextAlignmentMode AlignmentMode;
         public Vector2 Position;
         public Rectangle Bounds;
-        private Sprite s1, s2, s3, s4; // testing sprites
+        private Sprite s1, s2, s3, s4; // testing sprites, remove these
 
         private uint VAO, VBO;
         private List<int> xOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
+        private float totalYHeight;
+        private float firstLineMaxHeight = 0;
+        private float lastLineMinHeight = 0;
 
-        public unsafe TextRenderer(FontGlyphStore _fontGlyphStore, Shader _shader, Vector2 _position, Rectangle _bounds, TextAlignment _horizontalAlignment = TextAlignment.Left, TextAlignment _verticalAlignment = TextAlignment.Top)
+        public unsafe TextRenderer(FontGlyphStore _fontGlyphStore, Shader _shader, Vector2 _position, Rectangle _bounds,
+            TextAlignment _horizontalAlignment = TextAlignment.Left, TextAlignment _verticalAlignment = TextAlignment.Top,
+            TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline)
         {
             FontGlyphStore = _fontGlyphStore;
             TextShader = _shader;
@@ -44,6 +50,7 @@ namespace Electron2D.Core.Rendering.Renderers
             Bounds = _bounds;
             HorizontalAlignment = _horizontalAlignment;
             VerticalAlignment = _verticalAlignment;
+            AlignmentMode = _alignmentMode;
 
             Shader shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"));
             s1 = new Sprite(Material.Create(shader, Color.Black));
@@ -75,12 +82,20 @@ namespace Electron2D.Core.Rendering.Renderers
 
             float _x = Bounds.X;
             float _y = Bounds.Y;
+            float maxHeight = 0;
+            float minHeight = 0;
+
+            int newlineIterator = 0;
 
             for (int i = 0; i < _text.Length; i++)
             {
                 Character ch = FontGlyphStore.Characters[_text[i]];
                 glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, _text[i]);
                 builder.Append(_text[i]);
+
+                // Checking the height
+                if(ch.Bearing.Y > maxHeight) maxHeight = ch.Bearing.Y;
+                if(ch.Size.Y - ch.Bearing.Y > minHeight) minHeight = ch.Size.Y - ch.Bearing.Y;
 
                 // Kerning (space between certain characters)
                 if (FontGlyphStore.UseKerning)
@@ -109,20 +124,34 @@ namespace Electron2D.Core.Rendering.Renderers
 
                     _x = Bounds.X;
                     _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+
+                    if (newlineIterator == 0) firstLineMaxHeight = AlignmentMode == TextAlignmentMode.Geometry ? maxHeight : 0;
+                    newlineIterator++;
+
+                    maxHeight = 0;
+                    if(i + 1 != _text.Length)
+                    {
+                        minHeight = 0;
+                    }
+
                     previousIndex = glyphIndex;
                     continue;
                 }
-                else if (i + 1 == _text.Length)
+                if (i + 1 == _text.Length)
                 {
+                    lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ?  minHeight : 0;
+
                     xOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
                     break;
                 }
             }
 
+            totalYHeight = Math.Abs(_y) - Bounds.Y;
+
             return builder.ToString();
         }
 
-        private int GetXOffsetPosition(int _iteration)
+        private int GetXOffset(int _iteration)
         {
             if (xOffsets.Count > _iteration)
             {
@@ -142,6 +171,20 @@ namespace Electron2D.Core.Rendering.Renderers
                 return 0;
             }
         }
+
+        private int GetYOffset()
+        {
+            switch (VerticalAlignment)
+            {
+                case TextAlignment.Top:
+                    return 0 + (int)firstLineMaxHeight;
+                case TextAlignment.Center:
+                    return (int)(Bounds.Height - totalYHeight - firstLineMaxHeight - lastLineMinHeight) / 2;
+                case TextAlignment.Bottom:
+                    return Bounds.Height - (int)(totalYHeight + lastLineMinHeight);
+                default: return 0;
+            }
+        }
         #endregion
 
         #region Rendering
@@ -159,10 +202,10 @@ namespace Electron2D.Core.Rendering.Renderers
             string renderText = GetTextFormatting(_text, _scale);
 
             int newlineIterations = 0;
-            float x = GetXOffsetPosition(newlineIterations) + Position.X;
+            float x = GetXOffset(newlineIterations) + Position.X;
 
             float _x = x;
-            float _y = Bounds.Y;
+            float _y = Position.Y - GetYOffset();
 
             // Rendering loop
             for (int i = 0; i < renderText.Length; i++)
@@ -173,7 +216,7 @@ namespace Electron2D.Core.Rendering.Renderers
                 if (renderText[i] == '\n')
                 {
                     newlineIterations++;
-                    _x = GetXOffsetPosition(newlineIterations) + Position.X;
+                    _x = GetXOffset(newlineIterations) + Position.X;
 
                     _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
 
