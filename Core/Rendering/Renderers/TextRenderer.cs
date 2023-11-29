@@ -18,12 +18,14 @@ namespace Electron2D.Core.Rendering.Renderers
         public float LineHeightMultiplier = 1.35f;
         public TextAlignment HorizontalAlignment;
         public TextAlignment VerticalAlignment;
+        public Vector2 Position;
         public Rectangle Bounds;
+        private Sprite s1, s2, s3, s4; // testing sprites
 
         private uint VAO, VBO;
         private List<int> xOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
 
-        public unsafe TextRenderer(FontGlyphStore _fontGlyphStore, Shader _shader, Rectangle _bounds, TextAlignment _horizontalAlignment = TextAlignment.Left, TextAlignment _verticalAlignment = TextAlignment.Top)
+        public unsafe TextRenderer(FontGlyphStore _fontGlyphStore, Shader _shader, Vector2 _position, Rectangle _bounds, TextAlignment _horizontalAlignment = TextAlignment.Left, TextAlignment _verticalAlignment = TextAlignment.Top)
         {
             FontGlyphStore = _fontGlyphStore;
             TextShader = _shader;
@@ -38,26 +40,27 @@ namespace Electron2D.Core.Rendering.Renderers
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
 
+            Position = _position;
             Bounds = _bounds;
             HorizontalAlignment = _horizontalAlignment;
             VerticalAlignment = _verticalAlignment;
 
             Shader shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"));
-            Sprite s1 = new Sprite(Material.Create(shader, Color.Black));
+            s1 = new Sprite(Material.Create(shader, Color.Black));
             s1.Renderer.UseUnscaledProjectionMatrix = true;
-            Sprite s2 = new Sprite(Material.Create(shader, Color.Black));
+            s2 = new Sprite(Material.Create(shader, Color.Black));
             s2.Renderer.UseUnscaledProjectionMatrix = true;
-            Sprite s3 = new Sprite(Material.Create(shader, Color.Black));
+            s3 = new Sprite(Material.Create(shader, Color.Black));
             s3.Renderer.UseUnscaledProjectionMatrix = true;
-            Sprite s4 = new Sprite(Material.Create(shader, Color.Black));
+            s4 = new Sprite(Material.Create(shader, Color.Black));
             s4.Renderer.UseUnscaledProjectionMatrix = true;
-            s1.Transform.Position = new Vector2(Bounds.Location.X, Bounds.Location.Y);
+            s1.Transform.Position = new Vector2(Position.X, Position.Y);
             s1.Transform.Scale = new Vector2(4);
-            s2.Transform.Position = new Vector2(Bounds.Location.X + Bounds.Size.Width, Bounds.Location.Y);
+            s2.Transform.Position = new Vector2(Position.X + Bounds.Size.Width, Position.Y);
             s2.Transform.Scale = new Vector2(4);
-            s3.Transform.Position = new Vector2(Bounds.Location.X + Bounds.Size.Width, Bounds.Location.Y - Bounds.Size.Height);
+            s3.Transform.Position = new Vector2(Position.X + Bounds.Size.Width, Position.Y - Bounds.Size.Height);
             s3.Transform.Scale = new Vector2(4);
-            s4.Transform.Position = new Vector2(Bounds.Location.X, Bounds.Location.Y - Bounds.Size.Height);
+            s4.Transform.Position = new Vector2(Position.X, Position.Y - Bounds.Size.Height);
             s4.Transform.Scale = new Vector2(4);
         }
 
@@ -156,7 +159,7 @@ namespace Electron2D.Core.Rendering.Renderers
             string renderText = GetTextFormatting(_text, _scale);
 
             int newlineIterations = 0;
-            int x = GetXOffsetPosition(newlineIterations);
+            float x = GetXOffsetPosition(newlineIterations) + Position.X;
 
             float _x = x;
             float _y = Bounds.Y;
@@ -170,7 +173,7 @@ namespace Electron2D.Core.Rendering.Renderers
                 if (renderText[i] == '\n')
                 {
                     newlineIterations++;
-                    _x = GetXOffsetPosition(newlineIterations);
+                    _x = GetXOffsetPosition(newlineIterations) + Position.X;
 
                     _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
 
@@ -223,16 +226,17 @@ namespace Electron2D.Core.Rendering.Renderers
 
             glBindVertexArray(0);
             glBindTexture(GL_TEXTURE_2D, 0);
+
+            // REMOVE
+            s1.Transform.Position = new Vector2(Position.X, Position.Y);
+            s1.Transform.Scale = new Vector2(4);
+            s2.Transform.Position = new Vector2(Position.X + Bounds.Size.Width, Position.Y);
+            s2.Transform.Scale = new Vector2(4);
+            s3.Transform.Position = new Vector2(Position.X + Bounds.Size.Width, Position.Y - Bounds.Size.Height);
+            s3.Transform.Scale = new Vector2(4);
+            s4.Transform.Position = new Vector2(Position.X, Position.Y - Bounds.Size.Height);
+            s4.Transform.Scale = new Vector2(4);
         }
         #endregion
-
-        private void TESTING_CreatePoint(Vector2 _position)
-        {
-            Shader shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"));
-            Sprite s1 = new Sprite(Material.Create(shader, Color.Black));
-            s1.Renderer.UseUnscaledProjectionMatrix = true;
-            s1.Transform.Position = new Vector2(_position.X, _position.Y);
-            s1.Transform.Scale = new Vector2(4);
-        }
     }
 }
