@@ -61,6 +61,7 @@ namespace Electron2D.Core.Rendering.Renderers
             s4.Transform.Scale = new Vector2(4);
         }
 
+        #region Text Formatting
         private unsafe string GetTextFormatting(string _text, float _scale)
         {
             StringBuilder builder = new StringBuilder();
@@ -78,8 +79,6 @@ namespace Electron2D.Core.Rendering.Renderers
                 glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, _text[i]);
                 builder.Append(_text[i]);
 
-                _x += ch.Bearing.X * _scale;
-
                 // Kerning (space between certain characters)
                 if (FontGlyphStore.UseKerning)
                 {
@@ -95,11 +94,14 @@ namespace Electron2D.Core.Rendering.Renderers
                     }
                 }
 
+                // Moves to next character position
+                _x += ch.Advance * _scale;
+
                 // Newline check -- CHANGE TO MAKE WHOLE WORDS MOVE TO NEW LINE
-                bool outsideBounds = !Bounds.Contains(new Rectangle((int)_x, (int)_y, (int)(ch.Size.X + ch.Bearing.X), (int)ch.Size.Y));
+                bool outsideBounds = !Bounds.Contains(new Rectangle((int)_x, (int)-_y, (int)(ch.Size.X + ch.Bearing.X), (int)ch.Size.Y));
                 if (_text[i] == '\n' || outsideBounds)
                 {
-                    xOffsets.Add(Bounds.Width - ((int)_x - Bounds.X));
+                    xOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
                     if(outsideBounds) builder.Append('\n');
 
                     _x = Bounds.X;
@@ -107,14 +109,39 @@ namespace Electron2D.Core.Rendering.Renderers
                     previousIndex = glyphIndex;
                     continue;
                 }
-
-                // Moves to next character position
-                _x += ch.Advance * _scale;
+                else if (i + 1 == _text.Length)
+                {
+                    xOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
+                    break;
+                }
             }
 
             return builder.ToString();
         }
 
+        private int GetXOffsetPosition(int _iteration)
+        {
+            if (xOffsets.Count > _iteration)
+            {
+                switch (HorizontalAlignment)
+                {
+                    case TextAlignment.Left:
+                        return 0;
+                    case TextAlignment.Center:
+                        return xOffsets[_iteration] / 2;
+                    case TextAlignment.Right:
+                        return xOffsets[_iteration];
+                    default: return 0;
+                }
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        #endregion
+
+        #region Rendering
         public unsafe void Render(string _text, float _scale, Color _textColor, Color _outlineColor)
         {
             TextShader.Use();
@@ -197,29 +224,9 @@ namespace Electron2D.Core.Rendering.Renderers
             glBindVertexArray(0);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
+        #endregion
 
-        private int GetXOffsetPosition(int _iteration)
-        {
-            if (xOffsets.Count > _iteration)
-            {
-                switch (HorizontalAlignment)
-                {
-                    case TextAlignment.Left:
-                        return 0;
-                    case TextAlignment.Center:
-                        return xOffsets[_iteration] / 2;
-                    case TextAlignment.Right:
-                        return xOffsets[_iteration];
-                    default: return 0;
-                }
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
-        private void CreatePoint(Vector2 _position)
+        private void TESTING_CreatePoint(Vector2 _position)
         {
             Shader shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"));
             Sprite s1 = new Sprite(Material.Create(shader, Color.Black));
