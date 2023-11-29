@@ -2,15 +2,10 @@
 {
     public enum TextAlignment
     {
-        Default,
-        LeftTop,
-        LeftMiddle,
-        LeftBottom,
-        CenterTop,
-        Centered,
-        CenterBottom,
-        RightTop,
-        RightMiddle,
-        RightBottom,
+        Left,
+        Right,
+        Center,
+        Top,
+        Bottom
     }
 }
