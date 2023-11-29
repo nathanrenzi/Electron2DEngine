@@ -64,22 +64,8 @@ namespace Electron2D.Build
             }
         }
 
-        float fpsTime = 0;
-        int frames = 0;
-        int fps = 0;
         protected unsafe override void Render()
         {
-            fpsTime += Time.DeltaTime;
-            if (fpsTime >= 1)
-            {
-                fpsTime -= 1;
-                fps = frames;
-                frames = 0;
-            }
-            frames++;
-
-            shader.Use();
-            shader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
             renderer.Render("The quick brown fox jumps over the lazy dog...", 1, Color.Red, Color.White);
             renderer.Position.X = MathF.Sin(Time.TotalElapsedSeconds / 2f) * 200;
         }

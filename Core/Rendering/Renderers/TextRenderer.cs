@@ -191,6 +191,7 @@ namespace Electron2D.Core.Rendering.Renderers
         public unsafe void Render(string _text, float _scale, Color _textColor, Color _outlineColor)
         {
             TextShader.Use();
+            TextShader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
             TextShader.SetColor("mainColor", _textColor);
             TextShader.SetColor("outlineColor", _outlineColor);
             glActiveTexture(GL_TEXTURE0);
