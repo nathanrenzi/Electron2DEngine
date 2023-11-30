@@ -81,69 +81,97 @@ namespace Electron2D.Core.Rendering.Renderers
             uint glyphIndex = 0;
 
             float _x = Bounds.X;
+            float _sx = _x;
             float _y = Bounds.Y;
             float maxHeight = 0;
             float minHeight = 0;
 
             int newlineIterator = 0;
+            bool outsideBounds = false;
 
-            for (int i = 0; i < _text.Length; i++)
+            // Formatting the words
+            string[] words = _text.Split(' ');
+            for (int i = 0; i < words.Length - 1; i++)
             {
-                Character ch = FontGlyphStore.Characters[_text[i]];
-                glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, _text[i]);
-                builder.Append(_text[i]);
+                words[i] = words[i] + ' ';
+            }
 
-                // Checking the height
-                if(ch.Bearing.Y > maxHeight) maxHeight = ch.Bearing.Y;
-                if(ch.Size.Y - ch.Bearing.Y > minHeight) minHeight = ch.Size.Y - ch.Bearing.Y;
-
-                // Kerning (space between certain characters)
-                if (FontGlyphStore.UseKerning)
+            for (int k = 0; k < words.Length; k++)
+            {
+                outsideBounds = false;
+                for (int i = 0; i < words[k].Length; i++)
                 {
-                    if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                    Character ch = FontGlyphStore.Characters[words[k][i]];
+                    glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, words[k][i]);
+
+                    // Checking the height
+                    if (ch.Bearing.Y > maxHeight) maxHeight = ch.Bearing.Y;
+                    if (ch.Size.Y - ch.Bearing.Y > minHeight) minHeight = ch.Size.Y - ch.Bearing.Y;
+
+                    // Kerning (space between certain characters)
+                    if (FontGlyphStore.UseKerning)
                     {
-                        long* temp = (long*)delta.x;
-                        long res = *temp;
-                        _x += res;
+                        if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                        {
+                            long* temp = (long*)delta.x;
+                            long res = *temp;
+                            _x += res;
+                        }
+                        else
+                        {
+                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontName}");
+                        }
                     }
-                    else
+
+                    // Moves to next character position
+                    _x += ch.Advance * _scale;
+
+                    // Newline check -- CHANGE TO MAKE WHOLE WORDS MOVE TO NEW LINE
+                    outsideBounds = !Bounds.Contains(new Rectangle((int)_x, (int)-_y, (int)(ch.Size.X + ch.Bearing.X), (int)ch.Size.Y));
+                    if (outsideBounds) break;
+                    if (words[k][i] == '\n')
                     {
-                        Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontName}");
+                        xOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
+
+                        _x = Bounds.X;
+                        _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+
+                        if (newlineIterator == 0) firstLineMaxHeight = AlignmentMode == TextAlignmentMode.Geometry ? maxHeight : 0;
+                        newlineIterator++;
+                        lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ? minHeight : 0;
+
+                        maxHeight = 0;
+                        if (k + 1 != words.Length)
+                        {
+                            minHeight = 0;
+                        }
+
+                        previousIndex = glyphIndex;
+                        break;
                     }
                 }
 
-                // Moves to next character position
-                _x += ch.Advance * _scale;
-
-                // Newline check -- CHANGE TO MAKE WHOLE WORDS MOVE TO NEW LINE
-                bool outsideBounds = !Bounds.Contains(new Rectangle((int)_x, (int)-_y, (int)(ch.Size.X + ch.Bearing.X), (int)ch.Size.Y));
-                if (_text[i] == '\n' || outsideBounds)
+                if (outsideBounds)
                 {
-                    xOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
-                    if(outsideBounds) builder.Append('\n');
+                    if (newlineIterator == 0) firstLineMaxHeight = AlignmentMode == TextAlignmentMode.Geometry ? maxHeight : 0;
+                    newlineIterator++;
+                    lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ? minHeight : 0;
 
                     _x = Bounds.X;
                     _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
-
-                    if (newlineIterator == 0) firstLineMaxHeight = AlignmentMode == TextAlignmentMode.Geometry ? maxHeight : 0;
-                    newlineIterator++;
+                    builder.Append('\n');
+                    xOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
 
                     maxHeight = 0;
-                    if(i + 1 != _text.Length)
+                    if (k + 1 != words.Length)
                     {
                         minHeight = 0;
                     }
 
                     previousIndex = glyphIndex;
-                    continue;
                 }
-                if (i + 1 == _text.Length)
-                {
-                    lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ?  minHeight : 0;
-
-                    xOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
-                    break;
-                }
+                _sx = _x;
+                builder.Append(words[k]);
             }
 
             totalYHeight = Math.Abs(_y) - Bounds.Y;

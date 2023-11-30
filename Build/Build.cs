@@ -25,14 +25,13 @@ namespace Electron2D.Build
         TextRenderer renderer;
         FontGlyphStore fgh;
         Shader shader;
-        Sprite s;
         private void InitializeFreeType()
         {
             fgh = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/NotoSans.ttf", 40, 0);
             shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"));
             shader.Compile();
             renderer = new TextRenderer(fgh, shader, Vector2.Zero, new Rectangle(0, 0, 300, 300),
-                TextAlignment.Left, TextAlignment.Bottom, TextAlignmentMode.Geometry);
+                TextAlignment.Left, TextAlignment.Top, TextAlignmentMode.Geometry);
         }
 
         protected override void Update()
