@@ -15,22 +15,37 @@ namespace Electron2D.Core.Rendering.Renderers
         public FontGlyphStore FontGlyphStore;
         public Shader TextShader;
         public int OutlineWidth => FontGlyphStore.Arguments.OutlineWidth;
+        public string Text
+        {
+            get { return Text; }
+            set
+            {
+                Text = value;
+                UpdateTextFormatting(value);
+            }
+        }
+        public float Scale;
         public float LineHeightMultiplier = 1.35f;
         public TextAlignment HorizontalAlignment;
         public TextAlignment VerticalAlignment;
         public TextAlignmentMode AlignmentMode;
+        public Color TextColor;
+        public Color OutlineColor;
         public Vector2 Position;
         public Rectangle Bounds;
         private Sprite s1, s2, s3, s4; // testing sprites, remove these
 
-        private uint VAO, VBO;
         private List<int> xOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
+        private string formattedText;
         private float totalYHeight;
         private float firstLineMaxHeight = 0;
         private float lastLineMinHeight = 0;
+        private uint VAO, VBO;
 
-        public unsafe TextRenderer(FontGlyphStore _fontGlyphStore, Shader _shader, Vector2 _position, Rectangle _bounds,
-            TextAlignment _horizontalAlignment = TextAlignment.Left, TextAlignment _verticalAlignment = TextAlignment.Top,
+        public unsafe TextRenderer(FontGlyphStore _fontGlyphStore, Shader _shader, string _text, Vector2 _position,
+            Color _textColor, Color _outlineColor, Rectangle _bounds,
+            TextAlignment _horizontalAlignment = TextAlignment.Left,
+            TextAlignment _verticalAlignment = TextAlignment.Top,
             TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline)
         {
             FontGlyphStore = _fontGlyphStore;
@@ -47,7 +62,11 @@ namespace Electron2D.Core.Rendering.Renderers
             glBindVertexArray(0);
 
             Position = _position;
+            TextColor = _textColor;
+            OutlineColor = _outlineColor;
             Bounds = _bounds;
+            Text = _text;
+            UpdateTextFormatting(_text);
             HorizontalAlignment = _horizontalAlignment;
             VerticalAlignment = _verticalAlignment;
             AlignmentMode = _alignmentMode;
@@ -72,111 +91,15 @@ namespace Electron2D.Core.Rendering.Renderers
         }
 
         #region Text Formatting
-        private unsafe string GetTextFormatting(string _text, float _scale)
+        private unsafe string UpdateTextFormatting(string _inputText)
         {
-            StringBuilder builder = new StringBuilder();
-            xOffsets.Clear();
-
-            uint previousIndex = 0;
-            uint glyphIndex = 0;
-
-            float _x = Bounds.X;
-            float _sx = _x;
-            float _y = Bounds.Y;
-            float maxHeight = 0;
-            float minHeight = 0;
-
-            int newlineIterator = 0;
-            bool outsideBounds = false;
-
-            // Formatting the words
-            string[] words = _text.Split(' ');
-            for (int i = 0; i < words.Length - 1; i++)
-            {
-                words[i] = words[i] + ' ';
-            }
-
-            for (int k = 0; k < words.Length; k++)
-            {
-                outsideBounds = false;
-                for (int i = 0; i < words[k].Length; i++)
-                {
-                    Character ch = FontGlyphStore.Characters[words[k][i]];
-                    glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, words[k][i]);
-
-                    // Checking the height
-                    if (ch.Bearing.Y > maxHeight) maxHeight = ch.Bearing.Y;
-                    if (ch.Size.Y - ch.Bearing.Y > minHeight) minHeight = ch.Size.Y - ch.Bearing.Y;
-
-                    // Kerning (space between certain characters)
-                    if (FontGlyphStore.UseKerning)
-                    {
-                        if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
-                        {
-                            long* temp = (long*)delta.x;
-                            long res = *temp;
-                            _x += res;
-                        }
-                        else
-                        {
-                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontName}");
-                        }
-                    }
-
-                    // Moves to next character position
-                    _x += ch.Advance * _scale;
-
-                    // Newline check -- CHANGE TO MAKE WHOLE WORDS MOVE TO NEW LINE
-                    outsideBounds = !Bounds.Contains(new Rectangle((int)_x, (int)-_y, (int)(ch.Size.X + ch.Bearing.X), (int)ch.Size.Y));
-                    if (outsideBounds) break;
-                    if (words[k][i] == '\n')
-                    {
-                        xOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
-
-                        _x = Bounds.X;
-                        _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
-
-                        if (newlineIterator == 0) firstLineMaxHeight = AlignmentMode == TextAlignmentMode.Geometry ? maxHeight : 0;
-                        newlineIterator++;
-                        lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ? minHeight : 0;
-
-                        maxHeight = 0;
-                        if (k + 1 != words.Length)
-                        {
-                            minHeight = 0;
-                        }
-
-                        previousIndex = glyphIndex;
-                        break;
-                    }
-                }
-
-                if (outsideBounds)
-                {
-                    if (newlineIterator == 0) firstLineMaxHeight = AlignmentMode == TextAlignmentMode.Geometry ? maxHeight : 0;
-                    newlineIterator++;
-                    lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ? minHeight : 0;
-
-                    _x = Bounds.X;
-                    _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
-                    builder.Append('\n');
-                    xOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
-
-                    maxHeight = 0;
-                    if (k + 1 != words.Length)
-                    {
-                        minHeight = 0;
-                    }
-
-                    previousIndex = glyphIndex;
-                }
-                _sx = _x;
-                builder.Append(words[k]);
-            }
-
-            totalYHeight = Math.Abs(_y) - Bounds.Y;
-
-            return builder.ToString();
+            // section input text into words
+            // add spaces back onto words except last one
+            // loop through all words and check if they overlap with boundary
+                // if overlap, move word to next line
+                // if no overlap, add word to string builder and move on
+                // IF first line, record tallest character
+                // IF last line, record lowest character 
         }
 
         private int GetXOffset(int _iteration)
@@ -216,19 +139,17 @@ namespace Electron2D.Core.Rendering.Renderers
         #endregion
 
         #region Rendering
-        public unsafe void Render(string _text, float _scale, Color _textColor, Color _outlineColor)
+        public unsafe void Render()
         {
             TextShader.Use();
             TextShader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
-            TextShader.SetColor("mainColor", _textColor);
-            TextShader.SetColor("outlineColor", _outlineColor);
+            TextShader.SetColor("mainColor", TextColor);
+            TextShader.SetColor("outlineColor", OutlineColor);
             glActiveTexture(GL_TEXTURE0);
             glBindVertexArray(VAO);
 
             uint previousIndex = 0;
             uint glyphIndex = 0;
-
-            string renderText = GetTextFormatting(_text, _scale);
 
             int newlineIterations = 0;
             float x = GetXOffset(newlineIterations) + Position.X;
@@ -237,12 +158,12 @@ namespace Electron2D.Core.Rendering.Renderers
             float _y = Position.Y - GetYOffset();
 
             // Rendering loop
-            for (int i = 0; i < renderText.Length; i++)
+            for (int i = 0; i < formattedText.Length; i++)
             {
-                Character ch = FontGlyphStore.Characters[renderText[i]];
-                glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, renderText[i]);
+                Character ch = FontGlyphStore.Characters[formattedText[i]];
+                glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, formattedText[i]);
 
-                if (renderText[i] == '\n')
+                if (formattedText[i] == '\n')
                 {
                     newlineIterations++;
                     _x = GetXOffset(newlineIterations) + Position.X;
@@ -268,11 +189,11 @@ namespace Electron2D.Core.Rendering.Renderers
                     }
                 }
 
-                float xpos = _x + ch.Bearing.X * _scale;
-                float ypos = _y - (ch.Size.Y - ch.Bearing.Y) * _scale; // Causes text to be slightly vertically offset by 1 pixel
+                float xpos = _x + ch.Bearing.X * Scale;
+                float ypos = _y - (ch.Size.Y - ch.Bearing.Y) * Scale; // Causes text to be slightly vertically offset by 1 pixel
 
-                float w = ch.Size.X * _scale;
-                float h = ch.Size.Y * _scale;
+                float w = ch.Size.X * Scale;
+                float h = ch.Size.Y * Scale;
 
                 float[,] vertices = new float[6, 4] {
                     { xpos,     ypos + h,   0.0f, 0.0f },
@@ -291,7 +212,7 @@ namespace Electron2D.Core.Rendering.Renderers
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glDrawArrays(GL_TRIANGLES, 0, 6);
 
-                _x += ch.Advance * _scale;
+                _x += ch.Advance * Scale;
 
                 previousIndex = glyphIndex;
             }

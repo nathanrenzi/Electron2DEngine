@@ -30,7 +30,8 @@ namespace Electron2D.Build
             fgh = ResourceManager.Instance.LoadFont("Build/Resources/Fonts/NotoSans.ttf", 40, 0);
             shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"));
             shader.Compile();
-            renderer = new TextRenderer(fgh, shader, Vector2.Zero, new Rectangle(0, 0, 300, 300),
+            renderer = new TextRenderer(fgh, shader, "The quick brown fox jumps over the lazy dog...",
+                Vector2.Zero, Color.Red, Color.Black, new Rectangle(0, 0, 300, 300),
                 TextAlignment.Left, TextAlignment.Top, TextAlignmentMode.Geometry);
         }
 
@@ -65,7 +66,7 @@ namespace Electron2D.Build
 
         protected unsafe override void Render()
         {
-            renderer.Render("The quick brown fox jumps over the lazy dog...", 1, Color.Red, Color.White);
+            renderer.Render();
             renderer.Position.X = MathF.Sin(Time.TotalElapsedSeconds / 2f) * 200;
         }
     }
