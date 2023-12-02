@@ -31,8 +31,8 @@ namespace Electron2D.Build
             shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"));
             shader.Compile();
             renderer = new TextRenderer(fgh, shader, "The quick brown fox jumps over the lazy dog...",
-                Vector2.Zero, Color.Red, Color.Black, new Rectangle(0, 0, 300, 300),
-                TextAlignment.Left, TextAlignment.Top, TextAlignmentMode.Geometry);
+                Vector2.Zero, Color.Black, Color.Black, new Rectangle(0, 0, 500, 300),
+                TextAlignment.Center, TextAlignment.Top, TextAlignmentMode.Geometry);
         }
 
         protected override void Update()

@@ -7,6 +7,8 @@ using static FreeTypeSharp.Native.FT;
 using System.Runtime.InteropServices;
 using System.Numerics;
 using System.Text;
+using static System.Formats.Asn1.AsnWriter;
+using System.Text.RegularExpressions;
 
 namespace Electron2D.Core.Rendering.Renderers
 {
@@ -17,14 +19,15 @@ namespace Electron2D.Core.Rendering.Renderers
         public int OutlineWidth => FontGlyphStore.Arguments.OutlineWidth;
         public string Text
         {
-            get { return Text; }
+            get { return text; }
             set
             {
-                Text = value;
+                text = value;
                 UpdateTextFormatting(value);
             }
         }
-        public float Scale;
+        private string text;
+        public float Scale = 1;
         public float LineHeightMultiplier = 1.35f;
         public TextAlignment HorizontalAlignment;
         public TextAlignment VerticalAlignment;
@@ -35,7 +38,7 @@ namespace Electron2D.Core.Rendering.Renderers
         public Rectangle Bounds;
         private Sprite s1, s2, s3, s4; // testing sprites, remove these
 
-        private List<int> xOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
+        private List<int> lineOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
         private string formattedText;
         private float totalYHeight;
         private float firstLineMaxHeight = 0;
@@ -66,7 +69,6 @@ namespace Electron2D.Core.Rendering.Renderers
             OutlineColor = _outlineColor;
             Bounds = _bounds;
             Text = _text;
-            UpdateTextFormatting(_text);
             HorizontalAlignment = _horizontalAlignment;
             VerticalAlignment = _verticalAlignment;
             AlignmentMode = _alignmentMode;
@@ -91,29 +93,108 @@ namespace Electron2D.Core.Rendering.Renderers
         }
 
         #region Text Formatting
-        private unsafe string UpdateTextFormatting(string _inputText)
+        private unsafe void UpdateTextFormatting(string _inputText)
         {
-            // section input text into words
-            // add spaces back onto words except last one
-            // loop through all words and check if they overlap with boundary
-                // if overlap, move word to next line
-                // if no overlap, add word to string builder and move on
-                // IF first line, record tallest character
-                // IF last line, record lowest character 
+            // Split input text into substrings
+            string[] words = Regex.Split(_inputText, @"(\s)");
+
+            // Loop through all words and check if they overlap with boundary
+            StringBuilder builder = new StringBuilder();
+            float _x = Bounds.X;
+            float _y = Bounds.Y;
+            uint previousIndex = 0;
+            uint glyphIndex = 0;
+            float maxHeight = 0;
+            float minHeight = 0;
+            int newlineCount = 0;
+            for (int w = 0; w < words.Length; w++)
+            {
+                previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
+                for (int i = 0; i < words[w].Length; i++)
+                {
+                    Character ch = FontGlyphStore.Characters[words[w][i]];
+                    glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, words[w][i]);
+
+                    // If first line, record tallest character
+                    if (newlineCount == 0)
+                    {
+                        if (ch.Bearing.Y > maxHeight) maxHeight = ch.Bearing.Y;
+                    }
+
+                    // Set min if the lowest point is lower in position (greater in value) than the current min
+                    if (ch.Size.Y - ch.Bearing.Y > minHeight) minHeight = ch.Size.Y - ch.Bearing.Y;
+
+                    // If word is a newline character, handle it separately
+                    // DOES NOT WORK CURRENLY, NEWLINES ARE NOT SEPARATE WORDS
+                    if (words[w] == "\n")
+                    {
+                        _x = Bounds.X;
+                        _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+                        newlineCount++;
+                        lineOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
+
+                        // Reset minimum height since a new line was created
+                        minHeight = 0;
+                        break;
+                    }
+
+                    // Kerning
+                    if (FontGlyphStore.UseKerning)
+                    {
+                        if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                        {
+                            long* temp = (long*)delta.x;
+                            long res = *temp;
+                            _x += res;
+                        }
+                        else
+                        {
+                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontName}");
+                        }
+                    }
+
+                    // If the character overlaps the bounds, move to new line
+                    if (!Bounds.Contains(new Rectangle((int)_x, (int)_y, (int)(ch.Size.X + ch.Bearing.X), (int)ch.Size.Y)))
+                    {
+                        _x = Bounds.X;
+                        _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+                        newlineCount++;
+                        lineOffsets.Add(Bounds.Width - (int)_x);
+
+                        minHeight = 0;
+                        builder.Append('\n');
+                        break;
+                    }
+
+                    // Advancing x position
+                    _x += ch.Advance * Scale;
+
+                    previousIndex = glyphIndex;
+                }
+
+                builder.Append(words[w]);
+            }
+
+            totalYHeight = Math.Abs(_y);
+            firstLineMaxHeight = AlignmentMode == TextAlignmentMode.Geometry ? maxHeight : 0;
+            lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ? minHeight : 0;
+            formattedText = builder.ToString();
+
+            Debug.Log(totalYHeight + " " + firstLineMaxHeight + " " + lastLineMinHeight + " " + formattedText);
         }
 
         private int GetXOffset(int _iteration)
         {
-            if (xOffsets.Count > _iteration)
+            if (lineOffsets.Count > _iteration)
             {
                 switch (HorizontalAlignment)
                 {
                     case TextAlignment.Left:
                         return 0;
                     case TextAlignment.Center:
-                        return xOffsets[_iteration] / 2;
+                        return lineOffsets[_iteration] / 2;
                     case TextAlignment.Right:
-                        return xOffsets[_iteration];
+                        return lineOffsets[_iteration];
                     default: return 0;
                 }
             }
@@ -148,33 +229,28 @@ namespace Electron2D.Core.Rendering.Renderers
             glActiveTexture(GL_TEXTURE0);
             glBindVertexArray(VAO);
 
-            uint previousIndex = 0;
-            uint glyphIndex = 0;
-
-            int newlineIterations = 0;
-            float x = GetXOffset(newlineIterations) + Position.X;
-
+            float x = GetXOffset(0) + Position.X;
             float _x = x;
             float _y = Position.Y - GetYOffset();
-
-            // Rendering loop
+            uint previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
+            uint glyphIndex = 0;
+            int newlineCount = 0;
             for (int i = 0; i < formattedText.Length; i++)
             {
                 Character ch = FontGlyphStore.Characters[formattedText[i]];
                 glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, formattedText[i]);
 
+                // If word is a newline character, handle it separately
                 if (formattedText[i] == '\n')
                 {
-                    newlineIterations++;
-                    _x = GetXOffset(newlineIterations) + Position.X;
-
+                    newlineCount++;
+                    _x = GetXOffset(newlineCount);
                     _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
-
-                    previousIndex = glyphIndex;
+                    previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
                     continue;
                 }
 
-                // Kerning (special spacing between certain characters)
+                // Kerning
                 if (FontGlyphStore.UseKerning)
                 {
                     if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
