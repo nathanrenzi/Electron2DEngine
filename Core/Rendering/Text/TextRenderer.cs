@@ -1,6 +1,5 @@
 ﻿using Electron2D.Core.ECS;
 using Electron2D.Core.Rendering.Shaders;
-using Electron2D.Core.Rendering.Text;
 using FreeTypeSharp.Native;
 using System.Drawing;
 using System.Numerics;
@@ -9,7 +8,7 @@ using System.Text.RegularExpressions;
 using static Electron2D.OpenGL.GL;
 using static FreeTypeSharp.Native.FT;
 
-namespace Electron2D.Core.Rendering.Renderers
+namespace Electron2D.Core.Rendering.Text
 {
     public class TextRendererSystem : BaseSystem<TextRenderer> { }
     public class TextRenderer : Component
@@ -39,7 +38,7 @@ namespace Electron2D.Core.Rendering.Renderers
         {
             get
             {
-                return new Vector2(transform.Position.X - (Bounds.Width / 2), transform.Position.Y + (Bounds.Height / 2));
+                return new Vector2(transform.Position.X - Bounds.Width / 2, transform.Position.Y + Bounds.Height / 2);
             }
         }
         public Rectangle Bounds
@@ -117,17 +116,19 @@ namespace Electron2D.Core.Rendering.Renderers
             lineOffsets.Clear();
 
             // Split input text into substrings
+            bool skipNewlines = false;
             string[] words = null;
-            if(OverflowMode == TextOverflowMode.Word)
+            if (OverflowMode == TextOverflowMode.Word)
             {
                 words = Regex.Split(_inputText, @"(\s)");
             }
-            else if(OverflowMode == TextOverflowMode.Character)
+            else if (OverflowMode == TextOverflowMode.Character)
             {
                 words = _inputText.ToCharArray().Select(c => c.ToString()).ToArray();
             }
-            else if(OverflowMode == TextOverflowMode.Disabled)
+            else if (OverflowMode == TextOverflowMode.Disabled)
             {
+                words = Regex.Split(_inputText, @"(\s)");
                 float stringSize = 0;
                 uint g = 0;
                 uint p = 0;
@@ -163,7 +164,7 @@ namespace Electron2D.Core.Rendering.Renderers
 
                 formattedText = _inputText;
                 lineOffsets.Add(Bounds.Width - (int)stringSize);
-                return;
+                skipNewlines = true;
             }
 
             // Loop through all words and check if they overlap with boundary
@@ -177,7 +178,7 @@ namespace Electron2D.Core.Rendering.Renderers
             int newlineCount = 0;
             float wordLength = 0;
 
-            if(VerticalAlignment == TextAlignment.Top && AlignmentMode == TextAlignmentMode.Baseline)
+            if (VerticalAlignment == TextAlignment.Top && AlignmentMode == TextAlignmentMode.Baseline)
             {
                 builder.Append('\n');
             }
@@ -209,7 +210,7 @@ namespace Electron2D.Core.Rendering.Renderers
                         _x = Bounds.X;
                         _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                         newlineCount++;
-                        lineOffsets.Add((Bounds.Width + Bounds.X) - (int)_x);
+                        lineOffsets.Add(Bounds.Width + Bounds.X - (int)_x);
 
                         // Reset minimum height since a new line was created
                         minHeight = 0;
@@ -247,7 +248,7 @@ namespace Electron2D.Core.Rendering.Renderers
                 }
 
                 // Handle outside bounds flag
-                if(outsideBoundsFlag)
+                if (outsideBoundsFlag && !skipNewlines)
                 {
                     newlineCount++;
                     lineOffsets.Add(Bounds.Width - (int)(_x - wordLength));
@@ -259,7 +260,7 @@ namespace Electron2D.Core.Rendering.Renderers
                 }
 
                 // If this word is the last word, add an offset as it otherwise would not be added
-                if(w == words.Length - 1)
+                if (w == words.Length - 1)
                 {
                     // If this is the last word
                     lineOffsets.Add(Bounds.Width - (int)_x);
@@ -269,10 +270,12 @@ namespace Electron2D.Core.Rendering.Renderers
                 builder.Append(words[w]);
             }
 
-            totalYHeight = Math.Abs(_y);
             firstLineMaxHeight = AlignmentMode == TextAlignmentMode.Geometry ? maxHeight : 0;
             lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ? minHeight : 0;
+            totalYHeight = Math.Abs(_y) + firstLineMaxHeight + lastLineMinHeight;
             formattedText = builder.ToString();
+
+            Debug.Log(totalYHeight + " " + firstLineMaxHeight + " " + lastLineMinHeight);
         }
 
         private int GetXOffset(int _iteration)
@@ -303,9 +306,9 @@ namespace Electron2D.Core.Rendering.Renderers
                 case TextAlignment.Top:
                     return 0 + (int)firstLineMaxHeight;
                 case TextAlignment.Center:
-                    return (int)(Bounds.Height - totalYHeight - firstLineMaxHeight - lastLineMinHeight) / 2;
+                    return (int)(Bounds.Height - totalYHeight) / 2 + (int)firstLineMaxHeight;
                 case TextAlignment.Bottom:
-                    return (int)(Bounds.Height - totalYHeight + lastLineMinHeight);
+                    return (int)(Bounds.Height - lastLineMinHeight);
                 default: return 0;
             }
         }
@@ -391,7 +394,7 @@ namespace Electron2D.Core.Rendering.Renderers
             glBindTexture(GL_TEXTURE_2D, 0);
 
             // Bounds visualization
-            if(ShowBoundsDebug)
+            if (ShowBoundsDebug)
             {
                 s1.Transform.Position = new Vector2(position.X + Bounds.Size.Width / 2, position.Y);
                 s1.Transform.Scale = new Vector2(Bounds.Size.Width, 1);

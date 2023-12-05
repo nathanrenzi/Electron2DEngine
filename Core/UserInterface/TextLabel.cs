@@ -1,5 +1,4 @@
 ﻿using Electron2D.Core.Management;
-using Electron2D.Core.Rendering.Renderers;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.UI;
@@ -19,8 +18,8 @@ namespace Electron2D.Core.UserInterface
             int _outlineSize = 0, int _renderLayer = 0, Shader _customShader = null,
             bool _useScreenPosition = true) : base(_renderLayer, _useScreenPosition: _useScreenPosition, _useMeshRenderer: false)
         {
-            SizeX = _bounds.X;
-            SizeY = _bounds.Y;
+            SizeX = _bounds.X / 2;
+            SizeY = _bounds.Y / 2;
             fgh = ResourceManager.Instance.LoadFont(_fontFile, _fontSize, _outlineSize);
 
             Shader shader = null;
@@ -42,7 +41,7 @@ namespace Electron2D.Core.UserInterface
             switch(_event)
             {
                 case UiEvent.ChangeSize:
-                    if(textRenderer != null) textRenderer.Bounds = new Rectangle(0, 0, (int)SizeX, (int)SizeY);
+                    if(textRenderer != null) textRenderer.Bounds = new Rectangle(0, 0, (int)SizeX / 2, (int)SizeY / 2);
                     break;
             }
         }

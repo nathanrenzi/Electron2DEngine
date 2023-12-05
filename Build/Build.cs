@@ -1,10 +1,7 @@
 ﻿using Electron2D.Core;
-using Electron2D.Core.Management;
-using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering;
-using Electron2D.Core.Rendering.Renderers;
-using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.Rendering.Text;
+using Electron2D.Core.UI;
 using Electron2D.Core.UserInterface;
 using GLFW;
 using System.Drawing;
@@ -17,6 +14,7 @@ namespace Electron2D.Build
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight, "Test Game!") { }
 
         TextLabel label;
+        UiComponent bg;
         protected override void Load()
         {
             SetBackgroundColor(Color.LightBlue);
@@ -24,10 +22,21 @@ namespace Electron2D.Build
             // Load Custom Component Systems
             // -----------------------------
 
-            label = new TextLabel("This is a test of the new splitting system and I think it's working.", "Build/Resources/Fonts/NotoSans.ttf",
-                40, Color.Black, Color.White, new Vector2(500, 500), TextAlignment.Center, TextAlignment.Center,
-                TextAlignmentMode.Baseline, TextOverflowMode.Word);
+            bg = new UiComponent(-1, 100, 100);
+            bg.SetColor(Color.DarkGray);
+
+            label = new TextLabel("FPS: 165", "Build/Resources/Fonts/NotoSans.ttf",
+                30, Color.Black, Color.White, new Vector2(150, 30), TextAlignment.Left, TextAlignment.Center,
+                TextAlignmentMode.Geometry, TextOverflowMode.Disabled);
             label.GetComponent<TextRenderer>().ShowBoundsDebug = true;
+            UiConstraint constraint = new PixelConstraint(20, UiConstraintSide.Left);
+            UiConstraint constraint2 = new PixelConstraint(20, UiConstraintSide.Top);
+
+            label.Constraints.SetPosition(constraint);
+            label.Constraints.SetPosition(constraint2);
+            Debug.Log(label.Transform.Position);
+            //bg.Constraints.SetPosition(constraint);
+            //bg.Constraints.SetPosition(constraint2);
         }
 
         protected override void Update()
@@ -61,7 +70,7 @@ namespace Electron2D.Build
 
         protected unsafe override void Render()
         {
-            label.Transform.Position = new Vector2(MathF.Sin(Time.TotalElapsedSeconds) * 80, MathF.Cos(Time.TotalElapsedSeconds) * 80);
+            
         }
     }
 }

@@ -111,12 +111,8 @@ namespace Electron2D.Core.UI
 
         protected virtual void Load()
         {
-            if (isLoaded == false)
-            {
-                if (UsingMeshRenderer) meshRenderer.Load();
-                InvokeUiAction(UiEvent.Load);
-                isLoaded = true;
-            }
+            if (UsingMeshRenderer) meshRenderer.Load();
+            InvokeUiAction(UiEvent.Load);
         }
 
         public virtual void SetColor(Color _color)

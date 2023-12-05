@@ -7,7 +7,7 @@ using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.UserInterface;
 using System.Drawing;
-using Electron2D.Core.Rendering.Renderers;
+using Electron2D.Core.Rendering.Text;
 
 namespace Electron2D.Core
 {
