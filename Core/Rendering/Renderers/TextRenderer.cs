@@ -31,6 +31,7 @@ namespace Electron2D.Core.Rendering.Renderers
         public TextAlignment HorizontalAlignment;
         public TextAlignment VerticalAlignment;
         public TextAlignmentMode AlignmentMode;
+        public TextOverflowMode OverflowMode;
         public Color TextColor;
         public Color OutlineColor;
         private Transform transform;
@@ -68,7 +69,8 @@ namespace Electron2D.Core.Rendering.Renderers
             Vector2 _bounds, Color _textColor, Color _outlineColor,
             TextAlignment _horizontalAlignment = TextAlignment.Left,
             TextAlignment _verticalAlignment = TextAlignment.Top,
-            TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline)
+            TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline,
+            TextOverflowMode _overflowMode = TextOverflowMode.Word)
         {
             FontGlyphStore = _fontGlyphStore;
             TextShader = _shader;
@@ -90,6 +92,7 @@ namespace Electron2D.Core.Rendering.Renderers
             HorizontalAlignment = _horizontalAlignment;
             VerticalAlignment = _verticalAlignment;
             AlignmentMode = _alignmentMode;
+            OverflowMode = _overflowMode;
 
             // This must be the last thing initialized, as it will reformat the text
             Text = _text;
@@ -111,9 +114,57 @@ namespace Electron2D.Core.Rendering.Renderers
         private unsafe void UpdateTextFormatting(string _inputText)
         {
             if (_inputText == null || _inputText == "") return;
+            lineOffsets.Clear();
 
             // Split input text into substrings
-            string[] words = Regex.Split(_inputText, @"(\s)");
+            string[] words = null;
+            if(OverflowMode == TextOverflowMode.Word)
+            {
+                words = Regex.Split(_inputText, @"(\s)");
+            }
+            else if(OverflowMode == TextOverflowMode.Character)
+            {
+                words = _inputText.ToCharArray().Select(c => c.ToString()).ToArray();
+            }
+            else if(OverflowMode == TextOverflowMode.Disabled)
+            {
+                float stringSize = 0;
+                uint g = 0;
+                uint p = 0;
+
+                // Measuring the input string
+                for (int i = 0; i < _inputText.Length; i++)
+                {
+                    // Skipping newline characters, rich text is not supported
+                    if (_inputText[i] == '\n') continue;
+
+                    Character ch = FontGlyphStore.Characters[_inputText[i]];
+                    g = FT_Get_Char_Index(FontGlyphStore.Face, _inputText[i]);
+
+                    // Kerning
+                    if (FontGlyphStore.UseKerning)
+                    {
+                        if (FT_Get_Kerning(FontGlyphStore.Face, p, g, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                        {
+                            long* temp = (long*)delta.x;
+                            long res = *temp;
+                            stringSize += res;
+                        }
+                        else
+                        {
+                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontName}");
+                        }
+                    }
+
+                    stringSize += ch.Advance * transform.Scale.X;
+
+                    p = g;
+                }
+
+                formattedText = _inputText;
+                lineOffsets.Add(Bounds.Width - (int)stringSize);
+                return;
+            }
 
             // Loop through all words and check if they overlap with boundary
             StringBuilder builder = new StringBuilder();
@@ -153,6 +204,8 @@ namespace Electron2D.Core.Rendering.Renderers
                     // DOES NOT WORK CURRENLY, NEWLINES ARE NOT SEPARATE WORDS
                     if (words[w] == "\n")
                     {
+                        continue;
+
                         _x = Bounds.X;
                         _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                         newlineCount++;
@@ -204,6 +257,8 @@ namespace Electron2D.Core.Rendering.Renderers
                     minHeight = 0;
                     builder.Append('\n');
                 }
+
+                // If this word is the last word, add an offset as it otherwise would not be added
                 if(w == words.Length - 1)
                 {
                     // If this is the last word

@@ -24,8 +24,10 @@ namespace Electron2D.Build
             // Load Custom Component Systems
             // -----------------------------
 
-            label = new TextLabel("This is a test of the text label!", "Build/Resources/Fonts/NotoSans.ttf",
-                40, Color.Black, Color.White, new Vector2(500, 500), TextAlignment.Center, TextAlignment.Center);
+            label = new TextLabel("This is a test of the new splitting system and I think it's working.", "Build/Resources/Fonts/NotoSans.ttf",
+                40, Color.Black, Color.White, new Vector2(500, 500), TextAlignment.Center, TextAlignment.Center,
+                TextAlignmentMode.Baseline, TextOverflowMode.Word);
+            label.GetComponent<TextRenderer>().ShowBoundsDebug = true;
         }
 
         protected override void Update()
@@ -59,7 +61,7 @@ namespace Electron2D.Build
 
         protected unsafe override void Render()
         {
-
+            label.Transform.Position = new Vector2(MathF.Sin(Time.TotalElapsedSeconds) * 80, MathF.Cos(Time.TotalElapsedSeconds) * 80);
         }
     }
 }

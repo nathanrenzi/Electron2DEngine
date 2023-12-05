@@ -15,7 +15,8 @@ namespace Electron2D.Core.UserInterface
 
         public TextLabel(string _text, string _fontFile, int _fontSize, Color _textColor, Color _outlineColor,
             Vector2 _bounds, TextAlignment _horizontalAlignment = TextAlignment.Left, TextAlignment _verticalAlignment = TextAlignment.Top,
-            TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline, int _outlineSize = 0, int _renderLayer = 0, Shader _customShader = null,
+            TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline, TextOverflowMode _overflowMode = TextOverflowMode.Disabled,
+            int _outlineSize = 0, int _renderLayer = 0, Shader _customShader = null,
             bool _useScreenPosition = true) : base(_renderLayer, _useScreenPosition: _useScreenPosition, _useMeshRenderer: false)
         {
             SizeX = _bounds.X;
@@ -32,7 +33,7 @@ namespace Electron2D.Core.UserInterface
                 shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultText.glsl"), true);
             }
             textRenderer = new TextRenderer(Transform, fgh, shader, _text, _bounds, _textColor, _outlineColor,
-                _horizontalAlignment, _verticalAlignment, _alignmentMode);
+                _horizontalAlignment, _verticalAlignment, _alignmentMode, _overflowMode);
             AddComponent(textRenderer);
         }
 
