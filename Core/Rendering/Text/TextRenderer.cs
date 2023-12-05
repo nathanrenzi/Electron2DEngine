@@ -1,5 +1,6 @@
 ﻿using Electron2D.Core.ECS;
 using Electron2D.Core.Rendering.Shaders;
+using Electron2D.Core.UserInterface;
 using FreeTypeSharp.Native;
 using System.Drawing;
 using System.Numerics;
@@ -11,6 +12,9 @@ using static FreeTypeSharp.Native.FT;
 namespace Electron2D.Core.Rendering.Text
 {
     public class TextRendererSystem : BaseSystem<TextRenderer> { }
+    /// <summary>
+    /// Formats and renders text. Use <see cref="TextLabel"/>, which implements this.
+    /// </summary>
     public class TextRenderer : Component
     {
         public FontGlyphStore FontGlyphStore;
@@ -274,8 +278,6 @@ namespace Electron2D.Core.Rendering.Text
             lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ? minHeight : 0;
             totalYHeight = Math.Abs(_y) + firstLineMaxHeight + lastLineMinHeight;
             formattedText = builder.ToString();
-
-            Debug.Log(totalYHeight + " " + firstLineMaxHeight + " " + lastLineMinHeight);
         }
 
         private int GetXOffset(int _iteration)
