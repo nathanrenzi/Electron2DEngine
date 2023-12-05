@@ -4,10 +4,8 @@ using System.Drawing;
 using static Electron2D.OpenGL.GL;
 using FreeTypeSharp.Native;
 using static FreeTypeSharp.Native.FT;
-using System.Runtime.InteropServices;
 using System.Numerics;
 using System.Text;
-using static System.Formats.Asn1.AsnWriter;
 using System.Text.RegularExpressions;
 
 namespace Electron2D.Core.Rendering.Renderers
@@ -46,7 +44,7 @@ namespace Electron2D.Core.Rendering.Renderers
         private uint VAO, VBO;
 
         public unsafe TextRenderer(FontGlyphStore _fontGlyphStore, Shader _shader, string _text, Vector2 _position,
-            Color _textColor, Color _outlineColor, Rectangle _bounds,
+            Vector2 _bounds, Color _textColor, Color _outlineColor,
             TextAlignment _horizontalAlignment = TextAlignment.Left,
             TextAlignment _verticalAlignment = TextAlignment.Top,
             TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline)
@@ -67,11 +65,13 @@ namespace Electron2D.Core.Rendering.Renderers
             Position = _position;
             TextColor = _textColor;
             OutlineColor = _outlineColor;
-            Bounds = _bounds;
-            Text = _text;
+            Bounds = new Rectangle(0, 0, (int)_bounds.X, (int)_bounds.Y);
             HorizontalAlignment = _horizontalAlignment;
             VerticalAlignment = _verticalAlignment;
             AlignmentMode = _alignmentMode;
+
+            // This must be the last thing initialized, as it will reformat the text
+            Text = _text;
 
             Shader shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"));
             s1 = new Sprite(Material.Create(shader, Color.Black));
@@ -82,14 +82,6 @@ namespace Electron2D.Core.Rendering.Renderers
             s3.Renderer.UseUnscaledProjectionMatrix = true;
             s4 = new Sprite(Material.Create(shader, Color.Black));
             s4.Renderer.UseUnscaledProjectionMatrix = true;
-            s1.Transform.Position = new Vector2(Position.X, Position.Y);
-            s1.Transform.Scale = new Vector2(4);
-            s2.Transform.Position = new Vector2(Position.X + Bounds.Size.Width, Position.Y);
-            s2.Transform.Scale = new Vector2(4);
-            s3.Transform.Position = new Vector2(Position.X + Bounds.Size.Width, Position.Y - Bounds.Size.Height);
-            s3.Transform.Scale = new Vector2(4);
-            s4.Transform.Position = new Vector2(Position.X, Position.Y - Bounds.Size.Height);
-            s4.Transform.Scale = new Vector2(4);
         }
 
         #region Text Formatting
@@ -107,8 +99,16 @@ namespace Electron2D.Core.Rendering.Renderers
             float maxHeight = 0;
             float minHeight = 0;
             int newlineCount = 0;
+            float wordLength = 0;
+
+            if(VerticalAlignment == TextAlignment.Top && AlignmentMode == TextAlignmentMode.Baseline)
+            {
+                builder.Append('\n');
+            }
+
             for (int w = 0; w < words.Length; w++)
             {
+                bool outsideBoundsFlag = false;
                 previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
                 for (int i = 0; i < words[w].Length; i++)
                 {
@@ -154,23 +154,40 @@ namespace Electron2D.Core.Rendering.Renderers
                     }
 
                     // If the character overlaps the bounds, move to new line
-                    if (!Bounds.Contains(new Rectangle((int)_x, (int)_y, (int)(ch.Size.X + ch.Bearing.X), (int)ch.Size.Y)))
+                    // Ignoring the Y height since that current does not matter and was causing issues - *(int)-_y*
+                    if (!outsideBoundsFlag && !Bounds.Contains(new Rectangle((int)_x, 0,
+                        (int)((ch.Size.X + ch.Bearing.X) * Scale), (int)(ch.Size.Y * Scale))))
                     {
-                        _x = Bounds.X;
-                        _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
-                        newlineCount++;
-                        lineOffsets.Add(Bounds.Width - (int)_x);
+                        Debug.Log(((_x + ch.Size.X + ch.Bearing.X) * Scale) +
+                            " ["+words[w][i]+" - "+words[w]+"] is outside of bounds with size: " + Bounds.Width);
 
-                        minHeight = 0;
-                        builder.Append('\n');
-                        break;
+                        outsideBoundsFlag = true;
                     }
 
                     // Advancing x position
                     _x += ch.Advance * Scale;
+                    wordLength += ch.Advance * Scale;
 
                     previousIndex = glyphIndex;
                 }
+
+                // Handle outside bounds flag
+                if(outsideBoundsFlag)
+                {
+                    newlineCount++;
+                    lineOffsets.Add(Bounds.Width - (int)(_x - wordLength));
+
+                    _x = wordLength;
+                    _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+                    minHeight = 0;
+                    builder.Append('\n');
+                }
+                else if(w == words.Length - 1)
+                {
+                    // If this is the last word
+                    lineOffsets.Add(Bounds.Width - (int)_x);
+                }
+                wordLength = 0;
 
                 builder.Append(words[w]);
             }
@@ -179,8 +196,6 @@ namespace Electron2D.Core.Rendering.Renderers
             firstLineMaxHeight = AlignmentMode == TextAlignmentMode.Geometry ? maxHeight : 0;
             lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ? minHeight : 0;
             formattedText = builder.ToString();
-
-            Debug.Log(totalYHeight + " " + firstLineMaxHeight + " " + lastLineMinHeight + " " + formattedText);
         }
 
         private int GetXOffset(int _iteration)
@@ -213,7 +228,7 @@ namespace Electron2D.Core.Rendering.Renderers
                 case TextAlignment.Center:
                     return (int)(Bounds.Height - totalYHeight - firstLineMaxHeight - lastLineMinHeight) / 2;
                 case TextAlignment.Bottom:
-                    return Bounds.Height - (int)(totalYHeight + lastLineMinHeight);
+                    return (int)(Bounds.Height - totalYHeight + lastLineMinHeight);
                 default: return 0;
             }
         }
@@ -224,6 +239,7 @@ namespace Electron2D.Core.Rendering.Renderers
         {
             TextShader.Use();
             TextShader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
+            TextShader.SetMatrix4x4("model", Matrix4x4.CreateScale(Game.WINDOW_SCALE, Game.WINDOW_SCALE, 1));
             TextShader.SetColor("mainColor", TextColor);
             TextShader.SetColor("outlineColor", OutlineColor);
             glActiveTexture(GL_TEXTURE0);
@@ -244,8 +260,9 @@ namespace Electron2D.Core.Rendering.Renderers
                 if (formattedText[i] == '\n')
                 {
                     newlineCount++;
-                    _x = GetXOffset(newlineCount);
-                    _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+                    _x = GetXOffset(newlineCount) + Position.X;
+                    // If the newline is the first character, it is meant to offset the first line, so use one as the multiplier
+                    _y -= FontGlyphStore.Arguments.FontSize * (i == 0 ? 1 : LineHeightMultiplier);
                     previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
                     continue;
                 }
@@ -297,14 +314,14 @@ namespace Electron2D.Core.Rendering.Renderers
             glBindTexture(GL_TEXTURE_2D, 0);
 
             // REMOVE
-            s1.Transform.Position = new Vector2(Position.X, Position.Y);
-            s1.Transform.Scale = new Vector2(4);
-            s2.Transform.Position = new Vector2(Position.X + Bounds.Size.Width, Position.Y);
-            s2.Transform.Scale = new Vector2(4);
-            s3.Transform.Position = new Vector2(Position.X + Bounds.Size.Width, Position.Y - Bounds.Size.Height);
-            s3.Transform.Scale = new Vector2(4);
-            s4.Transform.Position = new Vector2(Position.X, Position.Y - Bounds.Size.Height);
-            s4.Transform.Scale = new Vector2(4);
+            s1.Transform.Position = new Vector2(Position.X + Bounds.Size.Width/2, Position.Y);
+            s1.Transform.Scale = new Vector2(Bounds.Size.Width, 1);
+            s2.Transform.Position = new Vector2(Position.X + Bounds.Size.Width, Position.Y - Bounds.Size.Height / 2);
+            s2.Transform.Scale = new Vector2(1, Bounds.Size.Height);
+            s3.Transform.Position = new Vector2(Position.X + Bounds.Size.Width/2, Position.Y - Bounds.Size.Height);
+            s3.Transform.Scale = new Vector2(Bounds.Size.Width, 1);
+            s4.Transform.Position = new Vector2(Position.X, Position.Y - Bounds.Size.Height/2);
+            s4.Transform.Scale = new Vector2(1, Bounds.Size.Height);
         }
         #endregion
     }
