@@ -23,8 +23,8 @@ namespace Electron2D.Core
             TransformSystem.Unregister(this);
         }
 
-        public Vector2 up { get { return NormalizeVector(new Vector2(MathF.Cos(Rotation * MathF.PI / 180), MathF.Sin(Rotation * MathF.PI / 180))); } }
-        public Vector2 right { get { return NormalizeVector(new Vector2(MathF.Cos((Rotation - 90) * MathF.PI / 180), MathF.Sin((Rotation - 90) * MathF.PI / 180))); } }
+        public Vector2 Up { get { return NormalizeVector(new Vector2(MathF.Cos(Rotation * MathF.PI / 180), MathF.Sin(Rotation * MathF.PI / 180))); } }
+        public Vector2 Right { get { return NormalizeVector(new Vector2(MathF.Cos((Rotation - 90) * MathF.PI / 180), MathF.Sin((Rotation - 90) * MathF.PI / 180))); } }
 
         public Matrix4x4 GetPositionMatrix()
         {

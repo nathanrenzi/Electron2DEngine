@@ -7,6 +7,7 @@ using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.UserInterface;
 using System.Drawing;
+using Electron2D.Core.Rendering.Renderers;
 
 namespace Electron2D.Core
 {
@@ -56,11 +57,12 @@ namespace Electron2D.Core
             glEnable(GL_FRAMEBUFFER_SRGB); // Gamma-corrects lighting
             // -----------
 
-            // Starting Entity Systems
+            // Starting Core Component Systems
             TransformSystem.Start();
             MeshRendererSystem.Start();
             LightSystem.Start();
-            // -----------------
+            TextRendererSystem.Start();
+            // -------------------------------
             OnStartEvent?.Invoke();
 
             ShaderGlobalUniforms.Initialize();

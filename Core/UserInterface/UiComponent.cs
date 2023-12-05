@@ -10,12 +10,31 @@ namespace Electron2D.Core.UI
     public class UiComponent : Entity, IRenderable
     {
         public bool Visible = true;
-        public bool UseScreenPosition = true; // Add functionality to make this editable at runtime
-        public float SizeX;
-        public float SizeY;
+        public bool UseScreenPosition; // Add functionality to make this editable at runtime
+        public bool UsingMeshRenderer { get; }
+        public float SizeX
+        {
+            get{ return sizeX; }
+            set
+            {
+                sizeX = value;
+                InvokeUiAction(UiEvent.ChangeSize);
+            }
+        }
+        private float sizeX;
+        public float SizeY
+        {
+            get { return sizeY; }
+            set
+            {
+                sizeY = value;
+                InvokeUiAction(UiEvent.ChangeSize);
+            }
+        }
+        private float sizeY;
+
         public Vector2 Anchor;
         public Transform Transform;
-        public MeshRenderer Renderer { get; private set; }
         public int UiRenderLayer { get; private set; }
         public List<UiListener> Listeners { get; private set; } = new List<UiListener>();
 
@@ -23,7 +42,8 @@ namespace Electron2D.Core.UI
         public UiFrameTickData LastFrameData = new UiFrameTickData();
         public UiConstraints Constraints;
 
-        private bool isLoaded = false;
+        protected bool isLoaded = false;
+        protected MeshRenderer meshRenderer;
 
         public float RightXBound
         {
@@ -54,20 +74,24 @@ namespace Electron2D.Core.UI
             }
         }
 
-        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, bool _useScreenPosition = true)
+        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, bool _useScreenPosition = true, bool _useMeshRenderer = true)
         {
             Transform = new Transform();
             AddComponent(Transform);
-
+            SizeX = _sizeX;
+            SizeY = _sizeY;
             Constraints = new UiConstraints(this);
             UiRenderLayer = _uiRenderLayer;
             UseScreenPosition = _useScreenPosition;
+            UsingMeshRenderer = _useMeshRenderer;
 
-            Renderer = new MeshRenderer(Transform, Material.Create(GlobalShaders.DefaultTexture));
-            if(UseScreenPosition) Renderer.UseUnscaledProjectionMatrix = true;
+            if(UsingMeshRenderer)
+            {
+                meshRenderer = new MeshRenderer(Transform, Material.Create(GlobalShaders.DefaultTexture));
+                AddComponent(meshRenderer);
+                if (UseScreenPosition) meshRenderer.UseUnscaledProjectionMatrix = true;
+            }
 
-            SizeX = _sizeX;
-            SizeY = _sizeY;
             if (_initialize) Initialize();
             SetColor(Color.White); // Setting the default color
 
@@ -78,18 +102,26 @@ namespace Electron2D.Core.UI
         public void Initialize()
         {
             ApplyConstraints();
-
             if (isLoaded == false)
             {
-                Renderer.Load();
+                Load();
+                isLoaded = true;
+            }
+        }
+
+        protected virtual void Load()
+        {
+            if (isLoaded == false)
+            {
+                if (UsingMeshRenderer) meshRenderer.Load();
                 InvokeUiAction(UiEvent.Load);
                 isLoaded = true;
             }
         }
 
-        public void SetColor(Color _color)
+        public virtual void SetColor(Color _color)
         {
-            Renderer.Material.MainColor = _color;
+            if (UsingMeshRenderer) meshRenderer.Material.MainColor = _color;
         }
 
         protected virtual void ApplyConstraints()
@@ -143,7 +175,7 @@ namespace Electron2D.Core.UI
 
         public virtual void Render()
         {
-            if(Visible) Renderer.Render();
+            if(Visible && UsingMeshRenderer) meshRenderer.Render();
         }
 
         public int GetRenderLayer() => UiRenderLayer + (int)RenderLayer.Interface;
@@ -171,6 +203,7 @@ namespace Electron2D.Core.UI
         RightClickUp,
         Hover,
         HoverStart,
-        HoverEnd
+        HoverEnd,
+        ChangeSize,
     }
 }
