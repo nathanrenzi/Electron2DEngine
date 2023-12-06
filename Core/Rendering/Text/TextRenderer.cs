@@ -241,7 +241,7 @@ namespace Electron2D.Core.Rendering.Text
                     }
 
                     // If the character overlaps the bounds, move to new line
-                    // Ignoring the Y height since that current does not matter and was causing issues - *(int)-_y*
+                    // Ignoring the Y height since that currently does not matter and was causing issues
                     if (!outsideBoundsFlag && !Bounds.Contains(new Rectangle((int)_x, 0,
                         (int)((ch.Size.X + ch.Bearing.X) * transform.Scale.X), (int)(ch.Size.Y * transform.Scale.X))))
                     {

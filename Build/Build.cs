@@ -19,18 +19,19 @@ namespace Electron2D.Build
         private float lastFrameCountTime;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
-            $"Electron2D Test Build - {DateTime.Now.ToShortDateString()}") { }
+            $"Electron2D Build - {Program.BuildDate}") { }
 
         protected override void Load()
         {
             SetBackgroundColor(Color.LightBlue);
 
             // Load Custom Component Systems
+            // Ex. ComponentSystem.Start();
             // -----------------------------
 
             fpsBackground = new Panel(Color.Black, 10, 140, 30, true);
             fpsBackground.SetColor(Color.Black);
-            fpsLabel = new TextLabel("FPS: 165", "Build/Resources/Fonts/NotoSans.ttf",
+            fpsLabel = new TextLabel("FPS: 0", "Build/Resources/Fonts/OpenSans.ttf",
                 30, Color.White, Color.White, new Vector2(130, 30), TextAlignment.Left, TextAlignment.Center,
                 TextAlignmentMode.Geometry, TextOverflowMode.Disabled, _uiRenderLayer: 11);
             UiConstraint constraint = new PixelConstraint(20, UiConstraintSide.Left);
