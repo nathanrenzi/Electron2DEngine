@@ -7,7 +7,7 @@ using Electron2D.Core.ECS;
 
 namespace Electron2D.Core.UI
 {
-    public class UiComponent : Entity, IRenderable
+    public abstract class UiComponent : Entity, IRenderable
     {
         public bool Visible = true;
         public bool UseScreenPosition; // Add functionality to make this editable at runtime
@@ -49,28 +49,28 @@ namespace Electron2D.Core.UI
         {
             get
             {
-                return SizeX + (-Anchor.X * SizeX);
+                return SizeX / 2f + (-Anchor.X * SizeX / 2f);
             }
         }
         public float LeftXBound
         {
             get
             {
-                return -SizeX + (-Anchor.X * SizeX);
+                return -SizeX / 2f + (-Anchor.X * SizeX / 2f);
             }
         }
         public float BottomYBound
         {
             get
             {
-                return -SizeY + (-Anchor.Y * SizeY);
+                return -SizeY / 2f + (-Anchor.Y * SizeY / 2f);
             }
         }
         public float TopYBound
         {
             get
             {
-                return SizeY + (-Anchor.Y * SizeY);
+                return SizeY / 2f + (-Anchor.Y * SizeY / 2f);
             }
         }
 

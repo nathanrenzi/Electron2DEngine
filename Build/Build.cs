@@ -1,4 +1,5 @@
 ﻿using Electron2D.Core;
+using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.UI;
@@ -11,10 +12,15 @@ namespace Electron2D.Build
 {
     public class Build : Game
     {
-        public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight, "Test Game!") { }
+        private TextLabel fpsLabel;
+        private UiComponent fpsBackground;
+        private int displayFrames;
+        private int frames;
+        private float lastFrameCountTime;
 
-        TextLabel label;
-        UiComponent bg;
+        public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
+            $"Electron2D Test Build - {DateTime.Now.ToShortDateString()}") { }
+
         protected override void Load()
         {
             SetBackgroundColor(Color.LightBlue);
@@ -22,21 +28,17 @@ namespace Electron2D.Build
             // Load Custom Component Systems
             // -----------------------------
 
-            bg = new UiComponent(-1, 100, 100);
-            bg.SetColor(Color.DarkGray);
-
-            label = new TextLabel("FPS: 165", "Build/Resources/Fonts/NotoSans.ttf",
-                30, Color.Black, Color.White, new Vector2(150, 30), TextAlignment.Left, TextAlignment.Center,
-                TextAlignmentMode.Geometry, TextOverflowMode.Disabled);
-            label.GetComponent<TextRenderer>().ShowBoundsDebug = true;
+            fpsBackground = new Panel(Color.Black, 10, 140, 30, true);
+            fpsBackground.SetColor(Color.Black);
+            fpsLabel = new TextLabel("FPS: 165", "Build/Resources/Fonts/NotoSans.ttf",
+                30, Color.White, Color.White, new Vector2(130, 30), TextAlignment.Left, TextAlignment.Center,
+                TextAlignmentMode.Geometry, TextOverflowMode.Disabled, _uiRenderLayer: 11);
             UiConstraint constraint = new PixelConstraint(20, UiConstraintSide.Left);
             UiConstraint constraint2 = new PixelConstraint(20, UiConstraintSide.Top);
-
-            label.Constraints.SetPosition(constraint);
-            label.Constraints.SetPosition(constraint2);
-            Debug.Log(label.Transform.Position);
-            //bg.Constraints.SetPosition(constraint);
-            //bg.Constraints.SetPosition(constraint2);
+            fpsLabel.Constraints.SetPosition(constraint);
+            fpsLabel.Constraints.SetPosition(constraint2);
+            fpsBackground.Constraints.SetPosition(constraint);
+            fpsBackground.Constraints.SetPosition(constraint2);
         }
 
         protected override void Update()
@@ -70,7 +72,15 @@ namespace Electron2D.Build
 
         protected unsafe override void Render()
         {
-            
+            frames++;
+            if(Time.TotalElapsedSeconds - lastFrameCountTime >= 1)
+            {
+                lastFrameCountTime = Time.TotalElapsedSeconds;
+                displayFrames = frames;
+                frames = 0;
+            }
+
+            fpsLabel.Text = $"FPS: {displayFrames}";
         }
     }
 }

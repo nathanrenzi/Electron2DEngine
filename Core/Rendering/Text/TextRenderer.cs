@@ -100,7 +100,7 @@ namespace Electron2D.Core.Rendering.Text
             // This must be the last thing initialized, as it will reformat the text
             Text = _text;
 
-            Shader shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultTexture.glsl"));
+            Shader shader = GlobalShaders.DefaultTexture;
             s1 = new Sprite(Material.Create(shader, Color.Black));
             s1.Renderer.UseUnscaledProjectionMatrix = true;
             s2 = new Sprite(Material.Create(shader, Color.Black));
@@ -109,6 +109,10 @@ namespace Electron2D.Core.Rendering.Text
             s3.Renderer.UseUnscaledProjectionMatrix = true;
             s4 = new Sprite(Material.Create(shader, Color.Black));
             s4.Renderer.UseUnscaledProjectionMatrix = true;
+            s1.Transform.Scale = Vector2.Zero;
+            s2.Transform.Scale = Vector2.Zero;
+            s3.Transform.Scale = Vector2.Zero;
+            s4.Transform.Scale = Vector2.Zero;
 
             TextRendererSystem.Register(this);
         }

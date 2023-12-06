@@ -78,9 +78,6 @@ namespace Electron2D.Core.UserInterface
 
             meshRenderer.SetVertexArrays(vertices, indices);
             SetColor(_startColor);
-
-            Constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Left));
-            Constraints.SetPosition(new PixelConstraint(20, UiConstraintSide.Bottom));
         }
 
         /// <summary>
