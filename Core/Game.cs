@@ -57,11 +57,12 @@ namespace Electron2D.Core
             glEnable(GL_FRAMEBUFFER_SRGB); // Gamma-corrects lighting
             // -----------
 
-            // Starting Core Component Systems
+            // Starting Component Systems
             TransformSystem.Start();
             MeshRendererSystem.Start();
             LightSystem.Start();
             TextRendererSystem.Start();
+            LayoutSystem.Start();
             // -------------------------------
             OnStartEvent?.Invoke();
 
@@ -91,13 +92,17 @@ namespace Electron2D.Core
                 double goST = Glfw.Time;
                 Update();
                 OnUpdateEvent?.Invoke();
-                TransformSystem.Update();
-                MeshRendererSystem.Update();
-                LightSystem.Update();
                 OnLateUpdateEvent?.Invoke();
                 PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
                 // -------------------------------
 
+                // Updating Component Systems
+                TransformSystem.Update();
+                MeshRendererSystem.Update();
+                LightSystem.Update();
+                TextRendererSystem.Update();
+                LayoutSystem.Update();
+                // --------------------------
 
                 // Physics
                 double phyST = Glfw.Time;

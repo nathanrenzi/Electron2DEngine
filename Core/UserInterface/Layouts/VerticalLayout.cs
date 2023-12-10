@@ -16,7 +16,7 @@ namespace Electron2D.Core.UserInterface
 
         public VerticalLayout(Vector4 _padding, float _spacing, SizeMode _expandSizeMode = SizeMode.WidthHeight,
             SizeMode _controlSizeMode = SizeMode.None, LayoutAlignment _horizontalAlignment = LayoutAlignment.Left,
-            LayoutAlignment _verticalAlignment = LayoutAlignment.Top)
+            LayoutAlignment _verticalAlignment = LayoutAlignment.Top) : base()
         {
             Padding = _padding;
             Spacing = _spacing;
@@ -65,6 +65,8 @@ namespace Electron2D.Core.UserInterface
                         component.SizeY = expandYSize;
                     }
                 }
+
+                component.UpdateMesh();
             }
         }
 

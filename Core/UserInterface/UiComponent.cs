@@ -116,6 +116,8 @@ namespace Electron2D.Core.UI
             InvokeUiAction(UiEvent.Load);
         }
 
+        public virtual void UpdateMesh() { }
+
         public virtual void SetColor(Color _color)
         {
             if (UsingMeshRenderer) meshRenderer.Material.MainColor = _color;

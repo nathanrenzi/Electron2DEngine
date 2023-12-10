@@ -10,6 +10,7 @@
         {
             components.Add(_component);
             _component.Entity = this;
+            _component.OnComponentAdded();
         }
 
         public void RemoveComponent(Component _component)

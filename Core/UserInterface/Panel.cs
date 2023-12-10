@@ -9,8 +9,17 @@ namespace Electron2D.Core.UserInterface
     /// </summary>
     public class Panel : UiComponent
     {
-        public static readonly float[] vertices =
+        private static readonly float[] defaultVertices =
         {
+            // Positions    UV
+             1f,  1f,       1.0f, 1.0f,     // top right - red
+             1f, -1f,       1.0f, 0.0f,     // bottom right - green
+            -1f, -1f,       0.0f, 0.0f,     // bottom left - blue
+            -1f,  1f,       0.0f, 1.0f,     // top left - white
+        };
+
+        public readonly float[] vertices =
+{
             // Positions    UV
              1f,  1f,       1.0f, 1.0f,     // top right - red
              1f, -1f,       1.0f, 0.0f,     // bottom right - green
@@ -27,15 +36,13 @@ namespace Electron2D.Core.UserInterface
         public Panel(Color _mainColor, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
             bool _useScreenPosition = true) : base(_uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
         {
-            ResizeVertices();
-            meshRenderer.SetVertexArrays(vertices, indices);
+            UpdateMesh();
             SetColor(_mainColor);
         }
         public Panel(Material _material, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
             bool _useScreenPosition = true) : base(_uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
         {
-            ResizeVertices();
-            meshRenderer.SetVertexArrays(vertices, indices);
+            UpdateMesh();
             meshRenderer.SetMaterial(_material);
         }
 
@@ -51,9 +58,15 @@ namespace Electron2D.Core.UserInterface
 
             for (int i = 0; i < loops; i++)
             {
-                vertices[0 + (i * vertexStride)] *= sx;
-                vertices[1 + (i * vertexStride)] *= sy;
+                vertices[0 + (i * vertexStride)] = defaultVertices[0 + (i * vertexStride)] * sx;
+                vertices[1 + (i * vertexStride)] = defaultVertices[1 + (i * vertexStride)] * sy;
             }
+        }
+
+        public override void UpdateMesh()
+        {
+            ResizeVertices();
+            meshRenderer.SetVertexArrays(vertices, indices);
         }
     }
 }

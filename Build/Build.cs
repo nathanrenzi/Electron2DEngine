@@ -41,12 +41,12 @@ namespace Electron2D.Build
             fpsBackground.Constraints.SetPosition(constraint2);
 
 
-            Panel layoutPanel = new Panel(Color.DarkGray, -1, 5, 10);
-            //VerticalLayout layout = new VerticalLayout(new Vector4(0), 20);
-            //layoutPanel.AddComponent(layout);
-            //layout.AddToLayout(new Panel(Color.Black));
-            //layout.AddToLayout(new Panel(Color.Black));
-            //layout.AddToLayout(new Panel(Color.Black));
+            Panel layoutPanel = new Panel(Color.DarkGray, -1, 300, 500);
+            VerticalLayout layout = new VerticalLayout(new Vector4(0), 20);
+            layoutPanel.AddComponent(layout);
+            layout.AddToLayout(new Panel(Color.Black));
+            layout.AddToLayout(new Panel(Color.Red));
+            layout.AddToLayout(new Panel(Color.Orange));
         }
 
         protected override void Update()

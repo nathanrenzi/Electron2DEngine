@@ -3,6 +3,7 @@ using Electron2D.Core.UI;
 
 namespace Electron2D.Core.UserInterface
 {
+    public class LayoutSystem : BaseSystem<Layout> { }
     public abstract class Layout : Component, UiListener
     {
         protected List<UiComponent> components = new List<UiComponent>();
@@ -10,11 +11,16 @@ namespace Electron2D.Core.UserInterface
 
         protected UiComponent parent;
 
-        public override void Start()
+        public Layout()
+        {
+            LayoutSystem.Register(this);
+        }
+
+        public override void OnComponentAdded()
         {
             if(Entity is not UiComponent)
             {
-                Debug.LogError("UI LAYOUT: Layout object added to non UI Component. This is not allowed. Removing...");
+                Debug.LogError("UI LAYOUT: Layout object added to non UI Component. This is not allowed.");
                 return;
             }
 
