@@ -69,7 +69,7 @@ namespace Electron2D.Core
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
 
-            UiMaster.Display.Initialize();
+            GlobalUI.MainCanvas.Initialize();
 
             GC.Collect();
 

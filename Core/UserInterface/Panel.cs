@@ -24,14 +24,14 @@ namespace Electron2D.Core.UserInterface
             3, 2, 1  // Triangle 2
         };
 
-        public Panel(Color _mainColor, int _uiRenderLayer, int _sizeX = 100, int _sizeY = 100,
+        public Panel(Color _mainColor, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
             bool _useScreenPosition = true) : base(_uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
         {
             ResizeVertices();
             meshRenderer.SetVertexArrays(vertices, indices);
             SetColor(_mainColor);
         }
-        public Panel(Material _material, int _uiRenderLayer, int _sizeX = 100, int _sizeY = 100,
+        public Panel(Material _material, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
             bool _useScreenPosition = true) : base(_uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
         {
             ResizeVertices();

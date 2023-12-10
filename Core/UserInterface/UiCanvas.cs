@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Electron2D.Core.UI
 {
-    public class UiDisplay
+    public class UiCanvas
     {
         private List<UiComponent> activeComponents = new List<UiComponent>();
 
@@ -20,10 +20,11 @@ namespace Electron2D.Core.UI
             Game.OnLateUpdateEvent += CheckForInput;
         }
 
-        public void RegisterUiComponent(UiComponent _component/*, UiConstraint _constraint*/)
+        public void RegisterUiComponent(UiComponent _component)
         {
             if (activeComponents.Contains(_component)) return;
 
+            _component.SetParentCanvas(this);
             activeComponents.Add(_component);
         }
 

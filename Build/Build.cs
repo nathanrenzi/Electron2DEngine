@@ -30,7 +30,6 @@ namespace Electron2D.Build
             // -----------------------------
 
             fpsBackground = new Panel(Color.Black, 10, 140, 30, true);
-            fpsBackground.SetColor(Color.Black);
             fpsLabel = new TextLabel("FPS: 0", "Build/Resources/Fonts/OpenSans.ttf",
                 30, Color.White, Color.White, new Vector2(130, 30), TextAlignment.Left, TextAlignment.Center,
                 TextAlignmentMode.Geometry, TextOverflowMode.Disabled, _uiRenderLayer: 11);
@@ -40,6 +39,14 @@ namespace Electron2D.Build
             fpsLabel.Constraints.SetPosition(constraint2);
             fpsBackground.Constraints.SetPosition(constraint);
             fpsBackground.Constraints.SetPosition(constraint2);
+
+
+            Panel layoutPanel = new Panel(Color.DarkGray, -1, 5, 10);
+            //VerticalLayout layout = new VerticalLayout(new Vector4(0), 20);
+            //layoutPanel.AddComponent(layout);
+            //layout.AddToLayout(new Panel(Color.Black));
+            //layout.AddToLayout(new Panel(Color.Black));
+            //layout.AddToLayout(new Panel(Color.Black));
         }
 
         protected override void Update()

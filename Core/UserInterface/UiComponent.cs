@@ -18,7 +18,7 @@ namespace Electron2D.Core.UI
             set
             {
                 sizeX = value;
-                InvokeUiAction(UiEvent.ChangeSize);
+                InvokeUiAction(UiEvent.Resize);
             }
         }
         private float sizeX;
@@ -28,7 +28,7 @@ namespace Electron2D.Core.UI
             set
             {
                 sizeY = value;
-                InvokeUiAction(UiEvent.ChangeSize);
+                InvokeUiAction(UiEvent.Resize);
             }
         }
         private float sizeY;
@@ -44,6 +44,7 @@ namespace Electron2D.Core.UI
 
         protected bool isLoaded = false;
         protected MeshRenderer meshRenderer;
+        private UiCanvas ParentCanvas;
 
         public float RightXBound
         {
@@ -96,7 +97,7 @@ namespace Electron2D.Core.UI
             SetColor(Color.White); // Setting the default color
 
             RenderLayerManager.OrderRenderable(this);
-            UiMaster.Display.RegisterUiComponent(this);
+            GlobalUI.MainCanvas.RegisterUiComponent(this);
         }
 
         public void Initialize()
@@ -128,7 +129,7 @@ namespace Electron2D.Core.UI
         ~UiComponent()
         {
             RenderLayerManager.RemoveRenderable(this);
-            UiMaster.Display.UnregisterUiComponent(this);
+            GlobalUI.MainCanvas.UnregisterUiComponent(this);
         }
 
         public void SetRenderLayer(int _uiRenderLayer)
@@ -167,6 +168,16 @@ namespace Electron2D.Core.UI
             OnUiEvent(_event);
         }
 
+        public void SetParentCanvas(UiCanvas _canvas)
+        {
+            ParentCanvas = _canvas;
+        }
+
+        public UiCanvas GetParentCanvas()
+        {
+            return ParentCanvas;
+        }
+
         protected virtual void OnUiEvent(UiEvent _event) { }
 
         public virtual void Render()
@@ -200,6 +211,6 @@ namespace Electron2D.Core.UI
         Hover,
         HoverStart,
         HoverEnd,
-        ChangeSize,
+        Resize,
     }
 }
