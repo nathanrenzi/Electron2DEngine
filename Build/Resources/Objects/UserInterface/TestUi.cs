@@ -8,7 +8,7 @@ namespace Electron2D.Build.Resources.Objects
 {
     public class TestUi : UiComponent
     {
-        public static readonly float[] vertices =
+        public readonly float[] vertices =
         {
             // Positions    UV            Color                     TexIndex
              1f,  1f,       1.0f, 1.0f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f,      // top right - red

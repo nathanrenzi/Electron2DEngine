@@ -6,7 +6,7 @@ namespace Electron2D.Core.UserInterface
     public class LayoutSystem : BaseSystem<Layout> { }
     public abstract class Layout : Component, UiListener
     {
-        protected List<UiComponent> components = new List<UiComponent>();
+        public List<UiComponent> components = new List<UiComponent>();
         private bool passedTypeCheck = false;
 
         protected UiComponent parent;
@@ -16,7 +16,7 @@ namespace Electron2D.Core.UserInterface
             LayoutSystem.Register(this);
         }
 
-        public override void OnComponentAdded()
+        public override void OnAdded()
         {
             if(Entity is not UiComponent)
             {
@@ -37,7 +37,7 @@ namespace Electron2D.Core.UserInterface
             }
         }
 
-        public void AddToLayout(UiComponent _component)
+        public void AddToLayout(UiComponent _component, bool _recalculateLayout = true)
         {
             if(!passedTypeCheck)
             {
@@ -52,7 +52,7 @@ namespace Electron2D.Core.UserInterface
             }
 
             components.Add(_component);
-            RecalculateLayout();
+            if(_recalculateLayout) RecalculateLayout();
         }
 
         public bool RemoveFromLayout(UiComponent _component)
@@ -66,6 +66,7 @@ namespace Electron2D.Core.UserInterface
             if (components.Contains(_component))
             {
                 components.Remove(_component);
+                RecalculateLayout();
                 return true;
             }
             else

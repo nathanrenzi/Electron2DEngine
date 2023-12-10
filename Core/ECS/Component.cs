@@ -6,7 +6,7 @@
         public bool Enabled = true;
         private bool _disposed;
 
-        public virtual void OnComponentAdded() { }
+        public virtual void OnAdded() { }
         public virtual void Start() { }
         public virtual void Update() { }
 

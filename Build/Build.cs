@@ -29,23 +29,26 @@ namespace Electron2D.Build
             // Ex. ComponentSystem.Start();
             // -----------------------------
 
-            fpsBackground = new Panel(Color.Black, 10, 140, 30, true);
-            fpsLabel = new TextLabel("FPS: 0", "Build/Resources/Fonts/OpenSans.ttf",
-                30, Color.White, Color.White, new Vector2(130, 30), TextAlignment.Left, TextAlignment.Center,
-                TextAlignmentMode.Geometry, TextOverflowMode.Disabled, _uiRenderLayer: 11);
-            UiConstraint constraint = new PixelConstraint(20, UiConstraintSide.Left);
-            UiConstraint constraint2 = new PixelConstraint(20, UiConstraintSide.Top);
-            fpsLabel.Constraints.SetPosition(constraint);
-            fpsLabel.Constraints.SetPosition(constraint2);
-            fpsBackground.Constraints.SetPosition(constraint);
-            fpsBackground.Constraints.SetPosition(constraint2);
+            //fpsBackground = new Panel(Color.DarkGray, 10, 140, 30, true);
+            //fpsLabel = new TextLabel("FPS: 0", "Build/Resources/Fonts/OpenSans.ttf",
+            //    30, Color.White, Color.White, new Vector2(130, 30), TextAlignment.Left, TextAlignment.Center,
+            //    TextAlignmentMode.Geometry, TextOverflowMode.Disabled, _uiRenderLayer: 11);
+            //UiConstraint constraint = new PixelConstraint(20, UiConstraintSide.Left);
+            //UiConstraint constraint2 = new PixelConstraint(20, UiConstraintSide.Top);
+            //fpsLabel.Constraints.SetPosition(constraint);
+            //fpsLabel.Constraints.SetPosition(constraint2);
+            //fpsBackground.Constraints.SetPosition(constraint);
+            //fpsBackground.Constraints.SetPosition(constraint2);
 
 
-            Panel layoutPanel = new Panel(Color.DarkGray, -1, 300, 500);
-            VerticalLayout layout = new VerticalLayout(new Vector4(0), 20);
-            layoutPanel.AddComponent(layout);
-            layout.AddToLayout(new Panel(Color.Black));
-            layout.AddToLayout(new Panel(Color.Red));
+            Panel mainPanel = new Panel(Color.DarkGray, -1, 300, 500);
+            VerticalLayout layout = new VerticalLayout(new Vector4(20), 20);
+            mainPanel.AddComponent(layout);
+            layout.AddToLayout(new TextLabel("This is a test of the vertical layout group with text.", "Build/Resources/Fonts/OpenSans.ttf",
+                30, Color.White, Color.White, new Vector2(130, 30), TextAlignment.Center, TextAlignment.Center,
+                TextAlignmentMode.Geometry, TextOverflowMode.Word, _uiRenderLayer: 11), false);
+            //layout.AddToLayout(new Panel(Color.Black), false);
+            layout.AddToLayout(new Panel(Color.Red), false);
             layout.AddToLayout(new Panel(Color.Orange));
         }
 
@@ -88,7 +91,7 @@ namespace Electron2D.Build
                 frames = 0;
             }
 
-            fpsLabel.Text = $"FPS: {displayFrames}";
+            //fpsLabel.Text = $"FPS: {displayFrames}";
         }
     }
 }

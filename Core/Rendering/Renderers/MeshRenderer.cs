@@ -66,7 +66,7 @@ namespace Electron2D.Core.Rendering
         /// <param name="_vertices"></param>
         /// <param name="_indices"></param>
         /// <param name="_loadOnSetArrays">Should the renderer be loaded when the arrays have been set (Should usually be left as true).</param>
-        public void SetVertexArrays(float[] _vertices, uint[] _indices, bool _loadOnSetArrays = true)
+        public void SetVertexArrays(float[] _vertices, uint[] _indices, bool _loadOnSetArrays = true, bool _setDirty = false)
         {
             vertices = _vertices;
             indices = _indices;
@@ -74,6 +74,7 @@ namespace Electron2D.Core.Rendering
 
             HasVertexData = true;
             if (_loadOnSetArrays) Load();
+            if (_setDirty) IsDirty = true;
         }
 
         /// <summary>

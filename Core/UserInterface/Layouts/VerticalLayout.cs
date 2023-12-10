@@ -30,6 +30,7 @@ namespace Electron2D.Core.UserInterface
         {
             SetComponentSizes();
             SetComponentPositions();
+            UpdateComponentMeshes();
         }
 
         private void SetComponentSizes()
@@ -65,8 +66,6 @@ namespace Electron2D.Core.UserInterface
                         component.SizeY = expandYSize;
                     }
                 }
-
-                component.UpdateMesh();
             }
         }
 
@@ -102,7 +101,7 @@ namespace Electron2D.Core.UserInterface
             switch (HorizontalAlignment)
             {
                 case LayoutAlignment.Left:
-                    xPosition = parent.LeftXBound;
+                    xPosition = parent.LeftXBound + Padding.X;
                     anchor.X = -1;
                     break;
                 case LayoutAlignment.Center:
@@ -110,13 +109,14 @@ namespace Electron2D.Core.UserInterface
                     anchor.X = 0;
                     break;
                 case LayoutAlignment.Right:
-                    xPosition = parent.RightXBound;
+                    xPosition = parent.RightXBound + Padding.Y;
                     anchor.X = 1;
                     break;
             }
 
             foreach (var component in components)
             {
+                Debug.Log(component.SizeX);
                 component.Anchor = anchor;
                 component.Transform.Position = new Vector2(xPosition, yPosition) + parent.Transform.Position;
 
@@ -128,6 +128,14 @@ namespace Electron2D.Core.UserInterface
                 {
                     yPosition += component.SizeY + Spacing;
                 }
+            }
+        }
+
+        private void UpdateComponentMeshes()
+        {
+            foreach (var component in components)
+            {
+                component.UpdateMesh();
             }
         }
     }

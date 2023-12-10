@@ -94,7 +94,7 @@ namespace Electron2D.Core.UI
             }
 
             if (_initialize) Initialize();
-            SetColor(Color.White); // Setting the default color
+            SetColor(Color.White);
 
             RenderLayerManager.OrderRenderable(this);
             GlobalUI.MainCanvas.RegisterUiComponent(this);
