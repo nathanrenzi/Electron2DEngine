@@ -62,7 +62,6 @@ namespace Electron2D.Core
             MeshRendererSystem.Start();
             LightSystem.Start();
             TextRendererSystem.Start();
-            LayoutSystem.Start();
             // -------------------------------
             OnStartEvent?.Invoke();
 
@@ -101,7 +100,6 @@ namespace Electron2D.Core
                 MeshRendererSystem.Update();
                 LightSystem.Update();
                 TextRendererSystem.Update();
-                LayoutSystem.Update();
                 // --------------------------
 
                 // Physics

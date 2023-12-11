@@ -17,8 +17,8 @@ namespace Electron2D.Core.UI
             get{ return sizeX; }
             set
             {
-                sizeX = value;
                 InvokeUiAction(UiEvent.Resize);
+                sizeX = value;
             }
         }
         private float sizeX;
@@ -27,8 +27,8 @@ namespace Electron2D.Core.UI
             get { return sizeY; }
             set
             {
-                sizeY = value;
                 InvokeUiAction(UiEvent.Resize);
+                sizeY = value;
             }
         }
         private float sizeY;
@@ -37,7 +37,7 @@ namespace Electron2D.Core.UI
         public Transform Transform;
         public int UiRenderLayer { get; private set; }
         public List<UiListener> Listeners { get; private set; } = new List<UiListener>();
-
+        public LayoutGroup Layout { get; private set; }
         public UiFrameTickData ThisFrameData = new UiFrameTickData();
         public UiFrameTickData LastFrameData = new UiFrameTickData();
         public UiConstraints Constraints;
@@ -100,6 +100,12 @@ namespace Electron2D.Core.UI
             GlobalUI.MainCanvas.RegisterUiComponent(this);
         }
 
+        ~UiComponent()
+        {
+            RenderLayerManager.RemoveRenderable(this);
+            GlobalUI.MainCanvas.UnregisterUiComponent(this);
+        }
+
         public void Initialize()
         {
             ApplyConstraints();
@@ -123,15 +129,15 @@ namespace Electron2D.Core.UI
             if (UsingMeshRenderer) meshRenderer.Material.MainColor = _color;
         }
 
+        public void SetLayoutGroup(LayoutGroup _layoutGroup)
+        {
+            Layout = _layoutGroup;
+            Layout.SetUiParent(this);
+        }
+
         protected virtual void ApplyConstraints()
         {
             Constraints.ApplyConstraints();
-        }
-
-        ~UiComponent()
-        {
-            RenderLayerManager.RemoveRenderable(this);
-            GlobalUI.MainCanvas.UnregisterUiComponent(this);
         }
 
         public void SetRenderLayer(int _uiRenderLayer)
@@ -151,7 +157,11 @@ namespace Electron2D.Core.UI
 
         public void AddUiListener(UiListener _listener)
         {
-            if (!Listeners.Contains(_listener)) return;
+            if (Listeners.Contains(_listener))
+            {
+                Debug.LogError("UI LISTENER: Trying to add a listener that is already registered.");
+                return;
+            }
             Listeners.Add(_listener);
         }
 
@@ -166,7 +176,6 @@ namespace Electron2D.Core.UI
             {
                 Listeners[i].OnUiAction(this, _event);
             }
-
             OnUiEvent(_event);
         }
 

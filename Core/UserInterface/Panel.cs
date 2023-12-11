@@ -9,8 +9,8 @@ namespace Electron2D.Core.UserInterface
     /// </summary>
     public class Panel : UiComponent
     {
-        public float[] vertices { get; private set; } = new float[16];
-        public static readonly uint[] indices =
+        public float[] Vertices { get; private set; } = new float[16];
+        public static readonly uint[] Indices =
         {
             3, 1, 0, // Triangle 1
             3, 2, 1  // Triangle 2
@@ -22,15 +22,15 @@ namespace Electron2D.Core.UserInterface
             bool _useScreenPosition = true) : base(_uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
         {
             GenerateVertices();
-            meshRenderer.SetVertexArrays(vertices, indices);
             SetColor(_mainColor);
+            meshRenderer.SetVertexArrays(Vertices, Indices);
         }
         public Panel(Material _material, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
             bool _useScreenPosition = true) : base(_uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
         {
             GenerateVertices();
-            meshRenderer.SetVertexArrays(vertices, indices);
             meshRenderer.SetMaterial(_material);
+            meshRenderer.SetVertexArrays(Vertices, Indices);
         }
 
         private void GenerateVertices()
@@ -63,10 +63,9 @@ namespace Electron2D.Core.UserInterface
 
             for (int i = 0; i < tempVertexList.Count; i++)
             {
-                vertices[i] = tempVertexList[i];
+                Vertices[i] = tempVertexList[i];
             }
         }
-
 
         public override void UpdateMesh()
         {
