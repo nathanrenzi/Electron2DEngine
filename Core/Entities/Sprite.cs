@@ -8,10 +8,11 @@ namespace Electron2D.Core
         public Transform Transform;
         public SpriteRenderer Renderer;
 
-        public Sprite(Material _material, int _renderLayer = 1)
+        public Sprite(Material _material, int _sizeX = 100, int _sizeY = 100, int _renderLayer = 1)
         {
             Transform = new Transform();
             AddComponent(Transform);
+            Transform.Scale = new System.Numerics.Vector2(_sizeX, _sizeY);
 
             Renderer = new SpriteRenderer(Transform, _material, _renderLayer);
             AddComponent(Renderer);

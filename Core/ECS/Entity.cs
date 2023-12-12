@@ -1,10 +1,9 @@
 ﻿namespace Electron2D.Core.ECS
 {
-    public class Entity
+    public class Entity : IDisposable
     {
-        public int ID { get; set; }
-
         private List<Component> components = new List<Component>();
+        private bool _disposed;
 
         public void AddComponent(Component _component)
         {
@@ -30,5 +29,25 @@
             }
             return null;
         }
+
+        ~Entity()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+
+            OnDispose();
+
+            for (int i = 0; i < components.Count; i++)
+            {
+                components[i].Dispose();
+            }
+            components.Clear();
+        }
+        protected virtual void OnDispose() { }
     }
 }

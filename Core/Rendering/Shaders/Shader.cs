@@ -130,7 +130,7 @@ namespace Electron2D.Core.Rendering.Shaders
             glDeleteShader(fs);
 
             // Pre-grabbing uniforms - Keep this here in case it is worth it for performance
-            // Up the buffer size (one of the parameters) if used because uniforms are being cut short
+            // Up the buffer size (its one of the GL parameters) if used because uniforms are being cut short
 
             //int[] count = glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, 1);
             //for (int i = 0; i < count[0]; i++)

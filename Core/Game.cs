@@ -60,7 +60,6 @@ namespace Electron2D.Core
             // Starting Component Systems
             TransformSystem.Start();
             MeshRendererSystem.Start();
-            LightSystem.Start();
             TextRendererSystem.Start();
             // -------------------------------
             OnStartEvent?.Invoke();
@@ -87,18 +86,16 @@ namespace Electron2D.Core
                 Input.ProcessInput();
                 // -------------------------------
 
-                // Updating
+                // Updating -- This could all be parallelized
                 double goST = Glfw.Time;
                 Update();
                 OnUpdateEvent?.Invoke();
                 OnLateUpdateEvent?.Invoke();
                 PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
-                // -------------------------------
 
                 // Updating Component Systems
                 TransformSystem.Update();
                 MeshRendererSystem.Update();
-                LightSystem.Update();
                 TextRendererSystem.Update();
                 // --------------------------
 

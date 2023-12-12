@@ -82,7 +82,7 @@ namespace Electron2D.Core.Rendering
             }
             else
             {
-                Console.WriteLine($"Global uniform does not exist: {_uniformKey}");
+                Debug.LogError($"Global uniform does not exist: {_uniformKey}");
             }
         }
     }
