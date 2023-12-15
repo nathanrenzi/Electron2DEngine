@@ -35,13 +35,6 @@ namespace Electron2D.Build
             // Ex. ComponentSystem.Start();
             // -----------------------------
 
-            Texture2D tex = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/rubble.png");
-            Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/rubbleNormal.png", true);
-            sp = new Sprite(Material.Create(GlobalShaders.DefaultLit, tex), 1000, 1000);
-
-            LightManager.AmbientColor = Color.FromArgb(20, 20, 20);
-            Light light = new Light(Color.White, 200, 0.1f);
-
             mainPanel = new Panel(Color.DarkGray, -1, 500, 500);
             mainPanel.SetLayoutGroup(new ListLayoutGroup(new Vector4(20), 20, ListDirection.Vertical, SizeMode.WidthHeight, SizeMode.None, LayoutAlignment.Left, LayoutAlignment.Top));
             mainPanel.Layout.AddToLayout(new TextLabel("This is a test of the list layout group.", "Build/Resources/Fonts/OpenSans.ttf",
@@ -84,16 +77,15 @@ namespace Electron2D.Build
 
         private void InitializeFPSLabel()
         {
-            fpsBackground = new Panel(Color.Black, 10, 140, 30, true);
             fpsLabel = new TextLabel("FPS: 0", "Build/Resources/Fonts/OpenSans.ttf",
                 30, Color.White, Color.White, new Vector2(130, 30), TextAlignment.Left, TextAlignment.Center,
                 TextAlignmentMode.Geometry, TextOverflowMode.Disabled, _uiRenderLayer: 11);
-            UiConstraint constraint = new PixelConstraint(20, UiConstraintSide.Left);
-            UiConstraint constraint2 = new PixelConstraint(20, UiConstraintSide.Top);
-            fpsLabel.Constraints.SetPosition(constraint);
-            fpsLabel.Constraints.SetPosition(constraint2);
-            fpsBackground.Constraints.SetPosition(constraint);
-            fpsBackground.Constraints.SetPosition(constraint2);
+            fpsBackground = new Panel(Color.Black, 10, 140, 30);
+
+            fpsLabel.Anchor = new Vector2(-1, 1);
+            fpsLabel.Transform.Position = new Vector2(-1920 / 2, 1080 / 2);
+            fpsBackground.Anchor = new Vector2(-1, 1);
+            fpsBackground.Transform.Position = new Vector2(-1920 / 2, 1080 / 2);
         }
 
         private void CalculateFPS()

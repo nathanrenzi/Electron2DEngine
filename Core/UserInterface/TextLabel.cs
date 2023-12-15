@@ -107,7 +107,10 @@ namespace Electron2D.Core.UserInterface
             switch(_event)
             {
                 case UiEvent.Resize:
-                    if(textRenderer != null) textRenderer.Bounds = new Rectangle(0, 0, (int)SizeX, (int)SizeY);
+                    if (textRenderer != null)
+                    {
+                        textRenderer.Bounds = new Rectangle(0, 0, (int)SizeX, (int)SizeY);
+                    }
                     break;
             }
         }

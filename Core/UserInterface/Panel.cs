@@ -69,6 +69,7 @@ namespace Electron2D.Core.UserInterface
 
         public override void UpdateMesh()
         {
+            if (meshRenderer == null) return;
             GenerateVertices();
             meshRenderer.IsDirty = true;
         }

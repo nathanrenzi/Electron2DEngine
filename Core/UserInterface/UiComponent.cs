@@ -10,15 +10,27 @@ namespace Electron2D.Core.UI
     public abstract class UiComponent : Entity, IRenderable
     {
         public bool Visible = true;
-        public bool UseScreenPosition; // Add functionality to make this editable at runtime
+
+
         public bool UsingMeshRenderer { get; }
+        public bool UseScreenPosition
+        {
+            get => useScreenPosition;
+            set
+            {
+                useScreenPosition = value;
+                if(meshRenderer != null) meshRenderer.UseUnscaledProjectionMatrix = value;
+            }
+        }
+        private bool useScreenPosition;
         public float SizeX
         {
             get{ return sizeX; }
             set
             {
-                InvokeUiAction(UiEvent.Resize);
                 sizeX = value;
+                InvokeUiAction(UiEvent.Resize);
+                UpdateMesh();
             }
         }
         private float sizeX;
@@ -27,13 +39,24 @@ namespace Electron2D.Core.UI
             get { return sizeY; }
             set
             {
-                InvokeUiAction(UiEvent.Resize);
                 sizeY = value;
+                InvokeUiAction(UiEvent.Resize);
+                UpdateMesh();
             }
         }
         private float sizeY;
+        public Vector2 Anchor
+        {
+            get => anchor;
+            set
+            {
+                anchor = value;
+                UpdateMesh();
+            }
+        }
+        private Vector2 anchor;
 
-        public Vector2 Anchor;
+
         public Transform Transform;
         public int UiRenderLayer { get; private set; }
         public List<UiListener> Listeners { get; private set; } = new List<UiListener>();

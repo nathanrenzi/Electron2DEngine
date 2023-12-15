@@ -42,7 +42,7 @@ namespace Electron2D.Core.Rendering.Text
         {
             get
             {
-                return new Vector2(transform.Position.X - Bounds.Width / 2, transform.Position.Y + Bounds.Height / 2);
+                return new Vector2(transform.Position.X, transform.Position.Y);
             }
         }
         public Rectangle Bounds
