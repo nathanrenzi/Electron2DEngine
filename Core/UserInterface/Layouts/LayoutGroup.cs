@@ -30,7 +30,7 @@ namespace Electron2D.Core.UserInterface
             active = true;
         }
 
-        public void AddToLayout(UiComponent _component, bool _recalculateLayout = true)
+        public void AddToLayout(UiComponent _component, bool _recalculateLayout = false)
         {
             if(!active)
             {

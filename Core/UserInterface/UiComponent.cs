@@ -11,7 +11,6 @@ namespace Electron2D.Core.UI
     {
         public bool Visible = true;
 
-
         public bool UsingMeshRenderer { get; }
         public bool UseScreenPosition
         {

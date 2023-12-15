@@ -39,10 +39,9 @@ namespace Electron2D.Build
             mainPanel.SetLayoutGroup(new ListLayoutGroup(new Vector4(20), 20, ListDirection.Vertical, SizeMode.WidthHeight, SizeMode.None, LayoutAlignment.Left, LayoutAlignment.Top));
             mainPanel.Layout.AddToLayout(new TextLabel("This is a test of the list layout group.", "Build/Resources/Fonts/OpenSans.ttf",
                 30, Color.White, Color.White, new Vector2(0, 0), TextAlignment.Center, TextAlignment.Center,
-                TextAlignmentMode.Geometry, TextOverflowMode.Word), false);
-            mainPanel.Layout.AddToLayout(new Panel(Color.Black), false);
+                TextAlignmentMode.Geometry, TextOverflowMode.Word));
             mainPanel.Layout.AddToLayout(new Panel(Color.Black));
-            mainPanel.Layout.RecalculateLayout(); // There is an issue with the layouts with updating text labels, and also updating previously resized panels.
+            mainPanel.Layout.AddToLayout(new Panel(Color.Black), true);
         }
 
         protected override void Update()
