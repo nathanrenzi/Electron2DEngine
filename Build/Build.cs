@@ -1,9 +1,5 @@
 ﻿using Electron2D.Core;
-using Electron2D.Core.ECS;
-using Electron2D.Core.Management;
-using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering;
-using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.UI;
 using Electron2D.Core.UserInterface;
@@ -21,7 +17,7 @@ namespace Electron2D.Build
         private int frames;
         private float lastFrameCountTime;
         private Panel mainPanel;
-        private Sprite sp;
+        private SliderSimple slider;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
             $"Electron2D Build - {Program.BuildDate}") { }
@@ -29,19 +25,22 @@ namespace Electron2D.Build
         protected override void Load()
         {
             SetBackgroundColor(Color.LightBlue);
-            InitializeFPSLabel();
 
             // Load Custom Component Systems
             // Ex. ComponentSystem.Start();
             // -----------------------------
 
-            mainPanel = new Panel(Color.DarkGray, -1, 500, 500);
-            mainPanel.SetLayoutGroup(new ListLayoutGroup(new Vector4(20), 20, ListDirection.Vertical, SizeMode.WidthHeight, SizeMode.None, LayoutAlignment.Left, LayoutAlignment.Top));
-            mainPanel.Layout.AddToLayout(new TextLabel("This is a test of the list layout group.", "Build/Resources/Fonts/OpenSans.ttf",
-                30, Color.White, Color.White, new Vector2(0, 0), TextAlignment.Center, TextAlignment.Center,
-                TextAlignmentMode.Geometry, TextOverflowMode.Word));
-            mainPanel.Layout.AddToLayout(new Panel(Color.Black));
-            mainPanel.Layout.AddToLayout(new Panel(Color.Black), true);
+            InitializeFPSLabel();
+
+            //mainPanel = new Panel(Color.DarkGray, -1, 350, 300);
+            //mainPanel.SetLayoutGroup(new ListLayoutGroup(new Vector4(20), 20, ListDirection.Vertical, SizeMode.WidthHeight, SizeMode.None, LayoutAlignment.Left, LayoutAlignment.Top));
+            //mainPanel.Layout.AddToLayout(new TextLabel("This is a test of the list layout group.", "Build/Resources/Fonts/OpenSans.ttf",
+            //    30, Color.Black, Color.White, new Vector2(0, 0), TextAlignment.Center, TextAlignment.Center,
+            //    TextAlignmentMode.Geometry, TextOverflowMode.Word));
+            //mainPanel.Layout.AddToLayout(new Panel(Color.Black));
+            //mainPanel.Layout.AddToLayout(new Panel(Color.Black));
+
+            slider = new SliderSimple(Color.Black, Color.Green, Color.Khaki, 0.5f, 0, 1, 200, 10, 10, 30);
         }
 
         protected override void Update()

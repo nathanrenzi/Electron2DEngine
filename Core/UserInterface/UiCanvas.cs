@@ -5,6 +5,15 @@ namespace Electron2D.Core.UI
 {
     public class UiCanvas
     {
+        public class UiFrameTickData
+        {
+            public bool isHovered;
+            public bool isLeftClicked;
+            public bool isMiddleClicked;
+            public bool isRightClicked;
+            public bool isClicked;
+        }
+
         private List<UiComponent> activeComponents = new List<UiComponent>();
 
         // Add an ActiveUiComponent class that also holds a reference to the constraints being used
@@ -142,14 +151,5 @@ namespace Electron2D.Core.UI
                 lastFrame.isClicked = thisFrame.isClicked;
             }
         }
-    }
-
-    public class UiFrameTickData
-    {
-        public bool isHovered;
-        public bool isLeftClicked;
-        public bool isMiddleClicked;
-        public bool isRightClicked;
-        public bool isClicked;
     }
 }

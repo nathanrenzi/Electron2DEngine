@@ -7,6 +7,8 @@ namespace Electron2D.Core.UserInterface
     {
         public List<UiComponent> components = new List<UiComponent>();
         private bool active = false;
+        private bool isDirty = false;
+        private bool addedToUpdateLoop = false;
 
         protected UiComponent parent;
 
@@ -25,12 +27,27 @@ namespace Electron2D.Core.UserInterface
                 parent.RemoveUiListener(this);
             }
 
+            if(!addedToUpdateLoop)
+            {
+                addedToUpdateLoop = true;
+                Game.OnUpdateEvent += Game_OnUpdateEvent;
+            }
+
             parent = _parent;
             parent.AddUiListener(this);
             active = true;
         }
 
-        public void AddToLayout(UiComponent _component, bool _recalculateLayout = false)
+        private void Game_OnUpdateEvent()
+        {
+            if(isDirty)
+            {
+                isDirty = false;
+                RecalculateLayout();
+            }
+        }
+
+        public void AddToLayout(UiComponent _component)
         {
             if(!active)
             {
@@ -44,8 +61,8 @@ namespace Electron2D.Core.UserInterface
                 return;
             }
 
+            isDirty = true;
             components.Add(_component);
-            if(_recalculateLayout) RecalculateLayout();
         }
 
         public bool RemoveFromLayout(UiComponent _component)
@@ -68,6 +85,6 @@ namespace Electron2D.Core.UserInterface
             }
         }
 
-        public abstract void RecalculateLayout();
+        protected abstract void RecalculateLayout();
     }
 }

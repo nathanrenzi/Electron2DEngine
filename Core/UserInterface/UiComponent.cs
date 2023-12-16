@@ -60,8 +60,8 @@ namespace Electron2D.Core.UI
         public int UiRenderLayer { get; private set; }
         public List<UiListener> Listeners { get; private set; } = new List<UiListener>();
         public LayoutGroup Layout { get; private set; }
-        public UiFrameTickData ThisFrameData = new UiFrameTickData();
-        public UiFrameTickData LastFrameData = new UiFrameTickData();
+        public UiCanvas.UiFrameTickData ThisFrameData = new UiCanvas.UiFrameTickData();
+        public UiCanvas.UiFrameTickData LastFrameData = new UiCanvas.UiFrameTickData();
         public UiConstraints Constraints;
 
         protected bool isLoaded = false;

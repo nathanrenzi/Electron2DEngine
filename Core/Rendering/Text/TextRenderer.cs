@@ -368,8 +368,8 @@ namespace Electron2D.Core.Rendering.Text
                     }
                 }
 
-                float xpos = _x + ch.Bearing.X * transform.Scale.X;
-                float ypos = _y - (ch.Size.Y - ch.Bearing.Y) * transform.Scale.X; // Causes text to be slightly vertically offset by 1 pixel
+                int xpos = (int)(_x + ch.Bearing.X * transform.Scale.X);
+                int ypos = (int)(_y - (ch.Size.Y - ch.Bearing.Y) * transform.Scale.X); // Causes text to be slightly vertically offset by 1 pixel
 
                 float w = ch.Size.X * transform.Scale.X;
                 float h = ch.Size.Y * transform.Scale.X;

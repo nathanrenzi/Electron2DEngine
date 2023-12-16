@@ -28,7 +28,7 @@ namespace Electron2D.Core.UserInterface
             VerticalAlignment = _verticalAlignment;
         }
 
-        public override void RecalculateLayout()
+        protected override void RecalculateLayout()
         {
             SetComponentSizes();
             SetComponentPositions();
