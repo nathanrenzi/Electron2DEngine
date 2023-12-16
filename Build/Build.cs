@@ -40,13 +40,12 @@ namespace Electron2D.Build
             //mainPanel.Layout.AddToLayout(new Panel(Color.Black));
             //mainPanel.Layout.AddToLayout(new Panel(Color.Black));
 
-            slider = new SliderSimple(Color.DarkGray, Color.Green, Color.Black, 0.5f, 0, 1, 200, 10, 10, 30);
+            slider = new SliderSimple(Color.DarkGray, Color.Green, Color.Black, _value: 0, _minValue: 0, _maxValue: 10, 200, 10, 10, 30);
         }
 
         protected override void Update()
         {
             slider.Value01 = (MathF.Sin(Time.TotalElapsedSeconds)+1)/2f;
-
             CameraMovement();
             CalculateFPS();
         }
