@@ -27,13 +27,14 @@ namespace Electron2D.Core.Rendering
             }
         }
 
-        public void CreateWindow(int _width, int _height, string _title)
+        public void CreateWindow(int _width, int _height, string _title, bool _antialiasing)
         {
             WindowSize = new Vector2(_width, _height);
 
             Glfw.Init();
 
             // OpenGL 3.3 Core Profile
+            if(_antialiasing) Glfw.WindowHint(Hint.Samples, 8); // Antialiasing
             Glfw.WindowHint(Hint.ContextVersionMajor, 3);
             Glfw.WindowHint(Hint.ContextVersionMinor, 3);
             Glfw.WindowHint(Hint.OpenglProfile, Profile.Core);

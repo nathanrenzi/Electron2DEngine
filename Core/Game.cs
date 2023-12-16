@@ -40,15 +40,24 @@ namespace Electron2D.Core
             BackgroundColor = _backgroundColor;
         }
 
-        public void Run()
+        public void Run(bool _vsync, bool _antialiasing)
         {
             Debug.OpenLogFile();
             Debug.Log("Starting initialization...");
             Initialize();
             startCamera = new Camera2D(Vector2.Zero, 1);
 
-            DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle);
-            Glfw.SwapInterval(0); // 0 - VSYNC is off, 1 is on
+            DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle, _antialiasing);
+            if(_vsync)
+            {
+                // VSYNC ON
+                Glfw.SwapInterval(1);
+            }
+            else
+            {
+                // VSYNC OFF
+                Glfw.SwapInterval(0);
+            }
             Input.Initialize();
 
             // Setup
