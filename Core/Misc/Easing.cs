@@ -1,6 +1,6 @@
 ﻿namespace Electron2D.Core.Misc
 {
-    //https://easings.net/#:~:text=Easing%20functions%20specify%20the%20rate,down%20as%20it%20comes%20out.
+    //https://easings.net/
 
     /// <summary>
     /// A class for evaluating preset ease modes.

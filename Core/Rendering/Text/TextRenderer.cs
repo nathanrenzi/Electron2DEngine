@@ -38,11 +38,18 @@ namespace Electron2D.Core.Rendering.Text
         public Color TextColor;
         public Color OutlineColor;
         private Transform transform;
+        public Vector2 Anchor
+        {
+            get => anchor;
+            set => anchor = value;
+        }
+        private Vector2 anchor;
         private Vector2 position
         {
             get
             {
-                return new Vector2(transform.Position.X - (Bounds.Width/2f), transform.Position.Y + (Bounds.Height/2f));
+                return new Vector2((transform.Position.X - Bounds.Width/2f) + (Bounds.Width/2f * -anchor.X),
+                                (transform.Position.Y + Bounds.Height/2f) + (Bounds.Height / 2f * -anchor.Y));
             }
         }
         public Rectangle Bounds

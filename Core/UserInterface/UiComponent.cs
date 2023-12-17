@@ -50,6 +50,7 @@ namespace Electron2D.Core.UI
             set
             {
                 anchor = value;
+                InvokeUiAction(UiEvent.Anchor);
                 UpdateMesh();
             }
         }
@@ -245,5 +246,6 @@ namespace Electron2D.Core.UI
         HoverStart,
         HoverEnd,
         Resize,
+        Anchor,
     }
 }

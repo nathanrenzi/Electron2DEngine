@@ -112,6 +112,12 @@ namespace Electron2D.Core.UserInterface
                         textRenderer.Bounds = new Rectangle(0, 0, (int)SizeX, (int)SizeY);
                     }
                     break;
+                case UiEvent.Anchor:
+                    if(textRenderer != null)
+                    {
+                        textRenderer.Anchor = Anchor;
+                    }
+                    break;
             }
         }
 
