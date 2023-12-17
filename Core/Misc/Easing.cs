@@ -152,6 +152,73 @@
         {
             return -(MathF.Cos(MathF.PI * _time) - 1) / 2;
         }
+
+        public static float EaseInOutQuad(float _time)
+        {
+            return _time < 0.5 ? 2 * _time * _time : 1 - MathF.Pow(-2 * _time + 2, 2) / 2;
+        }
+
+        public static float EaseInOutCubic(float _time)
+        {
+            return _time < 0.5 ? 4 * _time * _time * _time : 1 - MathF.Pow(-2 * _time + 2, 3) / 2;
+        }
+
+        public static float EaseInOutQuart(float _time)
+        {
+            return _time < 0.5 ? 8 * _time * _time * _time * _time : 1 - MathF.Pow(-2 * _time + 2, 4) / 2;
+        }
+
+        public static float EaseInOutQuint(float _time)
+        {
+            return _time < 0.5 ? 16 * _time * _time * _time * _time * _time : 1 - MathF.Pow(-2 * _time + 2, 5) / 2;
+        }
+
+        public static float EaseInOutExpo(float _time)
+        {
+            return _time == 0
+                ? 0
+                : _time == 1
+                ? 1
+                : _time < 0.5 ? MathF.Pow(2, 20 * _time - 10) / 2
+                : (2 - MathF.Pow(2, -20 * _time + 10)) / 2;
+        }
+
+        public static float EaseInOutCirc(float _time)
+        {
+            return _time < 0.5
+                ? (1 - MathF.Sqrt(1 - MathF.Pow(2 * _time, 2))) / 2
+                : (MathF.Sqrt(1 - MathF.Pow(-2 * _time + 2, 2)) + 1) / 2;
+        }
+
+        public static float EaseInOutBack(float _time)
+        {
+            float c1 = 1.70158f;
+            float c2 = c1 * 1.525f;
+
+            return _time < 0.5
+              ? (MathF.Pow(2 * _time, 2) * ((c2 + 1) * 2 * _time - c2)) / 2
+              : (MathF.Pow(2 * _time - 2, 2) * ((c2 + 1) * (_time * 2 - 2) + c2) + 2) / 2;
+        }
+
+        public static float EaseInOutElastic(float _time)
+        {
+            float c5 = (2 * MathF.PI) / 4.5f;
+
+            return _time == 0
+                ? 0
+                : _time == 1
+                ? 1
+                : _time < 0.5
+                ? -(MathF.Pow(2, 20 * _time - 10) * MathF.Sin((20 * _time - 11.125f) * c5)) / 2
+                : (MathF.Pow(2, -20 * _time + 10) * MathF.Sin((20 * _time - 11.125f) * c5)) / 2 + 1;
+        }
+
+        public static float EaseInOutBounce(float _time)
+        {
+            return _time < 0.5
+                ? (1 - EaseOutBounce(1 - 2 * _time)) / 2
+                : (1 + EaseOutBounce(2 * _time - 1)) / 2;
+        }
         #endregion
     }
 }
