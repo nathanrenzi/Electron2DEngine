@@ -23,16 +23,20 @@ namespace Electron2D.Core
         public int CurrentWindowWidth { get; protected set; }
         public int CurrentWindowHeight { get; protected set; }
         public string CurrentWindowTitle { get; protected set; }
+        public bool VsyncEnabled { get; }
+        public bool AntialiasingEnabled { get; }
 
         public static Color BackgroundColor { get; private set; } = Color.Black;
 
         protected Camera2D startCamera;
 
-        public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle)
+        public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, bool _vsync = false, bool _antialiasing = true)
         {
             CurrentWindowWidth = _initialWindowWidth;
             CurrentWindowHeight = _initialWindowHeight;
             CurrentWindowTitle = _initialWindowTitle;
+            VsyncEnabled = _vsync;
+            AntialiasingEnabled = _antialiasing;
         }
 
         public void SetBackgroundColor(Color _backgroundColor)
@@ -40,15 +44,15 @@ namespace Electron2D.Core
             BackgroundColor = _backgroundColor;
         }
 
-        public void Run(bool _vsync, bool _antialiasing)
+        public void Run()
         {
             Debug.OpenLogFile();
             Debug.Log("Starting initialization...");
             Initialize();
             startCamera = new Camera2D(Vector2.Zero, 1);
 
-            DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle, _antialiasing);
-            if(_vsync)
+            DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle, AntialiasingEnabled);
+            if(VsyncEnabled)
             {
                 // VSYNC ON
                 Glfw.SwapInterval(1);

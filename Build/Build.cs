@@ -20,14 +20,13 @@ namespace Electron2D.Build
         private int displayFrames;
         private int frames;
         private float lastFrameCountTime;
-        private Panel mainPanel;
         private SliderSimple slider;
         private Tilemap tilemap;
         private List<Light> lights = new List<Light>();
         private List<float> lradius = new List<float>();
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
-            $"Electron2D Build - {Program.BuildDate}") { }
+            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: true) { }
 
         protected override void Load()
         {
