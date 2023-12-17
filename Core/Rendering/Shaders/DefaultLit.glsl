@@ -44,7 +44,7 @@ struct PointLight {
     vec3 color;
 };  
 
-#define MAX_POINT_LIGHTS 64
+#define MAX_POINT_LIGHTS 16
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 
 vec3 CalcPointLight(PointLight light, vec2 fragPos, vec3 normal)
@@ -72,5 +72,7 @@ void main()
         result += CalcPointLight(pointLights[i], position.xy, normal);
     }
 
-    FragColor = vec4(objectColor * result, 1.0);
+    vec3 res = objectColor * result;
+    // Converting to SRGB
+    FragColor = vec4(vec3(pow(res.r, 1.0 / 2.2), pow(res.g, 1.0 / 2.2), pow(res.b, 1.0 / 2.2)), 1.0);
 }

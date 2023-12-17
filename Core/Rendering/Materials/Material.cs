@@ -38,7 +38,7 @@ namespace Electron2D.Core.Rendering
             {
                 if(!_shader.Compile())
                 {
-                    Console.WriteLine("Material: Failed to compile shader.");
+                    Debug.LogError("MATERIAL: Failed to compile shader.");
                     return;
                 }
 

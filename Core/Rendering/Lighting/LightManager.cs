@@ -32,12 +32,15 @@ namespace Electron2D.Core
             }
         }
 
-        public const int MAX_POINT_LIGHTS = 64;
+        // MAKE SURE TO CHANGE THESE VALUES IN SHADERS TOO
+        public const int MAX_POINT_LIGHTS = 16;
         public List<Light> PointLightsInScene = new List<Light>();
 
+        // MAKE SURE TO CHANGE THESE VALUES IN SHADERS TOO
         public const int MAX_SPOTLIGHTS = 16;
         public List<Light> SpotLightsInScene = new List<Light>();
 
+        // MAKE SURE TO CHANGE THESE VALUES IN SHADERS TOO
         public const int MAX_DIRECTIONAL_LIGHTS = 1;
         public List<Light> DirectionalLightsInScene = new List<Light>();
 

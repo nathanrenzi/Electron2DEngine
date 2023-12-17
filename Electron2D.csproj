@@ -45,6 +45,7 @@
     <None Remove="Build\Resources\Textures\tiles1.png" />
     <None Remove="Build\Resources\Textures\tilesNormal1.png" />
     <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
+    <None Remove="Build\Resources\Textures\white_circle.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankTexture.png" />
     <None Remove="Core\Rendering\Shaders\DefaultText.glsl" />
@@ -86,6 +87,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\tilesNormal1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\white_circle.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\CoreTextures\BlankNormal.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

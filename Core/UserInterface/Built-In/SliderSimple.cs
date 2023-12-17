@@ -1,4 +1,7 @@
-﻿using Electron2D.Core.UI;
+﻿using Electron2D.Core.Management;
+using Electron2D.Core.Rendering;
+using Electron2D.Core.Rendering.Shaders;
+using Electron2D.Core.UI;
 using System.Drawing;
 using System.Numerics;
 
@@ -105,7 +108,8 @@ namespace Electron2D.Core.UserInterface
             completedPanel.Anchor = new Vector2(-1, 0);
             completedPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound, 0);
 
-            handlePanel = new Panel(_handleColor, _uiRenderLayer + 2, _handleSize, _handleSize, _useScreenPosition);
+            Texture2D t = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png");
+            handlePanel = new Panel(Material.Create(GlobalShaders.DefaultTexture, _handleColor, t, _useLinearFiltering: true), _uiRenderLayer + 2, _handleSize, _handleSize, _useScreenPosition);
             handlePanel.AddUiListener(handleListener);
 
             ForceWholeNumbers = _forceWholeNumbers;

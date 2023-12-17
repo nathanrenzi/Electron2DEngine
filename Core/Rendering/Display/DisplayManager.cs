@@ -34,7 +34,7 @@ namespace Electron2D.Core.Rendering
             Glfw.Init();
 
             // OpenGL 3.3 Core Profile
-            if(_antialiasing) Glfw.WindowHint(Hint.Samples, 8); // Antialiasing
+            if(_antialiasing) Glfw.WindowHint(Hint.Samples, 16); // Antialiasing
             Glfw.WindowHint(Hint.ContextVersionMajor, 3);
             Glfw.WindowHint(Hint.ContextVersionMinor, 3);
             Glfw.WindowHint(Hint.OpenglProfile, Profile.Core);
