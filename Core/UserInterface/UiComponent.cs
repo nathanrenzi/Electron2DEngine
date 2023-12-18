@@ -31,6 +31,7 @@ namespace Electron2D.Core.UI
             }
         }
         private bool useScreenPosition;
+        private bool registerRenderable;
         public float SizeX
         {
             get{ return sizeX; }
@@ -68,7 +69,7 @@ namespace Electron2D.Core.UI
         public Transform Transform;
         public int UiRenderLayer { get; private set; }
         public List<UiListener> Listeners { get; private set; } = new List<UiListener>();
-        public LayoutGroup Layout { get; private set; }
+        public LayoutGroup ChildLayoutGroup { get; private set; }
         public UiCanvas.UiFrameTickData ThisFrameData = new UiCanvas.UiFrameTickData();
         public UiCanvas.UiFrameTickData LastFrameData = new UiCanvas.UiFrameTickData();
         public UiConstraints Constraints;
@@ -141,9 +142,11 @@ namespace Electron2D.Core.UI
         private bool showBoundsDebug = false;
         private Sprite s1, s2, s3, s4;
 
-        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, bool _useScreenPosition = true, bool _useMeshRenderer = true)
+        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, bool _useScreenPosition = true, bool _useMeshRenderer = true, bool _registerRenderable = true)
         {
             Transform = new Transform();
+            Transform.onPositionChanged += () => InvokeUiAction(UiEvent.Position);
+
             AddComponent(Transform);
             SizeX = _sizeX;
             SizeY = _sizeY;
@@ -151,6 +154,7 @@ namespace Electron2D.Core.UI
             UiRenderLayer = _uiRenderLayer;
             UseScreenPosition = _useScreenPosition;
             UsingMeshRenderer = _useMeshRenderer;
+            registerRenderable = _registerRenderable;
 
             if(UsingMeshRenderer)
             {
@@ -162,13 +166,13 @@ namespace Electron2D.Core.UI
             if (_initialize) Initialize();
             SetColor(Color.White);
 
-            RenderLayerManager.OrderRenderable(this);
+            if(_registerRenderable) RenderLayerManager.OrderRenderable(this);
             GlobalUI.MainCanvas.RegisterUiComponent(this);
         }
 
         ~UiComponent()
         {
-            RenderLayerManager.RemoveRenderable(this);
+            if (registerRenderable) RenderLayerManager.RemoveRenderable(this);
             GlobalUI.MainCanvas.UnregisterUiComponent(this);
         }
 
@@ -197,8 +201,8 @@ namespace Electron2D.Core.UI
 
         public void SetLayoutGroup(LayoutGroup _layoutGroup)
         {
-            Layout = _layoutGroup;
-            Layout.SetUiParent(this);
+            ChildLayoutGroup = _layoutGroup;
+            ChildLayoutGroup.SetUiParent(this);
         }
 
         protected virtual void ApplyConstraints()
@@ -303,6 +307,7 @@ namespace Electron2D.Core.UI
         Hover,
         HoverStart,
         HoverEnd,
+        Position,
         Resize,
         Anchor,
         Visibility

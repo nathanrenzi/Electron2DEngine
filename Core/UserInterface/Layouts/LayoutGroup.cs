@@ -7,7 +7,7 @@ namespace Electron2D.Core.UserInterface
     {
         public List<UiComponent> components = new List<UiComponent>();
         private bool active = false;
-        private bool isDirty = false;
+        private bool IsDirty = false;
         private bool addedToUpdateLoop = false;
 
         protected UiComponent parent;
@@ -16,7 +16,7 @@ namespace Electron2D.Core.UserInterface
         {
             if(_event == UiEvent.Resize)
             {
-                isDirty = true;
+                IsDirty = true;
             }
         }
 
@@ -40,10 +40,17 @@ namespace Electron2D.Core.UserInterface
 
         private void Game_OnUpdateEvent()
         {
-            if(isDirty)
+            if(IsDirty)
             {
-                isDirty = false;
+                IsDirty = false;
                 RecalculateLayout();
+                for (int i = 0; i < components.Count; i++)
+                {
+                    if (components[i].ChildLayoutGroup != null)
+                    {
+                        components[i].ChildLayoutGroup.IsDirty = true;
+                    }
+                }
             }
         }
 
@@ -61,8 +68,8 @@ namespace Electron2D.Core.UserInterface
                 return;
             }
 
-            isDirty = true;
             components.Add(_component);
+            IsDirty = true;
         }
 
         public bool RemoveFromLayout(UiComponent _component)
@@ -76,7 +83,7 @@ namespace Electron2D.Core.UserInterface
             if (components.Contains(_component))
             {
                 components.Remove(_component);
-                RecalculateLayout();
+                IsDirty = true;
                 return true;
             }
             else

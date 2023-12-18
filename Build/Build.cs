@@ -39,26 +39,8 @@ namespace Electron2D.Build
 
             InitializeFPSLabel();
 
-            //TextLabel label = new TextLabel("Light Controller", "Build/Resources/Fonts/OpenSans.ttf", 25, Color.White, Color.White, new Vector2(200, 25),
-            //    TextAlignment.Center, TextAlignment.Center, TextAlignmentMode.Geometry);
-
             slider = new SliderSimple("414643".HexToColor(255), "9BB6A1".HexToColor(255), Color.White, _value: 0, _minValue: 0, _maxValue: 10,
-                _sizeX: 200, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 20, _handlePadding: 8);
-            slider.ShowBoundsDebug = true;
-
-            //label.Visible = false;
-
-            //SliderSimple slider2 = new SliderSimple("414643".HexToColor(255), "9BB6A1".HexToColor(255), Color.White, _value: 0, _minValue: 0, _maxValue: 10,
-            //    _sizeX: 200, _sizeY: 10, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 20);
-
-            //Material m = Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(60, 0, 0, 0), ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png"));
-            //SlicedUiComponent bgPanel = new SlicedUiComponent(m, 600, 150, 100, 100, 100, 100, 200, 0.5f);
-            //bgPanel.SetRenderLayer(-1);
-            //bgPanel.Transform.Position = new Vector2(0, 10);
-            //bgPanel.SetLayoutGroup(new ListLayoutGroup(new Vector4(20), 20, ListDirection.Vertical, SizeMode.WidthHeight, SizeMode.None, LayoutAlignment.Center, LayoutAlignment.Top));
-            //bgPanel.Layout.AddToLayout(label); 
-            //bgPanel.Layout.AddToLayout(slider);
-            //bgPanel.Layout.AddToLayout(slider2);
+                _sizeX: 200, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 10, _handlePadding: 5);
 
             #region Tilemap
             // Tilemap Setup
@@ -88,7 +70,7 @@ namespace Electron2D.Build
 
             for (int i = 0; i < LightManager.MAX_POINT_LIGHTS; i++)
             {
-                Light l = new Light(Color.White, random.Next(1, 8) * 100, random.Next(1, 3), Light.LightType.Point, 2);
+                Light l = new Light(Color.White, random.Next(1, 8) * 200, random.Next(4, 7), Light.LightType.Point, 2);
                 l.GetComponent<Transform>().Position = new Vector2(random.Next(0, size * tilePixelSize), random.Next(0, size * tilePixelSize));
                 lights.Add(l);
                 lradius.Add(l.Radius);

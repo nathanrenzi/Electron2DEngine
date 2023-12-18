@@ -6,14 +6,25 @@ namespace Electron2D.Core
     public class TransformSystem : BaseSystem<Transform> { }
     public class Transform : Component
     {
-        public Vector2 Position;
+        public Action onPositionChanged { get; set; }
+
+        public Vector2 Position
+        {
+            get => position;
+            set
+            {
+                position = value;
+                onPositionChanged?.Invoke();
+            }
+        }
+        private Vector2 position;
+
         public Vector2 Scale = new Vector2(100, 100);
-        public Vector2 PivotPoint;
+
         public float Rotation;
 
         public Transform()
         {
-            PivotPoint = Vector2.Zero;
             Scale = Vector2.One;
             TransformSystem.Register(this);
         }

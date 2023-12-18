@@ -105,7 +105,7 @@ namespace Electron2D.Core.UserInterface
         public SliderSimple(Color _backgroundColor, Color _sliderColor, Color _handleColor, float _value, float _minValue, float _maxValue,
             int _sizeX, int _sliderHeight, int _backgroundHeight, int _handleSize, int _handlePadding = 0, int _uiRenderLayer = 0, bool _useScreenPosition = true, bool _interactable = true,
             bool _allowNonHandleValueUpdates = true, bool _forceWholeNumbers = false)
-            : base(_uiRenderLayer, _sizeX, (int)MathF.Max(_sliderHeight, _backgroundHeight), true, _useScreenPosition, false)
+            : base(_uiRenderLayer, _sizeX, (int)MathF.Max(_sliderHeight, _backgroundHeight), true, _useScreenPosition, false, false)
         {
             SliderHeight = _sliderHeight;
             BackgroundHeight = _backgroundHeight;
@@ -125,7 +125,7 @@ namespace Electron2D.Core.UserInterface
             sliderPanel.Anchor = new Vector2(-1, 0);
 
             Texture2D t = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png");
-            handlePanel = new Panel(Material.Create(GlobalShaders.DefaultTexture, _handleColor, t, _useLinearFiltering: true), _uiRenderLayer + 2, _handleSize, _handleSize, _useScreenPosition);
+            handlePanel = new Panel(_handleColor, _uiRenderLayer + 2, _handleSize, _handleSize, _useScreenPosition);
             handlePanel.AddUiListener(handleListener);
 
             initialized = true;
@@ -174,6 +174,7 @@ namespace Electron2D.Core.UserInterface
         {
             switch(_event)
             {
+                case UiEvent.Position:
                 case UiEvent.Anchor:
                 case UiEvent.Resize:
                     UpdateDisplay();
