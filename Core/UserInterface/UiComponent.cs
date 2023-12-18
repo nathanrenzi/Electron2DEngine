@@ -56,7 +56,6 @@ namespace Electron2D.Core.UI
         }
         private Vector2 anchor;
 
-
         public Transform Transform;
         public int UiRenderLayer { get; private set; }
         public List<UiListener> Listeners { get; private set; } = new List<UiListener>();

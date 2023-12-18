@@ -42,7 +42,7 @@ namespace Electron2D.Core.UserInterface
             {
                 float f = MathF.Max(MathF.Min(value, MaxValue), MinValue);
                 this.value = ForceWholeNumbers ? MathF.Round(f) : f;
-                Display();
+                UpdateDisplay();
             }
         }
         private float value;
@@ -56,7 +56,7 @@ namespace Electron2D.Core.UserInterface
             {
                 float f = MathF.Min(MathF.Max((value * (MaxValue - MinValue)) + MinValue, MinValue), MaxValue);
                 this.value = ForceWholeNumbers ? MathF.Round(f) : f;
-                Display();
+                UpdateDisplay();
             }
         }
         public float MinValue
@@ -68,7 +68,7 @@ namespace Electron2D.Core.UserInterface
             set
             {
                 minValue = value;
-                Display();
+                UpdateDisplay();
             }
         }
         private float minValue;
@@ -81,68 +81,103 @@ namespace Electron2D.Core.UserInterface
             set
             {
                 maxValue = value;
-                Display();
+                UpdateDisplay();
             }
         }
         private float maxValue;
 
+        public float SliderHeight;
+        public float BackgroundHeight;
+        public float HandleSize;
+        public float HandlePadding;
         public bool ForceWholeNumbers = false;
         public bool AllowNonHandleValueUpdates = true;
         public bool Interactable;
 
         private Panel backgroundPanel;
-        private Panel completedPanel;
+        private Panel sliderPanel;
         private Panel handlePanel;
         private Listener handleListener = new Listener();
         private Listener backgroundListener = new Listener();
 
-        public SliderSimple(Color _backgroundColor, Color _completedColor, Color _handleColor, float _value, float _minValue, float _maxValue,
-            int _sizeX, int _sizeY, int _fgSizeY, int _handleSize, int _uiRenderLayer = 0, bool _useScreenPosition = true, bool _interactable = true,
+        private bool initialized = false;
+
+        public SliderSimple(Color _backgroundColor, Color _sliderColor, Color _handleColor, float _value, float _minValue, float _maxValue,
+            int _sizeX, int _sizeY, int _sliderHeight, int _backgroundHeight, int _handleSize, int _handlePadding = 0, int _uiRenderLayer = 0, bool _useScreenPosition = true, bool _interactable = true,
             bool _allowNonHandleValueUpdates = true, bool _forceWholeNumbers = false)
             : base(_uiRenderLayer, _sizeX, _sizeY, true, _useScreenPosition, false)
         {
-            backgroundPanel = new Panel(_backgroundColor, _uiRenderLayer, _sizeX, _sizeY, _useScreenPosition);
+            SliderHeight = _sliderHeight;
+            BackgroundHeight = _backgroundHeight;
+            HandleSize = _handleSize;
+            HandlePadding = _handlePadding;
+            ForceWholeNumbers = _forceWholeNumbers;
+            Interactable = _interactable;
+            AllowNonHandleValueUpdates = _allowNonHandleValueUpdates;
+            MinValue = _minValue;
+            MaxValue = _maxValue;
+            Value = _value;
+
+            backgroundPanel = new Panel(_backgroundColor, _uiRenderLayer, _sizeX, _backgroundHeight, _useScreenPosition);
             backgroundPanel.AddUiListener(backgroundListener);
 
-            completedPanel = new Panel(_completedColor, _uiRenderLayer + 1, _sizeX, _fgSizeY, _useScreenPosition);
-            completedPanel.Anchor = new Vector2(-1, 0);
-            completedPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound, 0);
+            sliderPanel = new Panel(_sliderColor, _uiRenderLayer + 1, _sizeX, _sliderHeight, _useScreenPosition);
+            sliderPanel.Anchor = new Vector2(-1, 0);
 
             Texture2D t = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png");
             handlePanel = new Panel(Material.Create(GlobalShaders.DefaultTexture, _handleColor, t, _useLinearFiltering: true), _uiRenderLayer + 2, _handleSize, _handleSize, _useScreenPosition);
             handlePanel.AddUiListener(handleListener);
 
-            ForceWholeNumbers = _forceWholeNumbers;
-            Interactable = _interactable;
-            AllowNonHandleValueUpdates = _allowNonHandleValueUpdates;
-            minValue = _minValue;
-            maxValue = _maxValue;
-            Value = _value;
+            initialized = true;
 
-            Display();
-            Game.OnUpdateEvent += Update_HandlePress;
+            UpdateDisplay();
+            Game.OnUpdateEvent += OnUpdate_Interact;
         }
 
-        private void Display()
+        public override void UpdateMesh()
         {
-            float endPosition = SizeX * Value01;
-            completedPanel.SizeX = endPosition;
-            handlePanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + endPosition, 0);
+            UpdateDisplay();
         }
 
-        private void Update_HandlePress()
+        private void UpdateDisplay()
+        {
+            if (!initialized) return;
+
+            backgroundPanel.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + (BottomYBound / 2f));
+            backgroundPanel.SizeX = SizeX;
+            backgroundPanel.SizeY = BackgroundHeight;
+
+            float endPosition = ((SizeX-HandlePadding*2) * Value01);
+            sliderPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound, Transform.Position.Y + (BottomYBound / 2f));
+            sliderPanel.SizeX = endPosition + HandlePadding;
+            sliderPanel.SizeY = SliderHeight;
+            handlePanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding + endPosition, Transform.Position.Y + (BottomYBound/2f));
+        }
+
+        private void OnUpdate_Interact()
         {
             if (!Interactable) return;
 
             if(backgroundListener.ClickHeld && AllowNonHandleValueUpdates)
             {
                 Vector2 position = Input.GetMouseScreenPositionRaw(true);
-                Value01 = (position.X - (Transform.Position.X + LeftXBound)) / SizeX;
+                Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
             }
             else if(handleListener.ClickHeld)
             {
                 Vector2 position = Input.GetMouseScreenPositionRaw(true);
-                Value01 = (position.X - (Transform.Position.X + LeftXBound)) / SizeX;
+                Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
+            }
+        }
+
+        protected override void OnUiEvent(UiEvent _event)
+        {
+            switch(_event)
+            {
+                case UiEvent.Anchor:
+                case UiEvent.Resize:
+                    UpdateDisplay();
+                    break;
             }
         }
     }

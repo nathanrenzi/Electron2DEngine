@@ -10,6 +10,7 @@ using GLFW;
 using System.Drawing;
 using System.Numerics;
 using Electron2D.Core.Misc;
+using Electron2D.Core.ECS;
 
 namespace Electron2D.Build
 {
@@ -38,15 +39,25 @@ namespace Electron2D.Build
 
             InitializeFPSLabel();
 
-            TextLabel label = new TextLabel("Light Controller", "Build/Resources/Fonts/OpenSans.ttf", 15, Color.White, Color.White, new Vector2(200, 50),
+            TextLabel label = new TextLabel("Light Controller", "Build/Resources/Fonts/OpenSans.ttf", 25, Color.White, Color.White, new Vector2(200, 25),
                 TextAlignment.Center, TextAlignment.Center, TextAlignmentMode.Geometry);
-            label.Transform.Position = new Vector2(0, 20);
 
-            slider = new SliderSimple("414643".HexToColor(255), "9BB6A1".HexToColor(255), Color.White, _value: 0, _minValue: 0, _maxValue: 10, 200, 6, 10, 20);
-            Panel bgPanel = new Panel(Color.FromArgb(60, 0, 0, 0), -1, 250, 80);
+            slider = new SliderSimple("414643".HexToColor(255), "9BB6A1".HexToColor(255), Color.White, _value: 0, _minValue: 0, _maxValue: 10,
+                _sizeX: 200, _sizeY: 10, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 20, _handlePadding: 8);
+
+            SliderSimple slider2 = new SliderSimple("414643".HexToColor(255), "9BB6A1".HexToColor(255), Color.White, _value: 0, _minValue: 0, _maxValue: 10,
+                _sizeX: 200, _sizeY: 10, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 20);
+
+            Material m = Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(60, 0, 0, 0), ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png"));
+            SlicedUiComponent bgPanel = new SlicedUiComponent(m, 600, 150, 100, 100, 100, 100, 200, 0.5f);
+            bgPanel.SetRenderLayer(-1);
             bgPanel.Transform.Position = new Vector2(0, 10);
+            bgPanel.SetLayoutGroup(new ListLayoutGroup(new Vector4(20), 20, ListDirection.Vertical, SizeMode.WidthHeight, SizeMode.None, LayoutAlignment.Center, LayoutAlignment.Top));
+            bgPanel.Layout.AddToLayout(label);
+            bgPanel.Layout.AddToLayout(slider);
+            bgPanel.Layout.AddToLayout(slider2);
 
-
+            #region Tilemap
             // Tilemap Setup
             Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/tiles1.png");
             Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/tilesNormal1.png", true);
@@ -79,6 +90,7 @@ namespace Electron2D.Build
                 lights.Add(l);
                 lradius.Add(l.Radius);
             }
+            #endregion
         }
 
         protected override void Update()

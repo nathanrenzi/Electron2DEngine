@@ -42,7 +42,7 @@ namespace Electron2D
 
         private static void Write(string _message)
         {
-            if (lastMessage.Equals(_message))
+            if (lastMessage.Equals(_message) && EnableCollapsing)
             {
                 messageCount++;
 

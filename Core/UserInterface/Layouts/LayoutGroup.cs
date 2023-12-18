@@ -16,7 +16,7 @@ namespace Electron2D.Core.UserInterface
         {
             if(_event == UiEvent.Resize)
             {
-                RecalculateLayout();
+                isDirty = true;
             }
         }
 

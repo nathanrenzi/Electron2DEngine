@@ -47,37 +47,39 @@ namespace Electron2D.Core.UserInterface
             33, 35, 34
         };
 
-        public int Left { get; private set; }
-        public int Right { get; private set; }
-        public int Top { get; private set; }
-        public int Bottom { get; private set; }
-        public float PaddingPixelScale { get; private set; }
+        private int left;
+        private int right;
+        private int top;
+        private int bottom;
+        private float imageSize;
+        private float borderScale;
 
         private int stride = 4; // This should be equal to how many floats are associated with each vertex
 
-        /// <param name="_startColor">The starting color of the UI component.</param>
         /// <param name="_sizeX">The starting size on the X axis.</param>
         /// <param name="_sizeY">The starting size on the Y axis.</param>
         /// <param name="_left">The left padding of the 9-sliced texture.</param>
         /// <param name="_right">The right padding of the 9-sliced texture.</param>
         /// <param name="_top">The top padding of the 9-sliced texture.</param>
         /// <param name="_bottom">The bottom padding of the 9-sliced texture.</param>
-        /// <param name="_paddingPixelScale">The pixel value used as a reference when scaling the UI. A smaller value will result in a more compacted texture.</param>
-        public SlicedUiComponent(Color _startColor, int _sizeX, int _sizeY,
-            int _left, int _right, int _top, int _bottom, float _paddingPixelScale = 100f)
+        /// <param name="_imageSize">The size of the input image.</param>
+        /// <param name="_borderScale">The scale of the border.</param>
+        public SlicedUiComponent(Material _material, int _sizeX, int _sizeY,
+            int _left, int _right, int _top, int _bottom, float _imageSize, float _borderScale = 1f)
             : base(_sizeX: _sizeX, _sizeY: _sizeY)
         {
-            Left = _left;
-            Right = _right;
-            Top = _top;
-            Bottom = _bottom;
-            PaddingPixelScale = _paddingPixelScale;
+            left = _left;
+            right = _right;
+            top = _top;
+            bottom = _bottom;
+            imageSize = _imageSize;
+            borderScale = _borderScale;
 
             BuildVertexMesh();
             // Indices are pre-written, so they are not generated at runtime
 
             meshRenderer.SetVertexArrays(vertices, indices);
-            SetColor(_startColor);
+            meshRenderer.SetMaterial(_material);
         }
 
         /// <summary>
@@ -95,25 +97,23 @@ namespace Electron2D.Core.UserInterface
         /// </summary>
         private void BuildVertexMesh()
         {
-            // UI must be scaled 2x to compensate for the Transform scaling (This will be fixed in the future)
-            float sx = SizeX * 2;
-            float sy = SizeY * 2;
+            float sx = SizeX;
+            float sy = SizeY;
 
             // The positions of the padding
-            float L = -sx + Left * 2;
-            float R = sx - Right * 2;
-            float T = sy - Top * 2;
-            float B = -sy + Bottom * 2;
+            float L = -sx + left * borderScale;
+            float R = sx - right * borderScale;
+            float T = sy - top * borderScale;
+            float B = -sy + bottom * borderScale;
 
-            // The scale of the X and Y in comparison to a default of 100px
-            float scaleX = sx / PaddingPixelScale;
-            float scaleY = sy / PaddingPixelScale;
+            float ratioX = sx / imageSize;
+            float ratioY = sy / imageSize;
 
             // Creating the UV coordinates for the non-0 and non-1 UV values that should be the same regardless of the size of UI
-            float LU = Math.Clamp(Left * scaleX / sx, 0, 1f);
-            float RU = 1 - Math.Clamp(Right * scaleX / sx, 0, 1f);
-            float TV = 1 - Math.Clamp(Top * scaleY / sy, 0, 1f);
-            float BV = Math.Clamp(Bottom * scaleY / sy, 0, 1f);
+            float LU = Math.Clamp(left * ratioX / sx, 0, 1f);
+            float RU = 1 - Math.Clamp(right * ratioX / sx, 0, 1f);
+            float TV = 1 - Math.Clamp(top * ratioY / sy, 0, 1f);
+            float BV = Math.Clamp(bottom * ratioY / sy, 0, 1f);
 
             SetVertex(0, -sx, sy, 0, 1);
             SetVertex(1, L, sy, LU, 1);
