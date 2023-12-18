@@ -5,7 +5,7 @@ using System.Numerics;
 namespace Electron2D.Core
 {
     /// <summary>
-    /// A renderer specializing in displaying images, and using spritesheets.
+    /// Advanced version of <see cref="MeshRenderer"/> that allows for rendering sprites on a spritesheet.
     /// </summary>
     public class SpriteRenderer : MeshRenderer
     {
@@ -34,7 +34,7 @@ namespace Electron2D.Core
         public int CurrentColumn { get; private set; }
         public int CurrentRow { get; private set; }
 
-        public SpriteRenderer(Transform _transform, Material _material, int _renderLayer = 1) : base(_transform, _material, _renderLayer)
+        public SpriteRenderer(Transform _transform, Material _material, int _renderLayer = 1) : base(_transform, _material)
         {
             // Must be called in order for HasVertexData to be true
             SetVertexArrays(vertices, indices);

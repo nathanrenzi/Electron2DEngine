@@ -8,7 +8,7 @@ namespace Electron2D.Core.Rendering
     /// <summary>
     /// A multi-purpose mesh renderer.
     /// </summary>
-    public class MeshRenderer : Component, IRenderable
+    public class MeshRenderer : Component
     {
         public float[] vertices;
         public uint[] indices;
@@ -30,14 +30,12 @@ namespace Electron2D.Core.Rendering
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
 
-        public MeshRenderer(Transform _transform, Material _material, int _renderLayer = 1)
+        public MeshRenderer(Transform _transform, Material _material)
         {
             transform = _transform;
             Material = _material;
-            RenderLayer = _renderLayer;
 
             MeshRendererSystem.Register(this);
-            RenderLayerManager.OrderRenderable(this);
         }
 
         protected override void OnDispose()
@@ -151,8 +149,6 @@ namespace Electron2D.Core.Rendering
 
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
-
-        public int GetRenderLayer() => RenderLayer;
     }
 
     /// <summary>

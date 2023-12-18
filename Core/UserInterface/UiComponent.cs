@@ -9,7 +9,16 @@ namespace Electron2D.Core.UI
 {
     public abstract class UiComponent : Entity, IRenderable
     {
-        public bool Visible = true;
+        public bool Visible
+        {
+            get => visible;
+            set
+            {
+                visible = value;
+                InvokeUiAction(UiEvent.Visibility);
+            }
+        }
+        private bool visible = true;
 
         public bool UsingMeshRenderer { get; }
         public bool UseScreenPosition
@@ -96,6 +105,41 @@ namespace Electron2D.Core.UI
                 return SizeY / 2f + (-Anchor.Y * SizeY / 2f);
             }
         }
+
+        public bool ShowBoundsDebug
+        {
+            get => showBoundsDebug;
+            set
+            {
+                showBoundsDebug = value;
+
+                // Creating the sprites for the bounds.
+                if (s1 == null && showBoundsDebug)
+                {
+                    // Initializing debug sprites
+                    Shader shader = GlobalShaders.DefaultTexture;
+                    s1 = new Sprite(Material.Create(shader, Color.Black));
+                    s1.Renderer.UseUnscaledProjectionMatrix = true;
+                    s1.Renderer.RenderLayer = (int)RenderLayer.Interface + 100;
+                    s2 = new Sprite(Material.Create(shader, Color.Black));
+                    s2.Renderer.UseUnscaledProjectionMatrix = true;
+                    s2.Renderer.RenderLayer = (int)RenderLayer.Interface + 100;
+                    s3 = new Sprite(Material.Create(shader, Color.Black));
+                    s3.Renderer.UseUnscaledProjectionMatrix = true;
+                    s3.Renderer.RenderLayer = (int)RenderLayer.Interface + 100;
+                    s4 = new Sprite(Material.Create(shader, Color.Black));
+                    s4.Renderer.UseUnscaledProjectionMatrix = true;
+                    s4.Renderer.RenderLayer = (int)RenderLayer.Interface + 100;
+
+                    s1.Transform.Scale = Vector2.Zero;
+                    s2.Transform.Scale = Vector2.Zero;
+                    s3.Transform.Scale = Vector2.Zero;
+                    s4.Transform.Scale = Vector2.Zero;
+                }
+            }
+        }
+        private bool showBoundsDebug = false;
+        private Sprite s1, s2, s3, s4;
 
         public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, bool _useScreenPosition = true, bool _useMeshRenderer = true)
         {
@@ -215,7 +259,22 @@ namespace Electron2D.Core.UI
 
         public virtual void Render()
         {
-            if(Visible && UsingMeshRenderer) meshRenderer.Render();
+            if(ShowBoundsDebug && s1 != null)
+            {
+                s1.Transform.Position = new Vector2(Transform.Position.X + LeftXBound, Transform.Position.Y + (SizeY / 2f * -Anchor.Y));
+                s1.Transform.Scale = new Vector2(1, SizeY);
+                s2.Transform.Position = new Vector2(Transform.Position.X + RightXBound, Transform.Position.Y + (SizeY / 2f * -Anchor.Y));
+                s2.Transform.Scale = new Vector2(1, SizeY);
+                s3.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + TopYBound);
+                s3.Transform.Scale = new Vector2(SizeX, 1);
+                s4.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + BottomYBound);
+                s4.Transform.Scale = new Vector2(SizeX, 1);
+            }
+
+            if (Visible && UsingMeshRenderer)
+            {
+                meshRenderer.Render();
+            }
         }
 
         public int GetRenderLayer() => UiRenderLayer + (int)RenderLayer.Interface;
@@ -246,5 +305,6 @@ namespace Electron2D.Core.UI
         HoverEnd,
         Resize,
         Anchor,
+        Visibility
     }
 }

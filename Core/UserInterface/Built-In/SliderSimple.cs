@@ -103,9 +103,9 @@ namespace Electron2D.Core.UserInterface
         private bool initialized = false;
 
         public SliderSimple(Color _backgroundColor, Color _sliderColor, Color _handleColor, float _value, float _minValue, float _maxValue,
-            int _sizeX, int _sizeY, int _sliderHeight, int _backgroundHeight, int _handleSize, int _handlePadding = 0, int _uiRenderLayer = 0, bool _useScreenPosition = true, bool _interactable = true,
+            int _sizeX, int _sliderHeight, int _backgroundHeight, int _handleSize, int _handlePadding = 0, int _uiRenderLayer = 0, bool _useScreenPosition = true, bool _interactable = true,
             bool _allowNonHandleValueUpdates = true, bool _forceWholeNumbers = false)
-            : base(_uiRenderLayer, _sizeX, _sizeY, true, _useScreenPosition, false)
+            : base(_uiRenderLayer, _sizeX, (int)MathF.Max(_sliderHeight, _backgroundHeight), true, _useScreenPosition, false)
         {
             SliderHeight = _sliderHeight;
             BackgroundHeight = _backgroundHeight;
@@ -143,15 +143,15 @@ namespace Electron2D.Core.UserInterface
         {
             if (!initialized) return;
 
-            backgroundPanel.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + (BottomYBound / 2f));
+            backgroundPanel.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + (-Anchor.Y * BackgroundHeight/2f));
             backgroundPanel.SizeX = SizeX;
             backgroundPanel.SizeY = BackgroundHeight;
 
             float endPosition = ((SizeX-HandlePadding*2) * Value01);
-            sliderPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound, Transform.Position.Y + (BottomYBound / 2f));
+            sliderPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound, Transform.Position.Y + (-Anchor.Y * BackgroundHeight / 2f));
             sliderPanel.SizeX = endPosition + HandlePadding;
             sliderPanel.SizeY = SliderHeight;
-            handlePanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding + endPosition, Transform.Position.Y + (BottomYBound/2f));
+            handlePanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding + endPosition, Transform.Position.Y + (-Anchor.Y * BackgroundHeight / 2f));
         }
 
         private void OnUpdate_Interact()
@@ -177,6 +177,11 @@ namespace Electron2D.Core.UserInterface
                 case UiEvent.Anchor:
                 case UiEvent.Resize:
                     UpdateDisplay();
+                    break;
+                case UiEvent.Visibility:
+                    sliderPanel.Visible = Visible;
+                    backgroundPanel.Visible = Visible;
+                    handlePanel.Visible = Visible;
                     break;
             }
         }

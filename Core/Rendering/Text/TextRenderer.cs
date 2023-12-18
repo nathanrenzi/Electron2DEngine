@@ -65,8 +65,6 @@ namespace Electron2D.Core.Rendering.Text
             }
         }
         private Rectangle bounds;
-        public bool ShowBoundsDebug = false;
-        private Sprite s1, s2, s3, s4; // testing sprites, remove these
 
         private List<int> lineOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
         private string formattedText;
@@ -106,20 +104,6 @@ namespace Electron2D.Core.Rendering.Text
 
             // This must be the last thing initialized, as it will reformat the text
             Text = _text;
-
-            Shader shader = GlobalShaders.DefaultTexture;
-            s1 = new Sprite(Material.Create(shader, Color.Black));
-            s1.Renderer.UseUnscaledProjectionMatrix = true;
-            s2 = new Sprite(Material.Create(shader, Color.Black));
-            s2.Renderer.UseUnscaledProjectionMatrix = true;
-            s3 = new Sprite(Material.Create(shader, Color.Black));
-            s3.Renderer.UseUnscaledProjectionMatrix = true;
-            s4 = new Sprite(Material.Create(shader, Color.Black));
-            s4.Renderer.UseUnscaledProjectionMatrix = true;
-            s1.Transform.Scale = Vector2.Zero;
-            s2.Transform.Scale = Vector2.Zero;
-            s3.Transform.Scale = Vector2.Zero;
-            s4.Transform.Scale = Vector2.Zero;
 
             TextRendererSystem.Register(this);
         }
@@ -405,19 +389,6 @@ namespace Electron2D.Core.Rendering.Text
 
             glBindVertexArray(0);
             glBindTexture(GL_TEXTURE_2D, 0);
-
-            // Bounds visualization
-            if (ShowBoundsDebug)
-            {
-                s1.Transform.Position = new Vector2(position.X + Bounds.Size.Width / 2, position.Y);
-                s1.Transform.Scale = new Vector2(Bounds.Size.Width, 1);
-                s2.Transform.Position = new Vector2(position.X + Bounds.Size.Width, position.Y - Bounds.Size.Height / 2);
-                s2.Transform.Scale = new Vector2(1, Bounds.Size.Height);
-                s3.Transform.Position = new Vector2(position.X + Bounds.Size.Width / 2, position.Y - Bounds.Size.Height);
-                s3.Transform.Scale = new Vector2(Bounds.Size.Width, 1);
-                s4.Transform.Position = new Vector2(position.X, position.Y - Bounds.Size.Height / 2);
-                s4.Transform.Scale = new Vector2(1, Bounds.Size.Height);
-            }
         }
         #endregion
     }

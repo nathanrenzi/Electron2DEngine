@@ -9,7 +9,7 @@ namespace Electron2D.Core.Rendering
     {
         public static event Action<int> onLayerRendered;
 
-        private static SortedList<int, List<IRenderable>> renderLayerOrderedList = new SortedList<int, List<IRenderable>>();
+        private static SortedList<int, List<IRenderable>> orderedLayerList = new SortedList<int, List<IRenderable>>();
 
         /// <summary>
         /// Registers or reorders the IRenderable in the render layer sorted list.
@@ -25,7 +25,7 @@ namespace Electron2D.Core.Rendering
             {
                 // If the render layer is registered in the sorted list, remove the gameobject from the value list
                 List<IRenderable> list;
-                if (renderLayerOrderedList.TryGetValue(_oldRenderLayer, out list))
+                if (orderedLayerList.TryGetValue(_oldRenderLayer, out list))
                 {
                     bool removed = list.Remove(_renderable);
                     if (!removed) Console.WriteLine($"Since item does not exist in layer {_oldRenderLayer}, cannot remove it.");
@@ -34,10 +34,10 @@ namespace Electron2D.Core.Rendering
 
             int renderOrder = _reorder ? _newRenderLayer : _renderable.GetRenderLayer();
             // If true, the render layer was not in the sorted list yet so it is added
-            if (!renderLayerOrderedList.TryAdd(renderOrder, new List<IRenderable> { _renderable }))
+            if (!orderedLayerList.TryAdd(renderOrder, new List<IRenderable> { _renderable }))
             {
                 // If false, the render layer already exists so the object must be added to an existing value list
-                renderLayerOrderedList[renderOrder].Add(_renderable);
+                orderedLayerList[renderOrder].Add(_renderable);
 
                 // The sorted list class is already sorted in ascending layer, so no extra sorting is necessary
             }
@@ -51,7 +51,7 @@ namespace Electron2D.Core.Rendering
         {
             // Removing the object from the render order dictionary
             List<IRenderable> list;
-            if (renderLayerOrderedList.TryGetValue(_renderable.GetRenderLayer(), out list))
+            if (orderedLayerList.TryGetValue(_renderable.GetRenderLayer(), out list))
             {
                 list.Remove(_renderable);
             }
@@ -62,14 +62,22 @@ namespace Electron2D.Core.Rendering
         /// </summary>
         public static void RenderAllLayers()
         {
-            foreach (KeyValuePair<int, List<IRenderable>> pair in renderLayerOrderedList)
+            try
             {
-                onLayerRendered?.Invoke(pair.Key);
-
-                for (int i = 0; i < pair.Value.Count; i++)
+                foreach (KeyValuePair<int, List<IRenderable>> pair in orderedLayerList)
                 {
-                    pair.Value[i].Render();
+                    onLayerRendered?.Invoke(pair.Key);
+
+                    for (int i = 0; i < pair.Value.Count; i++)
+                    {
+                        pair.Value[i].Render();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Tried to create / destroy an IRenderable during the render loop. This is not allowed. See below.");
+                Debug.LogError(ex.Message);
             }
         }
     }

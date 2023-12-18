@@ -123,6 +123,7 @@ namespace Electron2D.Core.UserInterface
 
         public override void Render()
         {
+            if (!Visible) return;
             textRenderer.Render();
         }
     }

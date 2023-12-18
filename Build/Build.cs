@@ -32,30 +32,33 @@ namespace Electron2D.Build
         protected override void Load()
         {
             SetBackgroundColor(Color.FromArgb(255, 10, 10, 10));
-            
+
             // Load Custom Component Systems
             // Ex. ComponentSystem.Start();
             // -----------------------------
 
             InitializeFPSLabel();
 
-            TextLabel label = new TextLabel("Light Controller", "Build/Resources/Fonts/OpenSans.ttf", 25, Color.White, Color.White, new Vector2(200, 25),
-                TextAlignment.Center, TextAlignment.Center, TextAlignmentMode.Geometry);
+            //TextLabel label = new TextLabel("Light Controller", "Build/Resources/Fonts/OpenSans.ttf", 25, Color.White, Color.White, new Vector2(200, 25),
+            //    TextAlignment.Center, TextAlignment.Center, TextAlignmentMode.Geometry);
 
             slider = new SliderSimple("414643".HexToColor(255), "9BB6A1".HexToColor(255), Color.White, _value: 0, _minValue: 0, _maxValue: 10,
-                _sizeX: 200, _sizeY: 10, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 20, _handlePadding: 8);
+                _sizeX: 200, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 20, _handlePadding: 8);
+            slider.ShowBoundsDebug = true;
 
-            SliderSimple slider2 = new SliderSimple("414643".HexToColor(255), "9BB6A1".HexToColor(255), Color.White, _value: 0, _minValue: 0, _maxValue: 10,
-                _sizeX: 200, _sizeY: 10, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 20);
+            //label.Visible = false;
 
-            Material m = Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(60, 0, 0, 0), ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png"));
-            SlicedUiComponent bgPanel = new SlicedUiComponent(m, 600, 150, 100, 100, 100, 100, 200, 0.5f);
-            bgPanel.SetRenderLayer(-1);
-            bgPanel.Transform.Position = new Vector2(0, 10);
-            bgPanel.SetLayoutGroup(new ListLayoutGroup(new Vector4(20), 20, ListDirection.Vertical, SizeMode.WidthHeight, SizeMode.None, LayoutAlignment.Center, LayoutAlignment.Top));
-            bgPanel.Layout.AddToLayout(label);
-            bgPanel.Layout.AddToLayout(slider);
-            bgPanel.Layout.AddToLayout(slider2);
+            //SliderSimple slider2 = new SliderSimple("414643".HexToColor(255), "9BB6A1".HexToColor(255), Color.White, _value: 0, _minValue: 0, _maxValue: 10,
+            //    _sizeX: 200, _sizeY: 10, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 20);
+
+            //Material m = Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(60, 0, 0, 0), ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png"));
+            //SlicedUiComponent bgPanel = new SlicedUiComponent(m, 600, 150, 100, 100, 100, 100, 200, 0.5f);
+            //bgPanel.SetRenderLayer(-1);
+            //bgPanel.Transform.Position = new Vector2(0, 10);
+            //bgPanel.SetLayoutGroup(new ListLayoutGroup(new Vector4(20), 20, ListDirection.Vertical, SizeMode.WidthHeight, SizeMode.None, LayoutAlignment.Center, LayoutAlignment.Top));
+            //bgPanel.Layout.AddToLayout(label); 
+            //bgPanel.Layout.AddToLayout(slider);
+            //bgPanel.Layout.AddToLayout(slider2);
 
             #region Tilemap
             // Tilemap Setup
@@ -133,12 +136,12 @@ namespace Electron2D.Build
             fpsLabel = new TextLabel("FPS: 0", "Build/Resources/Fonts/OpenSans.ttf",
                 30, Color.White, Color.White, new Vector2(130, 30), TextAlignment.Left, TextAlignment.Center,
                 TextAlignmentMode.Geometry, TextOverflowMode.Disabled, _uiRenderLayer: 11);
-            fpsBackground = new Panel(Color.Black, 10, 140, 30);
+            Material m = Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(60, 0, 0, 0), ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png"));
+            fpsBackground = new SlicedUiComponent(m, 160, 40, 100, 100, 100, 100, 200, 0.2f);
 
             fpsLabel.Anchor = new Vector2(-1, 1);
-            fpsLabel.Transform.Position = new Vector2(-1920 / 2, 1080 / 2);
-            fpsBackground.Anchor = new Vector2(-1, 1);
-            fpsBackground.Transform.Position = new Vector2(-1920 / 2, 1080 / 2);
+            fpsLabel.Transform.Position = new Vector2((-1920 / 2) + 23, (1080 / 2) - 20);
+            fpsBackground.Transform.Position = new Vector2((-1920 / 2) + 70 + 20, (1080 / 2) - 15 - 20);
         }
 
         private void CalculateFPS()

@@ -22,37 +22,44 @@ namespace Electron2D.Core
         }
     }
 
-    public class Tilemap : Entity
+    public class Tilemap : Entity, IRenderable
     {
         public TileData[] TileTypes { get; set; }
-        public int sizeX { get; set; }
-        public int sizeY { get; set; }
-        public int[] tiles { get; set; }
+        public int SizeX { get; set; }
+        public int SizeY { get; set; }
+        public int[] Tiles { get; set; }
         // Add color array, maybe use alpha to pick which tile it's applied to?
-        public int tilePixelSize { get; set; }
+        public int TilePixelSize { get; set; }
+        public int RenderLayer;
 
         private Transform transform;
         private MeshRenderer renderer;
-
         private bool isDirty = false;
 
         public Tilemap(Material _material, TileData[] _tileTypes, int _tilePixelSize, int _sizeX, int _sizeY, int[] _tileArray, int _renderLayer = -1)
         {
-            tilePixelSize = _tilePixelSize * 2; // Compensating for Transform 0.5x scaling
+            TilePixelSize = _tilePixelSize * 2; // Compensating for Transform 0.5x scaling
             TileTypes = _tileTypes;
-            sizeX = _sizeX;
-            sizeY = _sizeY;
-            tiles = _tileArray;
+            SizeX = _sizeX;
+            SizeY = _sizeY;
+            Tiles = _tileArray;
+            RenderLayer = _renderLayer;
 
             transform = new Transform();
             AddComponent(transform);
 
-            renderer = new MeshRenderer(transform, _material, _renderLayer);
+            renderer = new MeshRenderer(transform, _material);
             AddComponent(renderer);
 
             isDirty = true;
 
             Game.OnUpdateEvent += RegenerateMesh;
+            RenderLayerManager.OrderRenderable(this);
+        }
+
+        ~Tilemap()
+        {
+            RenderLayerManager.RemoveRenderable(this);
         }
 
         public string ToJson()
@@ -82,16 +89,16 @@ namespace Electron2D.Core
             isDirty = false;
 
             int stride = 4;
-            float[] vertices = new float[tiles.Length * 4 * stride]; // 4 vertices per tile, x, y, u, v, cut out temp: r, g, b, a
-            uint[] indices = new uint[tiles.Length * 6];             // 6 indices per quad
+            float[] vertices = new float[Tiles.Length * 4 * stride]; // 4 vertices per tile, x, y, u, v, cut out temp: r, g, b, a
+            uint[] indices = new uint[Tiles.Length * 6];             // 6 indices per quad
             int realTileCount = 0;
 
-            for (int i = 0; i < tiles.Length; i++)
+            for (int i = 0; i < Tiles.Length; i++)
             {
-                if (tiles[i] == 255) continue; // If the tile is empty (255), skip
+                if (Tiles[i] == 255) continue; // If the tile is empty (255), skip
 
-                float xPos = (i % sizeX) * tilePixelSize;
-                float yPos = (i / sizeX) * tilePixelSize;
+                float xPos = (i % SizeX) * TilePixelSize;
+                float yPos = (i / SizeX) * TilePixelSize;
 
                 for (int a = 0; a < 4; a++) // Each vertex in the quad
                 {
@@ -100,19 +107,19 @@ namespace Electron2D.Core
                     switch (a)
                     {
                         case 0:
-                            xMod = tilePixelSize;
-                            yMod = tilePixelSize;
+                            xMod = TilePixelSize;
+                            yMod = TilePixelSize;
                             break;
                         case 1:
                             xMod = 0;
-                            yMod = tilePixelSize;
+                            yMod = TilePixelSize;
                             break;
                         case 2:
                             xMod = 0;
                             yMod = 0;
                             break;
                         case 3:
-                            xMod = tilePixelSize;
+                            xMod = TilePixelSize;
                             yMod = 0;
                             break;
                     }
@@ -122,9 +129,9 @@ namespace Electron2D.Core
                     vertices[i * stride * 4 + a * stride + 1] = yPos + yMod;            // Y
 
                     // Add submesh sprite support here using the 0, 1 values generated
-                    float u = xMod / tilePixelSize;
-                    float v = yMod / tilePixelSize;
-                    TileData data = TileTypes[tiles[i]];
+                    float u = xMod / TilePixelSize;
+                    float v = yMod / TilePixelSize;
+                    TileData data = TileTypes[Tiles[i]];
                     Vector2 newUV = Spritesheets.spritesheets.ContainsKey(renderer.Material.MainTexture) ? 
                         Spritesheets.GetVertexUV(renderer.Material.MainTexture,
                         data.SpriteColumn, data.SpriteRow, new Vector2(u, v)) : 
@@ -150,8 +157,15 @@ namespace Electron2D.Core
             renderer.SetVertexArrays(vertices, indices);
         }
 
-        public void SetTileID(int _x, int _y, byte _tileID) { tiles[_x + _y * sizeY] = _tileID; isDirty = true; }
-        public int GetTileID(int _x, int _y) => tiles[_x + _y * sizeY];
+        public void SetTileID(int _x, int _y, byte _tileID) { Tiles[_x + _y * SizeY] = _tileID; isDirty = true; }
+        public int GetTileID(int _x, int _y) => Tiles[_x + _y * SizeY];
         public TileData GetTileData(int _x, int _y) => TileTypes[GetTileID(_x, _y)];
+
+        public int GetRenderLayer() => RenderLayer;
+
+        public void Render()
+        {
+            renderer.Render();
+        }
     }
 }
