@@ -50,7 +50,7 @@ namespace Electron2D.Build
 
             Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"), _globalUniformTags: new string[] {"lights"});
 
-            LightManager.AmbientColor = Color.FromArgb(255, 255, 255, 255);
+            LightManager.AmbientColor = Color.FromArgb(255, 150, 150, 150);
 
             // Creating tiles
             int size = 500;
@@ -96,8 +96,10 @@ namespace Electron2D.Build
             #endregion
         }
 
+        Light l = new Light(Color.Blue, 50, 2, Light.LightType.Point, 10);
         protected override void Update()
         {
+            l.Transform.Position = Input.GetMouseWorldPosition();
             //for (int i = 0; i < lights.Count; i++)
             //{
             //    lights[i].Intensity = Easing.EaseInOutSine(slider.Value01);

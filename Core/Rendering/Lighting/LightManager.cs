@@ -2,6 +2,7 @@
 using Electron2D.Core.Rendering;
 using System.Drawing;
 using System.Numerics;
+using static Electron2D.Core.Light;
 
 namespace Electron2D.Core
 {
@@ -32,6 +33,8 @@ namespace Electron2D.Core
             }
         }
 
+        public bool IsDirty { get; set; }
+
         // MAKE SURE TO CHANGE THESE VALUES IN SHADERS TOO
         public const int MAX_POINT_LIGHTS = 16;
         public List<Light> PointLightsInScene = new List<Light>();
@@ -44,7 +47,49 @@ namespace Electron2D.Core
         public const int MAX_DIRECTIONAL_LIGHTS = 1;
         public List<Light> DirectionalLightsInScene = new List<Light>();
 
-        public Action<Light.LightType> OnLightsUpdated;
+        public void RegisterLight(Light _light, LightType _type)
+        {
+            switch (_type)
+            {
+                case LightType.Point:
+                    PointLightsInScene.Add(_light);
+                    break;
+                case LightType.Spot:
+                    SpotLightsInScene.Add(_light);
+                    break;
+                case LightType.Directional:
+                    DirectionalLightsInScene.Add(_light);
+                    break;
+            }
+        }
+
+        public void UnregisterLight(Light _light, LightType _type)
+        {
+            switch (_type)
+            {
+                case LightType.Point:
+                    PointLightsInScene.Remove(_light);
+                    break;
+                case LightType.Spot:
+                    SpotLightsInScene.Remove(_light);
+                    break;
+                case LightType.Directional:
+                    DirectionalLightsInScene.Remove(_light);
+                    break;
+            }
+        }
+
+        public void CheckDirty()
+        {
+            for (int i = 0; i < PointLightsInScene.Count; i++)
+            {
+                if (PointLightsInScene[i].IsDirty)
+                {
+                    IsDirty = true;
+                    PointLightsInScene[i].IsDirty = false;
+                }
+            }
+        }
 
         public void ApplyUniform(Shader _shader)
         {

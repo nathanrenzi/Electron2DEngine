@@ -28,6 +28,10 @@ namespace Electron2D.Core
             }
         }
 
+        public bool IsDirty { get; set; } = true;
+
+        public void CheckDirty() { } // Does not need to be implemented as time will always need to be set
+
         public void ApplyUniform(Shader _shader)
         {
             _shader.SetFloat("time", Time.TotalElapsedSeconds);

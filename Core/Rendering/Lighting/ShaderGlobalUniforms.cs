@@ -8,6 +8,8 @@ namespace Electron2D.Core.Rendering
     public interface IGlobalUniform
     {
         public void ApplyUniform(Shader _shader);
+        public bool IsDirty { get; set; }
+        public void CheckDirty();
     }
 
     /// <summary>
@@ -50,9 +52,22 @@ namespace Electron2D.Core.Rendering
         /// </summary>
         public static void UpdateShaders()
         {
+            // Calculating if each uniform is dirty
+            foreach (var uniform in globalUniforms)
+            {
+                uniform.Value.CheckDirty();
+            }
+
+            // Setting these new values
             for (int i = 0; i < shaders.Count; i++)
             {
                 UpdateShader(shaders[i]);
+            }
+
+            // Resetting the dirty flag in each uniform
+            foreach (var uniform in globalUniforms)
+            {
+                uniform.Value.IsDirty = false;
             }
         }
 
@@ -78,7 +93,10 @@ namespace Electron2D.Core.Rendering
         {
             if(globalUniforms.TryGetValue(_uniformKey, out IGlobalUniform uniform))
             {
-                uniform.ApplyUniform(_shader);
+                if(uniform.IsDirty)
+                {
+                    uniform.ApplyUniform(_shader);
+                }
             }
             else
             {

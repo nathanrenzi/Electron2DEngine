@@ -13,12 +13,47 @@ namespace Electron2D.Core
     public class Light : Entity
     {
         public enum LightType { Point, Spot, Directional }
-        public LightType Type;
+        public LightType Type { get; private set; }
+
         public Color Color;
-        public float Radius;
-        public float Height;
-        public float Intensity;
+        private Color color;
+
+        public float Radius
+        {
+            get => radius;
+            set
+            {
+                radius = value;
+                IsDirty = true;
+            }
+        }
+        public float radius;
+
+        public float Height
+        {
+            get => height;
+            set
+            {
+                height = value;
+                IsDirty = true;
+            }
+        }
+        public float height;
+
+        public float Intensity
+        {
+            get => intensity;
+            set
+            {
+                intensity = value;
+                IsDirty = true;
+            }
+        }
+        public float intensity;
+
         public Transform Transform;
+
+        public bool IsDirty { get; set; }
 
         public Light(Color _color, float _radius, float _height, LightType _type = LightType.Point, float _intensity = 1)
         {
@@ -27,41 +62,17 @@ namespace Electron2D.Core
             Radius = _radius;
             Height = _height;
             Intensity = _intensity;
+
             Transform = new Transform();
             AddComponent(Transform);
+            Transform.onPositionChanged += () => IsDirty = true;
 
-            switch (Type)
-            {
-                case LightType.Point:
-                    LightManager.Instance.PointLightsInScene.Add(this);
-                    break;
-                case LightType.Spot:
-                    LightManager.Instance.SpotLightsInScene.Add(this);
-                    break;
-                case LightType.Directional:
-                    LightManager.Instance.DirectionalLightsInScene.Add(this);
-                    break;
-            }
-
-            LightManager.Instance.OnLightsUpdated?.Invoke(Type);
+            LightManager.Instance.RegisterLight(this, _type);
         }
 
         protected override void OnDispose()
         {
-            switch (Type)
-            {
-                case LightType.Point:
-                    LightManager.Instance.PointLightsInScene.Remove(this);
-                    break;
-                case LightType.Spot:
-                    LightManager.Instance.SpotLightsInScene.Remove(this);
-                    break;
-                case LightType.Directional:
-                    LightManager.Instance.DirectionalLightsInScene.Remove(this);
-                    break;
-            }
-
-            LightManager.Instance.OnLightsUpdated?.Invoke(Type);
+            LightManager.Instance.UnregisterLight(this, Type);
         }
     }
 }
