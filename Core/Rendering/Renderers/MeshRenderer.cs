@@ -30,6 +30,15 @@ namespace Electron2D.Core.Rendering
         public bool IsDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
 
+        public bool UseStencilBuffer { get; set; } = false;
+        public bool StencilPreClearBuffer { get; set; } = false;
+        public int StencilFail { get; set; } = GL_KEEP;
+        public int StencilPass { get; set; } = GL_KEEP;
+        public uint StencilMask { get; set; } = 0x00;
+        public int StencilFunction { get; set; } = GL_ALWAYS;
+        public int StencilReference { get; set; } = 1;
+        public uint StencilFunctionMask { get; set; } = 0xFF;
+
         public MeshRenderer(Transform _transform, Material _material)
         {
             transform = _transform;
@@ -138,6 +147,24 @@ namespace Electron2D.Core.Rendering
                 vertexBuffer.UpdateData(vertices);
                 // If index array also needs to be updated at some point, add a check here for that
                 IsDirty = false;
+            }
+
+            if(UseStencilBuffer)
+            {
+                //https://learnopengl.com/Advanced-OpenGL/Stencil-testing
+                if (StencilPreClearBuffer)
+                    glClear(GL_STENCIL_BUFFER_BIT);
+
+                glStencilOp(StencilFail, StencilPass, StencilPass);
+                glStencilFunc(StencilFunction, StencilReference, StencilMask);
+                glStencilMask(StencilMask);
+            }
+            else
+            {
+                // Don't update the buffer
+                glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+                glStencilFunc(GL_ALWAYS, 0, 0xFF);
+                glStencilMask(0x00);
             }
 
             Material.Use();

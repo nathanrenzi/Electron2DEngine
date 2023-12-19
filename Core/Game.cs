@@ -66,6 +66,7 @@ namespace Electron2D.Core
 
             // Setup
             glEnable(GL_BLEND);
+            glEnable(GL_STENCIL_TEST);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             //glEnable(GL_FRAMEBUFFER_SRGB); // Gamma-corrects lighting, now done in lit shader.
             // -----------
@@ -120,7 +121,7 @@ namespace Electron2D.Core
 
                 // Rendering
                 double rendST = Glfw.Time;
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
                 glClearColor(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, 1);
 
                 Render();

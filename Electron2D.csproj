@@ -48,6 +48,7 @@
     <None Remove="Build\Resources\Textures\white_circle.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankTexture.png" />
+    <None Remove="Core\Rendering\Shaders\DefaultInterface.glsl" />
     <None Remove="Core\Rendering\Shaders\DefaultText.glsl" />
   </ItemGroup>
 
@@ -110,6 +111,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultText.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultInterface.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultVertex.glsl">

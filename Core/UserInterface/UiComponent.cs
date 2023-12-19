@@ -142,7 +142,7 @@ namespace Electron2D.Core.UI
         private bool showBoundsDebug = false;
         private Sprite s1, s2, s3, s4;
 
-        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, bool _useScreenPosition = true, bool _useMeshRenderer = true, bool _registerRenderable = true)
+        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, bool _useScreenPosition = true, bool _useMeshRenderer = true, bool _autoRender = true)
         {
             Transform = new Transform();
             Transform.onPositionChanged += () => InvokeUiAction(UiEvent.Position);
@@ -154,11 +154,11 @@ namespace Electron2D.Core.UI
             UiRenderLayer = _uiRenderLayer;
             UseScreenPosition = _useScreenPosition;
             UsingMeshRenderer = _useMeshRenderer;
-            registerRenderable = _registerRenderable;
+            registerRenderable = _autoRender;
 
             if(UsingMeshRenderer)
             {
-                meshRenderer = new MeshRenderer(Transform, Material.Create(GlobalShaders.DefaultTexture));
+                meshRenderer = new MeshRenderer(Transform, Material.Create(GlobalShaders.DefaultInterface));
                 AddComponent(meshRenderer);
                 if (UseScreenPosition) meshRenderer.UseUnscaledProjectionMatrix = true;
             }
@@ -166,7 +166,7 @@ namespace Electron2D.Core.UI
             if (_initialize) Initialize();
             SetColor(Color.White);
 
-            if(_registerRenderable) RenderLayerManager.OrderRenderable(this);
+            if(_autoRender) RenderLayerManager.OrderRenderable(this);
             GlobalUI.MainCanvas.RegisterUiComponent(this);
         }
 
