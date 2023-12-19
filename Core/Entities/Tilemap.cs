@@ -12,8 +12,6 @@ namespace Electron2D.Core
         public string Name { get; set; } = "";
         public int SpriteColumn { get; set; } = 0;
         public int SpriteRow { get; set; } = 0;
-
-        public TileData() { }
         public TileData(string _name, int _spriteColumn, int _spriteRow)
         {
             Name = _name;

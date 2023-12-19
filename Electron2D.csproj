@@ -38,6 +38,15 @@
     <None Remove="Build\Resources\Textures\brickNormal.png" />
     <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
     <None Remove="Build\Resources\Textures\EnvironmentTilesNormal.png" />
+    <None Remove="Build\Resources\Textures\FantasyTileset\TX Plant.png" />
+    <None Remove="Build\Resources\Textures\FantasyTileset\TX Player.png" />
+    <None Remove="Build\Resources\Textures\FantasyTileset\TX Props.png" />
+    <None Remove="Build\Resources\Textures\FantasyTileset\TX Shadow Plant.png" />
+    <None Remove="Build\Resources\Textures\FantasyTileset\TX Shadow.png" />
+    <None Remove="Build\Resources\Textures\FantasyTileset\TX Struct.png" />
+    <None Remove="Build\Resources\Textures\FantasyTileset\TX Tileset Grass.png" />
+    <None Remove="Build\Resources\Textures\FantasyTileset\TX Tileset Stone Ground.png" />
+    <None Remove="Build\Resources\Textures\FantasyTileset\TX Tileset Wall.png" />
     <None Remove="Build\Resources\Textures\mouseBorder.png" />
     <None Remove="Build\Resources\Textures\rubble.png" />
     <None Remove="Build\Resources\Textures\rubbleNormal.png" />
@@ -72,6 +81,33 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\EnvironmentTilesNormal.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Plant.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Player.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Props.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Shadow Plant.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Shadow.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Struct.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Tileset Grass.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Tileset Stone Ground.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Tileset Wall.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\rubble.png">
