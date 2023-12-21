@@ -9,7 +9,12 @@ namespace Electron2D.Core
         public SpriteRenderer Renderer;
         public int RenderLayer;
 
-        public Sprite(Material _material, int _sizeX = 100, int _sizeY = 100, int _renderLayer = 1)
+        /// <param name="_material">The material to use for the sprite. This includes the textures.</param>
+        /// <param name="_spritesPerSecond">The number of sprite switches per second.</param>
+        /// <param name="_sizeX"></param>
+        /// <param name="_sizeY"></param>
+        /// <param name="_renderLayer"></param>
+        public Sprite(Material _material, float _spritesPerSecond = 0, int _sizeX = 100, int _sizeY = 100, int _renderLayer = 1)
         {
             RenderLayer = _renderLayer;
 
@@ -19,9 +24,14 @@ namespace Electron2D.Core
 
             Renderer = new SpriteRenderer(Transform, _material, _renderLayer);
             AddComponent(Renderer);
+            Renderer.SetSpriteAnimationSpeed(_spritesPerSecond);
 
             RenderLayerManager.OrderRenderable(this);
         }
+
+        public void NextSprite() { Renderer.NextSprite(); }
+        public void PreviousSprite() { Renderer.PreviousSprite(); }
+        public void SetSpriteAnimationSpeed(float _spritesPerSecond) { Renderer.SetSpriteAnimationSpeed(_spritesPerSecond); }
 
         ~Sprite()
         {

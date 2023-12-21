@@ -52,7 +52,7 @@ namespace Electron2D.Core.Management
         /// Loads a texture into memory and returns it.
         /// After a texture is loaded, the already stored texture will be returned instead of creating a new Texture2D object.
         /// </summary>
-        /// <param name="_textureFileName">The local file path of the sound. Ex. Build/Resources/Textures/TextureNameHere.png</param>
+        /// <param name="_textureFileName">The local file path of the texture. Ex. Build/Resources/Textures/TextureNameHere.png</param>
         /// <returns></returns>
         public Texture2DArray LoadTextureArray(string _textureFileName, int _layers, bool _loadAsNonSRGBA = false)
         {
@@ -73,7 +73,7 @@ namespace Electron2D.Core.Management
         /// Loads a texture into memory and returns it.
         /// After a texture is loaded, the already stored texture will be returned instead of creating a new Texture2D object.
         /// </summary>
-        /// <param name="_textureFileName">The local file path of the sound. Ex. Build/Resources/Textures/TextureNameHere.png</param>
+        /// <param name="_textureFileName">The local file path of the texture. Ex. Build/Resources/Textures/TextureNameHere.png</param>
         /// <returns></returns>
         public Texture2D LoadTexture(string _textureFileName, bool _loadAsNonSRGBA = false)
         {

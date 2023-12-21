@@ -77,7 +77,6 @@ namespace Electron2D.Core.Rendering
         {
             vertices = _vertices;
             indices = _indices;
-            //defaultUV = _defaultUV;
 
             HasVertexData = true;
             if (_loadOnSetArrays) Load();
@@ -126,14 +125,18 @@ namespace Electron2D.Core.Rendering
             vertexBuffer = new VertexBuffer(vertices);
             indexBuffer = new IndexBuffer(indices);
 
-            // Telling the vertex array how the vertices are structured
-            layout = new BufferLayout();
-            layout.Add<float>(2); // Position
-            layout.Add<float>(2); // UV
+            CreateBufferLayout();
 
             vertexArray.AddBuffer(vertexBuffer, layout);
 
             IsLoaded = true;
+        }
+        protected virtual void CreateBufferLayout()
+        {
+            // Telling the vertex array how the vertices are structured
+            layout = new BufferLayout();
+            layout.Add<float>(2); // Position
+            layout.Add<float>(2); // UV
         }
 
         public unsafe void Render()

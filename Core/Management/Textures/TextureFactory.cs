@@ -43,7 +43,8 @@ namespace Electron2D.Core.Management
                 ImageLockMode.ReadOnly,
                 PixelFormat.Format32bppArgb);
 
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height, _layers, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height/_layers, _layers, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
+
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);

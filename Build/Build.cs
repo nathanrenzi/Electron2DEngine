@@ -25,13 +25,14 @@ namespace Electron2D.Build
         private Tilemap tilemap;
         private List<Light> lights = new List<Light>();
         private List<float> lradius = new List<float>();
+        private Sprite s;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
-            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: true) { }
+            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false) { }
 
         protected override void Load()
         {
-            SetBackgroundColor(Color.FromArgb(255, 0, 0, 0));
+            SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
 
             // Load Custom Component Systems
             // Ex. ComponentSystem.Start();
@@ -39,61 +40,64 @@ namespace Electron2D.Build
 
             InitializeFPSLabel();
 
+            Texture2DArray tex = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/test_array.png", 6);
+            s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex), 12, 160, 160);
+
             //slider = new SliderSimple("414643".HexToColor(255), "9BB6A1".HexToColor(255), Color.White, _value: 0, _minValue: 0, _maxValue: 10,
             //    _sizeX: 200, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 10, _handlePadding: 5);
 
-            #region Tilemap
-            // Tilemap Setup
-            Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/FantasyTileset/TX Tileset Grass.png");
-            //Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/tilesNormal1.png", true);
-            Spritesheets.Add(tex1, 8, 8);
+            //#region Tilemap
+            //// Tilemap Setup
+            //Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/FantasyTileset/TX Tileset Grass.png");
+            ////Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/tilesNormal1.png", true);
+            //Spritesheets.Add(tex1, 8, 8);
 
-            Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"), _globalUniformTags: new string[] {"lights"});
+            //Shader diffuseShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/DefaultLit.glsl"), _globalUniformTags: new string[] {"lights"});
 
-            LightManager.AmbientColor = Color.FromArgb(255, 150, 150, 150);
+            //LightManager.AmbientColor = Color.FromArgb(255, 150, 150, 150);
 
-            // Creating tiles
-            int size = 500;
-            int tileTypes = 62;
-            int[] tiles = new int[size * size];
-            Random random = new Random();
-            for (int i = 0; i < tiles.Length; i++)
-            {
-                tiles[i] = random.Next(0, tileTypes);
-            }
-            //---------------
-
-            List<TileData> tileData = new List<TileData>();
-            for (int x = 0; x < 8; x++)
-            {
-                for (int y = 0; y < 4; y++)
-                {
-                    if (x > 5 && y == 0) continue; // Skipping bottom right 2 tiles
-
-                    tileData.Add(new TileData("Stone", x, y));
-                }
-            }
-            for (int x = 0; x < 8; x++)
-            {
-                for (int y = 4; y < 8; y++)
-                {
-                    tileData.Add(new TileData("Grass", x, y));
-                }
-            }
-
-            int tilePixelSize = 100;
-            tilemap = new Tilemap(Material.Create(diffuseShader, _mainTexture: tex1/*, _normalTexture: tex2*/, _useLinearFiltering: false, _normalScale: 1),
-                tileData.ToArray(), tilePixelSize, size, size, tiles);
-
-
-            //for (int i = 0; i < LightManager.MAX_POINT_LIGHTS; i++)
+            //// Creating tiles
+            //int size = 500;
+            //int tileTypes = 62;
+            //int[] tiles = new int[size * size];
+            //Random random = new Random();
+            //for (int i = 0; i < tiles.Length; i++)
             //{
-            //    Light l = new Light(Color.White, random.Next(1, 8) * 200, random.Next(4, 7), Light.LightType.Point, 2);
-            //    l.GetComponent<Transform>().Position = new Vector2(random.Next(0, size * tilePixelSize), random.Next(0, size * tilePixelSize));
-            //    lights.Add(l);
-            //    lradius.Add(l.Radius);
+            //    tiles[i] = random.Next(0, tileTypes);
             //}
-            #endregion
+            ////---------------
+
+            //List<TileData> tileData = new List<TileData>();
+            //for (int x = 0; x < 8; x++)
+            //{
+            //    for (int y = 0; y < 4; y++)
+            //    {
+            //        if (x > 5 && y == 0) continue; // Skipping bottom right 2 tiles
+
+            //        tileData.Add(new TileData("Stone", x, y));
+            //    }
+            //}
+            //for (int x = 0; x < 8; x++)
+            //{
+            //    for (int y = 4; y < 8; y++)
+            //    {
+            //        tileData.Add(new TileData("Grass", x, y));
+            //    }
+            //}
+
+            //int tilePixelSize = 100;
+            //tilemap = new Tilemap(Material.Create(diffuseShader, _mainTexture: tex1/*, _normalTexture: tex2*/, _useLinearFiltering: false, _normalScale: 1),
+            //    tileData.ToArray(), tilePixelSize, size, size, tiles);
+
+
+            ////for (int i = 0; i < LightManager.MAX_POINT_LIGHTS; i++)
+            ////{
+            ////    Light l = new Light(Color.White, random.Next(1, 8) * 200, random.Next(4, 7), Light.LightType.Point, 2);
+            ////    l.GetComponent<Transform>().Position = new Vector2(random.Next(0, size * tilePixelSize), random.Next(0, size * tilePixelSize));
+            ////    lights.Add(l);
+            ////    lradius.Add(l.Radius);
+            ////}
+            //#endregion
         }
 
         Light l = new Light(Color.Blue, 50, 2, Light.LightType.Point, 10);
