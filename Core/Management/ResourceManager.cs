@@ -11,6 +11,7 @@ namespace Electron2D.Core.Management
     {
         private static ResourceManager instance = null;
         private static readonly object loc = new();
+        private IDictionary<string, Texture2DArray> textureArrayCache = new Dictionary<string, Texture2DArray>();
         private IDictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
         private IDictionary<uint, Texture2D> textureHandleCache = new Dictionary<uint, Texture2D>();
         private IDictionary<FontArguments, FontGlyphStore> fontCache = new Dictionary<FontArguments, FontGlyphStore>();
@@ -30,6 +31,42 @@ namespace Electron2D.Core.Management
                 }
             }
         }
+
+        #region Texture Arrays
+        /// <summary>
+        /// Removes a texture from the cache. This is called from <see cref="Texture2DArray.Dispose()"/>
+        /// </summary>
+        /// <param name="_texture">The texture to remove from the cache.</param>
+        public void RemoveTextureArray(Texture2DArray _texture)
+        {
+            foreach (var pair in textureArrayCache)
+            {
+                if (pair.Value == _texture)
+                {
+                    textureCache.Remove(pair.Key);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Loads a texture into memory and returns it.
+        /// After a texture is loaded, the already stored texture will be returned instead of creating a new Texture2D object.
+        /// </summary>
+        /// <param name="_textureFileName">The local file path of the sound. Ex. Build/Resources/Textures/TextureNameHere.png</param>
+        /// <returns></returns>
+        public Texture2DArray LoadTextureArray(string _textureFileName, int _layers, bool _loadAsNonSRGBA = false)
+        {
+            textureArrayCache.TryGetValue(_textureFileName, out var value);
+            if (value is not null)
+            {
+                return value;
+            }
+
+            value = TextureFactory.LoadArray(_textureFileName, _layers, _loadAsNonSRGBA);
+            textureArrayCache.Add(_textureFileName, value);
+            return value;
+        }
+        #endregion
 
         #region Textures
         /// <summary>

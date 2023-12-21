@@ -4,7 +4,7 @@ using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Core.Rendering
 {
-    public class Texture2D : IDisposable
+    public class Texture2D : ITexture, IDisposable
     {
         private bool _disposed;
         public uint Handle { get; private set; }

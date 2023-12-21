@@ -14,17 +14,17 @@ namespace Electron2D.Core.Rendering
         public Shader Shader;
         private static Shader shaderInUse = null;
 
-        public Texture2D MainTexture;
+        public ITexture MainTexture;
         private static Texture2D mainTextureInUse = null;
 
-        public Texture2D NormalTexture;
+        public ITexture NormalTexture;
         private static Texture2D normalTextureInUse = null;
         public float NormalScale;
 
         public Color MainColor;
         public bool UsingLinearFiltering { get; }
 
-        private Material(Shader _shader, Texture2D _mainTexture, Texture2D _normalTexture, Color _mainColor, bool _useLinearFiltering, float _normalScale)
+        private Material(Shader _shader, ITexture _mainTexture, ITexture _normalTexture, Color _mainColor, bool _useLinearFiltering, float _normalScale)
         {
             Shader = _shader;
             MainTexture = _mainTexture;
@@ -52,9 +52,9 @@ namespace Electron2D.Core.Rendering
         }
 
         #region Static Methods
-        public static Material Create(Shader _shader, Texture2D _mainTexture = null, Texture2D _normalTexture = null, bool _useLinearFiltering = false, float _normalScale = 1)
+        public static Material Create(Shader _shader, ITexture _mainTexture = null, ITexture _normalTexture = null, bool _useLinearFiltering = false, float _normalScale = 1)
             => Create(_shader, Color.White, _mainTexture, _normalTexture, _useLinearFiltering, _normalScale);
-        public static Material Create(Shader _shader, Color _mainColor, Texture2D _mainTexture = null, Texture2D _normalTexture = null, bool _useLinearFiltering = false, float _normalScale = 1)
+        public static Material Create(Shader _shader, Color _mainColor, ITexture _mainTexture = null, ITexture _normalTexture = null, bool _useLinearFiltering = false, float _normalScale = 1)
         {
             if (blankTexture == null)
                 blankTexture = ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/BlankTexture.png");
@@ -75,6 +75,7 @@ namespace Electron2D.Core.Rendering
             NormalTexture.Use(GL_TEXTURE1);
 
             Shader.Use();
+            Shader.SetFloat("totalLayers", MainTexture.GetTextureLayers());
             Shader.SetColor("mainColor", MainColor);
             Shader.SetFloat("normalScale", NormalScale);
         }

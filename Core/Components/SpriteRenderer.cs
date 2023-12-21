@@ -36,30 +36,10 @@ namespace Electron2D.Core
 
         public SpriteRenderer(Transform _transform, Material _material, int _renderLayer = 1) : base(_transform, _material)
         {
+            RenderLayer = _renderLayer;
+
             // Must be called in order for HasVertexData to be true
             SetVertexArrays(vertices, indices);
-        }
-
-        public void SetSubSprite(int _column, int _row)
-        {
-            if (!HasVertexData) return;
-
-            CurrentColumn = _column;
-            CurrentRow = _row;
-
-            int loops = vertices.Length / layout.GetRawStride();
-            Vector2 newUV;
-            for (int i = 0; i < loops; i++)
-            {
-                // Getting the new UV from the spritesheet
-                newUV = Spritesheets.GetVertexUV(Material.MainTexture, _column, _row, GetDefaultUV(i));
-
-                // Setting the new UV
-                vertices[(i * layout.GetRawStride()) + (int)MeshVertexAttribute.UvX] = newUV.X;
-                vertices[(i * layout.GetRawStride()) + (int)MeshVertexAttribute.UvY] = newUV.Y;
-            }
-
-            IsDirty = true;
         }
 
         /// <summary>

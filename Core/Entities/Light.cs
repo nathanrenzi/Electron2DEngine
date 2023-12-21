@@ -15,7 +15,15 @@ namespace Electron2D.Core
         public enum LightType { Point, Spot, Directional }
         public LightType Type { get; private set; }
 
-        public Color Color;
+        public Color Color
+        {
+            get => color;
+            set
+            {
+                color = value;
+                IsDirty = true;
+            }
+        }
         private Color color;
 
         public float Radius

@@ -130,11 +130,11 @@ namespace Electron2D.Core
                     float u = xMod / TilePixelSize;
                     float v = yMod / TilePixelSize;
                     TileData data = TileTypes[Tiles[i]];
-                    Vector2 newUV = Spritesheets.spritesheets.ContainsKey(renderer.Material.MainTexture) ? 
-                        Spritesheets.GetVertexUV(renderer.Material.MainTexture,
-                        data.SpriteColumn, data.SpriteRow, new Vector2(u, v)) : 
-                        new Vector2(u, v);
-
+                    //Vector2 newUV = Spritesheets.spritesheets.ContainsKey(renderer.Material.MainTexture) ? 
+                    //    Spritesheets.GetVertexUV(renderer.Material.MainTexture,
+                    //    data.SpriteColumn, data.SpriteRow, new Vector2(u, v)) : 
+                    //    new Vector2(u, v);
+                    Vector2 newUV = new Vector2(u, v);
                     vertices[i * stride * 4 + a * stride + 2] = newUV.X;                // U
                     vertices[i * stride * 4 + a * stride + 3] = newUV.Y;                // V
                 }

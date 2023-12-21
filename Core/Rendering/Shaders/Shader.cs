@@ -113,7 +113,7 @@ namespace Electron2D.Core.Rendering.Shaders
             {
                 // Failed to compile
                 string error = glGetShaderInfoLog(fs);
-                Debug.LogError("ERROR COMPILING VERTEX SHADER: " + error);
+                Debug.LogError("ERROR COMPILING FRAGMENT SHADER: " + error);
                 return false;
             }
             // ------------------
