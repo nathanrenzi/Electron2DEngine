@@ -45,7 +45,7 @@ namespace Electron2D.Build
             Sprite s2 = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex2), 16, 480, 320);
 
             Texture2DArray tex3 = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_Idle.png", 120, 80);
-            Sprite s3 = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex3), 12, 480, 320);
+            Sprite s3 = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex3), 6, 480, 320);
             s3.Transform.Position = new Vector2(-500, 0);
 
             #region Tilemap

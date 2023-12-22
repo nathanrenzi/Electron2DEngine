@@ -235,6 +235,9 @@
     <EmbeddedResource Include="Build\Resources\Textures\tilesNormal1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Textures\white_circle.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\CoreTextures\BlankNormal.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
