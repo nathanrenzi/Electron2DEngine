@@ -21,11 +21,8 @@ namespace Electron2D.Build
         private int displayFrames;
         private int frames;
         private float lastFrameCountTime;
-        private SliderSimple slider;
+
         private Tilemap tilemap;
-        private List<Light> lights = new List<Light>();
-        private List<float> lradius = new List<float>();
-        private Sprite s;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
             $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false) { }
@@ -40,13 +37,18 @@ namespace Electron2D.Build
 
             InitializeFPSLabel();
 
-            Texture2DArray tex = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/test_array.png", 6);
-            s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex), 12, 160, 160);
+            Texture2DArray tex = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_AttackComboNoMovement.png", 120, 80);
+            Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex), 16, 480, 320);
+            s.Transform.Position = new Vector2(500, 0);
 
-            //slider = new SliderSimple("414643".HexToColor(255), "9BB6A1".HexToColor(255), Color.White, _value: 0, _minValue: 0, _maxValue: 10,
-            //    _sizeX: 200, _sliderHeight: 10, _backgroundHeight: 6, _handleSize: 10, _handlePadding: 5);
+            Texture2DArray tex2 = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_Run.png", 120, 80);
+            Sprite s2 = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex2), 16, 480, 320);
 
-            //#region Tilemap
+            Texture2DArray tex3 = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_Idle.png", 120, 80);
+            Sprite s3 = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex3), 12, 480, 320);
+            s3.Transform.Position = new Vector2(-500, 0);
+
+            #region Tilemap
             //// Tilemap Setup
             //Texture2D tex1 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/FantasyTileset/TX Tileset Grass.png");
             ////Texture2D tex2 = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/tilesNormal1.png", true);
@@ -97,18 +99,11 @@ namespace Electron2D.Build
             ////    lights.Add(l);
             ////    lradius.Add(l.Radius);
             ////}
-            //#endregion
+            #endregion
         }
 
-        Light l = new Light(Color.Blue, 50, 2, Light.LightType.Point, 10);
         protected override void Update()
         {
-            l.Transform.Position = Input.GetMouseWorldPosition();
-            //for (int i = 0; i < lights.Count; i++)
-            //{
-            //    lights[i].Intensity = Easing.EaseInOutSine(slider.Value01);
-            //    lights[i].Radius = slider.Value01 * lradius[i];
-            //}
             CameraMovement();
             CalculateFPS();
         }

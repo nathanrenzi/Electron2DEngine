@@ -4,6 +4,7 @@ using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Text;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 
 namespace Electron2D.Core.Management
 {
@@ -49,10 +50,9 @@ namespace Electron2D.Core.Management
         }
 
         /// <summary>
-        /// Loads a texture into memory and returns it.
-        /// After a texture is loaded, the already stored texture will be returned instead of creating a new Texture2D object.
+        /// Directly loads a vertical spritesheet as a texture array, from bottom to top.
         /// </summary>
-        /// <param name="_textureFileName">The local file path of the texture. Ex. Build/Resources/Textures/TextureNameHere.png</param>
+        /// <param name="_textureFileName"></param>
         /// <returns></returns>
         public Texture2DArray LoadTextureArray(string _textureFileName, int _layers, bool _loadAsNonSRGBA = false)
         {
@@ -63,6 +63,52 @@ namespace Electron2D.Core.Management
             }
 
             value = TextureFactory.LoadArray(_textureFileName, _layers, _loadAsNonSRGBA);
+            textureArrayCache.Add(_textureFileName, value);
+            return value;
+        }
+
+        /// <summary>
+        /// Loads multiple individual textures into one texture array. All textures must be the same size.
+        /// </summary>
+        /// <param name="_textureFileNames"></param>
+        /// <param name="_loadAsNonSRGBA"></param>
+        /// <returns></returns>
+        public Texture2DArray LoadTextureArray(string[] _textureFileNames, bool _loadAsNonSRGBA = false)
+        {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < _textureFileNames.Length; i++)
+            {
+                builder.Append(_textureFileNames[i]);
+            }
+
+            textureArrayCache.TryGetValue(builder.ToString(), out var value);
+            if (value is not null)
+            {
+                return value;
+            }
+
+            value = TextureFactory.LoadArray(_textureFileNames, _loadAsNonSRGBA);
+            textureArrayCache.Add(builder.ToString(), value);
+            return value;
+        }
+
+        /// <summary>
+        /// Loads a spritesheet as a texture array, left to right, top to bottom.
+        /// </summary>
+        /// <param name="_textureFileName"></param>
+        /// <param name="_spriteWidth"></param>
+        /// <param name="_spriteHeight"></param>
+        /// <param name="_loadAsNonSRGBA"></param>
+        /// <returns></returns>
+        public Texture2DArray LoadTextureArray(string _textureFileName, int _spriteWidth,  int _spriteHeight, bool _loadAsNonSRGBA = false)
+        {
+            textureArrayCache.TryGetValue(_textureFileName, out var value);
+            if (value is not null)
+            {
+                return value;
+            }
+
+            value = TextureFactory.LoadArray(_textureFileName, _spriteWidth, _spriteHeight, _loadAsNonSRGBA);
             textureArrayCache.Add(_textureFileName, value);
             return value;
         }
