@@ -22,6 +22,19 @@ namespace Electron2D.Build
         private int frames;
         private float lastFrameCountTime;
 
+        // Test Player Animation
+        private PlayerAnimator animator;
+        private Sprite s;
+        private Texture2DArray attackCombo;
+        private Texture2DArray attackNormal;
+        private float speedMultiplier = 1.0f;
+        private float lastSpeedEvent = -1000;
+        private float lastAttackTime = -1000;
+        private float attackComboMinTime = 0.2f;
+        private float speedEaseInTime = 0.6f;
+        private float speedEaseOutTime = 0.75f;
+        // ---------------------
+
         private Tilemap tilemap;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
@@ -29,24 +42,28 @@ namespace Electron2D.Build
 
         protected override void Load()
         {
-            SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
-
             // Load Custom Component Systems
             // Ex. ComponentSystem.Start();
             // -----------------------------
 
+            SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
+
             InitializeFPSLabel();
 
-            Texture2DArray tex = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_AttackComboNoMovement.png", 120, 80);
-            Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex), 16, 480, 320);
-            s.Transform.Position = new Vector2(500, 0);
+            s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray), 16, 480, 320);
+            animator = new PlayerAnimator(s);
+            animator.StateMachine.SetCurrentState(PlayerState.IDLE);
+            attackCombo = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_AttackComboNoMovement.png", 120, 80);
+            attackNormal = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_AttackNoMovement.png", 120, 80);
 
-            Texture2DArray tex2 = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_Run.png", 120, 80);
-            Sprite s2 = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex2), 16, 480, 320);
+            //s.Transform.Position = new Vector2(500, 0);
 
-            Texture2DArray tex3 = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_Idle.png", 120, 80);
-            Sprite s3 = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex3), 6, 480, 320);
-            s3.Transform.Position = new Vector2(-500, 0);
+            //Texture2DArray tex2 = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_Run.png", 120, 80);
+            //Sprite s2 = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex2), 16, 480, 320);
+
+            //Texture2DArray tex3 = ResourceManager.Instance.LoadTextureArray("Build/Resources/Textures/KnightSpritesheets/_Idle.png", 120, 80);
+            //Sprite s3 = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, tex3), 6, 480, 320);
+            //s3.Transform.Position = new Vector2(-500, 0);
 
             #region Tilemap
             //// Tilemap Setup
@@ -104,8 +121,63 @@ namespace Electron2D.Build
 
         protected override void Update()
         {
+            PlayerMovement();
             CameraMovement();
             CalculateFPS();
+        }
+
+        private void PlayerMovement()
+        {
+            if (Input.GetMouseButtonDown(MouseButton.Left)) lastAttackTime = Time.TotalElapsedSeconds;
+            if(Input.GetMouseButton(MouseButton.Left))
+            {
+                if(animator.StateMachine.GetCurrentState().ID == PlayerState.ATTACK && Time.TotalElapsedSeconds - lastAttackTime >= attackComboMinTime)
+                {
+                    s.Renderer.Material.MainTexture = attackCombo;
+                }
+
+                lastSpeedEvent = Time.TotalElapsedSeconds;
+                animator.StateMachine.SetCurrentState(PlayerState.ATTACK);
+                return;
+            }
+
+            if ((Input.GetKeyDown(Keys.A) && !Input.GetKey(Keys.D)) || (Input.GetKeyDown(Keys.D) && !Input.GetKey(Keys.A)))
+            {
+                // Start Running
+                lastSpeedEvent = Time.TotalElapsedSeconds;
+            }
+            if((Input.GetKeyUp(Keys.A) && !Input.GetKey(Keys.D)) || (Input.GetKeyUp(Keys.D) && !Input.GetKey(Keys.A)))
+            {
+                // Stop Running
+                lastSpeedEvent = Time.TotalElapsedSeconds;
+            }
+
+            if (Input.GetKey(Keys.A))
+            {
+                s.Transform.Scale.X = -MathF.Abs(s.Transform.Scale.X);
+                animator.StateMachine.SetCurrentState(PlayerState.RUN);
+                speedMultiplier = MathEx.Clamp01(Easing.EaseOutQuad(MathEx.Clamp01((Time.TotalElapsedSeconds - lastSpeedEvent) / speedEaseInTime) + 0.2f));
+            }
+            else if (Input.GetKey(Keys.D))
+            {
+                s.Transform.Scale.X = MathF.Abs(s.Transform.Scale.X);
+                animator.StateMachine.SetCurrentState(PlayerState.RUN);
+                speedMultiplier = MathEx.Clamp01(Easing.EaseOutQuad(MathEx.Clamp01((Time.TotalElapsedSeconds - lastSpeedEvent) / speedEaseInTime) + 0.2f));
+            }
+            else
+            {
+                if(speedMultiplier > 0.35f)
+                {
+                    speedMultiplier = Easing.EaseInSine(1 - MathEx.Clamp01((Time.TotalElapsedSeconds - lastSpeedEvent) / speedEaseOutTime));
+                }
+                else
+                {
+                    speedMultiplier = 0;
+                    animator.StateMachine.SetCurrentState(PlayerState.IDLE);
+                }
+            }
+
+            animator.PlayerSpeedMultiplier = speedMultiplier;
         }
 
         private void CameraMovement()
@@ -113,23 +185,23 @@ namespace Electron2D.Build
             Camera2D.main.zoom += Input.scrollDelta;
             Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 0.2f, 2);
 
-            float moveSpeed = 1000;
-            if (Input.GetKey(Keys.W))
-            {
-                Camera2D.main.position += new Vector2(0, moveSpeed * Time.DeltaTime);
-            }
-            if (Input.GetKey(Keys.A))
-            {
-                Camera2D.main.position += new Vector2(-moveSpeed * Time.DeltaTime, 0);
-            }
-            if (Input.GetKey(Keys.S))
-            {
-                Camera2D.main.position += new Vector2(0, -moveSpeed * Time.DeltaTime);
-            }
-            if (Input.GetKey(Keys.D))
-            {
-                Camera2D.main.position += new Vector2(moveSpeed * Time.DeltaTime, 0);
-            }
+            //float moveSpeed = 1000;
+            //if (Input.GetKey(Keys.W))
+            //{
+            //    Camera2D.main.position += new Vector2(0, moveSpeed * Time.DeltaTime);
+            //}
+            //if (Input.GetKey(Keys.A))
+            //{
+            //    Camera2D.main.position += new Vector2(-moveSpeed * Time.DeltaTime, 0);
+            //}
+            //if (Input.GetKey(Keys.S))
+            //{
+            //    Camera2D.main.position += new Vector2(0, -moveSpeed * Time.DeltaTime);
+            //}
+            //if (Input.GetKey(Keys.D))
+            //{
+            //    Camera2D.main.position += new Vector2(moveSpeed * Time.DeltaTime, 0);
+            //}
         }
 
         private void InitializeFPSLabel()

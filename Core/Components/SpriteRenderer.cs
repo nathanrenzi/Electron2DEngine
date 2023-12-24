@@ -34,9 +34,17 @@ namespace Electron2D.Core
         /// <summary>
         /// Sprite switches per second.
         /// </summary>
-        public float SpriteAnimationSpeed { get; private set; }
+        public float SpriteAnimationSpeed { get; set; }
 
-        private int currentSprite;
+        /// <summary>
+        /// The sprites queued up to be displayed.
+        /// </summary>
+        public Queue<Texture2DArray> QueuedSprites { get; set; } = new Queue<Texture2DArray>();
+        public Queue<bool> QueuedFinishFlags { get; set; } = new Queue<bool>();
+        public Action OnCompletedSpriteLoop { get; set; }
+        public bool MustFinishLoopFlag { get; set; }
+
+        private int spriteIndex;
         private float time;
 
         public SpriteRenderer(Transform _transform, Material _material, int _renderLayer = 1) : base(_transform, _material)
@@ -66,43 +74,55 @@ namespace Electron2D.Core
             return new Vector2(defaultUV[_vertex * 2], defaultUV[(_vertex * 2) + 1]);
         }
 
-        public void SetSpriteAnimationSpeed(float _spritesPerSecond)
-        {
-            SpriteAnimationSpeed = _spritesPerSecond;
-        }
-
         /// <summary>
-        /// Switches the sprite to the next one in the texture.
+        /// Manually switches the sprite to the next one in the texture.
         /// </summary>
         /// <param name="_allowWrapping">If the sprite can loop back to the beginning if there are no sprites left.</param>
         public void NextSprite(bool _allowWrapping = true)
         {
-            currentSprite++;
-            if (currentSprite >= Material.MainTexture.GetTextureLayers() && _allowWrapping)
+            spriteIndex++;
+            if (spriteIndex >= Material.MainTexture.GetTextureLayers() && _allowWrapping)
             {
-                currentSprite = 0;
+                spriteIndex = 0;
             }
             else if(!_allowWrapping)
             {
-                currentSprite = (int)MathF.Max(0, MathF.Min(Material.MainTexture.GetTextureLayers() - 1, currentSprite));
+                spriteIndex = (int)MathF.Max(0, MathF.Min(Material.MainTexture.GetTextureLayers() - 1, spriteIndex));
             }
         }
 
         /// <summary>
-        /// Switches the sprite to the previous one in the texture.
+        /// Manually switches the sprite to the previous one in the texture.
         /// </summary>
         /// <param name="_allowWrapping">If the sprite can loop to the end if there are no sprites left.</param>
         public void PreviousSprite(bool _allowWrapping = true)
         {
-            currentSprite--;
-            if (currentSprite < 0 && _allowWrapping)
+            spriteIndex--;
+            if (spriteIndex < 0 && _allowWrapping)
             {
-                currentSprite = Material.MainTexture.GetTextureLayers() - 1;
+                spriteIndex = Material.MainTexture.GetTextureLayers() - 1;
             }
             else if (!_allowWrapping)
             {
-                currentSprite = (int)MathF.Max(0, MathF.Min(Material.MainTexture.GetTextureLayers() - 1, currentSprite));
+                spriteIndex = (int)MathF.Max(0, MathF.Min(Material.MainTexture.GetTextureLayers() - 1, spriteIndex));
             }
+        }
+
+        /// <summary>
+        /// Clears all currently running animations so that a new texture can be set instantly.
+        /// </summary>
+        public void ClearAnimation(Texture2DArray _newTexture = null)
+        {
+            if(_newTexture != null)
+            {
+                Material.MainTexture = _newTexture;
+            }
+
+            QueuedSprites.Clear();
+            QueuedFinishFlags.Clear();
+            spriteIndex = 0;
+            time = 0;
+            SetVertexValueAll((int)SpriteVertexAttribute.SpriteIndex, spriteIndex);
         }
 
         public override void Update()
@@ -112,13 +132,41 @@ namespace Electron2D.Core
             time += Time.DeltaTime;
             if(time > 1f / SpriteAnimationSpeed)
             {
-                currentSprite++;
-                if (currentSprite >= Material.MainTexture.GetTextureLayers())
-                    currentSprite = 0;
-
+                // Resetting the time
                 time -= 1f / SpriteAnimationSpeed;
 
-                SetVertexValueAll((int)SpriteVertexAttribute.SpriteIndex, currentSprite);
+                // Checking to see if there is a new texture queued
+                if (QueuedSprites.Count > 0 && !MustFinishLoopFlag)
+                {
+                    Material.MainTexture = QueuedSprites.Dequeue();
+                    MustFinishLoopFlag = QueuedFinishFlags.Dequeue();
+
+                    spriteIndex = 0;
+                    SetVertexValueAll((int)SpriteVertexAttribute.SpriteIndex, spriteIndex);
+                    return;
+                }
+
+                // If there are no sprites queued, 
+                spriteIndex++;
+                if (spriteIndex >= Material.MainTexture.GetTextureLayers())
+                {
+                    // Loop is finished
+                    OnCompletedSpriteLoop?.Invoke();
+
+                    // Checking to see if there is a new texture queued
+                    if (QueuedSprites.Count > 0)
+                    {
+                        Material.MainTexture = QueuedSprites.Dequeue();
+                        MustFinishLoopFlag = QueuedFinishFlags.Dequeue();
+
+                        spriteIndex = 0;
+                        SetVertexValueAll((int)SpriteVertexAttribute.SpriteIndex, spriteIndex);
+                        return;
+                    }
+
+                    spriteIndex = 0;
+                }
+                SetVertexValueAll((int)SpriteVertexAttribute.SpriteIndex, spriteIndex);
             }
         }
     }

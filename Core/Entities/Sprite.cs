@@ -24,14 +24,24 @@ namespace Electron2D.Core
 
             Renderer = new SpriteRenderer(Transform, _material, _renderLayer);
             AddComponent(Renderer);
-            Renderer.SetSpriteAnimationSpeed(_spritesPerSecond);
+            Renderer.SpriteAnimationSpeed = _spritesPerSecond;
 
             RenderLayerManager.OrderRenderable(this);
         }
 
+        public void ForceTexture(Texture2DArray _texture, bool _mustFinishLoop)
+        {
+            Renderer.ClearAnimation(_texture);
+            Renderer.MustFinishLoopFlag = _mustFinishLoop;
+        }
+        public void AddTextureToQueue(Texture2DArray _texture, bool _mustFinishLoop)
+        {
+            Renderer.QueuedSprites.Enqueue(_texture);
+            Renderer.QueuedFinishFlags.Enqueue(_mustFinishLoop);
+        }
         public void NextSprite() { Renderer.NextSprite(); }
         public void PreviousSprite() { Renderer.PreviousSprite(); }
-        public void SetSpriteAnimationSpeed(float _spritesPerSecond) { Renderer.SetSpriteAnimationSpeed(_spritesPerSecond); }
+        public void SetSpriteAnimationSpeed(float _spritesPerSecond) { Renderer.SpriteAnimationSpeed = _spritesPerSecond; }
 
         ~Sprite()
         {
