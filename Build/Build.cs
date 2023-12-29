@@ -31,6 +31,7 @@ namespace Electron2D.Build
         private float lastSpeedEvent = -1000;
         private float lastAttackTime = -1000;
         private float attackComboMinTime = 0.2f;
+        private float attackCooldown = 0.5f;
         private float speedEaseInTime = 0.6f;
         private float speedEaseOutTime = 0.75f;
         // ---------------------
@@ -128,18 +129,26 @@ namespace Electron2D.Build
 
         private void PlayerMovement()
         {
-            if (Input.GetMouseButtonDown(MouseButton.Left)) lastAttackTime = Time.TotalElapsedSeconds;
-            if(Input.GetMouseButton(MouseButton.Left))
+            if((Time.TotalElapsedSeconds - lastAttackTime) >= attackCooldown)
             {
-                if(animator.StateMachine.GetCurrentState().ID == PlayerState.ATTACK && Time.TotalElapsedSeconds - lastAttackTime >= attackComboMinTime)
+                if (Input.GetMouseButtonDown(MouseButton.Left))
                 {
-                    s.Renderer.Material.MainTexture = attackCombo;
+                    lastAttackTime = Time.TotalElapsedSeconds;
+                    animator.StateMachine.SetCurrentState(PlayerState.ATTACK);
+                    return;
                 }
-
-                lastSpeedEvent = Time.TotalElapsedSeconds;
-                animator.StateMachine.SetCurrentState(PlayerState.ATTACK);
-                return;
             }
+            //if (Input.GetMouseButton(MouseButton.Left))
+            //{
+            //    if (animator.StateMachine.GetCurrentState().ID == PlayerState.ATTACK && Time.TotalElapsedSeconds - lastAttackTime >= attackComboMinTime)
+            //    {
+            //        s.Renderer.Material.MainTexture = attackCombo;
+            //    }
+
+            //    lastSpeedEvent = Time.TotalElapsedSeconds;
+            //    animator.StateMachine.SetCurrentState(PlayerState.ATTACK);
+            //    return;
+            //}
 
             if ((Input.GetKeyDown(Keys.A) && !Input.GetKey(Keys.D)) || (Input.GetKeyDown(Keys.D) && !Input.GetKey(Keys.A)))
             {
