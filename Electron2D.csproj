@@ -272,6 +272,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Box2D.NetStandard" Version="1.0.4" />
     <PackageReference Include="FreeTypeSharp" Version="1.1.3" />
     <PackageReference Include="NAudio" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

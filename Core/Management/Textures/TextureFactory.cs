@@ -18,7 +18,7 @@ namespace Electron2D.Core.Management
             var data = image.LockBits(
                 new Rectangle(0, 0, image.Width, image.Height),
                 ImageLockMode.ReadOnly,
-                image.PixelFormat);
+                PixelFormat.Format32bppArgb);
    
             glTexImage2D(GL_TEXTURE_2D, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -41,7 +41,7 @@ namespace Electron2D.Core.Management
             var data = image.LockBits(
                 new Rectangle(0, 0, image.Width, image.Height),
                 ImageLockMode.ReadOnly,
-                image.PixelFormat);
+                PixelFormat.Format32bppArgb);
 
             glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height/_layers, _layers, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
 
@@ -88,7 +88,7 @@ namespace Electron2D.Core.Management
                     var data = b.LockBits(
                         new Rectangle(0, 0, b.Width, b.Height),
                         ImageLockMode.ReadOnly,
-                        spritesheetImage.PixelFormat);
+                        PixelFormat.Format32bppArgb);
 
                     glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, x + (y * horizontalLoops), b.Width, b.Height, 1, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
 
@@ -119,7 +119,7 @@ namespace Electron2D.Core.Management
             var firstData = firstImage.LockBits(
                 new Rectangle(0, 0, firstImage.Width, firstImage.Height),
                 ImageLockMode.ReadOnly,
-                firstImage.PixelFormat);
+                PixelFormat.Format32bppArgb);
 
             glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, firstImage.Width, firstImage.Height, _textureNames.Length, 0, GL_BGRA, GL_UNSIGNED_BYTE, IntPtr.Zero);
             glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, firstImage.Width, firstImage.Height, 1, GL_BGRA, GL_UNSIGNED_BYTE, firstData.Scan0);
@@ -131,7 +131,7 @@ namespace Electron2D.Core.Management
                 var data = image.LockBits(
                     new Rectangle(0, 0, firstImage.Width, firstImage.Height),
                     ImageLockMode.ReadOnly,
-                    firstImage.PixelFormat);
+                    PixelFormat.Format32bppArgb);
 
                 if(image.Width != firstImage.Width || image.Height != firstImage.Height)
                 {

@@ -30,12 +30,25 @@ in vec2 texCoord;
 in vec4 vertexColor;
 
 uniform float totalLayers;
+uniform sampler2D mainTextureSampler;
 uniform sampler2DArray mainTextureArraySampler;
 
 void main() 
 {
-    float layer = max(0, min(totalLayers - 1, floor(index + 0.5)));
+    vec4 res;
 
-    vec4 res = texture(mainTextureArraySampler, vec3(texCoord, layer)) * vertexColor;
+    // Replace with more elegant solution in the future
+    if(totalLayers == -1)
+    {
+        // Texture
+        res = texture(mainTextureSampler, texCoord) * vertexColor;
+    }
+    else
+    {
+        // Texture Array
+        float layer = max(0, min(totalLayers - 1, floor(index + 0.5)));
+        res = texture(mainTextureArraySampler, vec3(texCoord, layer)) * vertexColor;
+    }
+
     FragColor = vec4(pow(res.r, 1.0 / 2.2), pow(res.g, 1.0 / 2.2), pow(res.b, 1.0 / 2.2), res.w);
 }
