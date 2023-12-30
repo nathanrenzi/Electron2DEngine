@@ -27,7 +27,7 @@ namespace Electron2D.Build
         private Sprite s;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
-            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false) { }
+            $"Electron2D Build - {Program.BuildDate}", _vsync: true, _antialiasing: false) { }
 
         protected override void Load()
         {
@@ -70,7 +70,7 @@ namespace Electron2D.Build
 
             // Creating dynamic body
             BodyDef dBodyDef = new BodyDef();
-            dBodyDef.Position.Set(0.0f, 4.0f);
+            dBodyDef.Position.Set(0.0f, 10.0f);
             dynamicBody = world.CreateBody(dBodyDef);
 
             // Defining dynamic polygon
@@ -81,10 +81,13 @@ namespace Electron2D.Build
 
             // Creating dynamic fixture
             Fixture dynamicFixture = dynamicBody.CreateFixture(dynamicShapeDef);
+            dynamicBody.SetMassFromShapes();
         }
 
         protected override void Update()
         {
+            world.Step(Time.DeltaTime, 6, 2);
+            Debug.Log(dynamicBody.GetPosition().Y);
             CameraMovement();
             CalculateFPS();
         }
