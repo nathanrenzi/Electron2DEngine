@@ -11,6 +11,9 @@ using System.Drawing;
 using System.Numerics;
 using Electron2D.Core.Misc;
 using Electron2D.Core.ECS;
+using Box2DX.Collision;
+using Box2DX.Common;
+using Box2DX.Dynamics;
 
 namespace Electron2D.Build
 {
@@ -31,10 +34,53 @@ namespace Electron2D.Build
             // Load Custom Component Systems
             // Ex. ComponentSystem.Start();
             // -----------------------------
-            SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
+            SetBackgroundColor(System.Drawing.Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
 
-            s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, Color.Navy));
+            s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.Navy));
+
+            Box2DInit();
+        }
+
+        private Vec2 gravity = new Vec2(0.0f, -10.0f);
+        private World world;
+        private Body dynamicBody;
+
+        private void Box2DInit()
+        {
+            // Initializing the world
+            AABB worldAABB = new AABB();
+            worldAABB.LowerBound.Set(-100, -100);
+            worldAABB.UpperBound.Set(100, 100);
+            world = new World(worldAABB, gravity, false);
+
+            // Creating ground body
+            BodyDef groundBodyDef = new BodyDef();
+            groundBodyDef.Position.Set(0.0f, -10.0f);
+            Body groundBody = world.CreateBody(groundBodyDef);
+
+            // Defining ground polygon
+            PolygonDef groundShapeDef = new PolygonDef();
+            groundShapeDef.SetAsBox(50, 10);
+
+            // Creating ground fixture
+            Fixture groundFixture = groundBody.CreateFixture(groundShapeDef);
+
+            // ------------------------------------
+
+            // Creating dynamic body
+            BodyDef dBodyDef = new BodyDef();
+            dBodyDef.Position.Set(0.0f, 4.0f);
+            dynamicBody = world.CreateBody(dBodyDef);
+
+            // Defining dynamic polygon
+            PolygonDef dynamicShapeDef = new PolygonDef();
+            dynamicShapeDef.SetAsBox(1, 1);
+            dynamicShapeDef.Density = 1;
+            dynamicShapeDef.Friction = 0.3f;
+
+            // Creating dynamic fixture
+            Fixture dynamicFixture = dynamicBody.CreateFixture(dynamicShapeDef);
         }
 
         protected override void Update()
@@ -46,7 +92,7 @@ namespace Electron2D.Build
         private void CameraMovement()
         {
             Camera2D.main.zoom += Input.scrollDelta;
-            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 0.2f, 2);
+            Camera2D.main.zoom = System.Math.Clamp(Camera2D.main.zoom, 0.2f, 2);
 
             float moveSpeed = 1000;
             if (Input.GetKey(Keys.W))
@@ -70,9 +116,9 @@ namespace Electron2D.Build
         private void InitializeFPSLabel()
         {
             fpsLabel = new TextLabel("FPS: 0", "Build/Resources/Fonts/OpenSans.ttf",
-                30, Color.White, Color.White, new Vector2(130, 30), TextAlignment.Left, TextAlignment.Center,
+                30, System.Drawing.Color.White, System.Drawing.Color.White, new Vector2(130, 30), TextAlignment.Left, TextAlignment.Center,
                 TextAlignmentMode.Geometry, TextOverflowMode.Disabled, _uiRenderLayer: 11);
-            Material m = Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(60, 0, 0, 0), ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png"));
+            Material m = Material.Create(GlobalShaders.DefaultTexture, System.Drawing.Color.FromArgb(60, 0, 0, 0), ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png"));
             fpsBackground = new SlicedUiComponent(m, 160, 40, 100, 100, 100, 100, 200, 0.2f);
 
             fpsLabel.Anchor = new Vector2(-1, 1);
