@@ -11,15 +11,12 @@
   <ItemGroup>
     <Compile Remove="Build\Resources\Textures\Tiles\**" />
     <Compile Remove="Core\Mapping\**" />
-    <Compile Remove="Core\Physics\**" />
     <Compile Remove="Core\Rendering\Renderers\Batching\**" />
     <EmbeddedResource Remove="Build\Resources\Textures\Tiles\**" />
     <EmbeddedResource Remove="Core\Mapping\**" />
-    <EmbeddedResource Remove="Core\Physics\**" />
     <EmbeddedResource Remove="Core\Rendering\Renderers\Batching\**" />
     <None Remove="Build\Resources\Textures\Tiles\**" />
     <None Remove="Core\Mapping\**" />
-    <None Remove="Core\Physics\**" />
     <None Remove="Core\Rendering\Renderers\Batching\**" />
   </ItemGroup>
 
