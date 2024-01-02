@@ -79,6 +79,15 @@ namespace Electron2D.Core
         }
 
         /// <summary>
+        /// Removes a physics body from the simulation.
+        /// </summary>
+        /// <param name="_id"></param>
+        public static void RemovePhysicsBody(uint _id)
+        {
+            world.DestroyBody(physicsBodies[_id]);
+        }
+
+        /// <summary>
         /// Gets the position of a physics body.
         /// </summary>
         /// <param name="_id"></param>

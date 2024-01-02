@@ -47,5 +47,16 @@
                 }
             }
         }
+
+        public static void FixedUpdate()
+        {
+            foreach (T component in components)
+            {
+                if (component != null && component.Enabled)
+                {
+                    component.FixedUpdate();
+                }
+            }
+        }
     }
 }

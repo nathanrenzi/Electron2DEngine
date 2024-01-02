@@ -84,6 +84,7 @@ namespace Electron2D.Core
             // -----------
 
             // Starting Component Systems
+            RigidbodySystem.Start();
             TransformSystem.Start();
             MeshRendererSystem.Start();
             TextRendererSystem.Start();
@@ -121,6 +122,7 @@ namespace Electron2D.Core
                 PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
 
                 // Updating Component Systems
+                RigidbodySystem.Update();
                 TransformSystem.Update();
                 MeshRendererSystem.Update();
                 TextRendererSystem.Update();
@@ -158,7 +160,7 @@ namespace Electron2D.Core
         {
             Physics.Initialize(_worldLowerBound, _worldUpperBound, _gravity, _doSleep);
 
-            double lastTickTime = -1000;
+            double lastTickTime = 0;
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
             {
                 if(lastTickTime + _physicsTimestep <= Glfw.Time)
@@ -167,11 +169,16 @@ namespace Electron2D.Core
                     Time.FixedDeltaTime = (float)delta;
                     lastTickTime = Glfw.Time;
 
+                    TransformSystem.FixedUpdate();
+                    MeshRendererSystem.FixedUpdate();
+                    TextRendererSystem.FixedUpdate();
+
                     // Call FixedUpdate Event
                     OnFixedUpdateEvent?.Invoke();
 
                     // Do Physics Tick
                     Physics.Step((float)delta, _velocityIterations, _positionIterations);
+                    RigidbodySystem.FixedUpdate();
                 }
             }
         }

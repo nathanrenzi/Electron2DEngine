@@ -9,6 +9,7 @@
         public virtual void OnAdded() { }
         public virtual void Start() { }
         public virtual void Update() { }
+        public virtual void FixedUpdate() { }
 
         ~Component()
         {

@@ -38,55 +38,15 @@ namespace Electron2D.Build
             InitializeFPSLabel();
 
             s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.Navy));
+            s.AddComponent(new Rigidbody(Vector2.Zero, 0, 0));
 
-            Box2DInit();
-        }
-
-        private Vec2 gravity = new Vec2(0.0f, -10.0f);
-        private World world;
-        private Body dynamicBody;
-
-        private void Box2DInit()
-        {
-            // Initializing the world
-            AABB worldAABB = new AABB();
-            worldAABB.LowerBound.Set(-100, -100);
-            worldAABB.UpperBound.Set(100, 100);
-            world = new World(worldAABB, gravity, false);
-
-            // Creating ground body
-            BodyDef groundBodyDef = new BodyDef();
-            groundBodyDef.Position.Set(0.0f, -10.0f);
-            Body groundBody = world.CreateBody(groundBodyDef);
-
-            // Defining ground polygon
-            PolygonDef groundShapeDef = new PolygonDef();
-            groundShapeDef.SetAsBox(50, 10);
-
-            // Creating ground fixture
-            Fixture groundFixture = groundBody.CreateFixture(groundShapeDef);
-
-            // ------------------------------------
-
-            // Creating dynamic body
-            BodyDef dBodyDef = new BodyDef();
-            dBodyDef.Position.Set(0.0f, 10.0f);
-            dynamicBody = world.CreateBody(dBodyDef);
-
-            // Defining dynamic polygon
-            PolygonDef dynamicShapeDef = new PolygonDef();
-            dynamicShapeDef.SetAsBox(1, 1);
-            dynamicShapeDef.Density = 1;
-            dynamicShapeDef.Friction = 0.3f;
-
-            // Creating dynamic fixture
-            Fixture dynamicFixture = dynamicBody.CreateFixture(dynamicShapeDef);
-            dynamicBody.SetMassFromShapes();
+            Sprite a = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.White), 0, 5, 5);
+            a.Transform.Position = new Vector2(40, -300f);
+            a.AddComponent(new Rigidbody());
         }
 
         protected override void Update()
         {
-            world.Step(Time.DeltaTime, 6, 2);
             CameraMovement();
             CalculateFPS();
         }
