@@ -38,10 +38,10 @@ namespace Electron2D.Build
             InitializeFPSLabel();
 
             s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.Navy));
-            s.AddComponent(new Rigidbody(Vector2.Zero, 0, 0));
+            s.AddComponent(new Rigidbody(Vector2.Zero, 0, 0, 1));
 
-            Sprite a = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.White), 0, 5, 5);
-            a.Transform.Position = new Vector2(40, -300f);
+            Sprite a = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.White), 0, 500, 30);
+            a.Transform.Position = new Vector2(0, -300f);
             a.AddComponent(new Rigidbody());
         }
 

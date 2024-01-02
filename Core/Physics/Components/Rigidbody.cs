@@ -35,6 +35,7 @@ namespace Electron2D.Core
                 Physics.SetAngularVelocity(ID, value);
             }
         }
+        public RigidbodyMode Mode { get; private set; }
 
         // Starting Values
         private Vector2 velocity;
@@ -64,13 +65,15 @@ namespace Electron2D.Core
         /// <param name="_density"></param>
         /// <param name="_friction"></param>
         /// <param name="_mass"></param>
-        public Rigidbody(Vector2 _startVelocity, float _startAngularVelocity, float _friction, float _density = 1, float _mass = -1)
+        public Rigidbody(Vector2 _startVelocity, float _startAngularVelocity, float _friction, float _density = 1,
+            RigidbodyMode _rigidbodyMode = RigidbodyMode.AutoMass, float _mass = 0)
         {
             velocity = _startVelocity;
             angularVelocity = _startAngularVelocity;
             friction = _friction;
             density = _density;
             mass = _mass;
+            Mode = _rigidbodyMode;
 
             RigidbodySystem.Register(this);
         }
@@ -116,27 +119,23 @@ namespace Electron2D.Core
             };
             polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / WorldScalar, (transform.Scale.Y - Epsilon) / 2f / WorldScalar);
 
-            if (mass == -1)
+            if (Mode == RigidbodyMode.AutoMass)
             {
                 // Set Mass Automatically
                 ID = Physics.CreatePhysicsBody(bodyDef, polygonDef, true);
                 valid = true;
             }
-            else if(mass == -2)
-            {
-                // Static Rigidbody
-                ID = Physics.CreatePhysicsBody(bodyDef, polygonDef, false);
-                valid = true;
-            }
-            else if(mass >= 0)
+            else if(Mode == RigidbodyMode.ManualMass)
             {
                 // Set Mass Manually
                 ID = Physics.CreatePhysicsBody(bodyDef, polygonDef, new MassData() { Mass = mass });
                 valid = true;
             }
-            else
+            else if(Mode == RigidbodyMode.StaticMassless)
             {
-                Debug.LogError("PHYSICS: Invalid rigidbody mass. Mass must be a positive number.");
+                // Static Rigidbody
+                ID = Physics.CreatePhysicsBody(bodyDef, polygonDef, false);
+                valid = true;
             }
         }
 
@@ -170,5 +169,12 @@ namespace Electron2D.Core
             //      Rotation
             transform.Rotation = (float)(oldAngle * (1.0 - t) + (newAngle * t));
         }
+    }
+
+    public enum RigidbodyMode
+    {
+        AutoMass,
+        ManualMass,
+        StaticMassless
     }
 }
