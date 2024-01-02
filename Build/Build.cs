@@ -27,7 +27,7 @@ namespace Electron2D.Build
         private Sprite s;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
-            $"Electron2D Build - {Program.BuildDate}", _vsync: true, _antialiasing: false) { }
+            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false) { }
 
         protected override void Load()
         {
@@ -87,7 +87,6 @@ namespace Electron2D.Build
         protected override void Update()
         {
             world.Step(Time.DeltaTime, 6, 2);
-            Debug.Log(dynamicBody.GetPosition().Y);
             CameraMovement();
             CalculateFPS();
         }

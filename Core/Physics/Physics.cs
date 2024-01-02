@@ -119,5 +119,77 @@ namespace Electron2D.Core
         {
             return physicsBodies[_id].GetAngularVelocity();
         }
+
+        /// <summary>
+        /// Applies a force to a physics body.
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <param name="_force"></param>
+        /// <param name="_point">The point the force is applied to.</param>
+        public static void ApplyForce(uint _id, Vector2 _force, Vector2 _point)
+        {
+            physicsBodies[_id].ApplyForce(new Vec2(_force.X, _force.Y), new Vec2(_point.X, _point.Y));
+        }
+
+        /// <summary>
+        /// Applies an impulse to a physics body.
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <param name="_impulse"></param>
+        /// <param name="_point">The point the force is applied to.</param>
+        public static void ApplyImpulse(uint _id, Vector2 _impulse, Vector2 _point)
+        {
+            physicsBodies[_id].ApplyImpulse(new Vec2(_impulse.X, _impulse.Y), new Vec2(_point.X, _point.Y));
+        }
+
+        /// <summary>
+        /// Applies a torque to a physics body.
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <param name="_torque"></param>
+        public static void ApplyTorque(uint _id, float _torque)
+        {
+            physicsBodies[_id].ApplyTorque(_torque);
+        }
+
+        /// <summary>
+        /// Sets the angle (in degrees) of a physics body.
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <param name="_angle"></param>
+        public static void SetAngle(uint _id, float _angle)
+        {
+            physicsBodies[_id].SetAngle(_angle * (MathF.PI / 180));
+        }
+
+        /// <summary>
+        /// Sets the angular velocity of a physics body.
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <param name="_angle"></param>
+        public static void SetAngularVelocity(uint _id, float _angularVelocity)
+        {
+            physicsBodies[_id].SetAngularVelocity(_angularVelocity);
+        }
+
+        /// <summary>
+        /// Sets the linear velocity of a physics body.
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <param name="_linearVelocity"></param>
+        public static void SetLinearVelocity(uint _id, Vector2 _linearVelocity)
+        {
+            physicsBodies[_id].SetLinearVelocity(new Vec2(_linearVelocity.X, _linearVelocity.Y));
+        }
+
+        /// <summary>
+        /// Sets the position of a physics body. Use this instead of <see cref="Transform.Position"/> so that movements are handled within the physics engine.
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <param name="_position"></param>
+        public static void SetPosition(uint _id, Vector2 _position)
+        {
+            physicsBodies[_id].SetPosition(new Vec2(_position.X, _position.Y));
+        }
     }
 }

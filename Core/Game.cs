@@ -15,6 +15,7 @@ namespace Electron2D.Core
     {
         public static event Action OnStartEvent;
         public static event Action OnUpdateEvent;
+        public static event Action OnFixedUpdateEvent;
         public static event Action OnLateUpdateEvent;
         public static readonly float REFERENCE_WINDOW_WIDTH = 1920f;
         public static readonly float REFERENCE_WINDOW_HEIGHT = 1080f;
@@ -28,15 +29,26 @@ namespace Electron2D.Core
 
         public static Color BackgroundColor { get; private set; } = Color.Black;
 
-        protected Camera2D startCamera;
+        protected Thread PhysicsThread { get; private set; }
+        protected Camera2D StartCamera { get; set; }
 
-        public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, bool _vsync = false, bool _antialiasing = true)
+        public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -10f,
+            float _physicsLowerBoundX = -100000, float _physicsLowerBoundY = -100000, float _physicsUpperBoundX = 100000, float _physicsUpperBoundY = 100000,
+            int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _vsync = false, bool _antialiasing = true)
         {
             CurrentWindowWidth = _initialWindowWidth;
             CurrentWindowHeight = _initialWindowHeight;
             CurrentWindowTitle = _initialWindowTitle;
             VsyncEnabled = _vsync;
             AntialiasingEnabled = _antialiasing;
+
+            // Starting Physics Thread
+            PhysicsThread = new Thread(new ThreadStart(PhysThread));
+            void PhysThread()
+            {
+                RunPhysicsThread(_physicsTimestep, new Vector2(_physicsLowerBoundX, _physicsLowerBoundY),
+                new Vector2(_physicsUpperBoundX, _physicsUpperBoundY), new Vector2(0, _physicsGravity), true, _physicsVelocityIterations, _physicsPositionIterations);
+            }
         }
 
         public void SetBackgroundColor(Color _backgroundColor)
@@ -49,7 +61,7 @@ namespace Electron2D.Core
             Debug.OpenLogFile();
             Debug.Log("Starting initialization...");
             Initialize();
-            startCamera = new Camera2D(Vector2.Zero, 1);
+            StartCamera = new Camera2D(Vector2.Zero, 1);
 
             DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle, AntialiasingEnabled);
             if(VsyncEnabled)
@@ -88,6 +100,7 @@ namespace Electron2D.Core
 
             Debug.Log("Initialization complete");
 
+            PhysicsThread.Start();
             Load();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
@@ -140,6 +153,29 @@ namespace Electron2D.Core
             DisplayManager.CloseWindow();
         }
         
+        private void RunPhysicsThread(double _physicsTimestep, Vector2 _worldLowerBound, Vector2 _worldUpperBound, Vector2 _gravity,
+            bool _doSleep, int _velocityIterations = 6, int _positionIterations = 2)
+        {
+            Physics.Initialize(_worldLowerBound, _worldUpperBound, _gravity, _doSleep);
+
+            double lastTickTime = -1000;
+            while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
+            {
+                if(lastTickTime + _physicsTimestep <= Glfw.Time)
+                {
+                    double delta = Glfw.Time - lastTickTime;
+                    Time.FixedDeltaTime = (float)delta;
+                    lastTickTime = Glfw.Time;
+
+                    // Call FixedUpdate Event
+                    OnFixedUpdateEvent?.Invoke();
+
+                    // Do Physics Tick
+                    Physics.Step((float)delta, _velocityIterations, _positionIterations);
+                }
+            }
+        }
+
         private void LogErrors()
         {
             int errorCode = GetError();
