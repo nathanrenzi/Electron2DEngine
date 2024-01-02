@@ -55,6 +55,11 @@ namespace Electron2D.Core
         public static uint CreatePhysicsBody(BodyDef _bodyDefinition, PolygonDef _polygonDefinition, bool _autoSetMass = false)
         {
             Body b = world.CreateBody(_bodyDefinition);
+            if(b == null)
+            {
+                Debug.LogError("PHYSICS: Error creating physics body!");
+                return uint.MaxValue;
+            }
             b.CreateFixture(_polygonDefinition);
             if (_autoSetMass) b.SetMassFromShapes();
             uint id = (uint)physicsBodies.Count;

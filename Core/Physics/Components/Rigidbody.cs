@@ -80,9 +80,10 @@ namespace Electron2D.Core
         /// <summary>
         /// Creates a static rigidbody.
         /// </summary>
-        public Rigidbody()
+        public Rigidbody(float _friction = 1)
         {
-            mass = -2; // Static Rigidbody
+            friction = _friction;
+            Mode = RigidbodyMode.StaticMassless; // Static Rigidbody
             RigidbodySystem.Register(this);
         }
 
@@ -112,27 +113,41 @@ namespace Electron2D.Core
                 AngularVelocity = angularVelocity
             };
 
-            PolygonDef polygonDef = new PolygonDef()
-            {
-                Density = density,
-                Friction = friction
-            };
-            polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / WorldScalar, (transform.Scale.Y - Epsilon) / 2f / WorldScalar);
-
             if (Mode == RigidbodyMode.AutoMass)
             {
+                PolygonDef polygonDef = new PolygonDef()
+                {
+                    Density = density,
+                    Friction = friction
+                };
+                polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / WorldScalar, (transform.Scale.Y - Epsilon) / 2f / WorldScalar);
+
                 // Set Mass Automatically
                 ID = Physics.CreatePhysicsBody(bodyDef, polygonDef, true);
                 valid = true;
             }
             else if(Mode == RigidbodyMode.ManualMass)
             {
+                PolygonDef polygonDef = new PolygonDef()
+                {
+                    Density = density,
+                    Friction = friction
+                };
+                polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / WorldScalar, (transform.Scale.Y - Epsilon) / 2f / WorldScalar);
+
                 // Set Mass Manually
                 ID = Physics.CreatePhysicsBody(bodyDef, polygonDef, new MassData() { Mass = mass });
                 valid = true;
             }
             else if(Mode == RigidbodyMode.StaticMassless)
             {
+                PolygonDef polygonDef = new PolygonDef()
+                {
+                    Density = 1f,
+                    Friction = friction
+                };
+                polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / WorldScalar, (transform.Scale.Y - Epsilon) / 2f / WorldScalar);
+
                 // Static Rigidbody
                 ID = Physics.CreatePhysicsBody(bodyDef, polygonDef, false);
                 valid = true;

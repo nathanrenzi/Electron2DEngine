@@ -30,6 +30,8 @@ namespace Electron2D.Core
         public static Color BackgroundColor { get; private set; } = Color.Black;
 
         protected Thread PhysicsThread { get; private set; }
+        protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
+
         protected Camera2D StartCamera { get; set; }
 
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -10f,
@@ -43,12 +45,8 @@ namespace Electron2D.Core
             AntialiasingEnabled = _antialiasing;
 
             // Starting Physics Thread
-            PhysicsThread = new Thread(new ThreadStart(PhysThread));
-            void PhysThread()
-            {
-                RunPhysicsThread(_physicsTimestep, new Vector2(_physicsLowerBoundX, _physicsLowerBoundY),
-                new Vector2(_physicsUpperBoundX, _physicsUpperBoundY), new Vector2(0, _physicsGravity), true, _physicsVelocityIterations, _physicsPositionIterations);
-            }
+            PhysicsThread = new Thread(() => RunPhysicsThread(PhysicsCancellationToken.Token, _physicsTimestep, new Vector2(_physicsLowerBoundX, _physicsLowerBoundY),
+                new Vector2(_physicsUpperBoundX, _physicsUpperBoundY), new Vector2(0, _physicsGravity), true, _physicsVelocityIterations, _physicsPositionIterations));
         }
 
         public void SetBackgroundColor(Color _backgroundColor)
@@ -149,19 +147,22 @@ namespace Electron2D.Core
             }
 
             OnGameClose();
+            PhysicsCancellationToken.Cancel();
+            PhysicsThread.Join();
+            PhysicsCancellationToken.Dispose();
 
             Debug.CloseLogFile();
             AudioPlayback.Instance.Dispose();
             DisplayManager.CloseWindow();
         }
         
-        private void RunPhysicsThread(double _physicsTimestep, Vector2 _worldLowerBound, Vector2 _worldUpperBound, Vector2 _gravity,
+        private void RunPhysicsThread(CancellationToken _token, double _physicsTimestep, Vector2 _worldLowerBound, Vector2 _worldUpperBound, Vector2 _gravity,
             bool _doSleep, int _velocityIterations = 6, int _positionIterations = 2)
         {
             Physics.Initialize(_worldLowerBound, _worldUpperBound, _gravity, _doSleep);
 
             double lastTickTime = 0;
-            while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
+            while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window) && !_token.IsCancellationRequested)
             {
                 if(lastTickTime + _physicsTimestep <= Glfw.Time)
                 {
