@@ -34,7 +34,7 @@ namespace Electron2D.Core
 
         protected Camera2D StartCamera { get; set; }
 
-        public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -10f,
+        public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -15f,
             float _physicsLowerBoundX = -100000, float _physicsLowerBoundY = -100000, float _physicsUpperBoundX = 100000, float _physicsUpperBoundY = 100000,
             int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _vsync = false, bool _antialiasing = true)
         {

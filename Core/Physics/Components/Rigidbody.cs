@@ -10,7 +10,7 @@ namespace Electron2D.Core
     public class Rigidbody : Component
     {
         public static readonly float WorldScalar = 50f;
-        public static readonly float Epsilon = 1f;
+        public static readonly float Epsilon = 0f;
 
         public uint ID { get; private set; } = uint.MaxValue;
         public Vector2 Velocity
@@ -36,6 +36,7 @@ namespace Electron2D.Core
             }
         }
         public RigidbodyMode Mode { get; private set; }
+        public RigidbodyShape Shape { get; private set; }
 
         // Starting Values
         private Vector2 velocity;
@@ -66,7 +67,7 @@ namespace Electron2D.Core
         /// <param name="_friction"></param>
         /// <param name="_mass"></param>
         public Rigidbody(Vector2 _startVelocity, float _startAngularVelocity, float _friction, float _density = 1,
-            RigidbodyMode _rigidbodyMode = RigidbodyMode.AutoMass, float _mass = 0)
+            RigidbodyShape _rigidbodyShape = RigidbodyShape.Box, RigidbodyMode _rigidbodyMode = RigidbodyMode.AutoMass, float _mass = 0)
         {
             velocity = _startVelocity;
             angularVelocity = _startAngularVelocity;
@@ -74,16 +75,19 @@ namespace Electron2D.Core
             density = _density;
             mass = _mass;
             Mode = _rigidbodyMode;
+            Shape = _rigidbodyShape;
 
             RigidbodySystem.Register(this);
         }
         /// <summary>
         /// Creates a static rigidbody.
         /// </summary>
-        public Rigidbody(float _friction = 1)
+        public Rigidbody(RigidbodyShape _rigidbodyShape = RigidbodyShape.Box, float _friction = 1)
         {
+            density = 1;
             friction = _friction;
             Mode = RigidbodyMode.StaticMassless; // Static Rigidbody
+            Shape = _rigidbodyShape;
             RigidbodySystem.Register(this);
         }
 
@@ -113,7 +117,8 @@ namespace Electron2D.Core
                 AngularVelocity = angularVelocity
             };
 
-            if (Mode == RigidbodyMode.AutoMass)
+            FixtureDef fixtureDef;
+            if(Shape == RigidbodyShape.Box)
             {
                 PolygonDef polygonDef = new PolygonDef()
                 {
@@ -121,42 +126,47 @@ namespace Electron2D.Core
                     Friction = friction
                 };
                 polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / WorldScalar, (transform.Scale.Y - Epsilon) / 2f / WorldScalar);
-
+                fixtureDef = polygonDef;
+            }
+            else if(Shape == RigidbodyShape.Circle)
+            {
+                CircleDef circleDef = new CircleDef()
+                {
+                    Density = density,
+                    Friction = friction,
+                    Radius = (transform.Scale.X - Epsilon) / 2f / WorldScalar
+                };
+                fixtureDef = circleDef;
+            }
+            else
+            {
+                fixtureDef = null;
+                Debug.LogError("Unsupported rigidbody shape.");
+            }
+            
+            if (Mode == RigidbodyMode.AutoMass)
+            {
                 // Set Mass Automatically
-                ID = Physics.CreatePhysicsBody(bodyDef, polygonDef, true);
+                ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, true);
                 valid = true;
             }
             else if(Mode == RigidbodyMode.ManualMass)
             {
-                PolygonDef polygonDef = new PolygonDef()
-                {
-                    Density = density,
-                    Friction = friction
-                };
-                polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / WorldScalar, (transform.Scale.Y - Epsilon) / 2f / WorldScalar);
-
                 // Set Mass Manually
-                ID = Physics.CreatePhysicsBody(bodyDef, polygonDef, new MassData() { Mass = mass });
+                ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, new MassData() { Mass = mass });
                 valid = true;
             }
             else if(Mode == RigidbodyMode.StaticMassless)
             {
-                PolygonDef polygonDef = new PolygonDef()
-                {
-                    Density = 1f,
-                    Friction = friction
-                };
-                polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / WorldScalar, (transform.Scale.Y - Epsilon) / 2f / WorldScalar);
-
                 // Static Rigidbody
-                ID = Physics.CreatePhysicsBody(bodyDef, polygonDef, false);
+                ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, false);
                 valid = true;
             }
         }
 
         public override void FixedUpdate()
         {
-            if (!valid) return;
+            if (!valid || ID == uint.MaxValue) return;
 
             // Setting values for interpolation
             oldPosition = transform.Position / WorldScalar;
@@ -173,7 +183,7 @@ namespace Electron2D.Core
 
         public override void Update()
         {
-            if (!valid || !interpolationReady) return;
+            if (!valid || ID == uint.MaxValue || !interpolationReady) return;
 
             // Interpolation
             float t = MathEx.Clamp01((Time.TotalElapsedSeconds - lastLerpTime) / lerpDeltaTime);
@@ -184,6 +194,13 @@ namespace Electron2D.Core
             //      Rotation
             transform.Rotation = (float)(oldAngle * (1.0 - t) + (newAngle * t));
         }
+    }
+
+    public enum RigidbodyShape
+    {
+        Box,
+        Circle,
+        Mesh
     }
 
     public enum RigidbodyMode

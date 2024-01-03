@@ -50,7 +50,7 @@
 
         public static void FixedUpdate()
         {
-            foreach (T component in components)
+            foreach (T component in new List<T>(components))
             {
                 if (component != null && component.Enabled)
                 {

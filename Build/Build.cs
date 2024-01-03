@@ -34,11 +34,12 @@ namespace Electron2D.Build
             // Load Custom Component Systems
             // Ex. ComponentSystem.Start();
             // -----------------------------
+
             SetBackgroundColor(System.Drawing.Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
 
             s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.Navy));
-            s.AddComponent(new Rigidbody(Vector2.Zero, 0, 1f, 1));
+            s.AddComponent(new Rigidbody(Vector2.Zero, 0, 1f, 1, _rigidbodyShape: RigidbodyShape.Box));
 
             Sprite b = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.White), 0, 6, 6);
             b.Transform.Position = new Vector2(40, -250f);

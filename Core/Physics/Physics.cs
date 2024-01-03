@@ -48,35 +48,36 @@ namespace Electron2D.Core
         /// Creates a physics body and returns it's ID.
         /// </summary>
         /// <param name="_bodyDefinition">The definition of the physics body.</param>
-        /// <param name="_polygonDefinition">The definition of the polygon. This determines the shape of the physics body.</param>
+        /// <param name="_fixtureDef">The definition of the fixture. This determines the shape of the physics body.</param>
         /// <param name="_autoSetMass">If this is set to true, the physics body will use the shape and density to detemine the mass.
         /// This also makes the physics body dynamic.</param>
         /// <returns></returns>
-        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, PolygonDef _polygonDefinition, bool _autoSetMass = false)
+        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, bool _autoSetMass = false)
         {
             Body b = world.CreateBody(_bodyDefinition);
-            if(b == null)
+            while(b == null)
             {
+                b = world.CreateBody(_bodyDefinition);
                 Debug.LogError("PHYSICS: Error creating physics body!");
-                return uint.MaxValue;
             }
-            b.CreateFixture(_polygonDefinition);
+            b.CreateFixture(_fixtureDef);
             if (_autoSetMass) b.SetMassFromShapes();
             uint id = (uint)physicsBodies.Count;
             physicsBodies.Add(id, b);
             return id;
         }
+
         /// <summary>
         /// Creates a dynamic physics body and returns it's ID.
         /// </summary>
         /// <param name="_bodyDefinition">The definition of the physics body.</param>
-        /// <param name="_polygonDefinition">The definition of the polygon. This determines the shape of the physics body.</param>
+        /// <param name="_fixtureDef">The definition of the fixture. This determines the shape of the physics body.</param>
         /// <param name="_massData">The mass data of the physics body. By setting this, the physics body will be dynamic.</param>
         /// <returns></returns>
-        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, PolygonDef _polygonDefinition, MassData _massData)
+        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData)
         {
             Body b = world.CreateBody(_bodyDefinition);
-            b.CreateFixture(_polygonDefinition);
+            b.CreateFixture(_fixtureDef);
             b.SetMass(_massData);
             uint id = (uint)physicsBodies.Count;
             physicsBodies.Add(id, b);
