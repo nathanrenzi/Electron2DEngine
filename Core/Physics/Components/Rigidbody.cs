@@ -2,15 +2,17 @@
 using Box2DX.Common;
 using Box2DX.Dynamics;
 using Electron2D.Core.ECS;
+using Newtonsoft.Json.Linq;
 using System.Numerics;
+using System.Runtime.Intrinsics.X86;
+using System.Threading.Tasks;
 
 namespace Electron2D.Core
 {
     public class RigidbodySystem : BaseSystem<Rigidbody> { }
     public class Rigidbody : Component
     {
-        public static readonly float WorldScalar = 50f;
-        public static readonly float Epsilon = 0f;
+        public static readonly float Epsilon = 1f;
 
         public uint ID { get; private set; } = uint.MaxValue;
         public Vector2 Velocity
@@ -37,6 +39,23 @@ namespace Electron2D.Core
         }
         public RigidbodyMode Mode { get; private set; }
         public RigidbodyShape Shape { get; private set; }
+
+        // https://www.iforce2d.net/b2dtut/collision-filtering
+        /// <summary>
+        /// The layer of this rigidbody determines how other rigidbodies will interact with this one.
+        /// </summary>
+        public ushort Layer { get; private set; }
+        /// <summary>
+        /// The hit mask determines what layers this rigidbody can collide with.
+        /// </summary>
+        public ushort HitMask { get; private set; }
+        /// <summary>
+        /// If either rigidbody has a GroupIndex of zero, use the category/mask rules as above.
+        /// If both GroupIndex values are non-zero but different, use the category/mask rules as above.
+        /// If both GroupIndex values are the same and positive, collide.
+        /// If both GroupIndex values are the same and negative, don't collide.
+        /// </summary>
+        public short GroupIndex { get; private set; }
 
         // Starting Values
         private Vector2 velocity;
@@ -67,9 +86,9 @@ namespace Electron2D.Core
         /// <param name="_density"></param>
         /// <param name="_friction"></param>
         /// <param name="_mass"></param>
-        public Rigidbody(Vector2 _startVelocity, float _startAngularVelocity, float _friction, float _density = 1,
-            RigidbodyShape _rigidbodyShape = RigidbodyShape.Box, RigidbodyMode _rigidbodyMode = RigidbodyMode.AutoMass, float _mass = 0,
-            bool _fixedRotation = false)
+        public Rigidbody(Vector2 _startVelocity, float _startAngularVelocity, float _friction, float _density = 1, float _mass = 0, bool _fixedRotation = false,
+            RigidbodyShape _rigidbodyShape = RigidbodyShape.Box, RigidbodyMode _rigidbodyMode = RigidbodyMode.AutoMass,
+            ushort _layer = 0x0001, ushort _hitMask = 0xFFFF, short _groupIndex = 0)
         {
             velocity = _startVelocity;
             angularVelocity = _startAngularVelocity;
@@ -79,6 +98,9 @@ namespace Electron2D.Core
             fixedRotation = _fixedRotation;
             Mode = _rigidbodyMode;
             Shape = _rigidbodyShape;
+            Layer = _layer;
+            HitMask = _hitMask;
+            GroupIndex = _groupIndex;
 
             RigidbodySystem.Register(this);
         }
@@ -86,12 +108,17 @@ namespace Electron2D.Core
         /// <summary>
         /// Creates a static rigidbody.
         /// </summary>
-        public Rigidbody(RigidbodyShape _rigidbodyShape = RigidbodyShape.Box, float _friction = 1)
+        public Rigidbody(float _friction = 1, RigidbodyShape _rigidbodyShape = RigidbodyShape.Box,
+            ushort _layer = 0x0001, ushort _hitMask = 0xFFFF, short _groupIndex = 0)
         {
             density = 1;
             friction = _friction;
             Mode = RigidbodyMode.StaticMassless; // Static Rigidbody
             Shape = _rigidbodyShape;
+            Layer = _layer;
+            HitMask = _hitMask;
+            GroupIndex = _groupIndex;
+
             RigidbodySystem.Register(this);
         }
 
@@ -115,7 +142,7 @@ namespace Electron2D.Core
 
             BodyDef bodyDef = new BodyDef()
             {
-                Position = new Vec2(transform.Position.X / WorldScalar, transform.Position.Y / WorldScalar),
+                Position = new Vec2(transform.Position.X / Physics.WorldScalar, transform.Position.Y / Physics.WorldScalar),
                 Angle = transform.Rotation,
                 LinearVelocity = new Vec2(velocity.X, velocity.Y),
                 AngularVelocity = angularVelocity,
@@ -128,9 +155,15 @@ namespace Electron2D.Core
                 PolygonDef polygonDef = new PolygonDef()
                 {
                     Density = density,
-                    Friction = friction
+                    Friction = friction,
+                    Filter = new FilterData()
+                    {
+                        CategoryBits = Layer,
+                        MaskBits = HitMask,
+                        GroupIndex = GroupIndex
+                    }
                 };
-                polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / WorldScalar, (transform.Scale.Y - Epsilon) / 2f / WorldScalar);
+                polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar, (transform.Scale.Y - Epsilon) / 2f / Physics.WorldScalar);
                 fixtureDef = polygonDef;
             }
             else if(Shape == RigidbodyShape.Circle)
@@ -139,14 +172,21 @@ namespace Electron2D.Core
                 {
                     Density = density,
                     Friction = friction,
-                    Radius = (transform.Scale.X - Epsilon) / 2f / WorldScalar
+                    Radius = (transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar,
+                    Filter = new FilterData()
+                    {
+                        CategoryBits = Layer,
+                        MaskBits = HitMask,
+                        GroupIndex = GroupIndex
+                    }
                 };
                 fixtureDef = circleDef;
             }
             else
             {
-                fixtureDef = null;
-                Debug.LogError("Unsupported rigidbody shape.");
+                // Should only get this error when developing
+                Debug.LogError($"Unsupported rigidbody shape {Shape}.");
+                return;
             }
             
             if (Mode == RigidbodyMode.AutoMass)
@@ -174,7 +214,7 @@ namespace Electron2D.Core
             if (!valid || ID == uint.MaxValue) return;
 
             // Setting values for interpolation
-            oldPosition = transform.Position / WorldScalar;
+            oldPosition = transform.Position / Physics.WorldScalar;
             oldAngle = transform.Rotation;
 
             newPosition = Physics.GetBodyPosition(ID);
@@ -194,7 +234,7 @@ namespace Electron2D.Core
             float t = MathEx.Clamp01((Time.TotalElapsedSeconds - lastLerpTime) / lerpDeltaTime);
 
             //      Position
-            transform.Position = Vector2.Lerp(oldPosition, newPosition, t) * WorldScalar;
+            transform.Position = Vector2.Lerp(oldPosition, newPosition, t) * Physics.WorldScalar;
 
             //      Rotation
             transform.Rotation = (float)(oldAngle * (1.0 - t) + (newAngle * t));

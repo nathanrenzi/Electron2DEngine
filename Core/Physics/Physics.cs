@@ -9,8 +9,10 @@ namespace Electron2D.Core
 
     public static class Physics
     {
-        private static Dictionary<uint, Body> physicsBodies = new Dictionary<uint, Body>();
+        // Scaling the physics so that 50 pixels equates to 1 meter in the simulation
+        public static readonly float WorldScalar = 50f;
 
+        private static Dictionary<uint, Body> physicsBodies = new Dictionary<uint, Body>();
         private static World world;
         private static AABB aabb;
 
@@ -31,6 +33,7 @@ namespace Electron2D.Core
             };
 
             world = new World(aabb, new Vec2(_gravity.X, _gravity.Y), _doSleep);
+            world.SetContactFilter(new ContactFilter());
         }
 
         /// <summary>
@@ -136,6 +139,26 @@ namespace Electron2D.Core
         }
 
         /// <summary>
+        /// Gets the filter data from the fixtures on a physics body.
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <returns></returns>
+        public static FilterData[] GetFilterData(uint _id)
+        {
+            List<FilterData> filters = new List<FilterData>();
+
+            Fixture f = physicsBodies[_id].GetFixtureList();
+            filters.Add(f.Filter);
+            while (f.Next != null)
+            {
+                f = f.Next;
+                filters.Add(f.Filter);
+            }
+
+            return filters.ToArray();
+        }
+
+        /// <summary>
         /// Applies a force to a physics body.
         /// </summary>
         /// <param name="_id"></param>
@@ -214,6 +237,25 @@ namespace Electron2D.Core
         public static void SetBodyFixedRotation(uint _id, bool _fixedRotation)
         {
             physicsBodies[_id].SetFixedRotation(_fixedRotation);
+        }
+
+        /// <summary>
+        /// Sets the filter data of the fixtures on a physics body.
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <param name="_filterData"></param>
+        public static void SetFilterData(uint _id, FilterData _filterData)
+        {
+            Fixture f = physicsBodies[_id].GetFixtureList();
+            f.Filter = _filterData;
+            world.Refilter(f);
+
+            while (f.Next != null)
+            {
+                f = f.Next;
+                f.Filter = _filterData;
+                world.Refilter(f);
+            }
         }
     }
 }

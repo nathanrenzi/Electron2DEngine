@@ -55,8 +55,8 @@ namespace Electron2D.Core.Rendering
             Rectangle screen = Glfw.PrimaryMonitor.WorkArea;
             int x = (screen.Width - _width) / 2;
             int y = (screen.Height - _height) / 2;
-            //Glfw.SetWindowPosition(Window, x, y);
-            Glfw.SetWindowMonitor(Window, Glfw.PrimaryMonitor, x, y, screen.Width, screen.Height, 240);
+            Glfw.SetWindowPosition(Window, x, y);
+            //Glfw.SetWindowMonitor(Window, Glfw.PrimaryMonitor, x, y, screen.Width, screen.Height, 240);
 
             Glfw.MakeContextCurrent(Window);
             Import(Glfw.GetProcAddress);

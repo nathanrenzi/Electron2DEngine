@@ -39,7 +39,7 @@ namespace Electron2D.Build
             InitializeFPSLabel();
             
             s = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.Navy));
-            s.AddComponent(new Rigidbody(Vector2.Zero, 0, 1f, 1, _rigidbodyShape: RigidbodyShape.Box));
+            s.AddComponent(new Rigidbody(Vector2.UnitY * 10, 0, 1f, 1, _rigidbodyShape: RigidbodyShape.Box, _hitMask: (ushort)PhysicsLayer.Layer0));
 
             Sprite b = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.White), 0, 6, 6);
             b.Transform.Position = new Vector2(40, -250f);
@@ -47,7 +47,7 @@ namespace Electron2D.Build
 
             Sprite a = new Sprite(Material.Create(GlobalShaders.DefaultTextureArray, System.Drawing.Color.White), 0, 500, 30);
             a.Transform.Position = new Vector2(0, -450f);
-            a.AddComponent(new Rigidbody());
+            a.AddComponent(new Rigidbody(_layer: (ushort)PhysicsLayer.Layer1));
         }
 
         protected override void Update()
