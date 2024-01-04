@@ -206,5 +206,14 @@ namespace Electron2D.Core
         {
             physicsBodies[_id].SetPosition(new Vec2(_position.X, _position.Y));
         }
+
+        /// <summary>
+        /// Toggles the fixed rotation of a physics body.
+        /// </summary>
+        /// <param name="_fixedRotation"></param>
+        public static void SetBodyFixedRotation(uint _id, bool _fixedRotation)
+        {
+            physicsBodies[_id].SetFixedRotation(_fixedRotation);
+        }
     }
 }

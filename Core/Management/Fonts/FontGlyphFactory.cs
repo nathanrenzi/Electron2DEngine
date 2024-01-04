@@ -29,7 +29,7 @@ namespace Electron2D.Core.Management
             }
 
             // Setting font pixel size, 0 width means dynamically scaled with height
-            FT_Set_Pixel_Sizes(face, 0, (uint)_fontSize);
+            FT_Set_Pixel_Sizes(face, 0, (uint)(_fontSize * Game.WINDOW_SCALE));
 
             FreeTypeFaceFacade f = new FreeTypeFaceFacade(library, face);
             FontGlyphStore store = new FontGlyphStore(_fontSize, _fontFile, library, face, f.HasKerningFlag);
@@ -61,8 +61,8 @@ namespace Electron2D.Core.Management
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-                Character character = new Character(texture, new Vector2((int)f.GlyphBitmap.width, (int)f.GlyphBitmap.rows),
-                    new Vector2(f.GlyphBitmapLeft, f.GlyphBitmapTop), (uint)f.GlyphMetricHorizontalAdvance);
+                Character character = new Character(texture, new Vector2((int)f.GlyphBitmap.width / Game.WINDOW_SCALE, (int)f.GlyphBitmap.rows / Game.WINDOW_SCALE),
+                    new Vector2(f.GlyphBitmapLeft / Game.WINDOW_SCALE, f.GlyphBitmapTop / Game.WINDOW_SCALE), (uint)(f.GlyphMetricHorizontalAdvance / Game.WINDOW_SCALE));
                 store.AddCharacter((char)c, character);
             }
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);

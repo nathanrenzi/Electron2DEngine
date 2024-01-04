@@ -13,7 +13,7 @@ namespace Electron2D.Core
         {
             GetBuildDate();
             AudioPlayback.Initialize(1f); // Must be called in main, and Main must have [STAThread] attribute for ASIO
-            game = new Build.Build(1920, 1080);
+            game = new Build.Build(2560, 1440);
             game.Run();
         }
 

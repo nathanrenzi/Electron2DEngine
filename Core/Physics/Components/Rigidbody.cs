@@ -44,6 +44,7 @@ namespace Electron2D.Core
         private float density;
         private float friction;
         private float mass;
+        private bool fixedRotation;
         // ---------------
 
         private Vector2 newPosition;
@@ -67,18 +68,21 @@ namespace Electron2D.Core
         /// <param name="_friction"></param>
         /// <param name="_mass"></param>
         public Rigidbody(Vector2 _startVelocity, float _startAngularVelocity, float _friction, float _density = 1,
-            RigidbodyShape _rigidbodyShape = RigidbodyShape.Box, RigidbodyMode _rigidbodyMode = RigidbodyMode.AutoMass, float _mass = 0)
+            RigidbodyShape _rigidbodyShape = RigidbodyShape.Box, RigidbodyMode _rigidbodyMode = RigidbodyMode.AutoMass, float _mass = 0,
+            bool _fixedRotation = false)
         {
             velocity = _startVelocity;
             angularVelocity = _startAngularVelocity;
             friction = _friction;
             density = _density;
             mass = _mass;
+            fixedRotation = _fixedRotation;
             Mode = _rigidbodyMode;
             Shape = _rigidbodyShape;
 
             RigidbodySystem.Register(this);
         }
+
         /// <summary>
         /// Creates a static rigidbody.
         /// </summary>
@@ -114,7 +118,8 @@ namespace Electron2D.Core
                 Position = new Vec2(transform.Position.X / WorldScalar, transform.Position.Y / WorldScalar),
                 Angle = transform.Rotation,
                 LinearVelocity = new Vec2(velocity.X, velocity.Y),
-                AngularVelocity = angularVelocity
+                AngularVelocity = angularVelocity,
+                FixedRotation = fixedRotation
             };
 
             FixtureDef fixtureDef;
