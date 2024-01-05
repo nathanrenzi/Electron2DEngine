@@ -45,7 +45,7 @@ namespace Electron2D.Build
 
             Sprite f = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(50, 255, 255, 255)), 0, 30, 30);
             f.Transform.Position = new Vector2(-50, -350);
-            ColliderSensor sensor = new ColliderSensor(new Vector2(30), _shape: ColliderSensorShape.Box);
+            RigidbodySensor sensor = new RigidbodySensor(new Vector2(30), _shape: ColliderSensorShape.Box);
             f.AddComponent(sensor);
             sensor.OnBeginContact += (rb) => Debug.Log("Entered sensor");
             sensor.OnEndContact += (rb) => Debug.Log("Exited sensor");

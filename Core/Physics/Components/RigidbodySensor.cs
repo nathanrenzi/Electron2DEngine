@@ -5,8 +5,8 @@ using System.Numerics;
 
 namespace Electron2D.Core.PhysicsBox2D
 {
-    public class ColliderSensorSystem : BaseSystem<ColliderSensor> { }
-    public class ColliderSensor : Component
+    public class RigidbodySensorSystem : BaseSystem<RigidbodySensor> { }
+    public class RigidbodySensor : Component
     {
         public static readonly float Epsilon = 1f;
 
@@ -39,7 +39,7 @@ namespace Electron2D.Core.PhysicsBox2D
         private Transform transform;
         private bool isValid;
 
-        public ColliderSensor(Vector2 _size, ColliderSensorShape _shape = ColliderSensorShape.Circle,
+        public RigidbodySensor(Vector2 _size, ColliderSensorShape _shape = ColliderSensorShape.Circle,
             ushort _layer = 0x0001, ushort _hitMask = 0xFFFF, short _groupIndex = 0)
         {
             Shape = _shape;
@@ -48,10 +48,10 @@ namespace Electron2D.Core.PhysicsBox2D
             HitMask = _hitMask;
             GroupIndex = _groupIndex;
 
-            ColliderSensorSystem.Register(this);
+            RigidbodySensorSystem.Register(this);
         }
 
-        public ColliderSensor(Vector2 _size, Vector2 _localOffset, ColliderSensorShape _shape = ColliderSensorShape.Circle,
+        public RigidbodySensor(Vector2 _size, Vector2 _localOffset, ColliderSensorShape _shape = ColliderSensorShape.Circle,
             ushort _layer = 0x0001, ushort _hitMask = 0xFFFF, short _groupIndex = 0)
         {
             Shape = _shape;
@@ -61,18 +61,18 @@ namespace Electron2D.Core.PhysicsBox2D
             HitMask = _hitMask;
             GroupIndex = _groupIndex;
 
-            ColliderSensorSystem.Register(this);
+            RigidbodySensorSystem.Register(this);
         }
 
-        ~ColliderSensor()
+        ~RigidbodySensor()
         {
-            ColliderSensorSystem.Unregister(this);
+            RigidbodySensorSystem.Unregister(this);
         }
 
         public static void InvokeSensor(uint _id, uint _hitId, bool _beginContact)
         {
             List<Rigidbody> rigidbodies = RigidbodySystem.GetComponents();
-            List<ColliderSensor> sensors = ColliderSensorSystem.GetComponents();
+            List<RigidbodySensor> sensors = RigidbodySensorSystem.GetComponents();
 
             Rigidbody hitBody = null;
             for (int i = 0; i < rigidbodies.Count; i++)
@@ -84,7 +84,7 @@ namespace Electron2D.Core.PhysicsBox2D
             }
             if (hitBody == null) return;
 
-            ColliderSensor sensor = null;
+            RigidbodySensor sensor = null;
             for (int i = 0; i < sensors.Count; i++)
             {
                 if (sensors[i].ID == _id)

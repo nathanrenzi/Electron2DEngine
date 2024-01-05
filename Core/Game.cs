@@ -87,7 +87,7 @@ namespace Electron2D.Core
 
             // Starting Component Systems
             RigidbodySystem.Start();
-            ColliderSensorSystem.Start();
+            RigidbodySensorSystem.Start();
             TransformSystem.Start();
             MeshRendererSystem.Start();
             TextRendererSystem.Start();
@@ -125,7 +125,7 @@ namespace Electron2D.Core
 
                 // Updating Component Systems
                 RigidbodySystem.Update();
-                ColliderSensorSystem.Update();
+                RigidbodySensorSystem.Update();
                 TransformSystem.Update();
                 MeshRendererSystem.Update();
                 TextRendererSystem.Update();
@@ -182,7 +182,7 @@ namespace Electron2D.Core
                     // Do Physics Tick
                     Physics.Step((float)delta, _velocityIterations, _positionIterations);
                     RigidbodySystem.FixedUpdate();
-                    ColliderSensorSystem.FixedUpdate();
+                    RigidbodySensorSystem.FixedUpdate();
                     OnFixedUpdateEvent?.Invoke();
                 }
             }
