@@ -37,6 +37,19 @@
             return null;
         }
 
+        public T[] GetComponentsOfType<T>() where T : Component
+        {
+            List<T> c = new List<T>();
+            foreach (Component component in components)
+            {
+                if (component.GetType().Equals(typeof(T)))
+                {
+                    c.Add((T)component);
+                }
+            }
+            return c.ToArray();
+        }
+
         ~Entity()
         {
             Dispose();

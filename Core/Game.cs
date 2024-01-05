@@ -8,6 +8,7 @@ using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.UserInterface;
 using System.Drawing;
 using Electron2D.Core.Rendering.Text;
+using Electron2D.Core.PhysicsBox2D;
 
 namespace Electron2D.Core
 {
@@ -59,6 +60,7 @@ namespace Electron2D.Core
             Debug.OpenLogFile();
             Debug.Log("Starting initialization...");
             Initialize();
+
             StartCamera = new Camera2D(Vector2.Zero, 1);
 
             DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle, AntialiasingEnabled);
@@ -74,15 +76,18 @@ namespace Electron2D.Core
             }
             Input.Initialize();
 
+            // Initializing physics thread
+            PhysicsThread.Start();
+
             // Setup
             glEnable(GL_BLEND);
             glEnable(GL_STENCIL_TEST);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            //glEnable(GL_FRAMEBUFFER_SRGB); // Gamma-corrects lighting, now done in lit shader.
             // -----------
 
             // Starting Component Systems
             RigidbodySystem.Start();
+            ColliderSensorSystem.Start();
             TransformSystem.Start();
             MeshRendererSystem.Start();
             TextRendererSystem.Start();
@@ -99,7 +104,6 @@ namespace Electron2D.Core
 
             Debug.Log("Initialization complete");
 
-            PhysicsThread.Start();
             Load();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
@@ -121,6 +125,7 @@ namespace Electron2D.Core
 
                 // Updating Component Systems
                 RigidbodySystem.Update();
+                ColliderSensorSystem.Update();
                 TransformSystem.Update();
                 MeshRendererSystem.Update();
                 TextRendererSystem.Update();
@@ -174,12 +179,11 @@ namespace Electron2D.Core
                     MeshRendererSystem.FixedUpdate();
                     TextRendererSystem.FixedUpdate();
 
-                    // Call FixedUpdate Event
-                    OnFixedUpdateEvent?.Invoke();
-
                     // Do Physics Tick
                     Physics.Step((float)delta, _velocityIterations, _positionIterations);
                     RigidbodySystem.FixedUpdate();
+                    ColliderSensorSystem.FixedUpdate();
+                    OnFixedUpdateEvent?.Invoke();
                 }
             }
         }

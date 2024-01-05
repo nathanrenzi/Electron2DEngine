@@ -1,7 +1,6 @@
-﻿using System.ComponentModel;
-using System.Numerics;
+﻿using System.Numerics;
 
-namespace Electron2D.Core.UI
+namespace Electron2D.Core.UserInterface
 {
     public class UiCanvas
     {

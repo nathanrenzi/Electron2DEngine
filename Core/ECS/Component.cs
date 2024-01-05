@@ -33,5 +33,10 @@
         {
             return Entity.GetComponent<T>();
         }
+
+        public T[] GetComponentsOfType<T>() where T : Component
+        {
+            return Entity.GetComponentsOfType<T>();
+        }
     }
 }

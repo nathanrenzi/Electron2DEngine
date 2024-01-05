@@ -2,12 +2,9 @@
 using Box2DX.Common;
 using Box2DX.Dynamics;
 using Electron2D.Core.ECS;
-using Newtonsoft.Json.Linq;
 using System.Numerics;
-using System.Runtime.Intrinsics.X86;
-using System.Threading.Tasks;
 
-namespace Electron2D.Core
+namespace Electron2D.Core.PhysicsBox2D
 {
     public class RigidbodySystem : BaseSystem<Rigidbody> { }
     public class Rigidbody : Component
@@ -75,7 +72,7 @@ namespace Electron2D.Core
 
         private Transform transform;
 
-        private bool valid = false;
+        private bool isValid = false;
         private bool interpolationReady = false;
 
         /// <summary>
@@ -86,6 +83,9 @@ namespace Electron2D.Core
         /// <param name="_density"></param>
         /// <param name="_friction"></param>
         /// <param name="_mass"></param>
+        /// <param name="_layer">The layer of this rigidbody determines how other rigidbodies will interact with this one.</param>
+        /// <param name="_hitMask">The hit mask determines what layers this rigidbody can collide with.</param>
+        /// <param name="_groupIndex">The group index allows this rigidbody to override it's collision parameters when colliding with objects in the same group.</param>
         public Rigidbody(Vector2 _startVelocity, float _startAngularVelocity, float _friction, float _density = 1, float _mass = 0, bool _fixedRotation = false,
             RigidbodyShape _rigidbodyShape = RigidbodyShape.Box, RigidbodyMode _rigidbodyMode = RigidbodyMode.AutoMass,
             ushort _layer = 0x0001, ushort _hitMask = 0xFFFF, short _groupIndex = 0)
@@ -108,6 +108,9 @@ namespace Electron2D.Core
         /// <summary>
         /// Creates a static rigidbody.
         /// </summary>
+        /// <param name="_layer">The layer of this rigidbody determines how other rigidbodies will interact with this one.</param>
+        /// <param name="_hitMask">The hit mask determines what layers this rigidbody can collide with.</param>
+        /// <param name="_groupIndex">The group index allows this rigidbody to override it's collision parameters when colliding with objects in the same group.</param>
         public Rigidbody(float _friction = 1, RigidbodyShape _rigidbodyShape = RigidbodyShape.Box,
             ushort _layer = 0x0001, ushort _hitMask = 0xFFFF, short _groupIndex = 0)
         {
@@ -135,7 +138,7 @@ namespace Electron2D.Core
             {
                 Debug.LogError("PHYSICS: A rigidbody is trying to be added to an entity without a Transform component, removing collider...");
                 Entity.RemoveComponent(this);
-                valid = false;
+                isValid = false;
                 Dispose();
                 return;
             }
@@ -146,6 +149,8 @@ namespace Electron2D.Core
                 Angle = transform.Rotation,
                 LinearVelocity = new Vec2(velocity.X, velocity.Y),
                 AngularVelocity = angularVelocity,
+                LinearDamping = 0.0f,
+                AngularDamping = 0.01f,
                 FixedRotation = fixedRotation
             };
 
@@ -193,25 +198,25 @@ namespace Electron2D.Core
             {
                 // Set Mass Automatically
                 ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, true);
-                valid = true;
+                isValid = true;
             }
             else if(Mode == RigidbodyMode.ManualMass)
             {
                 // Set Mass Manually
                 ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, new MassData() { Mass = mass });
-                valid = true;
+                isValid = true;
             }
             else if(Mode == RigidbodyMode.StaticMassless)
             {
                 // Static Rigidbody
                 ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, false);
-                valid = true;
+                isValid = true;
             }
         }
 
         public override void FixedUpdate()
         {
-            if (!valid || ID == uint.MaxValue) return;
+            if (!isValid || ID == uint.MaxValue) return;
 
             // Setting values for interpolation
             oldPosition = transform.Position / Physics.WorldScalar;
@@ -228,7 +233,7 @@ namespace Electron2D.Core
 
         public override void Update()
         {
-            if (!valid || ID == uint.MaxValue || !interpolationReady) return;
+            if (!isValid || ID == uint.MaxValue || !interpolationReady) return;
 
             // Interpolation
             float t = MathEx.Clamp01((Time.TotalElapsedSeconds - lastLerpTime) / lerpDeltaTime);

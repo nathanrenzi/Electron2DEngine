@@ -1,4 +1,4 @@
-﻿using Electron2D.Core.UI;
+﻿using Electron2D.Core.UserInterface;
 using System.Numerics;
 
 namespace Electron2D.Core.UserInterface

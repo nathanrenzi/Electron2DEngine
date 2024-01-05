@@ -1,5 +1,5 @@
 ﻿using Electron2D.Core.Rendering;
-using Electron2D.Core.UI;
+using Electron2D.Core.UserInterface;
 using System.Drawing;
 
 namespace Electron2D.Core.UserInterface

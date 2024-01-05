@@ -1,5 +1,5 @@
 ﻿using Electron2D.Core.ECS;
-using Electron2D.Core.UI;
+using Electron2D.Core.UserInterface;
 
 namespace Electron2D.Core.UserInterface
 {

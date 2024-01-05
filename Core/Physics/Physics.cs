@@ -3,10 +3,9 @@ using Box2DX.Dynamics;
 using Box2DX.Common;
 using System.Numerics;
 
-namespace Electron2D.Core
+namespace Electron2D.Core.PhysicsBox2D
 {
     //https://box2d.org/documentation/md__d_1__git_hub_box2d_docs_hello.html
-
     public static class Physics
     {
         // Scaling the physics so that 50 pixels equates to 1 meter in the simulation
@@ -34,6 +33,7 @@ namespace Electron2D.Core
 
             world = new World(aabb, new Vec2(_gravity.X, _gravity.Y), _doSleep);
             world.SetContactFilter(new ContactFilter());
+            world.SetContactListener(new SensorContactListener());
         }
 
         /// <summary>
@@ -80,6 +80,11 @@ namespace Electron2D.Core
         public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData)
         {
             Body b = world.CreateBody(_bodyDefinition);
+            while (b == null)
+            {
+                b = world.CreateBody(_bodyDefinition);
+                Debug.LogError("PHYSICS: Error creating physics body!");
+            }
             b.CreateFixture(_fixtureDef);
             b.SetMass(_massData);
             uint id = (uint)physicsBodies.Count;
@@ -256,6 +261,74 @@ namespace Electron2D.Core
                 f.Filter = _filterData;
                 world.Refilter(f);
             }
+        }
+
+        public class SensorContactListener : ContactListener
+        {
+            public void BeginContact(Contact contact)
+            {
+                Fixture fixtureA = contact.FixtureA;
+                Fixture fixtureB = contact.FixtureB;
+
+                Body bodyA = fixtureA.Body;
+                Body bodyB = fixtureB.Body;
+
+                uint idA = GetIDFromBody(bodyA);
+                uint idB = GetIDFromBody(bodyB);
+
+                if (fixtureA.IsSensor)
+                {
+                    ColliderSensor.InvokeSensor(idA, idB, true);
+                }
+                else if (fixtureB.IsSensor)
+                {
+                    ColliderSensor.InvokeSensor(idB, idA, true);
+                }
+            }
+
+            public void EndContact(Contact contact)
+            {
+                Fixture fixtureA = contact.FixtureA;
+                Fixture fixtureB = contact.FixtureB;
+
+                Body bodyA = fixtureA.Body;
+                Body bodyB = fixtureB.Body;
+
+                uint idA = GetIDFromBody(bodyA);
+                uint idB = GetIDFromBody(bodyB);
+
+                if (fixtureA.IsSensor)
+                {
+                    ColliderSensor.InvokeSensor(idA, idB, false);
+                }
+                else if (fixtureB.IsSensor)
+                {
+                    ColliderSensor.InvokeSensor(idB, idA, false);
+                }
+            }
+
+            public void PostSolve(Contact contact, ContactImpulse impulse)
+            {
+                
+            }
+
+            public void PreSolve(Contact contact, Manifold oldManifold)
+            {
+                
+            }
+        }
+
+        private static uint GetIDFromBody(Body _body)
+        {
+            foreach (var pair in physicsBodies)
+            {
+                if (pair.Value == _body)
+                {
+                    return pair.Key;
+                }
+            }
+
+            return uint.MaxValue;
         }
     }
 }

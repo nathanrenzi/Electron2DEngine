@@ -58,5 +58,10 @@
                 }
             }
         }
+
+        public static List<T> GetComponents()
+        {
+            return components;
+        }
     }
 }

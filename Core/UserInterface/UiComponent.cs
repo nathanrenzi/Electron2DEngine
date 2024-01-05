@@ -1,11 +1,10 @@
 ﻿using System.Numerics;
 using Electron2D.Core.Rendering;
 using System.Drawing;
-using Electron2D.Core.UserInterface;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.ECS;
 
-namespace Electron2D.Core.UI
+namespace Electron2D.Core.UserInterface
 {
     public abstract class UiComponent : Entity, IRenderable
     {

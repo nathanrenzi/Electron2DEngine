@@ -1,4 +1,4 @@
-﻿namespace Electron2D.Core
+﻿namespace Electron2D.Core.PhysicsBox2D
 {
     public enum PhysicsLayer
     {
