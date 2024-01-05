@@ -79,6 +79,8 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <returns></returns>
         public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData)
         {
+            // Error here is being caused by physics step being in progress when this is called,
+            // which makes function return null due to the _lock value in World
             Body b = world.CreateBody(_bodyDefinition);
             while (b == null)
             {
