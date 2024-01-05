@@ -137,8 +137,8 @@ namespace Electron2D.Core.PhysicsBox2D
                 Angle = transform.Rotation,
                 LinearVelocity = new Vec2(velocity.X, velocity.Y),
                 AngularVelocity = angularVelocity,
-                LinearDamping = 0.0f,
-                AngularDamping = 0.01f,
+                LinearDamping = linearDampening,
+                AngularDamping = angularDampening,
                 FixedRotation = fixedRotation
             };
 
