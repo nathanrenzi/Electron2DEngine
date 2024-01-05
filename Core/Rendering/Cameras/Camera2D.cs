@@ -5,29 +5,29 @@ namespace Electron2D.Core.Rendering
 {
     public class Camera2D
     {
-        public static Camera2D main { get; private set; }
+        public static Camera2D Main { get; private set; }
 
-        public Vector2 position;
-        public float zoom;
+        public Vector2 Position;
+        public float Zoom;
 
         public Camera2D(Vector2 _focusPosition, float _zoom)
         {
-            position = _focusPosition;
-            zoom = _zoom;
+            Position = _focusPosition;
+            Zoom = _zoom;
 
-            if (main == null) main = this;
+            if (Main == null) Main = this;
         }
 
         public Matrix4x4 GetProjectionMatrix()
         {
             float positionScale = Game.WINDOW_SCALE;
-            float left = (position.X * positionScale) - DisplayManager.Instance.WindowSize.X / 2f;
-            float right = (position.X * positionScale) + DisplayManager.Instance.WindowSize.X / 2f;
-            float top = (position.Y * positionScale) + DisplayManager.Instance.WindowSize.Y / 2f;
-            float bottom = (position.Y * positionScale) - DisplayManager.Instance.WindowSize.Y / 2f;
+            float left = (Position.X * positionScale) - DisplayManager.Instance.WindowSize.X / 2f;
+            float right = (Position.X * positionScale) + DisplayManager.Instance.WindowSize.X / 2f;
+            float top = (Position.Y * positionScale) + DisplayManager.Instance.WindowSize.Y / 2f;
+            float bottom = (Position.Y * positionScale) - DisplayManager.Instance.WindowSize.Y / 2f;
 
             Matrix4x4 orthoMatrix = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, 0.01f, 100f);
-            Matrix4x4 zoomMatrix = Matrix4x4.CreateScale(zoom);
+            Matrix4x4 zoomMatrix = Matrix4x4.CreateScale(Zoom);
 
             return orthoMatrix * zoomMatrix;
         }

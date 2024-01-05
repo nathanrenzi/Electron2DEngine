@@ -6,7 +6,7 @@ namespace Electron2D.Core
 {
     public static class Input
     {
-        public static float scrollDelta;
+        public static float ScrollDelta;
 
         private static bool[] KEYS;
         private static bool[] KEYS_LAST;
@@ -39,7 +39,7 @@ namespace Electron2D.Core
 
         public static void ScrollCallback(Window _window, double _xOffset, double _yOffset)
         {
-            scrollDelta = (float)_yOffset / 10;
+            ScrollDelta = (float)_yOffset / 10;
             scrollCallbackFrame = true;
         }
 
@@ -59,7 +59,7 @@ namespace Electron2D.Core
             if (!scrollCallbackFrame)
             {
                 // If the scroll delta was not updated this frame, set the delta to 0
-                scrollDelta = 0;
+                ScrollDelta = 0;
             }
 
             // Looping through every key to see if it is being pressed or released
@@ -155,8 +155,8 @@ namespace Electron2D.Core
             // ----------------------
 
             // Offsetting and scaling the position based on the current camera
-            worldPosition /= Camera2D.main.zoom;
-            worldPosition += (Camera2D.main.position / Game.WINDOW_SCALE);
+            worldPosition /= Camera2D.Main.Zoom;
+            worldPosition += (Camera2D.Main.Position / Game.WINDOW_SCALE);
             // ----------------------
 
             return new Vector2(worldPosition.X, worldPosition.Y);

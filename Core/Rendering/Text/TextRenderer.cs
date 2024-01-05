@@ -315,7 +315,7 @@ namespace Electron2D.Core.Rendering.Text
         public unsafe void Render()
         {
             TextShader.Use();
-            TextShader.SetMatrix4x4("projection", Camera2D.main.GetUnscaledProjectionMatrix());
+            TextShader.SetMatrix4x4("projection", Camera2D.Main.GetUnscaledProjectionMatrix());
             TextShader.SetMatrix4x4("model", Matrix4x4.CreateScale(Game.WINDOW_SCALE, Game.WINDOW_SCALE, 1));
             TextShader.SetColor("mainColor", TextColor);
             TextShader.SetColor("outlineColor", OutlineColor);

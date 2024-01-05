@@ -65,25 +65,25 @@ namespace Electron2D.Build
 
         private void CameraMovement()
         {
-            Camera2D.main.zoom += Input.scrollDelta;
-            Camera2D.main.zoom = Math.Clamp(Camera2D.main.zoom, 0.2f, 2);
+            Camera2D.Main.Zoom += Input.ScrollDelta;
+            Camera2D.Main.Zoom = Math.Clamp(Camera2D.Main.Zoom, 0.2f, 2);
 
             float moveSpeed = 1000;
             if (Input.GetKey(Keys.W))
             {
-                Camera2D.main.position += new Vector2(0, moveSpeed * Time.DeltaTime);
+                Camera2D.Main.Position += new Vector2(0, moveSpeed * Time.DeltaTime);
             }
             if (Input.GetKey(Keys.A))
             {
-                Camera2D.main.position += new Vector2(-moveSpeed * Time.DeltaTime, 0);
+                Camera2D.Main.Position += new Vector2(-moveSpeed * Time.DeltaTime, 0);
             }
             if (Input.GetKey(Keys.S))
             {
-                Camera2D.main.position += new Vector2(0, -moveSpeed * Time.DeltaTime);
+                Camera2D.Main.Position += new Vector2(0, -moveSpeed * Time.DeltaTime);
             }
             if (Input.GetKey(Keys.D))
             {
-                Camera2D.main.position += new Vector2(moveSpeed * Time.DeltaTime, 0);
+                Camera2D.Main.Position += new Vector2(moveSpeed * Time.DeltaTime, 0);
             }
         }
 
