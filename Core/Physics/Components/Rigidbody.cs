@@ -34,8 +34,9 @@ namespace Electron2D.Core.PhysicsBox2D
                 Physics.SetAngularVelocity(ID, value);
             }
         }
-        public RigidbodyMode Mode { get; private set; }
+        public RigidbodyMassMode MassMode { get; private set; }
         public RigidbodyShape Shape { get; private set; }
+        public bool IsStatic { get; private set; }
 
         // https://www.iforce2d.net/b2dtut/collision-filtering
         /// <summary>
@@ -57,9 +58,11 @@ namespace Electron2D.Core.PhysicsBox2D
         // Starting Values
         private Vector2 velocity;
         private float angularVelocity;
+        private float linearDampening;
+        private float angularDampening;
         private float density;
         private float friction;
-        private float mass;
+        private MassData massData;
         private bool fixedRotation;
         // ---------------
 
@@ -75,48 +78,33 @@ namespace Electron2D.Core.PhysicsBox2D
         private bool isValid = false;
         private bool interpolationReady = false;
 
-        /// <summary>
-        /// Creates a dynamic rigidbody.
-        /// </summary>
-        /// <param name="_startVelocity"></param>
-        /// <param name="_startAngularVelocity"></param>
-        /// <param name="_density"></param>
-        /// <param name="_friction"></param>
-        /// <param name="_mass"></param>
-        /// <param name="_layer">The layer of this rigidbody determines how other rigidbodies will interact with this one.</param>
-        /// <param name="_hitMask">The hit mask determines what layers this rigidbody can collide with.</param>
-        /// <param name="_groupIndex">The group index allows this rigidbody to override it's collision parameters when colliding with objects in the same group.</param>
-        public Rigidbody(Vector2 _startVelocity, float _startAngularVelocity, float _friction, float _density = 1, float _mass = 0, bool _fixedRotation = false,
-            RigidbodyShape _rigidbodyShape = RigidbodyShape.Box, RigidbodyMode _rigidbodyMode = RigidbodyMode.AutoMass,
-            ushort _layer = 0x0001, ushort _hitMask = 0xFFFF, short _groupIndex = 0)
+        public static Rigidbody CreateDynamic(RigidbodyDynamicDef _definition)
         {
-            velocity = _startVelocity;
-            angularVelocity = _startAngularVelocity;
-            friction = _friction;
-            density = _density;
-            mass = _mass;
-            fixedRotation = _fixedRotation;
-            Mode = _rigidbodyMode;
-            Shape = _rigidbodyShape;
-            Layer = _layer;
-            HitMask = _hitMask;
-            GroupIndex = _groupIndex;
-
-            RigidbodySystem.Register(this);
+            return new Rigidbody(false, _definition.Velocity, _definition.AngularVelocity, _definition.MassData, _definition.Friction, _definition.Density,
+                _definition.LinearDampening, _definition.AngularDampening, _definition.FixedRotation, _definition.Shape, _definition.MassMode,
+                _definition.Layer, _definition.HitMask, _definition.GroupIndex);
         }
 
-        /// <summary>
-        /// Creates a static rigidbody.
-        /// </summary>
-        /// <param name="_layer">The layer of this rigidbody determines how other rigidbodies will interact with this one.</param>
-        /// <param name="_hitMask">The hit mask determines what layers this rigidbody can collide with.</param>
-        /// <param name="_groupIndex">The group index allows this rigidbody to override it's collision parameters when colliding with objects in the same group.</param>
-        public Rigidbody(float _friction = 1, RigidbodyShape _rigidbodyShape = RigidbodyShape.Box,
-            ushort _layer = 0x0001, ushort _hitMask = 0xFFFF, short _groupIndex = 0)
+        public static Rigidbody CreateStatic(RigidbodyStaticDef _definition)
         {
-            density = 1;
+            return new Rigidbody(true, new Vector2(0, 0), 0, new MassData(), _definition.Friction, 1, 0.0f, 0.0f, false, _definition.Shape,
+                RigidbodyMassMode.ManualMassUseData, _definition.Layer, _definition.HitMask, _definition.GroupIndex);
+        }
+
+        private Rigidbody(bool _isStatic, Vector2 _startVelocity, float _startAngularVelocity, MassData _massData, float _friction,
+            float _density, float _linearDampening, float _angularDampening, bool _fixedRotation, RigidbodyShape _rigidbodyShape,
+            RigidbodyMassMode _rigidbodyMode, ushort _layer, ushort _hitMask, short _groupIndex)
+        {
+            IsStatic = _isStatic;
+            velocity = _startVelocity;
+            angularVelocity = _startAngularVelocity;
+            linearDampening = _linearDampening;
+            angularDampening = _angularDampening;
             friction = _friction;
-            Mode = RigidbodyMode.StaticMassless; // Static Rigidbody
+            density = _density;
+            massData = _massData;
+            fixedRotation = _fixedRotation;
+            MassMode = _rigidbodyMode;
             Shape = _rigidbodyShape;
             Layer = _layer;
             HitMask = _hitMask;
@@ -194,19 +182,22 @@ namespace Electron2D.Core.PhysicsBox2D
                 return;
             }
             
-            if (Mode == RigidbodyMode.AutoMass)
+            if(!IsStatic)
             {
-                // Set Mass Automatically
-                ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, true);
-                isValid = true;
+                if(MassMode == RigidbodyMassMode.ManualMassUseData)
+                {
+                    // Normal Mass
+                    ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, massData);
+                    isValid = true;
+                }
+                else if(MassMode == RigidbodyMassMode.AutoMassIgnoreData)
+                {
+                    // Auto Mass
+                    ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, true);
+                    isValid = true;
+                }
             }
-            else if(Mode == RigidbodyMode.ManualMass)
-            {
-                // Set Mass Manually
-                ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, new MassData() { Mass = mass });
-                isValid = true;
-            }
-            else if(Mode == RigidbodyMode.StaticMassless)
+            else
             {
                 // Static Rigidbody
                 ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, false);
@@ -250,13 +241,114 @@ namespace Electron2D.Core.PhysicsBox2D
     {
         Box,
         Circle,
-        Mesh
+        ConvexMesh
     }
 
-    public enum RigidbodyMode
+    public enum RigidbodyMassMode
     {
-        AutoMass,
-        ManualMass,
-        StaticMassless
+        AutoMassIgnoreData,
+        ManualMassUseData,
+    }
+
+    /// <summary>
+    /// Defines a static rigidbody.
+    /// </summary>
+    public struct RigidbodyStaticDef
+    {
+        /// <summary>
+        /// The friction of the rigidbody against other rigidbodies.
+        /// </summary>
+        public float Friction = 1;
+        /// <summary>
+        /// The shape of the rigidbody. NOTE: CONVEX MESH MODE IS NOT IMPLEMENTED YET
+        /// </summary>
+        public RigidbodyShape Shape = RigidbodyShape.Box;
+        /// <summary>
+        /// The layer of this rigidbody determines how other rigidbodies will interact with this one.
+        /// </summary>
+        public ushort Layer = 0x0001;
+        /// <summary>
+        /// The hit mask determines what layers this rigidbody can collide with.
+        /// </summary>
+        public ushort HitMask = 0xFFFF;
+        /// <summary>
+        /// If either rigidbody has a GroupIndex of zero, use the category/mask rules as above.
+        /// If both GroupIndex values are non-zero but different, use the category/mask rules as above.
+        /// If both GroupIndex values are the same and positive, collide.
+        /// If both GroupIndex values are the same and negative, don't collide.
+        /// </summary>
+        public short GroupIndex = 0;
+
+        public RigidbodyStaticDef() { }
+    }
+
+    /// <summary>
+    /// Defines a dynamic rigidbody.
+    /// </summary>
+    public struct RigidbodyDynamicDef
+    {
+        /// <summary>
+        /// The starting linear velocity of the rigidbody.
+        /// </summary>
+        public Vector2 Velocity = Vector2.Zero;
+        /// <summary>
+        /// The starting angular velocity of the rigidbody.
+        /// </summary>
+        public float AngularVelocity = 0;
+        /// <summary>
+        /// The friction of the rigidbody against other rigidbodies.
+        /// </summary>
+        public float Friction = 1;
+        /// <summary>
+        /// The dampening of the rigidbody's linear velocity.
+        /// </summary>
+        public float LinearDampening = 0.0f;
+        /// <summary>
+        /// The dampening of the rigidbody's angular velocity.
+        /// </summary>
+        public float AngularDampening = 0.01f;
+        /// <summary>
+        /// The density of the rigidbody. This is used when the mass mode is set to <see cref="RigidbodyMassMode.AutoMassIgnoreData"/>
+        /// </summary>
+        public float Density = 1;
+        /// <summary>
+        /// The mass data of the rigidbody. This will only be used when <see cref="MassMode"/> is set to <see cref="RigidbodyMassMode.ManualMassUseData"/>
+        /// </summary>
+        public MassData MassData = new MassData();
+        /// <summary>
+        /// Whether the rigidbody can rotate in the simulation.
+        /// </summary>
+        public bool FixedRotation = false;
+        /// <summary>
+        /// Whether the physics simulation should use continuous detection when this dynamic rigidbody hits another dynamic rigidbody.
+        /// This is set to false by default because it is costly to use for all dynamic objects, so only enable this when the rigidbody will be moving very quickly and
+        /// hitting other dynamic rigidbodies.
+        /// </summary>
+        public bool IsBullet = false;
+        /// <summary>
+        /// The shape of the rigidbody. NOTE: CONVEX MESH MODE IS NOT IMPLEMENTED YET
+        /// </summary>
+        public RigidbodyShape Shape = RigidbodyShape.Box;
+        /// <summary>
+        /// The mass mode of the rigidbody. The <see cref="MassData"/> field will only be used when this is set to <see cref="RigidbodyMassMode.ManualMassUseData"/>
+        /// </summary>
+        public RigidbodyMassMode MassMode = RigidbodyMassMode.AutoMassIgnoreData;
+        /// <summary>
+        /// The layer of this rigidbody determines how other rigidbodies will interact with this one.
+        /// </summary>
+        public ushort Layer = 0x0001;
+        /// <summary>
+        /// The hit mask determines what layers this rigidbody can collide with.
+        /// </summary>
+        public ushort HitMask = 0xFFFF;
+        /// <summary>
+        /// If either rigidbody has a GroupIndex of zero, use the category/mask rules as above.
+        /// If both GroupIndex values are non-zero but different, use the category/mask rules as above.
+        /// If both GroupIndex values are the same and positive, collide.
+        /// If both GroupIndex values are the same and negative, don't collide.
+        /// </summary>
+        public short GroupIndex = 0;
+
+        public RigidbodyDynamicDef() { }
     }
 }

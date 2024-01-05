@@ -33,15 +33,21 @@ namespace Electron2D.Build
             InitializeFPSLabel();
             
             s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Navy));
-            s.AddComponent(new Rigidbody(Vector2.UnitY * 10, 0, 1f, 1, _rigidbodyShape: RigidbodyShape.Box));
+            RigidbodyDynamicDef df = new RigidbodyDynamicDef()
+            {
+                Velocity = Vector2.UnitY * 10,
+                Shape = RigidbodyShape.Box
+            };
+            s.AddComponent(Rigidbody.CreateDynamic(df));
 
+            RigidbodyStaticDef sf = new RigidbodyStaticDef();
             Sprite b = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.White), 0, 6, 6);
             b.Transform.Position = new Vector2(40, -250f);
-            b.AddComponent(new Rigidbody());
+            b.AddComponent(Rigidbody.CreateStatic(sf));
 
             Sprite a = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.White), 0, 500, 30);
             a.Transform.Position = new Vector2(0, -450f);
-            a.AddComponent(new Rigidbody());
+            a.AddComponent(Rigidbody.CreateStatic(sf));
 
             Sprite f = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(50, 255, 255, 255)), 0, 30, 30);
             f.Transform.Position = new Vector2(-50, -350);
