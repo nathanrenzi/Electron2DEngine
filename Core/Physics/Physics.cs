@@ -111,7 +111,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public static Vector2 GetBodyPosition(uint _id)
         {
             Vec2 vec = physicsBodies[_id].GetPosition();
-            return new Vector2(vec.X, vec.Y);
+            return new Vector2(vec.X * WorldScalar, vec.Y * WorldScalar);
         }
 
         /// <summary>
@@ -234,7 +234,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_position"></param>
         public static void SetPosition(uint _id, Vector2 _position)
         {
-            physicsBodies[_id].SetPosition(new Vec2(_position.X, _position.Y));
+            physicsBodies[_id].SetPosition(new Vec2(_position.X / WorldScalar, _position.Y / WorldScalar));
         }
 
         /// <summary>

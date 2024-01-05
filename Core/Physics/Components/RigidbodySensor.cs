@@ -120,7 +120,7 @@ namespace Electron2D.Core.PhysicsBox2D
                 return;
             }
 
-            Vector2 pos = (transform.Position + (transform.Up * Offset.Y) + (transform.Right * Offset.X)) / Physics.WorldScalar;
+            Vector2 pos = (transform.Position + (transform.Up * Offset.Y) + (transform.Right * Offset.X));
             BodyDef bodyDef = new BodyDef()
             {
                 Position = new Vec2(pos.X, pos.Y),
@@ -168,7 +168,7 @@ namespace Electron2D.Core.PhysicsBox2D
             if (!isValid || ID == uint.MaxValue) return;
 
             Physics.SetAngle(ID, transform.Rotation);
-            Physics.SetPosition(ID, (transform.Position + (transform.Up * Offset.Y) + (transform.Right * Offset.X)) / Physics.WorldScalar);
+            Physics.SetPosition(ID, transform.Position + (transform.Up * Offset.Y) + (transform.Right * Offset.X));
         }
     }
 

@@ -214,7 +214,7 @@ namespace Electron2D.Core.PhysicsBox2D
             if (!isValid || ID == uint.MaxValue) return;
 
             // Setting values for interpolation
-            oldPosition = transform.Position / Physics.WorldScalar;
+            oldPosition = transform.Position;
             oldAngle = transform.Rotation;
 
             newPosition = Physics.GetBodyPosition(ID);
@@ -234,7 +234,7 @@ namespace Electron2D.Core.PhysicsBox2D
             float t = MathEx.Clamp01((Time.TotalElapsedSeconds - lastLerpTime) / lerpDeltaTime);
 
             //      Position
-            transform.Position = Vector2.Lerp(oldPosition, newPosition, t) * Physics.WorldScalar;
+            transform.Position = Vector2.Lerp(oldPosition, newPosition, t);
 
             //      Rotation
             transform.Rotation = (float)(oldAngle * (1.0 - t) + (newAngle * t));
