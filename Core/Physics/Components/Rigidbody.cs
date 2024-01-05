@@ -62,6 +62,7 @@ namespace Electron2D.Core.PhysicsBox2D
         private float angularDampening;
         private float density;
         private float friction;
+        private float bounciness;
         private MassData massData;
         private bool fixedRotation;
         // ---------------
@@ -80,18 +81,18 @@ namespace Electron2D.Core.PhysicsBox2D
 
         public static Rigidbody CreateDynamic(RigidbodyDynamicDef _definition)
         {
-            return new Rigidbody(false, _definition.Velocity, _definition.AngularVelocity, _definition.MassData, _definition.Friction, _definition.Density,
-                _definition.LinearDampening, _definition.AngularDampening, _definition.FixedRotation, _definition.Shape, _definition.MassMode,
-                _definition.Layer, _definition.HitMask, _definition.GroupIndex);
+            return new Rigidbody(false, _definition.Velocity, _definition.AngularVelocity, _definition.MassData, _definition.Friction, _definition.Bounciness,
+                _definition.Density, _definition.LinearDampening, _definition.AngularDampening, _definition.FixedRotation, _definition.Shape,
+                _definition.MassMode, _definition.Layer, _definition.HitMask, _definition.GroupIndex);
         }
 
         public static Rigidbody CreateStatic(RigidbodyStaticDef _definition)
         {
-            return new Rigidbody(true, new Vector2(0, 0), 0, new MassData(), _definition.Friction, 1, 0.0f, 0.0f, false, _definition.Shape,
+            return new Rigidbody(true, new Vector2(0, 0), 0, new MassData(), _definition.Friction, _definition.Bounciness, 1, 0.0f, 0.0f, false, _definition.Shape,
                 RigidbodyMassMode.ManualMassUseData, _definition.Layer, _definition.HitMask, _definition.GroupIndex);
         }
 
-        private Rigidbody(bool _isStatic, Vector2 _startVelocity, float _startAngularVelocity, MassData _massData, float _friction,
+        private Rigidbody(bool _isStatic, Vector2 _startVelocity, float _startAngularVelocity, MassData _massData, float _friction, float _bounciness,
             float _density, float _linearDampening, float _angularDampening, bool _fixedRotation, RigidbodyShape _rigidbodyShape,
             RigidbodyMassMode _rigidbodyMode, ushort _layer, ushort _hitMask, short _groupIndex)
         {
@@ -101,6 +102,7 @@ namespace Electron2D.Core.PhysicsBox2D
             linearDampening = _linearDampening;
             angularDampening = _angularDampening;
             friction = _friction;
+            bounciness = _bounciness;
             density = _density;
             massData = _massData;
             fixedRotation = _fixedRotation;
@@ -149,6 +151,7 @@ namespace Electron2D.Core.PhysicsBox2D
                 {
                     Density = density,
                     Friction = friction,
+                    Restitution = bounciness,
                     Filter = new FilterData()
                     {
                         CategoryBits = Layer,
@@ -165,6 +168,7 @@ namespace Electron2D.Core.PhysicsBox2D
                 {
                     Density = density,
                     Friction = friction,
+                    Restitution = bounciness,
                     Radius = (transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar,
                     Filter = new FilterData()
                     {
@@ -260,6 +264,10 @@ namespace Electron2D.Core.PhysicsBox2D
         /// </summary>
         public float Friction = 1;
         /// <summary>
+        /// The bounciness of the rigidbody. Also called Restitution.
+        /// </summary>
+        public float Bounciness = 0;
+        /// <summary>
         /// The shape of the rigidbody. NOTE: CONVEX MESH MODE IS NOT IMPLEMENTED YET
         /// </summary>
         public RigidbodyShape Shape = RigidbodyShape.Box;
@@ -299,6 +307,10 @@ namespace Electron2D.Core.PhysicsBox2D
         /// The friction of the rigidbody against other rigidbodies.
         /// </summary>
         public float Friction = 1;
+        /// <summary>
+        /// The bounciness of the rigidbody. Also called Restitution.
+        /// </summary>
+        public float Bounciness = 0;
         /// <summary>
         /// The dampening of the rigidbody's linear velocity.
         /// </summary>
