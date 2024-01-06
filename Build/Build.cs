@@ -18,7 +18,6 @@ namespace Electron2D.Build
         private int displayFrames;
         private int frames;
         private float lastFrameCountTime;
-        private Sprite s;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
             $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false) { }
@@ -32,7 +31,7 @@ namespace Electron2D.Build
             SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
             
-            s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Navy));
+            Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Navy));
             RigidbodyDynamicDef df = new RigidbodyDynamicDef()
             {
                 Velocity = Vector2.UnitY * 10,
@@ -45,9 +44,13 @@ namespace Electron2D.Build
             b.Transform.Position = new Vector2(40, -250f);
             b.AddComponent(Rigidbody.CreateStatic(sf));
 
+            RigidbodyStaticDef sf2 = new RigidbodyStaticDef()
+            {
+                Bounciness = 0.5f
+            };
             Sprite a = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.White), 0, 500, 30);
             a.Transform.Position = new Vector2(0, -450f);
-            a.AddComponent(Rigidbody.CreateStatic(sf));
+            a.AddComponent(Rigidbody.CreateStatic(sf2));
 
             Sprite f = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(50, 255, 255, 255)), 0, 30, 30);
             f.Transform.Position = new Vector2(-50, -350);
@@ -61,6 +64,24 @@ namespace Electron2D.Build
         {
             CameraMovement();
             CalculateFPS();
+
+            if(Input.GetMouseButtonDown(MouseButton.Right))
+            {
+                CreateRigidbody();
+            }
+        }
+
+        private void CreateRigidbody()
+        {
+            Random rand = new Random();
+            Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture,
+                Color.FromArgb(255, rand.Next(0, 256), rand.Next(0, 256), rand.Next(0, 256))), 0, 40, 40);
+            RigidbodyDynamicDef df = new RigidbodyDynamicDef()
+            {
+                Shape = RigidbodyShape.Box
+            };
+            s.Transform.Position = Input.GetMouseWorldPosition();
+            s.AddComponent(Rigidbody.CreateDynamic(df));
         }
 
         private void CameraMovement()

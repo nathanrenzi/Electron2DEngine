@@ -11,9 +11,11 @@ namespace Electron2D.Core.PhysicsBox2D
         // Scaling the physics so that 50 pixels equates to 1 meter in the simulation
         public static readonly float WorldScalar = 50f;
 
+        private static Queue<(BodyDef, FixtureDef, MassData, bool, bool)> creationQueue = new Queue<(BodyDef, FixtureDef, MassData, bool, bool)>();
         private static Dictionary<uint, Body> physicsBodies = new Dictionary<uint, Body>();
         private static World world;
         private static AABB aabb;
+        private static bool _stepLock = false;
 
         /// <summary>
         /// This is called while the game is loading. Initializes the main physics world
@@ -44,7 +46,25 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_positionIterations"></param>
         public static void Step(float _deltaTime, int _velocityIterations, int _positionIterations)
         {
+            _stepLock = true;
             world.Step(_deltaTime, _velocityIterations, _positionIterations);
+            _stepLock = false;
+            while(creationQueue.Count > 0)
+            {
+                (BodyDef, FixtureDef, MassData, bool, bool) data = creationQueue.Dequeue();
+
+                // If the MassData is being used (MassData cannot be null)
+                if(data.Item4)
+                {
+                    // Dynamic with specified mass
+                    CreatePhysicsBody(data.Item1, data.Item2, data.Item3);
+                }
+                else
+                {
+                    // Dynamic or static
+                    CreatePhysicsBody(data.Item1, data.Item2, data.Item5);
+                }
+            }
         }
 
         /// <summary>
@@ -57,15 +77,21 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <returns></returns>
         public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, bool _autoSetMass = false)
         {
-            Body b = world.CreateBody(_bodyDefinition);
-            while(b == null)
+            uint id = (uint)physicsBodies.Count;
+
+            if (_stepLock)
             {
-                b = world.CreateBody(_bodyDefinition);
-                Debug.LogError("PHYSICS: Error creating physics body!");
+                creationQueue.Enqueue((_bodyDefinition, _fixtureDef, new MassData(), false, _autoSetMass));
+                return id;
+            }
+
+            Body b = world.CreateBody(_bodyDefinition);
+            if (b == null)
+            {
+                Debug.LogError("PHYSICS: Error creating physics body! Physics step likely in progress!");
             }
             b.CreateFixture(_fixtureDef);
             if (_autoSetMass) b.SetMassFromShapes();
-            uint id = (uint)physicsBodies.Count;
             physicsBodies.Add(id, b);
             return id;
         }
@@ -79,17 +105,21 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <returns></returns>
         public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData)
         {
-            // Error here is being caused by physics step being in progress when this is called,
-            // which makes function return null due to the _lock value in World
-            Body b = world.CreateBody(_bodyDefinition);
-            while (b == null)
+            uint id = (uint)physicsBodies.Count;
+
+            if (_stepLock)
             {
-                b = world.CreateBody(_bodyDefinition);
-                Debug.LogError("PHYSICS: Error creating physics body!");
+                creationQueue.Enqueue((_bodyDefinition, _fixtureDef, _massData, true, false));
+                return id;
+            }
+
+            Body b = world.CreateBody(_bodyDefinition);
+            if(b == null)
+            {
+                Debug.LogError("PHYSICS: Error creating physics body! Physics step likely in progress!");
             }
             b.CreateFixture(_fixtureDef);
             b.SetMass(_massData);
-            uint id = (uint)physicsBodies.Count;
             physicsBodies.Add(id, b);
             return id;
         }
@@ -100,6 +130,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_id"></param>
         public static void RemovePhysicsBody(uint _id)
         {
+            if (!physicsBodies.ContainsKey(_id)) return;
             world.DestroyBody(physicsBodies[_id]);
         }
 
@@ -110,6 +141,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <returns></returns>
         public static Vector2 GetBodyPosition(uint _id)
         {
+            if (!physicsBodies.ContainsKey(_id)) return Vector2.Zero;
             Vec2 vec = physicsBodies[_id].GetPosition();
             return new Vector2(vec.X * WorldScalar, vec.Y * WorldScalar);
         }
@@ -121,6 +153,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <returns></returns>
         public static float GetBodyRotation(uint _id)
         {
+            if (!physicsBodies.ContainsKey(_id)) return 0;
             return 180 / MathF.PI * physicsBodies[_id].GetAngle();
         }
 
@@ -131,6 +164,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <returns></returns>
         public static Vector2 GetBodyVelocity(uint _id)
         {
+            if (!physicsBodies.ContainsKey(_id)) return Vector2.Zero;
             Vec2 vec = physicsBodies[_id].GetLinearVelocity();
             return new Vector2(vec.X, vec.Y);
         }
@@ -142,6 +176,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <returns></returns>
         public static float GetBodyAngularVelocity(uint _id)
         {
+            if (!physicsBodies.ContainsKey(_id)) return 0;
             return physicsBodies[_id].GetAngularVelocity();
         }
 
@@ -152,6 +187,8 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <returns></returns>
         public static FilterData[] GetFilterData(uint _id)
         {
+            if (!physicsBodies.ContainsKey(_id)) return null;
+
             List<FilterData> filters = new List<FilterData>();
 
             Fixture f = physicsBodies[_id].GetFixtureList();
@@ -173,6 +210,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_point">The point the force is applied to.</param>
         public static void ApplyForce(uint _id, Vector2 _force, Vector2 _point)
         {
+            if (!physicsBodies.ContainsKey(_id)) return;
             physicsBodies[_id].ApplyForce(new Vec2(_force.X, _force.Y), new Vec2(_point.X, _point.Y));
         }
 
@@ -184,6 +222,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_point">The point the force is applied to.</param>
         public static void ApplyImpulse(uint _id, Vector2 _impulse, Vector2 _point)
         {
+            if (!physicsBodies.ContainsKey(_id)) return;
             physicsBodies[_id].ApplyImpulse(new Vec2(_impulse.X, _impulse.Y), new Vec2(_point.X, _point.Y));
         }
 
@@ -194,6 +233,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_torque"></param>
         public static void ApplyTorque(uint _id, float _torque)
         {
+            if (!physicsBodies.ContainsKey(_id)) return;
             physicsBodies[_id].ApplyTorque(_torque);
         }
 
@@ -204,6 +244,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_angle"></param>
         public static void SetAngle(uint _id, float _angle)
         {
+            if (!physicsBodies.ContainsKey(_id)) return;
             physicsBodies[_id].SetAngle(_angle * (MathF.PI / 180));
         }
 
@@ -214,6 +255,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_angle"></param>
         public static void SetAngularVelocity(uint _id, float _angularVelocity)
         {
+            if (!physicsBodies.ContainsKey(_id)) return;
             physicsBodies[_id].SetAngularVelocity(_angularVelocity);
         }
 
@@ -224,6 +266,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_linearVelocity"></param>
         public static void SetLinearVelocity(uint _id, Vector2 _linearVelocity)
         {
+            if (!physicsBodies.ContainsKey(_id)) return;
             physicsBodies[_id].SetLinearVelocity(new Vec2(_linearVelocity.X, _linearVelocity.Y));
         }
 
@@ -234,6 +277,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_position"></param>
         public static void SetPosition(uint _id, Vector2 _position)
         {
+            if (!physicsBodies.ContainsKey(_id)) return;
             physicsBodies[_id].SetPosition(new Vec2(_position.X / WorldScalar, _position.Y / WorldScalar));
         }
 
@@ -243,6 +287,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_fixedRotation"></param>
         public static void SetBodyFixedRotation(uint _id, bool _fixedRotation)
         {
+            if (!physicsBodies.ContainsKey(_id)) return;
             physicsBodies[_id].SetFixedRotation(_fixedRotation);
         }
 
@@ -253,6 +298,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_filterData"></param>
         public static void SetFilterData(uint _id, FilterData _filterData)
         {
+            if (!physicsBodies.ContainsKey(_id)) return;
             Fixture f = physicsBodies[_id].GetFixtureList();
             f.Filter = _filterData;
             world.Refilter(f);
