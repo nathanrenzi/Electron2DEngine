@@ -49,6 +49,8 @@ namespace Electron2D.Core.PhysicsBox2D
             _stepLock = true;
             world.Step(_deltaTime, _velocityIterations, _positionIterations);
             _stepLock = false;
+
+            // Creating physics bodies that were queued during the step
             while(creationQueue.Count > 0)
             {
                 (BodyDef, FixtureDef, MassData, bool, bool) data = creationQueue.Dequeue();
@@ -77,7 +79,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <returns></returns>
         public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, bool _autoSetMass = false)
         {
-            uint id = (uint)physicsBodies.Count;
+            uint id = (uint)(physicsBodies.Count + creationQueue.Count);
 
             if (_stepLock)
             {
@@ -264,7 +266,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// </summary>
         /// <param name="_id"></param>
         /// <param name="_linearVelocity"></param>
-        public static void SetLinearVelocity(uint _id, Vector2 _linearVelocity)
+        public static void SetVelocity(uint _id, Vector2 _linearVelocity)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
             physicsBodies[_id].SetLinearVelocity(new Vec2(_linearVelocity.X, _linearVelocity.Y));

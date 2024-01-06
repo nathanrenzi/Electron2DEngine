@@ -76,9 +76,6 @@ namespace Electron2D.Core
             }
             Input.Initialize();
 
-            // Initializing physics thread
-            PhysicsThread.Start();
-
             // Setup
             glEnable(GL_BLEND);
             glEnable(GL_STENCIL_TEST);
@@ -93,6 +90,9 @@ namespace Electron2D.Core
             TextRendererSystem.Start();
             // -------------------------------
             OnStartEvent?.Invoke();
+
+            // Initializing physics thread
+            PhysicsThread.Start();
 
             ShaderGlobalUniforms.Initialize();
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
@@ -162,12 +162,12 @@ namespace Electron2D.Core
         }
         
         private void RunPhysicsThread(CancellationToken _token, double _physicsTimestep, Vector2 _worldLowerBound, Vector2 _worldUpperBound, Vector2 _gravity,
-            bool _doSleep, int _velocityIterations = 6, int _positionIterations = 2)
+            bool _doSleep, int _velocityIterations = 8, int _positionIterations = 2)
         {
             Physics.Initialize(_worldLowerBound, _worldUpperBound, _gravity, _doSleep);
 
             double lastTickTime = 0;
-            while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window) && !_token.IsCancellationRequested)
+            while (!_token.IsCancellationRequested)
             {
                 if(lastTickTime + _physicsTimestep <= Glfw.Time)
                 {

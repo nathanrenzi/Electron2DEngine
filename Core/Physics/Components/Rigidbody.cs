@@ -20,7 +20,7 @@ namespace Electron2D.Core.PhysicsBox2D
             }
             set
             {
-                Physics.SetLinearVelocity(ID, value);
+                Physics.SetVelocity(ID, value);
             }
         }
         public float AngularVelocity
