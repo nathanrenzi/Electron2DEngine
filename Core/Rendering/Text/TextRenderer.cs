@@ -365,14 +365,19 @@ namespace Electron2D.Core.Rendering.Text
                 float w = ch.Size.X * transform.Scale.X;
                 float h = ch.Size.Y * transform.Scale.X;
 
-                float[,] vertices = new float[6, 4] {
-                    { xpos,     ypos + h,   0.0f, 0.0f },
-                    { xpos,     ypos,       0.0f, 1.0f },
-                    { xpos + w, ypos,       1.0f, 1.0f },
+                float L = ch.UVX.X;
+                float R = ch.UVX.Y;
+                float T = ch.UVY.X;
+                float B = ch.UVY.Y;
 
-                    { xpos,     ypos + h,   0.0f, 0.0f },
-                    { xpos + w, ypos,       1.0f, 1.0f },
-                    { xpos + w, ypos + h,   1.0f, 0.0f }
+                float[,] vertices = new float[6, 4] {
+                    { xpos,     ypos + h,   L, T },
+                    { xpos,     ypos,       L, B },
+                    { xpos + w, ypos,       R, B },
+
+                    { xpos,     ypos + h,   L, T },
+                    { xpos + w, ypos,       R, B },
+                    { xpos + w, ypos + h,   R, T }
                 };
 
                 glBindTexture(GL_TEXTURE_2D, FontGlyphStore.TextureHandle);

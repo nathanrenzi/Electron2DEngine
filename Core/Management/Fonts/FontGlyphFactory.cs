@@ -66,7 +66,7 @@ namespace Electron2D.Core.Management
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-            FontGlyphStore store = new FontGlyphStore(texture, _fontSize, _fontFile, library, face, f.HasKerningFlag);
+            FontGlyphStore store = new FontGlyphStore(texture, atlasWidth, _fontSize, _fontFile, library, face, f.HasKerningFlag);
 
             int pos = 0;
             for (uint c = 0; c < 128; c++)
@@ -78,11 +78,15 @@ namespace Electron2D.Core.Management
                 }
 
                 glTexSubImage2D(GL_TEXTURE_2D, 0, pos, 0, (int)f.GlyphBitmap.width, (int)f.GlyphBitmap.rows, GL_RED, GL_UNSIGNED_BYTE, f.GlyphBitmap.buffer);
-                pos += (int)f.GlyphBitmap.width;
 
                 Character character = new Character(new Vector2((int)f.GlyphBitmap.width / Game.WINDOW_SCALE, (int)f.GlyphBitmap.rows / Game.WINDOW_SCALE),
-                    new Vector2(f.GlyphBitmapLeft / Game.WINDOW_SCALE, f.GlyphBitmapTop / Game.WINDOW_SCALE), (uint)(f.GlyphMetricHorizontalAdvance / Game.WINDOW_SCALE));
+                    new Vector2(pos / (float)atlasWidth, (pos + (int)f.GlyphBitmap.width) / (float)atlasWidth), // UV X (Left, Right)
+                    new Vector2(0, f.GlyphBitmap.rows / (float)atlasHeight),                                    // UV Y (Top, Bottom)
+                    new Vector2(f.GlyphBitmapLeft / Game.WINDOW_SCALE, f.GlyphBitmapTop / Game.WINDOW_SCALE),   // Bearing
+                    (uint)(f.GlyphMetricHorizontalAdvance / Game.WINDOW_SCALE));                                // Advance
                 store.AddCharacter((char)c, character);
+
+                pos += (int)f.GlyphBitmap.width;
             }
 
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
