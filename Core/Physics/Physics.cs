@@ -107,7 +107,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <returns></returns>
         public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData)
         {
-            uint id = (uint)physicsBodies.Count;
+            uint id = (uint)(physicsBodies.Count + creationQueue.Count);
 
             if (_stepLock)
             {

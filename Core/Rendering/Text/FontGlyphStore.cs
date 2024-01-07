@@ -9,14 +9,16 @@ namespace Electron2D.Core.Rendering.Text
         private bool disposed;
         public bool Disposed => disposed;
 
+        public uint TextureHandle { get; private set; }
         public Dictionary<char, Character> Characters { get; } = new Dictionary<char, Character>();
         public FontArguments Arguments { get; }
         public FreeTypeLibrary Library { get; }
         public IntPtr Face { get; }
         public bool UseKerning { get; }
 
-        public FontGlyphStore(int _fontSize, string _fontFile, FreeTypeLibrary _library, IntPtr _face, bool _useKerning)
+        public FontGlyphStore(uint _textureHandle, int _fontSize, string _fontFile, FreeTypeLibrary _library, IntPtr _face, bool _useKerning)
         {
+            TextureHandle = _textureHandle;
             Library = _library;
             Face = _face;
             UseKerning = _useKerning;
@@ -38,15 +40,8 @@ namespace Electron2D.Core.Rendering.Text
         }
         private void Dispose(bool _disposing)
         {
-            if (Characters.Count != 0)
-            {
-                foreach (var item in Characters)
-                {
-                    glDeleteTexture(item.Value.TextureHandle);
-                }
-                Characters.Clear();
-            }
-
+            glDeleteTexture(TextureHandle);
+            Characters.Clear();
             FT_Done_Face(Face);
             Library.Dispose();
             disposed = true;

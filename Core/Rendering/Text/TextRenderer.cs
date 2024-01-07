@@ -375,7 +375,7 @@ namespace Electron2D.Core.Rendering.Text
                     { xpos + w, ypos + h,   1.0f, 0.0f }
                 };
 
-                glBindTexture(GL_TEXTURE_2D, ch.TextureHandle);
+                glBindTexture(GL_TEXTURE_2D, FontGlyphStore.TextureHandle);
                 glBindBuffer(GL_ARRAY_BUFFER, VBO);
                 fixed (float* ptr = vertices)
                     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 6 * 4, ptr);

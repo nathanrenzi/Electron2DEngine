@@ -32,7 +32,6 @@ namespace Electron2D.Core.Management
             FT_Set_Pixel_Sizes(face, 0, (uint)(_fontSize * Game.WINDOW_SCALE));
 
             FreeTypeFaceFacade f = new FreeTypeFaceFacade(library, face);
-            FontGlyphStore store = new FontGlyphStore(_fontSize, _fontFile, library, face, f.HasKerningFlag);
 
             //// Stroker is used for outline
             //IntPtr stroker = IntPtr.Zero;
@@ -42,7 +41,34 @@ namespace Electron2D.Core.Management
             //    FT_Stroker_Set(stroker, _outlineWidth, FT_Stroker_LineCap.FT_STROKER_LINECAP_ROUND, FT_Stroker_LineJoin.FT_STROKER_LINEJOIN_ROUND, IntPtr.Zero);
             //}
 
+            // Measuring the necessary size for the texture atlas
+            int atlasWidth = 0;
+            int atlasHeight = 0;
+            for(uint c = 0; c < 128; c++)
+            {
+                if (FT_Load_Char(face, c, FT_LOAD_RENDER) != FT_Error.FT_Err_Ok)
+                {
+                    Debug.LogError($"FREETYPE: Failed to load glyph '{(char)c}'");
+                    continue;
+                }
+                atlasWidth += (int)f.GlyphBitmap.width;
+                atlasHeight = (int)f.GlyphBitmap.rows > atlasHeight ? (int)f.GlyphBitmap.rows : atlasHeight;
+            }
+
+            // Generating the texture
+            uint texture = glGenTexture();
+            glActiveTexture(GL_TEXTURE10);
+            glBindTexture(GL_TEXTURE_2D, texture);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, IntPtr.Zero);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+            FontGlyphStore store = new FontGlyphStore(texture, _fontSize, _fontFile, library, face, f.HasKerningFlag);
+
+            int pos = 0;
             for (uint c = 0; c < 128; c++)
             {
                 if (FT_Load_Char(face, c, FT_LOAD_RENDER) != FT_Error.FT_Err_Ok)
@@ -51,20 +77,14 @@ namespace Electron2D.Core.Management
                     continue;
                 }
 
-                uint texture = glGenTexture();
-                glActiveTexture(GL_TEXTURE10);
-                glBindTexture(GL_TEXTURE_2D, texture);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, (int)f.GlyphBitmap.width, (int)f.GlyphBitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, f.GlyphBitmap.buffer);
+                glTexSubImage2D(GL_TEXTURE_2D, 0, pos, 0, (int)f.GlyphBitmap.width, (int)f.GlyphBitmap.rows, GL_RED, GL_UNSIGNED_BYTE, f.GlyphBitmap.buffer);
+                pos += (int)f.GlyphBitmap.width;
 
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-                Character character = new Character(texture, new Vector2((int)f.GlyphBitmap.width / Game.WINDOW_SCALE, (int)f.GlyphBitmap.rows / Game.WINDOW_SCALE),
+                Character character = new Character(new Vector2((int)f.GlyphBitmap.width / Game.WINDOW_SCALE, (int)f.GlyphBitmap.rows / Game.WINDOW_SCALE),
                     new Vector2(f.GlyphBitmapLeft / Game.WINDOW_SCALE, f.GlyphBitmapTop / Game.WINDOW_SCALE), (uint)(f.GlyphMetricHorizontalAdvance / Game.WINDOW_SCALE));
                 store.AddCharacter((char)c, character);
             }
+
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
             return store;
