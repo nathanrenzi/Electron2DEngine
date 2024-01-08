@@ -89,7 +89,7 @@ namespace Electron2D.Core.UserInterface
         {
             BuildVertexMesh();
             meshRenderer.SetVertexArrays(vertices, indices, false);
-            meshRenderer.IsDirty = true;
+            meshRenderer.IsVertexDirty = true;
         }
 
         /// <summary>

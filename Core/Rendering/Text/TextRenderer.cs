@@ -1,8 +1,10 @@
 ﻿using Electron2D.Core.ECS;
+using Electron2D.Core.Management;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.UserInterface;
 using FreeTypeSharp.Native;
 using System.Drawing;
+using System.IO;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,15 +13,9 @@ using static FreeTypeSharp.Native.FT;
 
 namespace Electron2D.Core.Rendering.Text
 {
-    public class TextRendererSystem : BaseSystem<TextRenderer> { }
-    /// <summary>
-    /// Formats and renders text. Use <see cref="TextLabel"/>, which implements this.
-    /// </summary>
-    public class TextRenderer : Component
+    public class TextRenderer : MeshRenderer
     {
         public FontGlyphStore FontGlyphStore;
-        public Shader TextShader;
-        public int OutlineWidth => FontGlyphStore.Arguments.OutlineWidth;
         public string Text
         {
             get { return text; }
@@ -35,7 +31,17 @@ namespace Electron2D.Core.Rendering.Text
         public TextAlignment VerticalAlignment;
         public TextAlignmentMode AlignmentMode;
         public TextOverflowMode OverflowMode;
-        public Color TextColor;
+        public Color TextColor
+        {
+            get
+            {
+                return Material.MainColor;
+            }
+            set
+            {
+                Material.MainColor = value;
+            }
+        }
         public Color OutlineColor;
         private Transform transform;
         public Vector2 Anchor
@@ -71,7 +77,6 @@ namespace Electron2D.Core.Rendering.Text
         private float totalYHeight;
         private float firstLineMaxHeight = 0;
         private float lastLineMinHeight = 0;
-        private uint VAO, VBO;
 
         public unsafe TextRenderer(Transform _transform, FontGlyphStore _fontGlyphStore, Shader _shader, string _text,
             Vector2 _bounds, Color _textColor, Color _outlineColor,
@@ -79,20 +84,9 @@ namespace Electron2D.Core.Rendering.Text
             TextAlignment _verticalAlignment = TextAlignment.Top,
             TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline,
             TextOverflowMode _overflowMode = TextOverflowMode.Word)
+            : base(_transform, Material.Create(_shader, new Texture2D(_fontGlyphStore.TextureHandle, _fontGlyphStore.TextureAtlasWidth, _fontGlyphStore.Arguments.FontSize)))
         {
             FontGlyphStore = _fontGlyphStore;
-            TextShader = _shader;
-
-            VAO = glGenVertexArray();
-            VBO = glGenBuffer();
-            glBindVertexArray(VAO);
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 4, GL_FLOAT, false, 4 * sizeof(float), (void*)0);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindVertexArray(0);
-
             transform = _transform;
             TextColor = _textColor;
             OutlineColor = _outlineColor;
@@ -102,10 +96,11 @@ namespace Electron2D.Core.Rendering.Text
             AlignmentMode = _alignmentMode;
             OverflowMode = _overflowMode;
 
+            UseUnscaledProjectionMatrix = true;
+
             // This must be the last thing initialized, as it will reformat the text
             Text = _text;
-
-            TextRendererSystem.Register(this);
+            Load();
         }
 
         #region Text Formatting
@@ -273,6 +268,8 @@ namespace Electron2D.Core.Rendering.Text
             lastLineMinHeight = AlignmentMode == TextAlignmentMode.Geometry ? minHeight : 0;
             totalYHeight = Math.Abs(_y) + firstLineMaxHeight + lastLineMinHeight;
             formattedText = builder.ToString();
+
+            UpdateMesh();
         }
 
         private int GetXOffset(int _iteration)
@@ -311,16 +308,18 @@ namespace Electron2D.Core.Rendering.Text
         }
         #endregion
 
-        #region Rendering
-        public unsafe void Render()
+        protected override void CreateBufferLayout()
         {
-            TextShader.Use();
-            TextShader.SetMatrix4x4("projection", Camera2D.Main.GetUnscaledProjectionMatrix());
-            TextShader.SetMatrix4x4("model", Matrix4x4.CreateScale(Game.WINDOW_SCALE, Game.WINDOW_SCALE, 1));
-            TextShader.SetColor("mainColor", TextColor);
-            TextShader.SetColor("outlineColor", OutlineColor);
-            glActiveTexture(GL_TEXTURE0);
-            glBindVertexArray(VAO);
+            // Telling the vertex array how the vertices are structured
+            layout = new BufferLayout();
+            layout.Add<float>(2); // Position
+            layout.Add<float>(2); // UV
+        }
+
+        private unsafe void UpdateMesh()
+        {
+            List<float[]> tempVertexArrays = new List<float[]>();
+            List<uint> tempIndices = new List<uint>();
 
             float x = GetXOffset(0) + position.X;
             float _x = x;
@@ -370,31 +369,40 @@ namespace Electron2D.Core.Rendering.Text
                 float T = ch.UVY.X;
                 float B = ch.UVY.Y;
 
-                float[,] vertices = new float[6, 4] {
-                    { xpos,     ypos + h,   L, T },
-                    { xpos,     ypos,       L, B },
-                    { xpos + w, ypos,       R, B },
-
-                    { xpos,     ypos + h,   L, T },
-                    { xpos + w, ypos,       R, B },
-                    { xpos + w, ypos + h,   R, T }
-                };
-
-                glBindTexture(GL_TEXTURE_2D, FontGlyphStore.TextureHandle);
-                glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                fixed (float* ptr = vertices)
-                    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 6 * 4, ptr);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-                glDrawArrays(GL_TRIANGLES, 0, 6);
+                uint count = (uint)tempVertexArrays.Count;
+                tempVertexArrays.Add(new float[] { xpos, ypos + h, L, T });     // Top Left
+                tempVertexArrays.Add(new float[] { xpos + w, ypos + h, R, T }); // Top Right
+                tempVertexArrays.Add(new float[] { xpos + w, ypos, R, B });     // Bottom Right
+                tempVertexArrays.Add(new float[] { xpos, ypos, L, B });         // Bottom Left
+                tempIndices.Add(count + 0);
+                tempIndices.Add(count + 1);
+                tempIndices.Add(count + 2);
+                tempIndices.Add(count + 0);
+                tempIndices.Add(count + 2);
+                tempIndices.Add(count + 3);
 
                 _x += ch.Advance * transform.Scale.X;
 
                 previousIndex = glyphIndex;
             }
 
-            glBindVertexArray(0);
-            glBindTexture(GL_TEXTURE_2D, 0);
+            List<float> tempVertices = new List<float>();
+
+            for (int i = 0; i < tempVertexArrays.Count; i++)
+            {
+                for (int z = 0; z < tempVertexArrays[i].Length; z++)
+                {
+                    tempVertices.Add(tempVertexArrays[i][z]);
+                }
+            }
+
+            SetVertexArrays(tempVertices.ToArray(), tempIndices.ToArray(), false, IsLoaded);
         }
-        #endregion
+
+        protected override void BeforeRender()
+        {
+            Material.Shader.SetMatrix4x4("model", Matrix4x4.CreateScale(Game.WINDOW_SCALE, Game.WINDOW_SCALE, 1));
+            Material.Shader.SetColor("outlineColor", OutlineColor);
+        }
     }
 }

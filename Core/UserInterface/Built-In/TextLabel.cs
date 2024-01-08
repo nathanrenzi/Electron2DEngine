@@ -1,7 +1,6 @@
 ﻿using Electron2D.Core.Management;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.Rendering.Text;
-using Electron2D.Core.UserInterface;
 using System.Drawing;
 using System.Numerics;
 
@@ -88,10 +87,11 @@ namespace Electron2D.Core.UserInterface
             SizeY = _bounds.Y;
             fgh = ResourceManager.Instance.LoadFont(_fontFile, _fontSize, _outlineSize);
 
-            Shader shader = null;
+            Shader shader;
             if (_customShader != null)
             {
                 if(!_customShader.Compiled) _customShader.Compile();
+                shader = _customShader;
             }
             else
             {

@@ -71,7 +71,7 @@ namespace Electron2D.Core.UserInterface
         {
             if (meshRenderer == null) return;
             GenerateVertices();
-            meshRenderer.IsDirty = true;
+            meshRenderer.IsVertexDirty = true;
         }
     }
 }

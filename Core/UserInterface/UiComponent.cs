@@ -118,19 +118,14 @@ namespace Electron2D.Core.UserInterface
                 {
                     // Initializing debug sprites
                     Shader shader = GlobalShaders.DefaultTexture;
-                    s1 = new Sprite(Material.Create(shader, Color.Black));
+                    s1 = new Sprite(Material.Create(shader, Color.Black), _renderLayer: (int)RenderLayer.Interface + 100);
                     s1.Renderer.UseUnscaledProjectionMatrix = true;
-                    s1.Renderer.RenderLayer = (int)RenderLayer.Interface + 100;
-                    s2 = new Sprite(Material.Create(shader, Color.Black));
+                    s2 = new Sprite(Material.Create(shader, Color.Black), _renderLayer: (int)RenderLayer.Interface + 100);
                     s2.Renderer.UseUnscaledProjectionMatrix = true;
-                    s2.Renderer.RenderLayer = (int)RenderLayer.Interface + 100;
-                    s3 = new Sprite(Material.Create(shader, Color.Black));
+                    s3 = new Sprite(Material.Create(shader, Color.Black), _renderLayer: (int)RenderLayer.Interface + 100);
                     s3.Renderer.UseUnscaledProjectionMatrix = true;
-                    s3.Renderer.RenderLayer = (int)RenderLayer.Interface + 100;
-                    s4 = new Sprite(Material.Create(shader, Color.Black));
+                    s4 = new Sprite(Material.Create(shader, Color.Black), _renderLayer: (int)RenderLayer.Interface + 100);
                     s4.Renderer.UseUnscaledProjectionMatrix = true;
-                    s4.Renderer.RenderLayer = (int)RenderLayer.Interface + 100;
-
                     s1.Transform.Scale = Vector2.Zero;
                     s2.Transform.Scale = Vector2.Zero;
                     s3.Transform.Scale = Vector2.Zero;

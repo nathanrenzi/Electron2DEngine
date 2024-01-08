@@ -87,7 +87,6 @@ namespace Electron2D.Core
             RigidbodySensorSystem.Start();
             TransformSystem.Start();
             MeshRendererSystem.Start();
-            TextRendererSystem.Start();
             // -------------------------------
             OnStartEvent?.Invoke();
 
@@ -128,7 +127,6 @@ namespace Electron2D.Core
                 RigidbodySensorSystem.Update();
                 TransformSystem.Update();
                 MeshRendererSystem.Update();
-                TextRendererSystem.Update();
                 // --------------------------
 
                 // Physics
@@ -177,7 +175,6 @@ namespace Electron2D.Core
 
                     TransformSystem.FixedUpdate();
                     MeshRendererSystem.FixedUpdate();
-                    TextRendererSystem.FixedUpdate();
 
                     // Do Physics Tick
                     Physics.Step((float)delta, _velocityIterations, _positionIterations);

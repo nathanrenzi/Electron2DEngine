@@ -10,24 +10,25 @@ namespace Electron2D.Core.Rendering
     /// </summary>
     public class MeshRenderer : Component
     {
-        public float[] vertices;
-        public uint[] indices;
+        public float[] vertices { get; protected set; }
+        public uint[] indices { get; protected set; }
 
-        public VertexBuffer vertexBuffer;
-        public VertexArray vertexArray;
-        public IndexBuffer indexBuffer;
-        public BufferLayout layout;
-        public Material Material;
-        public int RenderLayer;
+        public VertexBuffer vertexBuffer { get; protected set; }
+        public VertexArray vertexArray { get; protected set; }
+        public IndexBuffer indexBuffer { get; protected set; }
+        public BufferLayout layout { get; protected set; }
+        public Material Material { get; protected set; }
+        public int RenderLayer { get; protected set; }
 
         private Transform transform;
 
         /// <summary>
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
         /// </summary>
-        public bool UseUnscaledProjectionMatrix = false;
+        public bool UseUnscaledProjectionMatrix { get; set; } = false;
         public bool HasVertexData { get; private set; } = false;
-        public bool IsDirty { get; set; } = false;
+        public bool IsVertexDirty { get; set; } = false;
+        public bool IsIndexDirty { get; set; } = false;
         public bool IsLoaded { get; set; } = false;
 
         public bool UseStencilBuffer { get; set; } = false;
@@ -80,7 +81,8 @@ namespace Electron2D.Core.Rendering
 
             HasVertexData = true;
             if (_loadOnSetArrays) Load();
-            if (_setDirty) IsDirty = true;
+            if (_setDirty) IsVertexDirty = true;
+            if (_setDirty) IsIndexDirty = true;
         }
 
         /// <summary>
@@ -99,7 +101,7 @@ namespace Electron2D.Core.Rendering
                 vertices[(i * layout.GetRawStride()) + _type] = _value;
             }
 
-            IsDirty = true;
+            IsVertexDirty = true;
         }
 
         /// <summary>
@@ -131,6 +133,7 @@ namespace Electron2D.Core.Rendering
 
             IsLoaded = true;
         }
+
         protected virtual void CreateBufferLayout()
         {
             // Telling the vertex array how the vertices are structured
@@ -144,12 +147,18 @@ namespace Electron2D.Core.Rendering
             if (!HasVertexData) return;
             if (!IsLoaded || Material.Shader.Compiled == false) return;
 
-            if (IsDirty)
+            if (IsVertexDirty)
             {
-                // Huge memory leak when creating new buffer instead of updating data.
+                // Updating the data inside of the vertex buffer
                 vertexBuffer.UpdateData(vertices);
-                // If index array also needs to be updated at some point, add a check here for that
-                IsDirty = false;
+                IsVertexDirty = false;
+            }
+
+            if(IsIndexDirty)
+            {
+                // Updating the data inside of the index buffer
+                indexBuffer.UpdateData(indices);
+                IsIndexDirty = false;
             }
 
             if(UseStencilBuffer)
@@ -176,9 +185,11 @@ namespace Electron2D.Core.Rendering
             indexBuffer.Bind();
 
             Material.Shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.Main.GetUnscaledProjectionMatrix() : Camera2D.Main.GetProjectionMatrix()); // MUST be set after Use is called
-
+            BeforeRender();
             glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
+
+        protected virtual void BeforeRender() { }
     }
 
     /// <summary>
