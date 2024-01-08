@@ -58,6 +58,12 @@ namespace Electron2D.Build
             f.AddComponent(sensor);
             sensor.OnBeginContact += (rb) => Debug.Log("Entered sensor");
             sensor.OnEndContact += (rb) => Debug.Log("Exited sensor");
+
+            for (int i = 0; i < 500; i++)
+            {
+                TextLabel l = new TextLabel("This is an epic test LOL!!!" + i, "Build/Resources/Fonts/OpenSans.ttf", 30, Color.White, Color.White,
+                    new Vector2(500, 500), TextAlignment.Center, TextAlignment.Center, TextAlignmentMode.Geometry);
+            }
         }
 
         protected override void Update()

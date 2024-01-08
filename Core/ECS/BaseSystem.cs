@@ -50,12 +50,19 @@
 
         public static void FixedUpdate()
         {
-            foreach (T component in new List<T>(components))
+            try
             {
-                if (component != null && component.Enabled)
+                foreach (T component in new List<T>(components))
                 {
-                    component.FixedUpdate();
+                    if (component != null && component.Enabled)
+                    {
+                        component.FixedUpdate();
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.ToString());
             }
         }
 
