@@ -11,8 +11,8 @@ namespace Electron2D.Core.PhysicsBox2D
         // Scaling the physics so that 50 pixels equates to 1 meter in the simulation
         public static readonly float WorldScalar = 50f;
 
-        private static Queue<(BodyDef, FixtureDef, MassData, bool, bool)> creationQueue = new Queue<(BodyDef, FixtureDef, MassData, bool, bool)>();
-        private static Dictionary<uint, Body> physicsBodies = new Dictionary<uint, Body>();
+        private static Queue<(BodyDef, FixtureDef, MassData, bool, bool)> creationQueue;
+        private static Dictionary<uint, Body> physicsBodies;
         private static World world;
         private static AABB aabb;
         private static bool _stepLock = false;
@@ -33,6 +33,9 @@ namespace Electron2D.Core.PhysicsBox2D
                 UpperBound = new Vec2(_worldUpperBound.X, _worldUpperBound.Y),
             };
 
+            creationQueue = new Queue<(BodyDef, FixtureDef, MassData, bool, bool)>();
+            physicsBodies = new Dictionary<uint, Body>();
+
             world = new World(aabb, new Vec2(_gravity.X, _gravity.Y), _doSleep);
             world.SetContactFilter(new ContactFilter());
             world.SetContactListener(new SensorContactListener());
@@ -51,7 +54,9 @@ namespace Electron2D.Core.PhysicsBox2D
             _stepLock = false;
 
             // Creating physics bodies that were queued during the step
-            while(creationQueue.Count > 0)
+            const int maxCreationPerStep = 20;
+            int count = 0;
+            while(creationQueue.Count > 0 && count < maxCreationPerStep)
             {
                 (BodyDef, FixtureDef, MassData, bool, bool) data = creationQueue.Dequeue();
 
@@ -59,13 +64,14 @@ namespace Electron2D.Core.PhysicsBox2D
                 if(data.Item4)
                 {
                     // Dynamic with specified mass
-                    CreatePhysicsBody(data.Item1, data.Item2, data.Item3);
+                    CreatePhysicsBody(data.Item1, data.Item2, data.Item3, true);
                 }
                 else
                 {
                     // Dynamic or static
-                    CreatePhysicsBody(data.Item1, data.Item2, data.Item5);
+                    CreatePhysicsBody(data.Item1, data.Item2, data.Item5, true);
                 }
+                count++;
             }
         }
 
@@ -77,25 +83,37 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_autoSetMass">If this is set to true, the physics body will use the shape and density to detemine the mass.
         /// This also makes the physics body dynamic.</param>
         /// <returns></returns>
-        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, bool _autoSetMass = false)
+        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, bool _autoSetMass = false, bool _ignoreQueueCount = false)
         {
-            uint id = (uint)(physicsBodies.Count + creationQueue.Count);
+            uint id = (uint)(physicsBodies.Count + (_ignoreQueueCount ? 0 : creationQueue.Count));
 
-            if (_stepLock)
+            try
             {
-                creationQueue.Enqueue((_bodyDefinition, _fixtureDef, new MassData(), false, _autoSetMass));
+                if (_stepLock)
+                {
+                    creationQueue.Enqueue((_bodyDefinition, _fixtureDef, new MassData(), false, _autoSetMass));
+                    return id;
+                }
+
+                Body b = world.CreateBody(_bodyDefinition);
+                if (b == null)
+                {
+                    Debug.LogError("PHYSICS: Error creating physics body! Physics step likely in progress!");
+                }
+
+                b.CreateFixture(_fixtureDef);
+                if (_autoSetMass) b.SetMassFromShapes();
+                physicsBodies.Add(id, b);
+
                 return id;
             }
-
-            Body b = world.CreateBody(_bodyDefinition);
-            if (b == null)
+            catch(Exception e)
             {
-                Debug.LogError("PHYSICS: Error creating physics body! Physics step likely in progress!");
+                Debug.LogError($"PHYSICS: Could not create physics body [{id}]");
+                Debug.LogError(e.Message);
+
+                return uint.MaxValue;
             }
-            b.CreateFixture(_fixtureDef);
-            if (_autoSetMass) b.SetMassFromShapes();
-            physicsBodies.Add(id, b);
-            return id;
         }
 
         /// <summary>
@@ -105,25 +123,36 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_fixtureDef">The definition of the fixture. This determines the shape of the physics body.</param>
         /// <param name="_massData">The mass data of the physics body. By setting this, the physics body will be dynamic.</param>
         /// <returns></returns>
-        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData)
+        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData, bool _ignoreQueueCount = false)
         {
-            uint id = (uint)(physicsBodies.Count + creationQueue.Count);
+            uint id = (uint)(physicsBodies.Count + (_ignoreQueueCount ? 0 : creationQueue.Count));
 
-            if (_stepLock)
+            try
             {
-                creationQueue.Enqueue((_bodyDefinition, _fixtureDef, _massData, true, false));
+                if (_stepLock)
+                {
+                    creationQueue.Enqueue((_bodyDefinition, _fixtureDef, _massData, true, false));
+                    return id;
+                }
+
+                Body b = world.CreateBody(_bodyDefinition);
+                if (b == null)
+                {
+                    Debug.LogError("PHYSICS: Error creating physics body! Physics step likely in progress!");
+                }
+                b.CreateFixture(_fixtureDef);
+                b.SetMass(_massData);
+                physicsBodies.Add(id, b);
+
                 return id;
             }
-
-            Body b = world.CreateBody(_bodyDefinition);
-            if(b == null)
+            catch(Exception e)
             {
-                Debug.LogError("PHYSICS: Error creating physics body! Physics step likely in progress!");
+                Debug.LogError($"PHYSICS: Could not create physics body [{id}]");
+                Debug.LogError(e.Message);
+
+                return uint.MaxValue;
             }
-            b.CreateFixture(_fixtureDef);
-            b.SetMass(_massData);
-            physicsBodies.Add(id, b);
-            return id;
         }
 
         /// <summary>
