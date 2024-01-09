@@ -10,8 +10,7 @@ I can myself so that I can learn as much as possible, and importing libraries to
 
 ## Built With
 
-  - [Box2D.NetStandard v1.0](https://github.com/codingben/box2d-netstandard/tree/v1.0) - Used for
-  - reliable 2D physics
+  - [Box2D.NetStandard v1.0](https://github.com/codingben/box2d-netstandard/tree/v1.0) - Used for reliable 2D physics
   - [FreeTypeSharp](https://github.com/ryancheung/FreeTypeSharp) - Used for font rasterization
 
 ## License
