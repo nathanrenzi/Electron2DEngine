@@ -1,7 +1,6 @@
 # Electron2D
 
-A 2D game engine I am creating using C# as a learning project. My goal is to make as many systems as
-I can myself so that I can learn as much as possible, and importing libraries to fill in the gaps.
+A 2D game engine written in C#. This project is a self-study meant to give me more experience with large projects and to gain a better understanding of how game engines work.
 
 ## Author
 
