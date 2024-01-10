@@ -1,5 +1,4 @@
-﻿using Electron2D.Core.Audio;
-using Electron2D.Core.Management.Textures;
+﻿using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Text;
 using System.Drawing;
@@ -16,7 +15,6 @@ namespace Electron2D.Core.Management
         private IDictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
         private IDictionary<uint, Texture2D> textureHandleCache = new Dictionary<uint, Texture2D>();
         private IDictionary<FontArguments, FontGlyphStore> fontCache = new Dictionary<FontArguments, FontGlyphStore>();
-        private IDictionary<string, CachedSound> soundCache = new Dictionary<string, CachedSound>();
 
         public static ResourceManager Instance
         {
@@ -231,27 +229,6 @@ namespace Electron2D.Core.Management
 
             value = FontGlyphFactory.Load(_fontFile, _fontSize, _outlineSize);
             fontCache.Add(args, value);
-            return value;
-        }
-        #endregion
-
-        #region Audio
-        /// <summary>
-        /// Loads a sound into memory and returns it.
-        /// After a sound is loaded, the already stored sound will be returned instead of creating a new CachedSound object.
-        /// </summary>
-        /// <param name="_soundFileName">The local file path of the sound. Ex. Build/Resources/Audio/SFX/SoundFileNameHere.mp3</param>
-        /// <returns></returns>
-        public CachedSound LoadSound(string _soundFileName)
-        {
-            soundCache.TryGetValue(_soundFileName, out var value);
-            if (value is not null)
-            {
-                return value;
-            }
-
-            value = new CachedSound(_soundFileName);
-            soundCache.Add(_soundFileName, value);
             return value;
         }
         #endregion

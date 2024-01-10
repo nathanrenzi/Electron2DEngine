@@ -60,14 +60,8 @@ namespace Electron2D.Build
             sensor.OnEndContact += (rb) => Debug.Log("Exited sensor");
         }
 
-        int count = 0;
-        int m = 100;
         protected override void Update()
         {
-            if(Input.GetMouseButton(MouseButton.Left))
-            {
-                CreateRigidbody();
-            }
             CameraMovement();
             CalculateFPS();
 

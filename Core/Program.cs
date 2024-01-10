@@ -1,5 +1,4 @@
 ﻿using Electron2D.Build;
-using Electron2D.Core.Audio;
 
 namespace Electron2D.Core
 {
@@ -12,7 +11,6 @@ namespace Electron2D.Core
         public static void Main(string[] args)
         {
             GetBuildDate();
-            AudioPlayback.Initialize(1f); // Must be called in main, and Main must have [STAThread] attribute for ASIO
             game = new Build.Build(1920, 1080);
             game.Run();
         }

@@ -2,7 +2,6 @@
 using Electron2D.Core.Rendering;
 using static Electron2D.OpenGL.GL;
 using System.Numerics;
-using Electron2D.Core.Audio;
 using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.UserInterface;
@@ -155,7 +154,6 @@ namespace Electron2D.Core
             PhysicsCancellationToken.Dispose();
 
             Debug.CloseLogFile();
-            AudioPlayback.Instance.Dispose();
             DisplayManager.CloseWindow();
         }
         
