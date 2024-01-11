@@ -1,6 +1,7 @@
 ﻿using Electron2D.Core;
 using Electron2D.Core.Audio;
 using Electron2D.Core.Management;
+using Electron2D.Core.Misc;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
@@ -19,6 +20,7 @@ namespace Electron2D.Build
         private int displayFrames;
         private int frames;
         private float lastFrameCountTime;
+        private AudioInstance sound3;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
             $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false) { }
@@ -30,8 +32,7 @@ namespace Electron2D.Build
             // -----------------------------
 
             Bank bank = AudioSystem.LoadBank("Build/Resources/Audio/FMOD/TestProject/Build/Desktop/Master.bank", true);
-            AudioInstance sound1 = AudioSystem.CreateInstance("{548c0d86-d645-4f61-93c6-2dc7d68007cb}");
-            AudioInstance sound2 = AudioSystem.CreateInstance("{90cefad4-87eb-4b7f-9593-c02835b2ee06}");
+            sound3 = AudioSystem.CreateInstance("{77b67fb8-34d1-4886-b992-71679e7b8fe7}");
 
             SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
@@ -57,18 +58,10 @@ namespace Electron2D.Build
             a.Transform.Position = new Vector2(0, -450f);
             a.AddComponent(Rigidbody.CreateStatic(sf2));
 
-            Sprite f = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(50, 255, 255, 255)), 0, 30, 30);
+            Sprite f = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(50, 255, 255, 255)), 0, 30, 30, 10);
             f.Transform.Position = new Vector2(-50, -350);
             RigidbodySensor sensor = new RigidbodySensor(new Vector2(30), _shape: ColliderSensorShape.Box);
             f.AddComponent(sensor);
-            sensor.OnBeginContact += (rb) => ContactBegin(rb, sound1);
-            sensor.OnEndContact += (rb) => sound2.Play();
-        }
-
-        private void ContactBegin(Rigidbody _rb, AudioInstance _sound)
-        {
-            _sound.Play();
-            _rb.GetComponent<SpriteRenderer>().Material.MainColor = Color.Black;
         }
 
         protected override void Update()
@@ -80,8 +73,14 @@ namespace Electron2D.Build
             {
                 CreateRigidbody();
             }
+
+            for (int i = 0; i < sprites.Count; i++)
+            {
+                sprites[i].Item1.Transform.Scale = Vector2.One * 40 * Easing.EaseOutQuad(MathEx.Clamp01((Time.TotalElapsedSeconds - sprites[i].Item2) * 20f));
+            }
         }
 
+        private List<(Sprite, float)> sprites = new List<(Sprite, float)>();
         private void CreateRigidbody()
         {
             Random rand = new Random();
@@ -93,6 +92,8 @@ namespace Electron2D.Build
             };
             s.Transform.Position = Input.GetMouseWorldPosition();
             s.AddComponent(Rigidbody.CreateDynamic(df));
+            sound3.Play();
+            sprites.Add((s, Time.TotalElapsedSeconds));
         }
 
         private void CameraMovement()
