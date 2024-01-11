@@ -1,4 +1,5 @@
 ﻿using Electron2D.Build;
+using Electron2D.Core.Audio;
 
 namespace Electron2D.Core
 {
@@ -11,6 +12,7 @@ namespace Electron2D.Core
         public static void Main(string[] args)
         {
             GetBuildDate();
+            AudioSystem.Initialize(64, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
             game = new Build.Build(1920, 1080);
             game.Run();
         }

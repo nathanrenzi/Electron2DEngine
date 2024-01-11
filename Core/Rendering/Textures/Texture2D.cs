@@ -57,7 +57,7 @@ namespace Electron2D.Core.Rendering
             }
         }
 
-        public void Dispose(bool _disposing)
+        private void Dispose(bool _disposing)
         {
             if(!_disposed)
             {

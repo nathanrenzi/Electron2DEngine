@@ -30,6 +30,11 @@ namespace Electron2D.Core.Rendering.Text
             Arguments = new FontArguments() { FontSize = _fontSize, FontName = fontName };
         }
 
+        ~FontGlyphStore()
+        {
+            Dispose(false);
+        }
+
         public void AddCharacter(char _char, Character _character)
         {
             Characters.Add(_char, _character);
@@ -40,13 +45,19 @@ namespace Electron2D.Core.Rendering.Text
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        private void Dispose(bool _disposing)
+        private void Dispose(bool _safeToDisposeManagedObjects)
         {
-            glDeleteTexture(TextureHandle);
-            Characters.Clear();
-            FT_Done_Face(Face);
-            Library.Dispose();
-            disposed = true;
+            if(!disposed)
+            {
+                glDeleteTexture(TextureHandle);
+                Characters.Clear();
+                FT_Done_Face(Face);
+                if (_safeToDisposeManagedObjects)
+                {
+                    Library.Dispose();
+                }
+                disposed = true;
+            }
         }
     }
 }

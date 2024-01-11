@@ -8,6 +8,7 @@ using Electron2D.Core.UserInterface;
 using System.Drawing;
 using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.PhysicsBox2D;
+using Electron2D.Core.Audio;
 
 namespace Electron2D.Core
 {
@@ -101,6 +102,7 @@ namespace Electron2D.Core
             GC.Collect();
 
             Debug.Log("Initialization complete");
+            Debug.Log("#################### GAME STARTED ####################", ConsoleColor.Yellow);
 
             Load();
 
@@ -112,7 +114,7 @@ namespace Electron2D.Core
 
                 // Input
                 Input.ProcessInput();
-                // -------------------------------
+                // -----------------------
 
                 // Updating -- This could all be parallelized
                 double goST = Glfw.Time;
@@ -145,6 +147,9 @@ namespace Electron2D.Core
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
                 LogErrors();
                 PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
+
+                // Audio
+                AudioSystem.Update();
                 // -------------------------------
             }
 
@@ -152,6 +157,7 @@ namespace Electron2D.Core
             PhysicsCancellationToken.Cancel();
             PhysicsThread.Join();
             PhysicsCancellationToken.Dispose();
+            AudioSystem.Dispose();
 
             Debug.CloseLogFile();
             DisplayManager.CloseWindow();
