@@ -6,7 +6,22 @@ namespace Electron2D.Core.Audio
     {
         private bool disposed;
 
-        public bool IsPlaying { get; private set; }
+        public bool IsPlaying
+        {
+            get
+            {
+                eventInstance.getPlaybackState(out PLAYBACK_STATE state);
+                return state == PLAYBACK_STATE.PLAYING;
+            }
+        }
+        public bool IsPaused
+        {
+            get
+            {
+                eventInstance.getPlaybackState(out PLAYBACK_STATE state);
+                return state == PLAYBACK_STATE.SUSTAINING;
+            }
+        }
         private EventDescription eventDescription;
         private EventInstance eventInstance;
 
@@ -36,9 +51,47 @@ namespace Electron2D.Core.Audio
             eventInstance.start();
         }
 
+        public void Pause()
+        {
+            eventInstance.setPaused(true);
+        }
+
+        public void Unpause()
+        {
+            eventInstance.setPaused(false);
+        }
+
         public void Stop(STOP_MODE _stopMode = STOP_MODE.IMMEDIATE)
         {
             eventInstance.stop(_stopMode);
+        }
+
+        public void SetVolume(float _volume)
+        {
+            eventInstance.setVolume(_volume);
+        }
+
+        public float GetVolume()
+        {
+            eventInstance.getVolume(out float volume);
+            return volume;
+        }
+
+        public void SetPitch(float _pitch)
+        {
+            eventInstance.setPitch(_pitch);
+        }
+
+        public float GetPitch()
+        {
+            eventInstance.getPitch(out float pitch);
+            return pitch;
+        }
+
+        public PLAYBACK_STATE GetPlaybackState()
+        {
+            eventInstance.getPlaybackState(out PLAYBACK_STATE state);
+            return state;
         }
 
         public void Dispose()

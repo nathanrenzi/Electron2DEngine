@@ -61,8 +61,14 @@ namespace Electron2D.Build
             f.Transform.Position = new Vector2(-50, -350);
             RigidbodySensor sensor = new RigidbodySensor(new Vector2(30), _shape: ColliderSensorShape.Box);
             f.AddComponent(sensor);
-            sensor.OnBeginContact += (rb) => sound1.Play();
+            sensor.OnBeginContact += (rb) => ContactBegin(rb, sound1);
             sensor.OnEndContact += (rb) => sound2.Play();
+        }
+
+        private void ContactBegin(Rigidbody _rb, AudioInstance _sound)
+        {
+            _sound.Play();
+            _rb.GetComponent<SpriteRenderer>().Material.MainColor = Color.Black;
         }
 
         protected override void Update()

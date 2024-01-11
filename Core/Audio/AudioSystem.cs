@@ -32,6 +32,12 @@ namespace Electron2D.Core.Audio
         }
 
         #region Banks
+        /// <summary>
+        /// Loads an FMOD bank file.
+        /// </summary>
+        /// <param name="_fileName"></param>
+        /// <param name="_loadSampleData">Whether or not the data inside of the bank should be loaded into memory once the bank is created.</param>
+        /// <returns></returns>
         public static Bank LoadBank(string _fileName, bool _loadSampleData = false)
         {
             if(loadedBanks.ContainsKey(_fileName))
@@ -66,6 +72,10 @@ namespace Electron2D.Core.Audio
             }
         }
 
+        /// <summary>
+        /// Returns all currently loaded banks.
+        /// </summary>
+        /// <returns></returns>
         public static Bank[] GetLoadedBanks()
         {
             List<Bank> returnList = new List<Bank>();
@@ -78,9 +88,13 @@ namespace Electron2D.Core.Audio
             return returnList.ToArray();
         }
 
+        /// <summary>
+        /// Unloads all currently loaded banks.
+        /// </summary>
         public static void UnloadAllBanks()
         {
             audioSystem.unloadAll();
+            loadedBanks.Clear();
         }
         #endregion
 
