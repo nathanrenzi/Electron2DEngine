@@ -1,4 +1,5 @@
 ﻿using FMOD;
+using FMOD.Studio;
 
 namespace Electron2D.Core.Audio
 {
@@ -30,7 +31,8 @@ namespace Electron2D.Core.Audio
             Debug.Log("Finished starting FMOD");
         }
 
-        public static Bank LoadBank(string _fileName)
+        #region Banks
+        public static Bank LoadBank(string _fileName, bool _loadSampleData = false)
         {
             if(loadedBanks.ContainsKey(_fileName))
             {
@@ -48,7 +50,18 @@ namespace Electron2D.Core.Audio
 
                 Bank bank = new Bank(_fileName, data);
                 loadedBanks.Add(_fileName, bank);
-                
+
+                Debug.Log($"Loaded [{_fileName}] into memory.", ConsoleColor.Yellow);
+
+                if(_loadSampleData)
+                {
+                    RESULT result2 = bank.GetFMODBank().loadSampleData();
+                    if(result2 != RESULT.OK)
+                    {
+                        Debug.LogError($"AUDIO: Could not load sample data on bank {_fileName}. The bank object will still be created.");
+                    }
+                }
+
                 return bank;
             }
         }
@@ -69,6 +82,41 @@ namespace Electron2D.Core.Audio
         {
             audioSystem.unloadAll();
         }
+        #endregion
+
+        #region Audio Instances
+        public static AudioInstance CreateInstance(string _guid)
+        {
+            RESULT result1 = GetFMODSystem().getEvent(_guid, out EventDescription eventDescription);
+            if(result1 != RESULT.OK)
+            {
+                Debug.LogError($"AUDIO: Error getting sound with GUID: {_guid}");
+                return null;
+            }
+
+            RESULT result2 = eventDescription.createInstance(out EventInstance eventInstance);
+            if (result2 != RESULT.OK)
+            {
+                Debug.LogError($"AUDIO: Error instancing sound with GUID: {_guid}");
+                return null;
+            }
+
+            return new AudioInstance(eventDescription, eventInstance);
+        }
+
+        public static AudioDescription CreateDescription(string _guid)
+        {
+            RESULT result = GetFMODSystem().getEvent(_guid, out EventDescription eventDescription);
+            if (result != RESULT.OK)
+            {
+                Debug.LogError($"AUDIO: Error getting sound for GUID: {_guid}");
+                return null;
+            }
+            eventDescription.loadSampleData();
+
+            return new AudioDescription(eventDescription);
+        }
+        #endregion
 
         public static FMOD.Studio.System GetFMODSystem()
         {

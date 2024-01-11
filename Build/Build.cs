@@ -1,4 +1,5 @@
 ﻿using Electron2D.Core;
+using Electron2D.Core.Audio;
 using Electron2D.Core.Management;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Rendering;
@@ -28,6 +29,10 @@ namespace Electron2D.Build
             // Ex. ComponentSystem.Start();
             // -----------------------------
 
+            Bank bank = AudioSystem.LoadBank("Build/Resources/Audio/FMOD/TestProject/Build/Desktop/Master.bank", true);
+            AudioInstance sound1 = AudioSystem.CreateInstance("{548c0d86-d645-4f61-93c6-2dc7d68007cb}");
+            AudioInstance sound2 = AudioSystem.CreateInstance("{90cefad4-87eb-4b7f-9593-c02835b2ee06}");
+
             SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
             
@@ -56,8 +61,8 @@ namespace Electron2D.Build
             f.Transform.Position = new Vector2(-50, -350);
             RigidbodySensor sensor = new RigidbodySensor(new Vector2(30), _shape: ColliderSensorShape.Box);
             f.AddComponent(sensor);
-            sensor.OnBeginContact += (rb) => Debug.Log("Entered sensor");
-            sensor.OnEndContact += (rb) => Debug.Log("Exited sensor");
+            sensor.OnBeginContact += (rb) => sound1.Play();
+            sensor.OnEndContact += (rb) => sound2.Play();
         }
 
         protected override void Update()

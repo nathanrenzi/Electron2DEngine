@@ -5,7 +5,8 @@
         private bool disposed;
 
         public string FileName { get; }
-        public FMOD.Studio.Bank Data { get; }
+
+        private FMOD.Studio.Bank bank;
 
         ~Bank()
         {
@@ -13,10 +14,15 @@
             GC.SuppressFinalize(this);
         }
 
-        public Bank(string _fileName, FMOD.Studio.Bank _data)
+        public Bank(string _fileName, FMOD.Studio.Bank _fmodBank)
         {
             FileName = _fileName;
-            Data = _data;
+            bank = _fmodBank;
+        }
+
+        public FMOD.Studio.Bank GetFMODBank()
+        {
+            return bank;
         }
 
         public void Dispose()
