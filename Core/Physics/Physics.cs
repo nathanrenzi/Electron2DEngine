@@ -38,7 +38,7 @@ namespace Electron2D.Core.PhysicsBox2D
 
             world = new World(aabb, new Vec2(_gravity.X, _gravity.Y), _doSleep);
             world.SetContactFilter(new ContactFilter());
-            world.SetContactListener(new SensorContactListener());
+            world.SetContactListener(new WorldContactListener());
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace Electron2D.Core.PhysicsBox2D
             }
         }
 
-        public class SensorContactListener : ContactListener
+        public class WorldContactListener : ContactListener
         {
             public void BeginContact(Contact contact)
             {
@@ -354,7 +354,7 @@ namespace Electron2D.Core.PhysicsBox2D
 
                 if(bodyA == null || bodyB == null)
                 {
-                    Debug.LogError("PHYSICS: Contact body is null, cannot invoke rigidbody sensor collision.");
+                    Debug.LogError("PHYSICS: Contact body is null, cannot invoke collision.");
                     return;
                 }
 
@@ -363,11 +363,17 @@ namespace Electron2D.Core.PhysicsBox2D
 
                 if (fixtureA.IsSensor)
                 {
-                    RigidbodySensor.InvokeSensor(idA, idB, true);
+                    RigidbodySensor.InvokeCollision(idA, idB, true);
                 }
                 else if (fixtureB.IsSensor)
                 {
-                    RigidbodySensor.InvokeSensor(idB, idA, true);
+                    RigidbodySensor.InvokeCollision(idB, idA, true);
+                }
+                else
+                {
+                    // Both are rigidbodies
+                    Rigidbody.InvokeCollision(idA, idB, true);
+                    Rigidbody.InvokeCollision(idB, idA, true);
                 }
             }
 
@@ -381,7 +387,7 @@ namespace Electron2D.Core.PhysicsBox2D
 
                 if (bodyA == null || bodyB == null)
                 {
-                    Debug.LogError("PHYSICS: Contact body is null, cannot invoke rigidbody sensor collision.");
+                    Debug.LogError("PHYSICS: Contact body is null, cannot invoke collision.");
                     return;
                 }
 
@@ -390,11 +396,17 @@ namespace Electron2D.Core.PhysicsBox2D
 
                 if (fixtureA.IsSensor)
                 {
-                    RigidbodySensor.InvokeSensor(idA, idB, false);
+                    RigidbodySensor.InvokeCollision(idA, idB, false);
                 }
                 else if (fixtureB.IsSensor)
                 {
-                    RigidbodySensor.InvokeSensor(idB, idA, false);
+                    RigidbodySensor.InvokeCollision(idB, idA, false);
+                }
+                else
+                {
+                    // Both are rigidbodies
+                    Rigidbody.InvokeCollision(idA, idB, false);
+                    Rigidbody.InvokeCollision(idB, idA, false);
                 }
             }
 

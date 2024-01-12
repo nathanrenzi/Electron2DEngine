@@ -69,7 +69,7 @@ namespace Electron2D.Core.PhysicsBox2D
             RigidbodySensorSystem.Unregister(this);
         }
 
-        public static void InvokeSensor(uint _id, uint _hitId, bool _beginContact)
+        public static void InvokeCollision(uint _id, uint _hitId, bool _beginContact)
         {
             List<Rigidbody> rigidbodies = RigidbodySystem.GetComponents();
             List<RigidbodySensor> sensors = RigidbodySensorSystem.GetComponents();

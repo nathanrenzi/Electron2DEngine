@@ -20,7 +20,9 @@ namespace Electron2D.Build
         private int displayFrames;
         private int frames;
         private float lastFrameCountTime;
-        private AudioInstance sound3;
+        private AudioInstance spawnSound;
+        private AudioInstance backgroundMusic;
+        private AudioDescription physicsHit;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
             $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false) { }
@@ -31,8 +33,15 @@ namespace Electron2D.Build
             // Ex. ComponentSystem.Start();
             // -----------------------------
 
-            Bank bank = AudioSystem.LoadBank("Build/Resources/Audio/FMOD/TestProject/Build/Desktop/Master.bank", true);
-            sound3 = AudioSystem.CreateInstance("{77b67fb8-34d1-4886-b992-71679e7b8fe7}");
+            Bank bank = AudioSystem.LoadBank("Build/Resources/Audio/FMOD/TestProject/Build/Desktop/Master.bank");
+
+            spawnSound = AudioSystem.CreateInstance("{77b67fb8-34d1-4886-b992-71679e7b8fe7}");
+
+            backgroundMusic = AudioSystem.CreateInstance("{08d1651d-bedb-4fbe-a6b4-568d3aa83190}");
+            backgroundMusic.SetVolume(0.2f);
+            backgroundMusic.Play();
+
+            physicsHit = AudioSystem.CreateDescription("{18995b5f-7bf9-45c0-9614-0702b4d0a210}");
 
             SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
@@ -92,8 +101,21 @@ namespace Electron2D.Build
             };
             s.Transform.Position = Input.GetMouseWorldPosition();
             s.AddComponent(Rigidbody.CreateDynamic(df));
-            sound3.Play();
+            spawnSound.Play();
             sprites.Add((s, Time.TotalElapsedSeconds));
+
+            s.GetComponent<Rigidbody>().OnBeginContact += (rb) => PlayRigidbodyHitSound(s.GetComponent<Rigidbody>());
+        }
+
+        private void PlayRigidbodyHitSound(Rigidbody _rb)
+        {
+            AudioInstance audio = physicsHit.CreateInstance();
+            float magnitute = MathF.Abs(MathF.Sqrt((_rb.Velocity.X * _rb.Velocity.X) + (_rb.Velocity.Y * _rb.Velocity.Y)));
+            float maxMagnitude = 40;
+            float f = MathEx.Clamp01(magnitute / maxMagnitude);
+            f = f < 0.3f ? 0 : f;
+            audio.SetVolume(f);
+            audio.Play();
         }
 
         private void CameraMovement()

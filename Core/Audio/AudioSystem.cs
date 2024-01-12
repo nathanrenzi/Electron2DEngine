@@ -38,7 +38,7 @@ namespace Electron2D.Core.Audio
         /// <param name="_fileName"></param>
         /// <param name="_loadSampleData">Whether or not the data inside of the bank should be loaded into memory once the bank is created.</param>
         /// <returns></returns>
-        public static Bank LoadBank(string _fileName, bool _loadSampleData = false)
+        public static Bank LoadBank(string _fileName, bool _loadSampleData = true)
         {
             if(loadedBanks.ContainsKey(_fileName))
             {

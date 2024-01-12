@@ -11,6 +11,10 @@ namespace Electron2D.Core.PhysicsBox2D
     {
         public static readonly float Epsilon = 1f;
 
+        public Action<Rigidbody> OnBeginContact { get; set; }
+        public Action<Rigidbody> OnEndContact { get; set; }
+        public List<Rigidbody> CurrentContacts { get; set; } = new List<Rigidbody>();
+
         public uint ID { get; private set; } = uint.MaxValue;
         public Vector2 Velocity
         {
@@ -119,6 +123,41 @@ namespace Electron2D.Core.PhysicsBox2D
         {
             RigidbodySystem.Unregister(this);
             if(ID != uint.MaxValue) Physics.RemovePhysicsBody(ID);
+        }
+
+        public static void InvokeCollision(uint _id, uint _hitId, bool _beginContact)
+        {
+            List<Rigidbody> rigidbodies = RigidbodySystem.GetComponents();
+
+            Rigidbody body1 = null;
+            Rigidbody body2 = null;
+            for (int i = 0; i < rigidbodies.Count; i++)
+            {
+                if (rigidbodies[i].ID == _id)
+                {
+                    body1 = rigidbodies[i];
+                }
+
+                if (rigidbodies[i].ID == _hitId)
+                {
+                    body2 = rigidbodies[i];
+                }
+            }
+            if (body1 == null) return;
+            if (body2 == null) return;
+
+            if (_beginContact)
+            {
+                // Begin Contact
+                body1.OnBeginContact?.Invoke(body2);
+                body1.CurrentContacts.Add(body2);
+            }
+            else
+            {
+                // End Contact
+                body1.OnEndContact?.Invoke(body1);
+                body1.CurrentContacts.Remove(body1);
+            }
         }
 
         public override void OnAdded()
