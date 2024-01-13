@@ -32,8 +32,9 @@ namespace Electron2D.Core
 
         protected Thread PhysicsThread { get; private set; }
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
-
         protected Camera2D StartCamera { get; set; }
+
+        private Bank electronFMODBank;
 
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -15f,
             float _physicsLowerBoundX = -100000, float _physicsLowerBoundY = -100000, float _physicsUpperBoundX = 100000, float _physicsUpperBoundY = 100000,
@@ -81,6 +82,49 @@ namespace Electron2D.Core
             glEnable(GL_STENCIL_TEST);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             // -----------
+
+            // Displaying splashscreen
+            Debug.Log("Displaying splashscreen.");
+            electronFMODBank = AudioSystem.LoadBank("Build/Resources/Audio/FMOD/TestProject/Build/Desktop/Master.bank");
+            Splashscreen.Initialize("Core/Rendering/CoreTextures/Electron2DSplashscreen.png", "{524456f6-36e8-441a-b3e2-fedb3baeaa0b}", true);
+            AudioSystem.GetFMODSystem().flushCommands();
+            float splashscreenStartTime = (float)Glfw.Time;
+            float splashscreenDisplayTime = 4f;
+            float fadeTimePercentage = 0.3f;
+            float bufferTime = 0.5f;
+            float currentTime = -bufferTime;
+            while(!Glfw.WindowShouldClose(DisplayManager.Instance.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
+            {
+                Input.ProcessInput(); // Letting the window know the program is responding
+
+                float t = MathEx.Clamp01((currentTime - bufferTime) / splashscreenDisplayTime);
+                float e;
+                if(t <= fadeTimePercentage)
+                {
+                    e = Easing.EaseInOutSine(t / fadeTimePercentage);
+                }
+                else if(t >= 1 - fadeTimePercentage)
+                {
+                    e = Easing.EaseInOutSine((1 - t) / fadeTimePercentage);
+                }
+                else
+                {
+                    e = 1;
+                }
+
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+                glClearColor(0, 0, 0, 1);
+                Splashscreen.RenderSplashscreen((int)(e * 255), t > fadeTimePercentage / 2f);
+                Glfw.SwapBuffers(DisplayManager.Instance.Window);
+
+                currentTime = (float)Glfw.Time - splashscreenStartTime;
+
+                AudioSystem.Update();
+            }
+            Splashscreen.Dispose();
+            electronFMODBank.Dispose();
+            Debug.Log("Splashscreen ended.");
+            // --------------------
 
             // Starting Component Systems
             RigidbodySystem.Start();
