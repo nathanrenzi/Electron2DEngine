@@ -152,8 +152,8 @@ namespace Electron2D.Core
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
             {
-                Time.DeltaTime = (float)Glfw.Time - Time.TotalElapsedSeconds;
-                Time.TotalElapsedSeconds = (float)Glfw.Time;
+                Time.DeltaTime = (float)Glfw.Time - Time.GameTime;
+                Time.GameTime = (float)Glfw.Time;
                 PerformanceTimings.FramesPerSecond = 1 / Time.DeltaTime;
 
                 // Input

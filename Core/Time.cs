@@ -7,7 +7,7 @@ namespace Electron2D.Core
     {
         public static float DeltaTime;
         public static float FixedDeltaTime;
-        public static float TotalElapsedSeconds;
+        public static float GameTime;
     }
 
     public class TimeUniform : IGlobalUniform
@@ -35,7 +35,7 @@ namespace Electron2D.Core
 
         public void ApplyUniform(Shader _shader)
         {
-            _shader.SetFloat("time", Time.TotalElapsedSeconds);
+            _shader.SetFloat("time", Time.GameTime);
         }
     }
 }

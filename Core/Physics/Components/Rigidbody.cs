@@ -27,6 +27,19 @@ namespace Electron2D.Core.PhysicsBox2D
                 Physics.SetVelocity(ID, value);
             }
         }
+        /// <summary>
+        /// Instead of getting the velocity from the physics simulation, it is calculated using the last frame's
+        /// and this frame's position. This can help when the rigidbody is behaving strangely and the velocity is
+        /// not accurate.
+        /// </summary>
+        public Vector2 CalculatedVelocity
+        {
+            get
+            {
+                return newPosition - oldPosition;
+            }
+        }
+
         public float AngularVelocity
         {
             get
@@ -270,7 +283,7 @@ namespace Electron2D.Core.PhysicsBox2D
             if (!isValid || ID == uint.MaxValue || !interpolationReady) return;
 
             // Interpolation
-            float t = MathEx.Clamp01((Time.TotalElapsedSeconds - lastLerpTime) / lerpDeltaTime);
+            float t = MathEx.Clamp01((Time.GameTime - lastLerpTime) / lerpDeltaTime);
 
             //      Position
             transform.Position = Vector2.Lerp(oldPosition, newPosition, t);

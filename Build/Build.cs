@@ -23,9 +23,11 @@ namespace Electron2D.Build
         private AudioInstance spawnSound;
         private AudioInstance backgroundMusic;
         private AudioDescription physicsHit;
+        private float physicsHitCooldown = 0.05f;
+        private float lastPhysicsHitTime = -10;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
-            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false) { }
+            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8) { }
 
         protected override void Load()
         {
@@ -85,7 +87,7 @@ namespace Electron2D.Build
 
             for (int i = 0; i < sprites.Count; i++)
             {
-                sprites[i].Item1.Transform.Scale = Vector2.One * 40 * Easing.EaseOutQuad(MathEx.Clamp01((Time.TotalElapsedSeconds - sprites[i].Item2) * 20f));
+                sprites[i].Item1.Transform.Scale = Vector2.One * 40 * Easing.EaseOutQuad(MathEx.Clamp01((Time.GameTime - sprites[i].Item2) * 20f));
             }
         }
 
@@ -97,24 +99,34 @@ namespace Electron2D.Build
                 Color.FromArgb(255, rand.Next(0, 256), rand.Next(0, 256), rand.Next(0, 256))), 0, 40, 40);
             RigidbodyDynamicDef df = new RigidbodyDynamicDef()
             {
-                Shape = RigidbodyShape.Box
+                Shape = RigidbodyShape.Box,
             };
             s.Transform.Position = Input.GetMouseWorldPosition();
             s.AddComponent(Rigidbody.CreateDynamic(df));
             spawnSound.Play();
-            sprites.Add((s, Time.TotalElapsedSeconds));
+            sprites.Add((s, Time.GameTime));
 
             s.GetComponent<Rigidbody>().OnBeginContact += (rb) => PlayRigidbodyHitSound(s.GetComponent<Rigidbody>());
         }
 
         private void PlayRigidbodyHitSound(Rigidbody _rb)
         {
-            AudioInstance audio = physicsHit.CreateInstance();
-            float magnitute = MathF.Abs(MathF.Sqrt((_rb.Velocity.X * _rb.Velocity.X) + (_rb.Velocity.Y * _rb.Velocity.Y)));
+            float _gameTime = Time.GameTime;
+            float _lastTime = lastPhysicsHitTime + physicsHitCooldown;
+            float magnitute = MathF.Abs(MathF.Sqrt((_rb.CalculatedVelocity.X * _rb.CalculatedVelocity.X)
+                + (_rb.CalculatedVelocity.Y * _rb.CalculatedVelocity.Y)));
             float maxMagnitude = 40;
-            float f = MathEx.Clamp01(magnitute / maxMagnitude);
-            f = f < 0.3f ? 0 : f;
-            audio.SetVolume(f);
+            float volume = MathEx.Clamp01(magnitute / maxMagnitude);
+            volume = volume < 0.1f ? 0 : volume;
+
+            if (_gameTime < _lastTime || volume == 0)
+            {
+                return;
+            }
+            lastPhysicsHitTime = _gameTime;
+
+            AudioInstance audio = physicsHit.CreateInstance();
+            audio.SetVolume(volume);
             audio.Play();
         }
 
@@ -158,9 +170,9 @@ namespace Electron2D.Build
         private void CalculateFPS()
         {
             frames++;
-            if (Time.TotalElapsedSeconds - lastFrameCountTime >= 1)
+            if (Time.GameTime - lastFrameCountTime >= 1)
             {
-                lastFrameCountTime = Time.TotalElapsedSeconds;
+                lastFrameCountTime = Time.GameTime;
                 displayFrames = frames;
                 frames = 0;
             }
