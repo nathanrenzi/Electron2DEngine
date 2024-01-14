@@ -57,7 +57,7 @@ namespace Electron2D.Core.Audio
                 Bank bank = new Bank(_fileName, data);
                 loadedBanks.Add(_fileName, bank);
 
-                Debug.Log($"Loaded [{_fileName}] into memory.", ConsoleColor.Yellow);
+                Debug.Log($"Loaded [{_fileName}] into memory.", ConsoleColor.DarkGreen);
 
                 if(_loadSampleData)
                 {
@@ -69,6 +69,20 @@ namespace Electron2D.Core.Audio
                 }
 
                 return bank;
+            }
+        }
+
+        /// <summary>
+        /// Unloads an FMOD bank file.
+        /// </summary>
+        /// <param name="_bank"></param>
+        public static void UnloadBank(Bank _bank)
+        {
+            if (loadedBanks.ContainsValue(_bank))
+            {
+                loadedBanks.Remove(_bank.FileName);
+                _bank.GetFMODBank().unload();
+                Debug.Log($"Unloaded [{_bank.FileName}] from memory.", ConsoleColor.DarkGreen);
             }
         }
 

@@ -9,6 +9,7 @@ using System.Drawing;
 using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Audio;
+using Electron2D.Core.Management;
 
 namespace Electron2D.Core
 {
@@ -83,11 +84,13 @@ namespace Electron2D.Core
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             // -----------
 
+            #region Splashscreen
             // Displaying splashscreen
             Debug.Log("Displaying splashscreen.");
             electronFMODBank = AudioSystem.LoadBank("Build/Resources/Audio/FMOD/TestProject/Build/Desktop/Master.bank");
-            Splashscreen.Initialize("Core/Rendering/CoreTextures/Electron2DSplashscreen.png", "{524456f6-36e8-441a-b3e2-fedb3baeaa0b}", true);
+            Splashscreen.Initialize("{524456f6-36e8-441a-b3e2-fedb3baeaa0b}");
             AudioSystem.GetFMODSystem().flushCommands();
+            Texture2D splashscreenTexture = TextureFactory.Load("Core/Rendering/CoreTextures/Electron2DSplashscreen.png", true);
             float splashscreenStartTime = (float)Glfw.Time;
             float splashscreenDisplayTime = 4f;
             float fadeTimePercentage = 0.3f;
@@ -114,7 +117,7 @@ namespace Electron2D.Core
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
                 glClearColor(0, 0, 0, 1);
-                Splashscreen.RenderSplashscreen((int)(e * 255), t > fadeTimePercentage / 2f);
+                Splashscreen.Render(splashscreenTexture, (int)(e * 255), t > fadeTimePercentage / 2f);
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
 
                 currentTime = (float)Glfw.Time - splashscreenStartTime;
@@ -122,9 +125,11 @@ namespace Electron2D.Core
                 AudioSystem.Update();
             }
             Splashscreen.Dispose();
-            electronFMODBank.Dispose();
+            splashscreenTexture.Dispose();
+            AudioSystem.UnloadBank(electronFMODBank);
             Debug.Log("Splashscreen ended.");
             // --------------------
+            #endregion
 
             // Starting Component Systems
             RigidbodySystem.Start();

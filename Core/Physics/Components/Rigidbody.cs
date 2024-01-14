@@ -132,7 +132,7 @@ namespace Electron2D.Core.PhysicsBox2D
             RigidbodySystem.Register(this);
         }
 
-        ~Rigidbody()
+        protected override void OnDispose()
         {
             RigidbodySystem.Unregister(this);
             if(ID != uint.MaxValue) Physics.RemovePhysicsBody(ID);

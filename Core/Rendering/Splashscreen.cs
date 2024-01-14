@@ -24,7 +24,6 @@ namespace Electron2D.Core.Rendering
             1, 2, 3
         };
 
-        private static Texture2D splashTexture;
         private static VertexBuffer vertexBuffer;
         private static VertexArray vertexArray;
         private static IndexBuffer indexBuffer;
@@ -32,9 +31,8 @@ namespace Electron2D.Core.Rendering
         private static AudioInstance audio;
         private static bool hasPlayedAudio = false;
 
-        public static void Initialize(string _textureName, string _audioGUID, bool _loadAsNonSRGBA)
+        public static void Initialize(string _audioGUID)
         {
-            splashTexture = TextureFactory.Load(_textureName, _loadAsNonSRGBA);
             vertexArray = new VertexArray();
             vertexBuffer = new VertexBuffer(vertices);
             indexBuffer = new IndexBuffer(indices);
@@ -46,7 +44,7 @@ namespace Electron2D.Core.Rendering
             audio = AudioSystem.CreateInstance(_audioGUID);
         }
 
-        public static unsafe void RenderSplashscreen(int _alpha, bool _audioReady)
+        public static unsafe void Render(Texture2D _texture, int _alpha, bool _audioReady)
         {
             if (!hasPlayedAudio && _audioReady)
             {
@@ -60,7 +58,7 @@ namespace Electron2D.Core.Rendering
             shader.SetMatrix4x4("model", Matrix4x4.Identity);
             shader.SetMatrix4x4("projection", Matrix4x4.Identity);
 
-            splashTexture.Use(GL_TEXTURE0);
+            _texture.Use(GL_TEXTURE0);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             vertexArray.Bind();
