@@ -15,7 +15,7 @@ A 2D game engine written in C#. This project is a self-study meant to give me mo
 
 ## Licensing
 
-Please be aware that FMOD is a commercial product. If you plan on using using this engine to make a product that includes FMOD functionality, check the [FMOD licensing options](https://www.fmod.com/licensing).
+Please be aware that FMOD is a commercial product. If you plan on using Electron2D to make a product that includes FMOD functionality, check the [FMOD licensing options](https://www.fmod.com/licensing).
 The FMOD API will have to be manually installed in Electron2D/Core/Audio, as redistributing the API is not allowed.
 
 This project is licensed under the [MIT](LICENSE.md) License - see the [LICENSE.md](LICENSE.md) file
