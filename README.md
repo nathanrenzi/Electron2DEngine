@@ -4,8 +4,8 @@ A 2D game engine written in C#. This project is a self-study meant to give me mo
 
 ## Author
 
-  - **Nathan R.** -
-    [Electronicall](https://github.com/Electronicall)
+  - **Nathan Renzi** -
+    [Nathan Renzi](https://github.com/nathanrenzi)
 
 ## Built With
 
