@@ -26,6 +26,8 @@ namespace Electron2D.Core.Rendering
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
         /// </summary>
         public bool UseUnscaledProjectionMatrix { get; set; } = false;
+        public bool UseCustomIndexRenderCount { get; set; } = false;
+        public int CustomIndexRenderCount { get; set; } = 0;
         public bool HasVertexData { get; private set; } = false;
         public bool IsVertexDirty { get; set; } = false;
         public bool IsIndexDirty { get; set; } = false;
@@ -154,14 +156,14 @@ namespace Electron2D.Core.Rendering
                 IsVertexDirty = false;
             }
 
-            if(IsIndexDirty)
+            if (IsIndexDirty)
             {
                 // Updating the data inside of the index buffer
                 indexBuffer.UpdateData(indices);
                 IsIndexDirty = false;
             }
 
-            if(UseStencilBuffer)
+            if (UseStencilBuffer)
             {
                 //https://learnopengl.com/Advanced-OpenGL/Stencil-testing
                 if (StencilPreClearBuffer)
@@ -186,7 +188,7 @@ namespace Electron2D.Core.Rendering
 
             Material.Shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.Main.GetUnscaledProjectionMatrix() : Camera2D.Main.GetProjectionMatrix()); // MUST be set after Use is called
             BeforeRender();
-            glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
+            glDrawElements(GL_TRIANGLES, UseCustomIndexRenderCount ? CustomIndexRenderCount : indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
 
         protected virtual void BeforeRender() { }

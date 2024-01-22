@@ -1,7 +1,9 @@
 ﻿using Electron2D.Core;
 using Electron2D.Core.Audio;
+using Electron2D.Core.ECS;
 using Electron2D.Core.Management;
 using Electron2D.Core.Misc;
+using Electron2D.Core.Particles;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
@@ -20,114 +22,33 @@ namespace Electron2D.Build
         private int displayFrames;
         private int frames;
         private float lastFrameCountTime;
-        private AudioInstance spawnSound;
-        private AudioInstance backgroundMusic;
-        private AudioDescription physicsHit;
-        private float physicsHitCooldown = 0.05f;
-        private float lastPhysicsHitTime = -10;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
-            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8) { }
+            $"Electron2D Build - {Program.BuildDate}", _vsync: true, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8)
+        { }
 
+        Entity e;
         protected override void Load()
         {
             // Load Custom Component Systems
             // Ex. ComponentSystem.Start();
             // -----------------------------
-
-            Bank bank = AudioSystem.LoadBank("Build/Resources/Audio/FMOD/TestProject/Build/Desktop/Master.bank");
-
-            spawnSound = AudioSystem.CreateInstance("{77b67fb8-34d1-4886-b992-71679e7b8fe7}");
-
-            backgroundMusic = AudioSystem.CreateInstance("{08d1651d-bedb-4fbe-a6b4-568d3aa83190}");
-            backgroundMusic.SetVolume(0.2f);
-            backgroundMusic.Play();
-
-            physicsHit = AudioSystem.CreateDescription("{18995b5f-7bf9-45c0-9614-0702b4d0a210}");
-
             SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
-            
-            Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Navy));
-            RigidbodyDynamicDef df = new RigidbodyDynamicDef()
-            {
-                Velocity = Vector2.UnitY * 10,
-                Shape = RigidbodyShape.Box
-            };
-            s.AddComponent(Rigidbody.CreateDynamic(df));
 
-            RigidbodyStaticDef sf = new RigidbodyStaticDef();
-            Sprite b = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.White), 0, 6, 6);
-            b.Transform.Position = new Vector2(40, -250f);
-            b.AddComponent(Rigidbody.CreateStatic(sf));
-
-            RigidbodyStaticDef sf2 = new RigidbodyStaticDef()
-            {
-                Bounciness = 0.5f
-            };
-            Sprite a = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.White), 0, 500, 30);
-            a.Transform.Position = new Vector2(0, -450f);
-            a.AddComponent(Rigidbody.CreateStatic(sf2));
-
-            Sprite f = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(50, 255, 255, 255)), 0, 30, 30, 10);
-            f.Transform.Position = new Vector2(-50, -350);
-            RigidbodySensor sensor = new RigidbodySensor(new Vector2(30), _shape: ColliderSensorShape.Box);
-            f.AddComponent(sensor);
+            e = new Entity();
+            e.AddComponent(new Transform());
+            ParticleSystem psys = new ParticleSystem(true, true, ParticleEmissionShape.Circle, Vector2.UnitY, 360, 100, 1000, _startSizeRange: new Vector2(40, 60),
+                _startRotationRange: new Vector2(0, 360), _startAngularVelocityRange: new Vector2(0, 50), _startLifetimeRange: new Vector2(3), _startSpeedRange: new Vector2(60, 70),
+                new Gradient(Color.Blue),
+                Material.Create(GlobalShaders.DefaultTexture));
+            e.AddComponent(psys);
         }
 
         protected override void Update()
         {
             CameraMovement();
             CalculateFPS();
-
-            if(Input.GetMouseButtonDown(MouseButton.Right))
-            {
-                CreateRigidbody();
-            }
-
-            for (int i = 0; i < sprites.Count; i++)
-            {
-                sprites[i].Item1.Transform.Scale = Vector2.One * 40 * Easing.EaseOutQuad(MathEx.Clamp01((Time.GameTime - sprites[i].Item2) * 20f));
-            }
-        }
-
-        private List<(Sprite, float)> sprites = new List<(Sprite, float)>();
-        private void CreateRigidbody()
-        {
-            Random rand = new Random();
-            Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture,
-                Color.FromArgb(255, rand.Next(0, 256), rand.Next(0, 256), rand.Next(0, 256))), 0, 40, 40);
-            RigidbodyDynamicDef df = new RigidbodyDynamicDef()
-            {
-                Shape = RigidbodyShape.Box,
-            };
-            s.Transform.Position = Input.GetMouseWorldPosition();
-            s.AddComponent(Rigidbody.CreateDynamic(df));
-            spawnSound.Play();
-            sprites.Add((s, Time.GameTime));
-
-            s.GetComponent<Rigidbody>().OnBeginContact += (rb) => PlayRigidbodyHitSound(s.GetComponent<Rigidbody>());
-        }
-
-        private void PlayRigidbodyHitSound(Rigidbody _rb)
-        {
-            float _gameTime = Time.GameTime;
-            float _lastTime = lastPhysicsHitTime + physicsHitCooldown;
-            float magnitute = MathF.Abs(MathF.Sqrt((_rb.CalculatedVelocity.X * _rb.CalculatedVelocity.X)
-                + (_rb.CalculatedVelocity.Y * _rb.CalculatedVelocity.Y)));
-            float maxMagnitude = 40;
-            float volume = MathEx.Clamp01(magnitute / maxMagnitude);
-            volume = volume < 0.1f ? 0 : volume;
-
-            if (_gameTime < _lastTime || volume == 0)
-            {
-                return;
-            }
-            lastPhysicsHitTime = _gameTime;
-
-            AudioInstance audio = physicsHit.CreateInstance();
-            audio.SetVolume(volume);
-            audio.Play();
         }
 
         private void CameraMovement()

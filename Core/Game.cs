@@ -10,6 +10,7 @@ using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Audio;
 using Electron2D.Core.Management;
+using Electron2D.Core.Particles;
 
 namespace Electron2D.Core
 {
@@ -66,7 +67,7 @@ namespace Electron2D.Core
             StartCamera = new Camera2D(Vector2.Zero, 1);
 
             DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle, AntialiasingEnabled);
-            if(VsyncEnabled)
+            if (VsyncEnabled)
             {
                 // VSYNC ON
                 Glfw.SwapInterval(1);
@@ -96,17 +97,17 @@ namespace Electron2D.Core
             float fadeTimePercentage = 0.3f;
             float bufferTime = 0.5f;
             float currentTime = -bufferTime;
-            while(!Glfw.WindowShouldClose(DisplayManager.Instance.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
+            while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
             {
                 Input.ProcessInput(); // Letting the window know the program is responding
 
                 float t = MathEx.Clamp01((currentTime - bufferTime) / splashscreenDisplayTime);
                 float e;
-                if(t <= fadeTimePercentage)
+                if (t <= fadeTimePercentage)
                 {
                     e = Easing.EaseInOutSine(t / fadeTimePercentage);
                 }
-                else if(t >= 1 - fadeTimePercentage)
+                else if (t >= 1 - fadeTimePercentage)
                 {
                     e = Easing.EaseInOutSine((1 - t) / fadeTimePercentage);
                 }
@@ -134,6 +135,7 @@ namespace Electron2D.Core
             // Starting Component Systems
             RigidbodySystem.Start();
             RigidbodySensorSystem.Start();
+            ParticleSystemBaseSystem.Start();
             TransformSystem.Start();
             MeshRendererSystem.Start();
             // -------------------------------
@@ -175,6 +177,7 @@ namespace Electron2D.Core
                 // Updating Component Systems
                 RigidbodySystem.Update();
                 RigidbodySensorSystem.Update();
+                ParticleSystemBaseSystem.Update();
                 TransformSystem.Update();
                 MeshRendererSystem.Update();
                 // --------------------------
@@ -211,7 +214,7 @@ namespace Electron2D.Core
             Debug.CloseLogFile();
             DisplayManager.CloseWindow();
         }
-        
+
         private void RunPhysicsThread(CancellationToken _token, double _physicsTimestep, Vector2 _worldLowerBound, Vector2 _worldUpperBound, Vector2 _gravity,
             bool _doSleep, int _velocityIterations = 8, int _positionIterations = 2)
         {
@@ -220,12 +223,13 @@ namespace Electron2D.Core
             double lastTickTime = 0;
             while (!_token.IsCancellationRequested)
             {
-                if(lastTickTime + _physicsTimestep <= Glfw.Time)
+                if (lastTickTime + _physicsTimestep <= Glfw.Time)
                 {
                     double delta = Glfw.Time - lastTickTime;
                     Time.FixedDeltaTime = (float)delta;
                     lastTickTime = Glfw.Time;
 
+                    ParticleSystemBaseSystem.FixedUpdate();
                     TransformSystem.FixedUpdate();
                     MeshRendererSystem.FixedUpdate();
 
