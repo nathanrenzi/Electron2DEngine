@@ -19,6 +19,7 @@ namespace Electron2D.Core.Rendering
         public BufferLayout layout { get; protected set; }
         public Material Material { get; protected set; }
         public int RenderLayer { get; protected set; }
+        public Action OnBeforeRender { get; set; }
 
         private Transform transform;
 
@@ -188,6 +189,7 @@ namespace Electron2D.Core.Rendering
 
             Material.Shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.Main.GetUnscaledProjectionMatrix() : Camera2D.Main.GetProjectionMatrix()); // MUST be set after Use is called
             BeforeRender();
+            OnBeforeRender?.Invoke();
             glDrawElements(GL_TRIANGLES, UseCustomIndexRenderCount ? CustomIndexRenderCount : indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
 

@@ -27,7 +27,9 @@ namespace Electron2D.Core
 
         public static float RandomFloatInRange(Random _random, float _min, float _max)
         {
-            return _random.Next((int)(_min * 100000), (int)(_max * 100000) + 1) / 100000;
+            float diff = _max - _min;
+            float amount = diff * ((float)_random.NextDouble() + float.Epsilon);
+            return _min + amount;
         }
     }
 }

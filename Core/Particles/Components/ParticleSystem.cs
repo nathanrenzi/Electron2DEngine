@@ -12,6 +12,7 @@ namespace Electron2D.Core.Particles
     {
         public bool IsLoop { get; set; }
         public bool IsPlaying { get; set; }
+        public bool IsWorldSpace { get; set; }
         public ParticleEmissionShape EmissionShape { get; set; }
         public Vector2 EmissionDirection { get; set; }
         public float EmissionMaxAngle { get; set; }
@@ -31,18 +32,21 @@ namespace Electron2D.Core.Particles
         private uint[] indices;
         private MeshRenderer renderer;
         private Transform transform;
+        private Transform fakeTransform;
         private Random random = new Random(DateTime.Now.Millisecond);
         private bool playOnAwake;
         private Material material;
         private float spawnInterval { get { return 1f / EmissionParticlesPerSecond; } }
         private float lastSpawnedTime = -10;
 
-        public ParticleSystem(bool _playOnAwake, bool _isLoop, ParticleEmissionShape _emissionShape, Vector2 _emissionDirection, float _emissionMaxAngle, float _emissionParticlesPerSecond,
-            int _maxParticles, Vector2 _startSizeRange, Vector2 _startRotationRange, Vector2 _startAngularVelocityRange,
-            Vector2 _startLifetimeRange, Vector2 _startSpeedRange, Gradient _startColorRange, Material _material, int _renderLayer = 1)
+        public ParticleSystem(bool _playOnAwake, bool _isLoop, bool _isWorldSpace, ParticleEmissionShape _emissionShape, Vector2 _emissionDirection,
+            float _emissionMaxAngle, float _emissionParticlesPerSecond, int _maxParticles, Vector2 _startSizeRange, Vector2 _startRotationRange,
+            Vector2 _startAngularVelocityRange, Vector2 _startLifetimeRange, Vector2 _startSpeedRange,
+            Gradient _startColorRange, Material _material, int _renderLayer = 1)
         {
             playOnAwake = _playOnAwake;
             IsLoop = _isLoop;
+            IsWorldSpace = _isWorldSpace;
             EmissionShape = _emissionShape;
             EmissionDirection = _emissionDirection;
             EmissionMaxAngle = _emissionMaxAngle;
@@ -56,6 +60,8 @@ namespace Electron2D.Core.Particles
             StartColorRange = _startColorRange;
             RenderLayer = _renderLayer;
             material = _material;
+
+            fakeTransform = new Transform();
 
             // Pre-allocating arrays
             // 4 vertices * (X + Y + U + V) * total particles
@@ -80,8 +86,17 @@ namespace Electron2D.Core.Particles
             }
             renderer = new MeshRenderer(transform, material);
             renderer.UseCustomIndexRenderCount = true;
+            renderer.OnBeforeRender += SetModelMatrix;
 
             if (playOnAwake) Play();
+        }
+
+        private void SetModelMatrix()
+        {
+            if(IsWorldSpace)
+            {
+                renderer.Material.Shader.SetMatrix4x4("model", fakeTransform.GetScaleMatrix() * fakeTransform.GetRotationMatrix() * transform.GetPositionMatrix());
+            }
         }
 
         public void Play()
@@ -174,7 +189,8 @@ namespace Electron2D.Core.Particles
             // Spawn lifetime
             float spawnLifetime = MathEx.RandomFloatInRange(random, StartLifetimeRange.X, StartLifetimeRange.Y);
 
-            p.Initialize(transform.Position, Vector2.Normalize(spawnDirection) * spawnSpeed, spawnRotation, spawnAngularVelocity, spawnColor, spawnSize, spawnLifetime);
+            p.Initialize(transform.Position, Vector2.Zero, spawnDirection * 600, spawnRotation,
+                spawnAngularVelocity, spawnColor, spawnSize, spawnLifetime);
         }
 
         private void UpdateMesh()
@@ -209,36 +225,38 @@ namespace Electron2D.Core.Particles
 
         private void CreateParticleMesh(int _index, Particle _particle)
         {
-            Particle p = _particle;
             int i = _index * 16;
-            float hs = p.Size / 2f;
+            float hs = _particle.Size / 2f;
 
-            Vector2 tl = MathEx.RotateVector2(new Vector2(-hs, hs), p.Rotation);
-            Vector2 tr = MathEx.RotateVector2(new Vector2(hs, hs), p.Rotation);
-            Vector2 br = MathEx.RotateVector2(new Vector2(hs, -hs), p.Rotation);
-            Vector2 bl = MathEx.RotateVector2(new Vector2(-hs, -hs), p.Rotation);
+            Vector2 tl = MathEx.RotateVector2(new Vector2(-hs, hs), _particle.Rotation);
+            Vector2 tr = MathEx.RotateVector2(new Vector2(hs, hs), _particle.Rotation);
+            Vector2 br = MathEx.RotateVector2(new Vector2(hs, -hs), _particle.Rotation);
+            Vector2 bl = MathEx.RotateVector2(new Vector2(-hs, -hs), _particle.Rotation);
+
+            float xpos = _particle.Position.X + (IsWorldSpace ? _particle.Origin.X - transform.Position.X : 0);
+            float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y - transform.Position.Y : 0);
 
             // Top Left
-            vertices[i + 0] = tl.X + _particle.Position.X;
-            vertices[i + 1] = tl.Y + _particle.Position.Y;
+            vertices[i + 0] = tl.X + xpos;
+            vertices[i + 1] = tl.Y + ypos;
             vertices[i + 2] = 0;
             vertices[i + 3] = 1;
 
             // Top Right
-            vertices[i + 4] = tr.X + _particle.Position.X;
-            vertices[i + 5] = tr.Y + _particle.Position.Y;
+            vertices[i + 4] = tr.X + xpos;
+            vertices[i + 5] = tr.Y + ypos;
             vertices[i + 6] = 1;
             vertices[i + 7] = 1;
 
             // Bottom Right
-            vertices[i + 8] = br.X + _particle.Position.X;
-            vertices[i + 9] = br.Y + _particle.Position.Y;
+            vertices[i + 8] = br.X + xpos;
+            vertices[i + 9] = br.Y + ypos;
             vertices[i + 10] = 1;
             vertices[i + 11] = 0;
 
             // Bottom Left
-            vertices[i + 12] = bl.X + _particle.Position.X;
-            vertices[i + 13] = bl.Y + _particle.Position.Y;
+            vertices[i + 12] = bl.X + xpos;
+            vertices[i + 13] = bl.Y + ypos;
             vertices[i + 14] = 0;
             vertices[i + 15] = 0;
         }
@@ -262,6 +280,7 @@ namespace Electron2D.Core.Particles
     public enum ParticleEmissionShape
     {
         Box,
-        Circle
+        Circle,
+        Line
     }
 }

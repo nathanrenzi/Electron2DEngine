@@ -24,7 +24,7 @@ namespace Electron2D.Build
         private float lastFrameCountTime;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
-            $"Electron2D Build - {Program.BuildDate}", _vsync: true, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8)
+            $"Electron2D Build - {Program.BuildDate}", _vsync: true, _antialiasing: true, _physicsPositionIterations: 4, _physicsVelocityIterations: 8)
         { }
 
         Entity e;
@@ -38,15 +38,15 @@ namespace Electron2D.Build
 
             e = new Entity();
             e.AddComponent(new Transform());
-            ParticleSystem psys = new ParticleSystem(true, true, ParticleEmissionShape.Circle, Vector2.UnitY, 360, 100, 1000, _startSizeRange: new Vector2(40, 60),
-                _startRotationRange: new Vector2(0, 360), _startAngularVelocityRange: new Vector2(0, 50), _startLifetimeRange: new Vector2(3), _startSpeedRange: new Vector2(60, 70),
-                new Gradient(Color.Blue),
-                Material.Create(GlobalShaders.DefaultTexture));
+            ParticleSystem psys = new ParticleSystem(true, true, true, ParticleEmissionShape.Circle, Vector2.UnitY, 360, 100, 1000, _startSizeRange: new Vector2(4, 12),
+                _startRotationRange: new Vector2(0, 360), _startAngularVelocityRange: new Vector2(0, 50), _startLifetimeRange: new Vector2(3), _startSpeedRange: new Vector2(600, 700),
+                new Gradient(Color.Blue), Material.Create(GlobalShaders.DefaultTexture));
             e.AddComponent(psys);
         }
 
         protected override void Update()
         {
+            e.GetComponent<Transform>().Position = Input.GetMouseWorldPosition();
             CameraMovement();
             CalculateFPS();
         }
