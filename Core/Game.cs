@@ -28,6 +28,7 @@ namespace Electron2D.Core
         public string CurrentWindowTitle { get; protected set; }
         public bool VsyncEnabled { get; }
         public bool AntialiasingEnabled { get; }
+        public bool ErrorCheckingEnabled { get; }
 
         public static Color BackgroundColor { get; private set; } = Color.Black;
 
@@ -39,13 +40,14 @@ namespace Electron2D.Core
 
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -15f,
             float _physicsLowerBoundX = -100000, float _physicsLowerBoundY = -100000, float _physicsUpperBoundX = 100000, float _physicsUpperBoundY = 100000,
-            int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _vsync = false, bool _antialiasing = true)
+            int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _vsync = false, bool _antialiasing = true, bool _errorCheckingEnabled = false)
         {
             CurrentWindowWidth = _initialWindowWidth;
             CurrentWindowHeight = _initialWindowHeight;
             CurrentWindowTitle = _initialWindowTitle;
             VsyncEnabled = _vsync;
             AntialiasingEnabled = _antialiasing;
+            ErrorCheckingEnabled = _errorCheckingEnabled;
 
             // Starting Physics Thread
             PhysicsThread = new Thread(() => RunPhysicsThread(PhysicsCancellationToken.Token, _physicsTimestep, new Vector2(_physicsLowerBoundX, _physicsLowerBoundY),
@@ -65,7 +67,7 @@ namespace Electron2D.Core
 
             StartCamera = new Camera2D(Vector2.Zero, 1);
 
-            DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle, AntialiasingEnabled);
+            DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle, AntialiasingEnabled, ErrorCheckingEnabled);
             if(VsyncEnabled)
             {
                 // VSYNC ON
@@ -194,7 +196,7 @@ namespace Electron2D.Core
                 RenderLayerManager.RenderAllLayers();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
-                LogErrors();
+                if(ErrorCheckingEnabled) LogErrors();
                 PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
 
                 // Audio
