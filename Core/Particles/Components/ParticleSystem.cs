@@ -233,8 +233,8 @@ namespace Electron2D.Core.Particles
             Vector2 br = MathEx.RotateVector2(new Vector2(hs, -hs), _particle.Rotation);
             Vector2 bl = MathEx.RotateVector2(new Vector2(-hs, -hs), _particle.Rotation);
 
-            float xpos = _particle.Position.X + (IsWorldSpace ? _particle.Origin.X * 2 - transform.Position.X * 2 : 0);
-            float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y * 2 - transform.Position.Y * 2 : 0);
+            float xpos = _particle.Position.X + (IsWorldSpace ? _particle.Origin.X - transform.Position.X : 0) * 2;
+            float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y - transform.Position.Y : 0) * 2;
 
             // Top Left
             vertices[i + 0] = tl.X + xpos;
