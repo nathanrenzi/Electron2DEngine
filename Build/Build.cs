@@ -38,7 +38,7 @@ namespace Electron2D.Build
 
             e = new Entity();
             e.AddComponent(new Transform());
-            ParticleSystem psys = new ParticleSystem(true, true, true, ParticleEmissionShape.Circle, Vector2.UnitY, 360, 100, 1000, _startSizeRange: new Vector2(4, 12),
+            ParticleSystem psys = new ParticleSystem(true, true, true, true, ParticleEmissionShape.Circle, Vector2.UnitY, 360, 100, 1000, _startSizeRange: new Vector2(4, 12),
                 _startRotationRange: new Vector2(0, 360), _startAngularVelocityRange: new Vector2(0, 50), _startLifetimeRange: new Vector2(3), _startSpeedRange: new Vector2(600, 700),
                 new Gradient(Color.Blue), Material.Create(GlobalShaders.DefaultTexture));
             e.AddComponent(psys);

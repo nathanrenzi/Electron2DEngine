@@ -10,24 +10,39 @@ namespace Electron2D.Core.Particles
     public class ParticleSystemBaseSystem : BaseSystem<ParticleSystem> { }
     public class ParticleSystem : Component, IRenderable
     {
+        #region Particle System
         public bool IsLoop { get; set; }
         public bool IsPlaying { get; set; }
         public bool IsWorldSpace { get; set; }
+        public bool InheritVelocity { get; set; }
+        public int MaxParticles { get; }
+        public float LoopTime { get; private set; }
+        public List<Particle> Particles { get; private set; }
+        public int RenderLayer { get; }
+        #endregion
+
+        #region Emission Settings
         public ParticleEmissionShape EmissionShape { get; set; }
         public Vector2 EmissionDirection { get; set; }
         public float EmissionMaxAngle { get; set; }
         public float EmissionParticlesPerSecond { get; set; }
-        public int MaxParticles { get; }
+        #endregion
+
+        #region Start Settings
         public Vector2 StartSizeRange { get; set; }
         public Vector2 StartRotationRange { get; set; }
         public Vector2 StartAngularVelocityRange { get; set; }
         public Vector2 StartLifetimeRange { get; set; }
         public Vector2 StartSpeedRange { get; set; }
         public Gradient StartColorRange { get; set; }
-        public int RenderLayer { get; }
-        public float LoopTime { get; private set; }
-        public List<Particle> Particles { get; private set; }
+        #endregion
 
+        #region Particle Settings
+        public Gradient ColorOverLifetime { get; private set; }
+        public bool ColorOverLifetimeEnabled { get; private set; }
+        #endregion
+
+        #region Private
         private float[] vertices;
         private uint[] indices;
         private MeshRenderer renderer;
@@ -39,7 +54,11 @@ namespace Electron2D.Core.Particles
         private float spawnInterval { get { return 1f / EmissionParticlesPerSecond; } }
         private float lastSpawnedTime = -10;
 
-        public ParticleSystem(bool _playOnAwake, bool _isLoop, bool _isWorldSpace, ParticleEmissionShape _emissionShape, Vector2 _emissionDirection,
+        private Vector2 lastPosition;
+        private Vector2 calculatedVelocity;
+        #endregion
+
+        public ParticleSystem(bool _playOnAwake, bool _isLoop, bool _isWorldSpace, bool _inheritVelocity, ParticleEmissionShape _emissionShape, Vector2 _emissionDirection,
             float _emissionMaxAngle, float _emissionParticlesPerSecond, int _maxParticles, Vector2 _startSizeRange, Vector2 _startRotationRange,
             Vector2 _startAngularVelocityRange, Vector2 _startLifetimeRange, Vector2 _startSpeedRange,
             Gradient _startColorRange, Material _material, int _renderLayer = 1)
@@ -47,6 +66,7 @@ namespace Electron2D.Core.Particles
             playOnAwake = _playOnAwake;
             IsLoop = _isLoop;
             IsWorldSpace = _isWorldSpace;
+            InheritVelocity = _inheritVelocity;
             EmissionShape = _emissionShape;
             EmissionDirection = _emissionDirection;
             EmissionMaxAngle = _emissionMaxAngle;
@@ -91,6 +111,7 @@ namespace Electron2D.Core.Particles
             if (playOnAwake) Play();
         }
 
+        #region Setters
         private void SetModelMatrix()
         {
             if(IsWorldSpace)
@@ -98,7 +119,14 @@ namespace Electron2D.Core.Particles
                 renderer.Material.Shader.SetMatrix4x4("model", fakeTransform.GetScaleMatrix() * fakeTransform.GetRotationMatrix() * transform.GetPositionMatrix());
             }
         }
+        #endregion
 
+        #region Getters
+        public MeshRenderer GetRenderer() => renderer;
+        public int GetRenderLayer() => RenderLayer;
+        #endregion
+
+        #region Playback
         public void Play()
         {
             renderer.Enabled = true;
@@ -123,8 +151,7 @@ namespace Electron2D.Core.Particles
             Stop();
             Play();
         }
-
-        public MeshRenderer GetRenderer() => renderer;
+        #endregion
 
         public override void Update()
         {
@@ -143,6 +170,12 @@ namespace Electron2D.Core.Particles
             }
 
             UpdateMesh();
+
+            // Calculating velocity
+            calculatedVelocity = transform.Position - lastPosition;
+            lastPosition = transform.Position;
+
+            LoopTime += Time.DeltaTime;
         }
 
         private void SpawnParticle()
@@ -189,10 +222,11 @@ namespace Electron2D.Core.Particles
             // Spawn lifetime
             float spawnLifetime = MathEx.RandomFloatInRange(random, StartLifetimeRange.X, StartLifetimeRange.Y);
 
-            p.Initialize(transform.Position, Vector2.Zero, spawnDirection * 600, spawnRotation,
+            p.Initialize(transform.Position, Vector2.Zero, (spawnDirection * spawnSpeed) + (InheritVelocity ? calculatedVelocity : Vector2.Zero), spawnRotation,
                 spawnAngularVelocity, spawnColor, spawnSize, spawnLifetime);
         }
 
+        #region Meshes
         private void UpdateMesh()
         {
             int x = 0;
@@ -260,6 +294,7 @@ namespace Electron2D.Core.Particles
             vertices[i + 14] = 0;
             vertices[i + 15] = 0;
         }
+        #endregion
 
         protected override void OnDispose()
         {
@@ -268,8 +303,6 @@ namespace Electron2D.Core.Particles
             ParticleSystemBaseSystem.Unregister(this);
             RenderLayerManager.RemoveRenderable(this);
         }
-
-        public int GetRenderLayer() => RenderLayer;
 
         public void Render()
         {
