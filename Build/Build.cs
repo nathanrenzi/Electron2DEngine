@@ -22,7 +22,7 @@ namespace Electron2D.Build
         private float lastFrameCountTime;
         private AudioInstance spawnSound;
         private AudioInstance backgroundMusic;
-        private AudioDescription physicsHit;
+        private AudioInstancer physicsHit;
         private float physicsHitCooldown = 0.05f;
         private float lastPhysicsHitTime = -10;
 

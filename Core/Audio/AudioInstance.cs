@@ -1,34 +1,21 @@
-﻿using FMOD.Studio;
-
-namespace Electron2D.Core.Audio
+﻿namespace Electron2D.Core.Audio
 {
     public class AudioInstance : IDisposable
     {
         private bool disposed;
 
-        public bool IsPlaying
-        {
-            get
-            {
-                eventInstance.getPlaybackState(out PLAYBACK_STATE state);
-                return state == PLAYBACK_STATE.PLAYING;
-            }
-        }
-        public bool IsPaused
-        {
-            get
-            {
-                eventInstance.getPlaybackState(out PLAYBACK_STATE state);
-                return state == PLAYBACK_STATE.SUSTAINING;
-            }
-        }
-        private EventDescription eventDescription;
-        private EventInstance eventInstance;
+        public string FileName { get; }
+        public AudioMode Mode { get; private set; }
+        public PlaybackState PlaybackState { get; private set; }
+        public float Volume { get; set; }
+        public float Pitch { get; set; }
 
-        public AudioInstance(EventDescription _eventDescription, EventInstance _eventInstance)
+        protected AudioInstance(string _fileName, AudioMode _mode, float _volume, float _pitch)
         {
-            eventDescription = _eventDescription;
-            eventInstance = _eventInstance;
+            FileName = _fileName;
+            Volume = _volume;
+            Mode = _mode;
+            Pitch = _pitch;
         }
 
         ~AudioInstance()
@@ -36,62 +23,24 @@ namespace Electron2D.Core.Audio
             Dispose(false);
         }
 
-        public EventDescription GetFMODEventDescription()
-        {
-            return eventDescription;
-        }
-
-        public EventInstance GetFMODEventInstance()
-        {
-            return eventInstance;
-        }
-
         public void Play()
         {
-            eventInstance.start();
+            PlaybackState = PlaybackState.Playing;
         }
 
         public void Pause()
         {
-            eventInstance.setPaused(true);
+            PlaybackState = PlaybackState.Paused;
         }
 
         public void Unpause()
         {
-            eventInstance.setPaused(false);
+            PlaybackState = PlaybackState.Playing;
         }
 
-        public void Stop(STOP_MODE _stopMode = STOP_MODE.IMMEDIATE)
+        public void Stop()
         {
-            eventInstance.stop(_stopMode);
-        }
-
-        public void SetVolume(float _volume)
-        {
-            eventInstance.setVolume(_volume);
-        }
-
-        public float GetVolume()
-        {
-            eventInstance.getVolume(out float volume);
-            return volume;
-        }
-
-        public void SetPitch(float _pitch)
-        {
-            eventInstance.setPitch(_pitch);
-        }
-
-        public float GetPitch()
-        {
-            eventInstance.getPitch(out float pitch);
-            return pitch;
-        }
-
-        public PLAYBACK_STATE GetPlaybackState()
-        {
-            eventInstance.getPlaybackState(out PLAYBACK_STATE state);
-            return state;
+            PlaybackState = PlaybackState.Stopped;
         }
 
         public void Dispose()
@@ -104,9 +53,22 @@ namespace Electron2D.Core.Audio
         {
             if(!disposed)
             {
-                eventInstance.release();
+                //release
                 disposed = true;
             }
         }
+    }
+
+    public enum PlaybackState
+    {
+        Stopped,
+        Paused,
+        Playing
+    }
+
+    public enum AudioMode
+    {
+        Stereo,
+        Spatial
     }
 }
