@@ -8,6 +8,7 @@ using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.UserInterface;
 using GLFW;
+using NAudio.Mixer;
 using System.Drawing;
 using System.Numerics;
 
@@ -20,10 +21,10 @@ namespace Electron2D.Build
         private int displayFrames;
         private int frames;
         private float lastFrameCountTime;
-        private AudioInstance spawnSound;
-        private AudioInstance backgroundMusic;
         private float physicsHitCooldown = 0.05f;
         private float lastPhysicsHitTime = -10;
+
+        private AudioInstance test;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
             $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8, _errorCheckingEnabled: true) { }
@@ -35,7 +36,11 @@ namespace Electron2D.Build
             // -----------------------------
             SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
-            
+
+            test = AudioSystem.CreateInstance("Build/Resources/Audio/SFX/testsfx.mp3");
+            test.IsLoop = true;
+            test.Play();
+
             Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Navy));
             RigidbodyDynamicDef df = new RigidbodyDynamicDef()
             {
@@ -63,10 +68,23 @@ namespace Electron2D.Build
             f.AddComponent(sensor);
         }
 
+
         protected override void Update()
         {
             CameraMovement();
             CalculateFPS();
+
+            if(Input.GetKeyDown(Keys.Space))
+            {
+                if(test.PlaybackState == PlaybackState.Playing)
+                {
+                    test.Pause();
+                }
+                else
+                {
+                    test.Unpause();
+                }
+            }
 
             if(Input.GetMouseButtonDown(MouseButton.Right))
             {
@@ -91,7 +109,7 @@ namespace Electron2D.Build
             };
             s.Transform.Position = Input.GetMouseWorldPosition();
             s.AddComponent(Rigidbody.CreateDynamic(df));
-            spawnSound.Play();
+            //spawnSound.Play();
             sprites.Add((s, Time.GameTime));
 
             s.GetComponent<Rigidbody>().OnBeginContact += (rb) => PlayRigidbodyHitSound(s.GetComponent<Rigidbody>());

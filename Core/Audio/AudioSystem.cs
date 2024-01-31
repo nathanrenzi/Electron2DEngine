@@ -3,23 +3,26 @@ using NAudio.Wave;
 
 namespace Electron2D.Core.Audio
 {
+    //https://github.com/naudio/NAudio?tab=readme-ov-file
+
     public static class AudioSystem
     {
         private static Dictionary<string, AudioClip> cachedClips = new Dictionary<string, AudioClip>();
 
         private static IWavePlayer outputDevice;
         private static MixingSampleProvider mixer;
+        // add volume mixer
 
         public static void Initialize(int _sampleRate = 44100, int _channelCount = 2)
         {
-            outputDevice = new WaveOutEvent();
+            outputDevice = new WasapiOut(NAudio.CoreAudioApi.AudioClientShareMode.Shared, 50);
             mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(_sampleRate, _channelCount));
             mixer.ReadFully = true;
             outputDevice.Init(mixer);
             outputDevice.Play();
         }
 
-        public static AudioInstance CreateInstance(string _fileName, AudioMode _mode = AudioMode.Audio_2D, float _volume = 1, float _pitch = 1)
+        public static AudioInstance CreateInstance(string _fileName, AudioMode _mode = AudioMode.Audio_2D, float _volume = 1, float _pitch = 1, bool _isLoop = false)
         {
             AudioClip clip;
             if(cachedClips.ContainsKey(_fileName))
@@ -32,17 +35,17 @@ namespace Electron2D.Core.Audio
                 cachedClips.Add(_fileName, clip);
             }
 
-            return new AudioInstance(clip, _mode, _volume, _pitch);
+            return new AudioInstance(clip, _mode, _volume, _pitch, _isLoop);
         }
 
         public static void PlayAudioInstance(AudioInstance _audioInstance)
         {
-            AddMixerInput(_audioInstance.SampleProvider);
+            mixer.AddMixerInput(ConvertToRightChannelCount(_audioInstance.Stream.SampleProvider));
         }
 
-        private static void AddMixerInput(ISampleProvider _input)
+        public static void RemoveAudioInstanceInput(AudioInstance _audioInstance)
         {
-            mixer.AddMixerInput(ConvertToRightChannelCount(_input));
+            mixer.RemoveMixerInput(_audioInstance.Stream.SampleProvider);;
         }
 
         private static ISampleProvider ConvertToRightChannelCount(ISampleProvider _input)

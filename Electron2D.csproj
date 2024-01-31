@@ -21,8 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Build\Resources\Audio\FMOD\TestProject\Build\Desktop\Master.bank" />
-    <None Remove="Build\Resources\Audio\FMOD\TestProject\Build\Desktop\Master.strings.bank" />
+    <None Remove="Build\Resources\Audio\SFX\pianoloop.wav" />
     <None Remove="Build\Resources\Audio\SFX\testsfx.mp3" />
     <None Remove="Build\Resources\BuildDate.txt" />
     <None Remove="Build\Resources\Fonts\NotoSans.ttf" />
@@ -96,10 +95,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Build\Resources\Audio\FMOD\TestProject\Build\Desktop\Master.bank">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Audio\FMOD\TestProject\Build\Desktop\Master.strings.bank">
+    <EmbeddedResource Include="Build\Resources\Audio\SFX\pianoloop.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">

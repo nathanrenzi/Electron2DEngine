@@ -41,14 +41,14 @@ namespace Electron2D.Core.Rendering
             layout.Add<float>(2);
             vertexArray.AddBuffer(vertexBuffer, layout);
 
-            audio = AudioSystem.CreateInstance(_audioGUID);
+            //audio = AudioSystem.CreateInstance(_audioGUID);
         }
 
         public static unsafe void Render(Texture2D _texture, int _alpha, bool _audioReady)
         {
             if (!hasPlayedAudio && _audioReady)
             {
-                audio.Play();
+                //audio.Play();
                 hasPlayedAudio = true;
             }
 

@@ -12,13 +12,20 @@ namespace Electron2D.Core.Audio
             audioInstance = _audioInstance;
         }
 
-        public int Read(float[] buffer, int offset, int count)
+        public int Read(float[] _buffer, int _offset, int _count)
         {
-            var availableSamples = audioInstance.AudioClip.AudioData.Length - position;
-            var samplesToCopy = Math.Min(availableSamples, count);
-            Array.Copy(audioInstance.AudioClip.AudioData, position, buffer, offset, samplesToCopy);
-            position += samplesToCopy;
-            return (int)samplesToCopy;
+            if(audioInstance.PlaybackState == PlaybackState.Playing)
+            {
+                var availableSamples = audioInstance.AudioClip.AudioData.Length - position;
+                var samplesToCopy = Math.Min(availableSamples, _count);
+                Array.Copy(audioInstance.AudioClip.AudioData, position, _buffer, _offset, samplesToCopy);
+                position += samplesToCopy;
+                return (int)samplesToCopy;
+            }
+            else
+            {
+                return _count;
+            }
         }
 
         public WaveFormat WaveFormat { get { return audioInstance.AudioClip.WaveFormat; } }
