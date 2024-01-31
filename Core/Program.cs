@@ -12,7 +12,7 @@ namespace Electron2D.Core
         public static void Main(string[] args)
         {
             GetBuildDate();
-            AudioSystem.Initialize(128, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
+            AudioSystem.Initialize();
             game = new Build.Build(1920, 1080);
             game.Run();
         }

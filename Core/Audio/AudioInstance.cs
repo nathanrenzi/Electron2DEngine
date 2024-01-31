@@ -1,31 +1,29 @@
 ﻿namespace Electron2D.Core.Audio
 {
-    public class AudioInstance : IDisposable
+    public class AudioInstance
     {
-        private bool disposed;
-
-        public string FileName { get; }
+        public AudioClip AudioClip { get; }
         public AudioMode Mode { get; private set; }
         public PlaybackState PlaybackState { get; private set; }
         public float Volume { get; set; }
         public float Pitch { get; set; }
 
-        protected AudioInstance(string _fileName, AudioMode _mode, float _volume, float _pitch)
+        public AudioInstanceSampleProvider SampleProvider { get; private set; }
+
+        public AudioInstance(AudioClip _clip, AudioMode _mode, float _volume, float _pitch)
         {
-            FileName = _fileName;
+            AudioClip = _clip;
             Volume = _volume;
             Mode = _mode;
             Pitch = _pitch;
-        }
 
-        ~AudioInstance()
-        {
-            Dispose(false);
+            SampleProvider = new AudioInstanceSampleProvider(this);
         }
 
         public void Play()
         {
             PlaybackState = PlaybackState.Playing;
+            AudioSystem.PlayAudioInstance(this);
         }
 
         public void Pause()
@@ -42,21 +40,6 @@
         {
             PlaybackState = PlaybackState.Stopped;
         }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool _safeToDisposeManagedObjects)
-        {
-            if(!disposed)
-            {
-                //release
-                disposed = true;
-            }
-        }
     }
 
     public enum PlaybackState
@@ -68,7 +51,7 @@
 
     public enum AudioMode
     {
-        Stereo,
-        Spatial
+        Audio_2D,
+        Audio_3D
     }
 }

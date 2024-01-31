@@ -1,20 +1,67 @@
-﻿namespace Electron2D.Core.Audio
+﻿using NAudio.Wave.SampleProviders;
+using NAudio.Wave;
+
+namespace Electron2D.Core.Audio
 {
     public static class AudioSystem
-    {      
-        public static void Initialize()
-        {
+    {
+        private static Dictionary<string, AudioClip> cachedClips = new Dictionary<string, AudioClip>();
 
+        private static IWavePlayer outputDevice;
+        private static MixingSampleProvider mixer;
+
+        public static void Initialize(int _sampleRate = 44100, int _channelCount = 2)
+        {
+            outputDevice = new WaveOutEvent();
+            mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(_sampleRate, _channelCount));
+            mixer.ReadFully = true;
+            outputDevice.Init(mixer);
+            outputDevice.Play();
         }
 
-        public static AudioInstance CreateInstance(string _fileName, AudioMode _mode = AudioMode.Stereo, float _volume = 1, float _pitch = 1)
+        public static AudioInstance CreateInstance(string _fileName, AudioMode _mode = AudioMode.Audio_2D, float _volume = 1, float _pitch = 1)
         {
-            
+            AudioClip clip;
+            if(cachedClips.ContainsKey(_fileName))
+            {
+                clip = cachedClips[_fileName];
+            }
+            else
+            {
+                clip = new AudioClip(_fileName);
+                cachedClips.Add(_fileName, clip);
+            }
+
+            return new AudioInstance(clip, _mode, _volume, _pitch);
+        }
+
+        public static void PlayAudioInstance(AudioInstance _audioInstance)
+        {
+            AddMixerInput(_audioInstance.SampleProvider);
+        }
+
+        private static void AddMixerInput(ISampleProvider _input)
+        {
+            mixer.AddMixerInput(ConvertToRightChannelCount(_input));
+        }
+
+        private static ISampleProvider ConvertToRightChannelCount(ISampleProvider _input)
+        {
+            if (_input.WaveFormat.Channels == mixer.WaveFormat.Channels)
+            {
+                return _input;
+            }
+            if (_input.WaveFormat.Channels == 1 && mixer.WaveFormat.Channels == 2)
+            {
+                return new MonoToStereoSampleProvider(_input);
+            }
+            throw new NotImplementedException("Not yet implemented this channel count conversion");
         }
 
         public static void Dispose()
         {
-            
+            mixer.RemoveAllMixerInputs();
+            cachedClips.Clear();
         }
     }
 }

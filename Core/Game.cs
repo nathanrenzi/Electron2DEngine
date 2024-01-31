@@ -36,8 +36,6 @@ namespace Electron2D.Core
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
         protected Camera2D StartCamera { get; set; }
 
-        private Bank electronFMODBank;
-
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -15f,
             float _physicsLowerBoundX = -100000, float _physicsLowerBoundY = -100000, float _physicsUpperBoundX = 100000, float _physicsUpperBoundY = 100000,
             int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _vsync = false, bool _antialiasing = true, bool _errorCheckingEnabled = false)
@@ -89,9 +87,7 @@ namespace Electron2D.Core
             #region Splashscreen
             // Displaying splashscreen
             Debug.Log("Displaying splashscreen.");
-            electronFMODBank = AudioSystem.LoadBank("Build/Resources/Audio/FMOD/TestProject/Build/Desktop/Master.bank");
             Splashscreen.Initialize("{524456f6-36e8-441a-b3e2-fedb3baeaa0b}");
-            AudioSystem.GetFMODSystem().flushCommands();
             Texture2D splashscreenTexture = TextureFactory.Load("Core/Rendering/CoreTextures/Electron2DSplashscreen.png", true);
             float splashscreenStartTime = (float)Glfw.Time;
             float splashscreenDisplayTime = 4f;
@@ -123,12 +119,9 @@ namespace Electron2D.Core
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
 
                 currentTime = (float)Glfw.Time - splashscreenStartTime;
-
-                AudioSystem.Update();
             }
             Splashscreen.Dispose();
             splashscreenTexture.Dispose();
-            AudioSystem.UnloadBank(electronFMODBank);
             Debug.Log("Splashscreen ended.");
             // --------------------
             #endregion
@@ -198,9 +191,6 @@ namespace Electron2D.Core
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
                 if(ErrorCheckingEnabled) LogErrors();
                 PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
-
-                // Audio
-                AudioSystem.Update();
                 // -------------------------------
             }
 

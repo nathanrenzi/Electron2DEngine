@@ -22,7 +22,6 @@ namespace Electron2D.Build
         private float lastFrameCountTime;
         private AudioInstance spawnSound;
         private AudioInstance backgroundMusic;
-        private AudioInstancer physicsHit;
         private float physicsHitCooldown = 0.05f;
         private float lastPhysicsHitTime = -10;
 
@@ -34,17 +33,6 @@ namespace Electron2D.Build
             // Load Custom Component Systems
             // Ex. ComponentSystem.Start();
             // -----------------------------
-
-            Bank bank = AudioSystem.LoadBank("Build/Resources/Audio/FMOD/TestProject/Build/Desktop/Master.bank");
-
-            spawnSound = AudioSystem.CreateInstance("{77b67fb8-34d1-4886-b992-71679e7b8fe7}");
-
-            backgroundMusic = AudioSystem.CreateInstance("{08d1651d-bedb-4fbe-a6b4-568d3aa83190}");
-            backgroundMusic.SetVolume(0.2f);
-            backgroundMusic.Play();
-
-            physicsHit = AudioSystem.CreateDescription("{18995b5f-7bf9-45c0-9614-0702b4d0a210}");
-
             SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
             
@@ -125,9 +113,7 @@ namespace Electron2D.Build
             }
             lastPhysicsHitTime = _gameTime;
 
-            AudioInstance audio = physicsHit.CreateInstance();
-            audio.SetVolume(volume);
-            audio.Play();
+            // play physics hit
         }
 
         private void CameraMovement()
