@@ -7,18 +7,30 @@ namespace Electron2D.Core.Audio
 
     public static class AudioSystem
     {
-        private static Dictionary<string, AudioClip> cachedClips = new Dictionary<string, AudioClip>();
+        public static float MasterVolume
+        {
+            get
+            {
+                return masterVolumeSampleProvider.Volume;
+            }
+            set
+            {
+                masterVolumeSampleProvider.Volume = value;
+            }
+        }
 
+        private static Dictionary<string, AudioClip> cachedClips = new Dictionary<string, AudioClip>();
         private static IWavePlayer outputDevice;
         private static MixingSampleProvider mixer;
-        // add volume mixer
+        private static VolumeSampleProvider masterVolumeSampleProvider;
 
         public static void Initialize(int _sampleRate = 44100, int _channelCount = 2)
         {
             outputDevice = new WasapiOut(NAudio.CoreAudioApi.AudioClientShareMode.Shared, 50);
             mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(_sampleRate, _channelCount));
             mixer.ReadFully = true;
-            outputDevice.Init(mixer);
+            masterVolumeSampleProvider = new VolumeSampleProvider(mixer);
+            outputDevice.Init(masterVolumeSampleProvider);
             outputDevice.Play();
         }
 
@@ -60,11 +72,6 @@ namespace Electron2D.Core.Audio
         public static void PlayAudioInstance(AudioInstance _audioInstance)
         {
             mixer.AddMixerInput(ConvertToRightChannelCount(_audioInstance.Stream.SampleProvider));
-        }
-
-        public static void RemoveAudioInstanceInput(AudioInstance _audioInstance)
-        {
-            mixer.RemoveMixerInput(_audioInstance.Stream.SampleProvider);;
         }
 
         private static ISampleProvider ConvertToRightChannelCount(ISampleProvider _input)

@@ -65,7 +65,6 @@ namespace Electron2D.Core.Audio
         {
             if (PlaybackState == PlaybackState.Stopped) return;
             PlaybackState = PlaybackState.Stopped;
-            AudioSystem.RemoveAudioInstanceInput(this);
         }
 
         public void Dispose()

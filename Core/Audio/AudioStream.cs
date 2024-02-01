@@ -62,6 +62,10 @@ namespace Electron2D.Core.Audio
                 }
                 return totalBytesRead;
             }
+            else if(audioInstance.PlaybackState == PlaybackState.Stopped)
+            {
+                return 0;
+            }
             else
             {
                 volumeSampleProvider.Volume = 0.0f;

@@ -87,14 +87,16 @@ namespace Electron2D.Core
             #region Splashscreen
             // Displaying splashscreen
             Debug.Log("Displaying splashscreen.");
-            Splashscreen.Initialize("{524456f6-36e8-441a-b3e2-fedb3baeaa0b}");
+            Splashscreen.Initialize();
             Texture2D splashscreenTexture = TextureFactory.Load("Core/Rendering/CoreTextures/Electron2DSplashscreen.png", true);
             float splashscreenStartTime = (float)Glfw.Time;
             float splashscreenDisplayTime = 4f;
             float fadeTimePercentage = 0.3f;
             float bufferTime = 0.5f;
             float currentTime = -bufferTime;
-            while(!Glfw.WindowShouldClose(DisplayManager.Instance.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
+            bool hasPlayedAudio = false;
+            AudioInstance splashscreenAudio = AudioSystem.CreateInstance("Core/Audio/Electron2DRiff.mp3", _volume: 0.3f);
+            while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
             {
                 Input.ProcessInput(); // Letting the window know the program is responding
 
@@ -115,11 +117,17 @@ namespace Electron2D.Core
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
                 glClearColor(0, 0, 0, 1);
-                Splashscreen.Render(splashscreenTexture, (int)(e * 255), t > fadeTimePercentage / 2f);
+                Splashscreen.Render(splashscreenTexture, (int)(e * 255));
+                if(t > fadeTimePercentage / 2f && !hasPlayedAudio)
+                {
+                    hasPlayedAudio = true;
+                    splashscreenAudio.Play();
+                }
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
 
                 currentTime = (float)Glfw.Time - splashscreenStartTime;
             }
+            splashscreenAudio?.Dispose();
             Splashscreen.Dispose();
             splashscreenTexture.Dispose();
             Debug.Log("Splashscreen ended.");

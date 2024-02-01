@@ -21,7 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Build\Resources\Audio\SFX\pianoloop.wav" />
+    <None Remove="Build\Resources\Audio\SFX\testloop.wav" />
+    <None Remove="Build\Resources\Audio\SFX\testloop2.wav" />
     <None Remove="Build\Resources\Audio\SFX\testsfx.mp3" />
     <None Remove="Build\Resources\BuildDate.txt" />
     <None Remove="Build\Resources\Fonts\NotoSans.ttf" />
@@ -86,6 +87,7 @@
     <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
     <None Remove="Build\Resources\Textures\white_circle.png" />
     <None Remove="Core\Audio\Electron2DFmodBank.bank" />
+    <None Remove="Core\Audio\Electron2DRiff.mp3" />
     <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankTexture.png" />
     <None Remove="Core\Rendering\CoreTextures\Electron2DSplashscreen.png" />
@@ -95,7 +97,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Build\Resources\Audio\SFX\pianoloop.wav">
+    <EmbeddedResource Include="Build\Resources\Audio\SFX\testloop.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\Audio\SFX\testloop2.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
@@ -243,6 +248,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Build\Resources\Textures\white_circle.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Audio\Electron2DRiff.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\CoreTextures\BlankNormal.png">

@@ -28,10 +28,8 @@ namespace Electron2D.Core.Rendering
         private static VertexArray vertexArray;
         private static IndexBuffer indexBuffer;
         private static BufferLayout layout;
-        private static AudioInstance audio;
-        private static bool hasPlayedAudio = false;
 
-        public static void Initialize(string _audioGUID)
+        public static void Initialize()
         {
             vertexArray = new VertexArray();
             vertexBuffer = new VertexBuffer(vertices);
@@ -40,18 +38,10 @@ namespace Electron2D.Core.Rendering
             layout.Add<float>(2);
             layout.Add<float>(2);
             vertexArray.AddBuffer(vertexBuffer, layout);
-
-            //audio = AudioSystem.CreateInstance(_audioGUID);
         }
 
-        public static unsafe void Render(Texture2D _texture, int _alpha, bool _audioReady)
+        public static unsafe void Render(Texture2D _texture, int _alpha)
         {
-            if (!hasPlayedAudio && _audioReady)
-            {
-                //audio.Play();
-                hasPlayedAudio = true;
-            }
-
             Shader shader = GlobalShaders.DefaultInterface;
             shader.Use();
             shader.SetColor("mainColor", Color.FromArgb(_alpha, Color.White));

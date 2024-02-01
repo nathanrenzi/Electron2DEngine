@@ -25,6 +25,7 @@ namespace Electron2D.Build
         private float lastPhysicsHitTime = -10;
 
         private AudioInstance test;
+        private AudioInstance test2;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
             $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8, _errorCheckingEnabled: true) { }
@@ -37,10 +38,16 @@ namespace Electron2D.Build
             SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
 
-            AudioClip clip = AudioSystem.LoadClip("Build/Resources/Audio/SFX/pianoloop.wav");
-            test = AudioSystem.CreateInstance(clip);
+            AudioSystem.MasterVolume = 0.5f;
+            AudioClip clip = AudioSystem.LoadClip("Build/Resources/Audio/SFX/testloop.wav");
+            test = AudioSystem.CreateInstance(clip, _volume: 0.3f);
             test.IsLoop = true;
             test.Play();
+
+            AudioClip clip2 = AudioSystem.LoadClip("Build/Resources/Audio/SFX/testloop2.wav");
+            test2 = AudioSystem.CreateInstance(clip2, _volume: 0.3f);
+            test2.IsLoop = true;
+            test2.Play();
 
             Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Navy));
             RigidbodyDynamicDef df = new RigidbodyDynamicDef()
@@ -77,16 +84,13 @@ namespace Electron2D.Build
 
             test.Pitch += Input.ScrollDelta * 0.2f;
 
-            if(Input.GetKeyDown(Keys.Space))
+            if(Input.GetKey(Keys.Space))
             {
-                if(test.PlaybackState == PlaybackState.Playing)
-                {
-                    test.Pause();
-                }
-                else
-                {
-                    test.Unpause();
-                }
+                test2.Volume = 0.2f;
+            }
+            else
+            {
+                test2.Volume = 0f;
             }
 
             if(Input.GetMouseButtonDown(MouseButton.Right))
