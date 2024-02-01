@@ -7,7 +7,7 @@ namespace Electron2D.Core.Audio
         private bool disposed;
 
         public AudioClip AudioClip { get; }
-        public LoopStream Stream { get; }
+        public AudioStream Stream { get; }
         public AudioMode Mode { get; private set; }
         public PlaybackState PlaybackState { get; private set; }
         public float Volume { get; set; }
@@ -36,7 +36,7 @@ namespace Electron2D.Core.Audio
             Volume = _volume;
             Mode = _mode;
             Pitch = _pitch;
-            Stream = _clip.GetStream(this);
+            Stream = _clip.GetNewStream(this);
             IsLoop = _isLoop;
 
             Stream.OnStreamEnd += Stop;

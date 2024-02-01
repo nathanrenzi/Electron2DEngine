@@ -37,7 +37,8 @@ namespace Electron2D.Build
             SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
             InitializeFPSLabel();
 
-            test = AudioSystem.CreateInstance("Build/Resources/Audio/SFX/testsfx.mp3");
+            AudioClip clip = AudioSystem.LoadClip("Build/Resources/Audio/SFX/pianoloop.wav");
+            test = AudioSystem.CreateInstance(clip);
             test.IsLoop = true;
             test.Play();
 
@@ -71,8 +72,10 @@ namespace Electron2D.Build
 
         protected override void Update()
         {
-            CameraMovement();
+            //CameraMovement();
             CalculateFPS();
+
+            test.Pitch += Input.ScrollDelta * 0.2f;
 
             if(Input.GetKeyDown(Keys.Space))
             {

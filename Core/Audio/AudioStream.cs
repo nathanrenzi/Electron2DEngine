@@ -3,7 +3,7 @@ using NAudio.Wave.SampleProviders;
 
 namespace Electron2D.Core.Audio
 {
-    public class LoopStream : WaveStream
+    public class AudioStream : WaveStream
     {
         public Action OnStreamEnd { get; set; }
         public ISampleProvider SampleProvider { get; set; }
@@ -11,15 +11,17 @@ namespace Electron2D.Core.Audio
         private AudioInstance audioInstance;
         private WaveStream sourceStream;
         private VolumeSampleProvider volumeSampleProvider;
+        private SmbPitchShiftingSampleProvider pitchShiftingSampleProvider;
 
-        public LoopStream(AudioInstance _audioInstance, WaveStream _sourceStream)
+        public AudioStream(AudioInstance _audioInstance, WaveStream _sourceStream)
         {
             audioInstance = _audioInstance;
             sourceStream = _sourceStream;
             EnableLooping = true;
 
             volumeSampleProvider = new VolumeSampleProvider(this.ToSampleProvider());
-            SampleProvider = volumeSampleProvider;
+            pitchShiftingSampleProvider = new SmbPitchShiftingSampleProvider(volumeSampleProvider);
+            SampleProvider = pitchShiftingSampleProvider;
         }
 
         public bool EnableLooping { get; set; }
@@ -40,7 +42,8 @@ namespace Electron2D.Core.Audio
 
             if(audioInstance.PlaybackState == PlaybackState.Playing)
             {
-                volumeSampleProvider.Volume = 1.0f;
+                volumeSampleProvider.Volume = audioInstance.Volume;
+                pitchShiftingSampleProvider.PitchFactor = audioInstance.Pitch;
                 while (totalBytesRead < _count)
                 {
                     int bytesRead = sourceStream.Read(_buffer, _offset + totalBytesRead, _count - totalBytesRead);

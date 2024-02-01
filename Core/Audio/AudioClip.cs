@@ -29,9 +29,9 @@ namespace Electron2D.Core.Audio
             }
         }
 
-        public LoopStream GetStream(AudioInstance _instance)
+        public AudioStream GetNewStream(AudioInstance _instance)
         {
-            return new LoopStream(_instance, new AudioFileReader(FileName));
+            return new AudioStream(_instance, new AudioFileReader(FileName));
         }
     }
 }

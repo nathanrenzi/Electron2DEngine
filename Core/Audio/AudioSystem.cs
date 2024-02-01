@@ -38,6 +38,25 @@ namespace Electron2D.Core.Audio
             return new AudioInstance(clip, _mode, _volume, _pitch, _isLoop);
         }
 
+        public static AudioInstance CreateInstance(AudioClip _clip, AudioMode _mode = AudioMode.Audio_2D, float _volume = 1, float _pitch = 1, bool _isLoop = false)
+        {
+            return new AudioInstance(_clip, _mode, _volume, _pitch, _isLoop);
+        }
+
+        public static AudioClip LoadClip(string _fileName)
+        {
+            if (cachedClips.ContainsKey(_fileName))
+            {
+                return cachedClips[_fileName];
+            }
+            else
+            {
+                AudioClip clip = new AudioClip(_fileName);
+                cachedClips.Add(_fileName, clip);
+                return clip;
+            }
+        }
+
         public static void PlayAudioInstance(AudioInstance _audioInstance)
         {
             mixer.AddMixerInput(ConvertToRightChannelCount(_audioInstance.Stream.SampleProvider));
