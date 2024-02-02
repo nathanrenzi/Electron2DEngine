@@ -36,9 +36,12 @@ namespace Electron2D.Core
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
         protected Camera2D StartCamera { get; set; }
 
+        private bool showElectronSplashscreen;
+
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -15f,
             float _physicsLowerBoundX = -100000, float _physicsLowerBoundY = -100000, float _physicsUpperBoundX = 100000, float _physicsUpperBoundY = 100000,
-            int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _vsync = false, bool _antialiasing = true, bool _errorCheckingEnabled = false)
+            int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _vsync = false, bool _antialiasing = true, bool _errorCheckingEnabled = false,
+            bool _showElectronSplashscreen = true)
         {
             CurrentWindowWidth = _initialWindowWidth;
             CurrentWindowHeight = _initialWindowHeight;
@@ -46,6 +49,7 @@ namespace Electron2D.Core
             VsyncEnabled = _vsync;
             AntialiasingEnabled = _antialiasing;
             ErrorCheckingEnabled = _errorCheckingEnabled;
+            showElectronSplashscreen = _showElectronSplashscreen;
 
             // Starting Physics Thread
             PhysicsThread = new Thread(() => RunPhysicsThread(PhysicsCancellationToken.Token, _physicsTimestep, new Vector2(_physicsLowerBoundX, _physicsLowerBoundY),
@@ -64,6 +68,7 @@ namespace Electron2D.Core
             Initialize();
 
             StartCamera = new Camera2D(Vector2.Zero, 1);
+            StartCamera.AddComponent(new AudioSpatialListener());
 
             DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle, AntialiasingEnabled, ErrorCheckingEnabled);
             if(VsyncEnabled)
@@ -85,53 +90,55 @@ namespace Electron2D.Core
             // -----------
 
             #region Splashscreen
-            // Displaying splashscreen
-            Debug.Log("Displaying splashscreen.");
-            Splashscreen.Initialize();
-            Texture2D splashscreenTexture = TextureFactory.Load("Core/Rendering/CoreTextures/Electron2DSplashscreen.png", true);
-            float splashscreenStartTime = (float)Glfw.Time;
-            float splashscreenDisplayTime = 4f;
-            float fadeTimePercentage = 0.3f;
-            float bufferTime = 0.5f;
-            float currentTime = -bufferTime;
-            bool hasPlayedAudio = false;
-            AudioInstance splashscreenAudio = AudioSystem.CreateInstance("Core/Audio/Electron2DRiff.mp3", _volume: 0.3f);
-            while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
+            if (showElectronSplashscreen)
             {
-                Input.ProcessInput(); // Letting the window know the program is responding
+                // Displaying splashscreen
+                Debug.Log("Displaying splashscreen.");
+                Splashscreen.Initialize();
+                Texture2D splashscreenTexture = TextureFactory.Load("Core/Rendering/CoreTextures/Electron2DSplashscreen.png", true);
+                float splashscreenStartTime = (float)Glfw.Time;
+                float splashscreenDisplayTime = 4f;
+                float fadeTimePercentage = 0.3f;
+                float bufferTime = 0.5f;
+                float currentTime = -bufferTime;
+                bool hasPlayedAudio = false;
+                AudioInstance splashscreenAudio = AudioSystem.CreateInstance("Core/Audio/Electron2DRiff.mp3", _volume: 0.3f);
+                while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
+                {
+                    Input.ProcessInput(); // Letting the window know the program is responding
 
-                float t = MathEx.Clamp01((currentTime - bufferTime) / splashscreenDisplayTime);
-                float e;
-                if(t <= fadeTimePercentage)
-                {
-                    e = Easing.EaseInOutSine(t / fadeTimePercentage);
-                }
-                else if(t >= 1 - fadeTimePercentage)
-                {
-                    e = Easing.EaseInOutSine((1 - t) / fadeTimePercentage);
-                }
-                else
-                {
-                    e = 1;
-                }
+                    float t = MathEx.Clamp01((currentTime - bufferTime) / splashscreenDisplayTime);
+                    float e;
+                    if (t <= fadeTimePercentage)
+                    {
+                        e = Easing.EaseInOutSine(t / fadeTimePercentage);
+                    }
+                    else if (t >= 1 - fadeTimePercentage)
+                    {
+                        e = Easing.EaseInOutSine((1 - t) / fadeTimePercentage);
+                    }
+                    else
+                    {
+                        e = 1;
+                    }
 
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-                glClearColor(0, 0, 0, 1);
-                Splashscreen.Render(splashscreenTexture, (int)(e * 255));
-                if(t > fadeTimePercentage / 2f && !hasPlayedAudio)
-                {
-                    hasPlayedAudio = true;
-                    splashscreenAudio.Play();
-                }
-                Glfw.SwapBuffers(DisplayManager.Instance.Window);
+                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+                    glClearColor(0, 0, 0, 1);
+                    Splashscreen.Render(splashscreenTexture, (int)(e * 255));
+                    if (t > fadeTimePercentage / 2f && !hasPlayedAudio)
+                    {
+                        hasPlayedAudio = true;
+                        splashscreenAudio.Play();
+                    }
+                    Glfw.SwapBuffers(DisplayManager.Instance.Window);
 
-                currentTime = (float)Glfw.Time - splashscreenStartTime;
+                    currentTime = (float)Glfw.Time - splashscreenStartTime;
+                }
+                splashscreenAudio?.Dispose();
+                Splashscreen.Dispose();
+                splashscreenTexture.Dispose();
+                Debug.Log("Splashscreen ended.");
             }
-            splashscreenAudio?.Dispose();
-            Splashscreen.Dispose();
-            splashscreenTexture.Dispose();
-            Debug.Log("Splashscreen ended.");
-            // --------------------
             #endregion
 
             // Starting Component Systems
@@ -139,6 +146,7 @@ namespace Electron2D.Core
             RigidbodySensorSystem.Start();
             TransformSystem.Start();
             MeshRendererSystem.Start();
+            AudioSpatializerSystem.Start();
             // -------------------------------
             OnStartEvent?.Invoke();
 
@@ -180,6 +188,7 @@ namespace Electron2D.Core
                 RigidbodySensorSystem.Update();
                 TransformSystem.Update();
                 MeshRendererSystem.Update();
+                AudioSpatializerSystem.Update();
                 // --------------------------
 
                 // Physics
@@ -226,6 +235,7 @@ namespace Electron2D.Core
                     Time.FixedDeltaTime = (float)delta;
                     lastTickTime = Glfw.Time;
 
+                    AudioSpatializerSystem.FixedUpdate();
                     TransformSystem.FixedUpdate();
                     MeshRendererSystem.FixedUpdate();
 

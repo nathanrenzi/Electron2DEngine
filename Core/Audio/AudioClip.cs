@@ -1,4 +1,5 @@
 ﻿using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace Electron2D.Core.Audio
 {
@@ -29,9 +30,9 @@ namespace Electron2D.Core.Audio
             }
         }
 
-        public AudioStream GetNewStream(AudioInstance _instance)
+        public AudioStream GetNewStream(AudioInstance _instance, bool _is3D, IPanStrategy _panStrategy = null)
         {
-            return new AudioStream(_instance, new AudioFileReader(FileName));
+            return new AudioStream(_instance, new AudioFileReader(FileName), _is3D, _panStrategy);
         }
     }
 }

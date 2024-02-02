@@ -6,22 +6,45 @@ namespace Electron2D.Core.Audio
     public class AudioStream : WaveStream
     {
         public Action OnStreamEnd { get; set; }
-        public ISampleProvider SampleProvider { get; set; }
+        public ISampleProvider SampleProvider { get; private set; }
+        public IPanStrategy PanStrategy { get; }
+        public bool Is3D { get; }
 
         private AudioInstance audioInstance;
         private WaveStream sourceStream;
         private VolumeSampleProvider volumeSampleProvider;
         private SmbPitchShiftingSampleProvider pitchShiftingSampleProvider;
+        private PanningSampleProvider panningSampleProvider;
 
-        public AudioStream(AudioInstance _audioInstance, WaveStream _sourceStream)
+        public AudioStream(AudioInstance _audioInstance, WaveStream _sourceStream, bool _is3D, IPanStrategy _panStrategy)
         {
             audioInstance = _audioInstance;
             sourceStream = _sourceStream;
             EnableLooping = true;
+            Is3D = _is3D;
 
             volumeSampleProvider = new VolumeSampleProvider(this.ToSampleProvider());
-            pitchShiftingSampleProvider = new SmbPitchShiftingSampleProvider(volumeSampleProvider);
-            SampleProvider = pitchShiftingSampleProvider;
+            pitchShiftingSampleProvider = new SmbPitchShiftingSampleProvider(volumeSampleProvider) ;
+            if (_panStrategy == null)
+            {
+                PanStrategy = new SinPanStrategy();
+            }
+            else
+            {
+                PanStrategy = _panStrategy;
+            }
+
+            if(Is3D)
+            {
+                panningSampleProvider = new PanningSampleProvider(pitchShiftingSampleProvider.ToMono());
+                panningSampleProvider.PanStrategy = PanStrategy;
+
+                SampleProvider = panningSampleProvider;
+            }
+            else
+            {
+                SampleProvider = pitchShiftingSampleProvider;
+            }
         }
 
         public bool EnableLooping { get; set; }
@@ -42,8 +65,10 @@ namespace Electron2D.Core.Audio
 
             if(audioInstance.PlaybackState == PlaybackState.Playing)
             {
-                volumeSampleProvider.Volume = audioInstance.Volume;
+                volumeSampleProvider.Volume = audioInstance.Volume * audioInstance.VolumeMultiplier;
                 pitchShiftingSampleProvider.PitchFactor = audioInstance.Pitch;
+                if(Is3D) panningSampleProvider.Pan = MathEx.Clamp(audioInstance.Panning + audioInstance.PanningAdditive, -1, 1);
+
                 while (totalBytesRead < _count)
                 {
                     int bytesRead = sourceStream.Read(_buffer, _offset + totalBytesRead, _count - totalBytesRead);

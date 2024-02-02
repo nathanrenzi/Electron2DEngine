@@ -34,7 +34,7 @@ namespace Electron2D.Core.Audio
             outputDevice.Play();
         }
 
-        public static AudioInstance CreateInstance(string _fileName, AudioMode _mode = AudioMode.Audio_2D, float _volume = 1, float _pitch = 1, bool _isLoop = false)
+        public static AudioInstance CreateInstance(string _fileName, float _volume = 1, float _pitch = 1, bool _isLoop = false)
         {
             AudioClip clip;
             if(cachedClips.ContainsKey(_fileName))
@@ -47,12 +47,12 @@ namespace Electron2D.Core.Audio
                 cachedClips.Add(_fileName, clip);
             }
 
-            return new AudioInstance(clip, _mode, _volume, _pitch, _isLoop);
+            return new AudioInstance(clip, _volume, _pitch, _isLoop);
         }
 
-        public static AudioInstance CreateInstance(AudioClip _clip, AudioMode _mode = AudioMode.Audio_2D, float _volume = 1, float _pitch = 1, bool _isLoop = false)
+        public static AudioInstance CreateInstance(AudioClip _clip, float _volume = 1, float _pitch = 1, bool _isLoop = false)
         {
-            return new AudioInstance(_clip, _mode, _volume, _pitch, _isLoop);
+            return new AudioInstance(_clip, _volume, _pitch, _isLoop);
         }
 
         public static AudioClip LoadClip(string _fileName)

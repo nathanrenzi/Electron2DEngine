@@ -1,5 +1,6 @@
 ﻿using Electron2D.Core;
 using Electron2D.Core.Audio;
+using Electron2D.Core.ECS;
 using Electron2D.Core.Management;
 using Electron2D.Core.Misc;
 using Electron2D.Core.PhysicsBox2D;
@@ -28,7 +29,8 @@ namespace Electron2D.Build
         private AudioInstance test2;
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
-            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8, _errorCheckingEnabled: true) { }
+            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8,
+            _errorCheckingEnabled: true, _showElectronSplashscreen: false) { }
 
         protected override void Load()
         {
@@ -42,47 +44,23 @@ namespace Electron2D.Build
             AudioClip clip = AudioSystem.LoadClip("Build/Resources/Audio/SFX/testloop.wav");
             test = AudioSystem.CreateInstance(clip, _volume: 0.3f);
             test.IsLoop = true;
-            test.Play();
 
             AudioClip clip2 = AudioSystem.LoadClip("Build/Resources/Audio/SFX/testloop2.wav");
-            test2 = AudioSystem.CreateInstance(clip2, _volume: 0.3f);
+            test2 = AudioSystem.CreateInstance(clip2, _volume: 0);
             test2.IsLoop = true;
+
+            AudioSpatializer spatializer = new AudioSpatializer(true, new AudioInstance[] { test, test2 });
+            Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Magenta));
+            s.AddComponent(spatializer);
+            test.Play();
             test2.Play();
-
-            Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Navy));
-            RigidbodyDynamicDef df = new RigidbodyDynamicDef()
-            {
-                Velocity = Vector2.UnitY * 10,
-                Shape = RigidbodyShape.Box
-            };
-            s.AddComponent(Rigidbody.CreateDynamic(df));
-
-            RigidbodyStaticDef sf = new RigidbodyStaticDef();
-            Sprite b = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.White), 0, 6, 6);
-            b.Transform.Position = new Vector2(40, -250f);
-            b.AddComponent(Rigidbody.CreateStatic(sf));
-
-            RigidbodyStaticDef sf2 = new RigidbodyStaticDef()
-            {
-                Bounciness = 0.5f
-            };
-            Sprite a = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.White), 0, 500, 30);
-            a.Transform.Position = new Vector2(0, -450f);
-            a.AddComponent(Rigidbody.CreateStatic(sf2));
-
-            Sprite f = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(50, 255, 255, 255)), 0, 30, 30, 10);
-            f.Transform.Position = new Vector2(-50, -350);
-            RigidbodySensor sensor = new RigidbodySensor(new Vector2(30), _shape: ColliderSensorShape.Box);
-            f.AddComponent(sensor);
         }
 
 
         protected override void Update()
         {
-            //CameraMovement();
+            CameraMovement();
             CalculateFPS();
-
-            test.Pitch += Input.ScrollDelta * 0.2f;
 
             if(Input.GetKey(Keys.Space))
             {
@@ -149,19 +127,19 @@ namespace Electron2D.Build
             float moveSpeed = 1000;
             if (Input.GetKey(Keys.W))
             {
-                Camera2D.Main.Position += new Vector2(0, moveSpeed * Time.DeltaTime);
+                Camera2D.Main.Transform.Position += new Vector2(0, moveSpeed * Time.DeltaTime);
             }
             if (Input.GetKey(Keys.A))
             {
-                Camera2D.Main.Position += new Vector2(-moveSpeed * Time.DeltaTime, 0);
+                Camera2D.Main.Transform.Position += new Vector2(-moveSpeed * Time.DeltaTime, 0);
             }
             if (Input.GetKey(Keys.S))
             {
-                Camera2D.Main.Position += new Vector2(0, -moveSpeed * Time.DeltaTime);
+                Camera2D.Main.Transform.Position += new Vector2(0, -moveSpeed * Time.DeltaTime);
             }
             if (Input.GetKey(Keys.D))
             {
-                Camera2D.Main.Position += new Vector2(moveSpeed * Time.DeltaTime, 0);
+                Camera2D.Main.Transform.Position += new Vector2(moveSpeed * Time.DeltaTime, 0);
             }
         }
 

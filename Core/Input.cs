@@ -156,7 +156,7 @@ namespace Electron2D.Core
 
             // Offsetting and scaling the position based on the current camera
             worldPosition /= Camera2D.Main.Zoom;
-            worldPosition += (Camera2D.Main.Position / Game.WINDOW_SCALE);
+            worldPosition += (Camera2D.Main.Transform.Position / Game.WINDOW_SCALE);
             // ----------------------
 
             return new Vector2(worldPosition.X, worldPosition.Y);

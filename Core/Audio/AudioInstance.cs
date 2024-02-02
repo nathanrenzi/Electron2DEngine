@@ -7,10 +7,12 @@ namespace Electron2D.Core.Audio
         private bool disposed;
 
         public AudioClip AudioClip { get; }
-        public AudioStream Stream { get; }
-        public AudioMode Mode { get; private set; }
+        public AudioStream Stream { get; set; }
         public PlaybackState PlaybackState { get; private set; }
         public float Volume { get; set; }
+        public float VolumeMultiplier { get; set; } = 1.0f;
+        public float Panning { get; set; }
+        public float PanningAdditive { get; set; } = 0.0f;
         public float Pitch { get; set; }
         public bool IsLoop
         {
@@ -24,22 +26,32 @@ namespace Electron2D.Core.Audio
             }
         }
 
+        private AudioSpatializer spatializer;
+
         ~AudioInstance()
         {
             GC.SuppressFinalize(this);
             Dispose();
         }
 
-        public AudioInstance(AudioClip _clip, AudioMode _mode, float _volume, float _pitch, bool _isLoop)
+        public AudioInstance(AudioClip _clip, float _volume, float _pitch, bool _isLoop)
         {
             AudioClip = _clip;
             Volume = _volume;
-            Mode = _mode;
             Pitch = _pitch;
-            Stream = _clip.GetNewStream(this);
+            Stream = _clip.GetNewStream(this, false);
             IsLoop = _isLoop;
 
             Stream.OnStreamEnd += Stop;
+        }
+
+        /// <summary>
+        /// This should only be called by AudioSpatializer to register itself in each AudioInstance.
+        /// </summary>
+        /// <param name="_spatializer"></param>
+        public void SetSpatializerReference(AudioSpatializer _spatializer)
+        {
+            spatializer = _spatializer;
         }
 
         public void Play()
@@ -71,6 +83,7 @@ namespace Electron2D.Core.Audio
         {
             if(!disposed)
             {
+                spatializer?.RemoveAudioInstance(this);
                 Stream.Dispose();
 
                 disposed = true;
@@ -83,11 +96,5 @@ namespace Electron2D.Core.Audio
         Stopped,
         Paused,
         Playing
-    }
-
-    public enum AudioMode
-    {
-        Audio_2D,
-        Audio_3D
     }
 }
