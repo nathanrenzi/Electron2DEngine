@@ -24,7 +24,7 @@ namespace Electron2D.Core.Audio
             Is3D = _is3D;
 
             volumeSampleProvider = new VolumeSampleProvider(this.ToSampleProvider());
-            pitchShiftingSampleProvider = new SmbPitchShiftingSampleProvider(volumeSampleProvider) ;
+            pitchShiftingSampleProvider = new SmbPitchShiftingSampleProvider(volumeSampleProvider, 1024, 8, 1);
             if (_panStrategy == null)
             {
                 PanStrategy = new SinPanStrategy();

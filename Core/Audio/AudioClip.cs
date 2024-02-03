@@ -9,7 +9,7 @@ namespace Electron2D.Core.Audio
     public class AudioClip
     {
         public string FileName { get; }
-        public float[] AudioData { get; private set; }
+        //public float[] AudioData { get; private set; }
         public WaveFormat WaveFormat { get; private set; }
         
         public AudioClip(string _fileName)
@@ -26,7 +26,7 @@ namespace Electron2D.Core.Audio
                 {
                     wholeFile.AddRange(readBuffer.Take(samplesRead));
                 }
-                AudioData = wholeFile.ToArray();
+                //AudioData = wholeFile.ToArray();
             }
         }
 

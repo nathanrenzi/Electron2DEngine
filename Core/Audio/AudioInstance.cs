@@ -30,8 +30,7 @@ namespace Electron2D.Core.Audio
 
         ~AudioInstance()
         {
-            GC.SuppressFinalize(this);
-            Dispose();
+            Disposep();
         }
 
         public AudioInstance(AudioClip _clip, float _volume, float _pitch, bool _isLoop)
@@ -80,6 +79,12 @@ namespace Electron2D.Core.Audio
         }
 
         public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Disposep();
+        }
+
+        private void Disposep()
         {
             if(!disposed)
             {

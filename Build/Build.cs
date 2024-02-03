@@ -62,6 +62,8 @@ namespace Electron2D.Build
             CameraMovement();
             CalculateFPS();
 
+            test.Pitch += Input.ScrollDelta * 0.1f;
+
             if(Input.GetKey(Keys.Space))
             {
                 test2.Volume = 0.2f;
