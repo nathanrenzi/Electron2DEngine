@@ -11,10 +11,7 @@ A 2D game engine written in C#. This project is a self-study meant to give me mo
 
   - [Box2D.NetStandard v1.0](https://github.com/codingben/box2d-netstandard/tree/v1.0) - Used for 2D physics
   - [FreeTypeSharp](https://github.com/ryancheung/FreeTypeSharp) - Used for font rasterization
-  - [FMOD](https://www.fmod.com/) - Used for audio
-
-Please be aware that FMOD is a commercial product. If you plan on using Electron2D to make a product that includes FMOD functionality, check the [FMOD licensing options](https://www.fmod.com/licensing).
-As part the FMOD user agreement, I am not allowed to distribute the FMOD API files so you will have to install them manually.
+  - [NAudio](https://github.com/naudio/NAudio) - Used for audio
 
 ## Licensing
 
