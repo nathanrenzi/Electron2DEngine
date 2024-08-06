@@ -12,13 +12,10 @@ namespace Electron2D.Core.Rendering
         private static Texture2D blankNormal = null;
 
         public Shader Shader;
-        private static Shader shaderInUse = null;
 
         public ITexture MainTexture;
-        private static Texture2D mainTextureInUse = null;
 
         public ITexture NormalTexture;
-        private static Texture2D normalTextureInUse = null;
         public float NormalScale;
 
         public Color MainColor;
@@ -63,6 +60,11 @@ namespace Electron2D.Core.Rendering
                 blankNormal = ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/BlankNormal.png", true);
 
             return new Material(_shader, (_mainTexture == null ? blankTexture : _mainTexture), (_normalTexture == null ? blankNormal : _normalTexture), _mainColor, _useLinearFiltering, _normalScale);
+        }
+        public static Material Create(Material _materialToCopy)
+        {
+            return new Material(_materialToCopy.Shader, _materialToCopy.MainTexture, _materialToCopy.NormalTexture,
+                _materialToCopy.MainColor, _materialToCopy.UsingLinearFiltering, _materialToCopy.NormalScale);
         }
         #endregion
 

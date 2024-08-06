@@ -26,14 +26,14 @@ namespace Electron2D.Core.UserInterface
             set
             {
                 useScreenPosition = value;
-                if(meshRenderer != null) meshRenderer.UseUnscaledProjectionMatrix = value;
+                if (meshRenderer != null) meshRenderer.UseUnscaledProjectionMatrix = value;
             }
         }
         private bool useScreenPosition;
         private bool registerRenderable;
         public float SizeX
         {
-            get{ return sizeX; }
+            get { return sizeX; }
             set
             {
                 sizeX = value;
@@ -77,6 +77,8 @@ namespace Electron2D.Core.UserInterface
         protected MeshRenderer meshRenderer;
         private UiCanvas ParentCanvas;
 
+        public bool Interactable = true;
+        public float ExtraInteractionPixels;
         public float RightXBound
         {
             get
@@ -136,7 +138,8 @@ namespace Electron2D.Core.UserInterface
         private bool showBoundsDebug = false;
         private Sprite s1, s2, s3, s4;
 
-        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, bool _initialize = true, bool _useScreenPosition = true, bool _useMeshRenderer = true, bool _autoRender = true)
+        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, int _extraInteractionSize = 0,
+            bool _initialize = true, bool _useScreenPosition = true, bool _useMeshRenderer = true, bool _autoRender = true)
         {
             Transform = new Transform();
             Transform.onPositionChanged += () => InvokeUiAction(UiEvent.Position);
@@ -149,8 +152,9 @@ namespace Electron2D.Core.UserInterface
             UseScreenPosition = _useScreenPosition;
             UsingMeshRenderer = _useMeshRenderer;
             registerRenderable = _autoRender;
+            ExtraInteractionPixels = _extraInteractionSize;
 
-            if(UsingMeshRenderer)
+            if (UsingMeshRenderer)
             {
                 meshRenderer = new MeshRenderer(Transform, Material.Create(GlobalShaders.DefaultInterface));
                 AddComponent(meshRenderer);
@@ -160,7 +164,7 @@ namespace Electron2D.Core.UserInterface
             if (_initialize) Initialize();
             SetColor(Color.White);
 
-            if(_autoRender) RenderLayerManager.OrderRenderable(this);
+            if (_autoRender) RenderLayerManager.OrderRenderable(this);
             GlobalUI.MainCanvas.RegisterUiComponent(this);
         }
 
@@ -215,8 +219,8 @@ namespace Electron2D.Core.UserInterface
         {
             Vector2 pos = _position;
 
-            return pos.X >= LeftXBound + Transform.Position.X && pos.X <= RightXBound + Transform.Position.X
-                && pos.Y >= BottomYBound + Transform.Position.Y && pos.Y <= TopYBound + Transform.Position.Y;
+            return pos.X >= LeftXBound + Transform.Position.X - ExtraInteractionPixels && pos.X <= RightXBound + Transform.Position.X + ExtraInteractionPixels
+                && pos.Y >= BottomYBound + Transform.Position.Y - ExtraInteractionPixels && pos.Y <= TopYBound + Transform.Position.Y + ExtraInteractionPixels;
         }
 
         public void AddUiListener(UiListener _listener)
@@ -257,7 +261,7 @@ namespace Electron2D.Core.UserInterface
 
         public virtual void Render()
         {
-            if(ShowBoundsDebug && s1 != null)
+            if (ShowBoundsDebug && s1 != null)
             {
                 s1.Transform.Position = new Vector2(Transform.Position.X + LeftXBound, Transform.Position.Y + (SizeY / 2f * -Anchor.Y));
                 s1.Transform.Scale = new Vector2(1, SizeY);
@@ -304,6 +308,7 @@ namespace Electron2D.Core.UserInterface
         Position,
         Resize,
         Anchor,
-        Visibility
+        Visibility,
+        InteractabilityEnd
     }
 }

@@ -167,6 +167,8 @@ namespace Electron2D.Core
             Debug.Log("#################### GAME STARTED ####################", ConsoleColor.Yellow);
 
             Load();
+            // Rendering before the game loop prevents a black screen when the window is opened
+            RenderCall();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
             {
@@ -202,11 +204,7 @@ namespace Electron2D.Core
 
                 // Rendering
                 double rendST = Glfw.Time;
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-                glClearColor(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, 1);
-
-                Render();
-                RenderLayerManager.RenderAllLayers();
+                RenderCall();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
                 if(ErrorCheckingEnabled) LogErrors();
@@ -249,6 +247,18 @@ namespace Electron2D.Core
                     OnFixedUpdateEvent?.Invoke();
                 }
             }
+        }
+
+        private void RenderCall()
+        {
+            // This is separated into it's own function because it also
+            // needs to be called before the game loop begins to get rid
+            // of a few frames of black screen in the beginning
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            glClearColor(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, 1);
+
+            Render();
+            RenderLayerManager.RenderAllLayers();
         }
 
         private void LogErrors()
