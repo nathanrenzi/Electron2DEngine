@@ -3,6 +3,7 @@ using Electron2D.Core.Audio;
 using Electron2D.Core.ECS;
 using Electron2D.Core.Management;
 using Electron2D.Core.Misc;
+using Electron2D.Core.Particles;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
@@ -32,6 +33,7 @@ namespace Electron2D.Build
             $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8,
             _errorCheckingEnabled: true, _showElectronSplashscreen: false) { }
 
+        Entity e;
         protected override void Load()
         {
             // Load Custom Component Systems

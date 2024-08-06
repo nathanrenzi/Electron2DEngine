@@ -10,6 +10,7 @@ using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Audio;
 using Electron2D.Core.Management;
+using Electron2D.Core.Particles;
 
 namespace Electron2D.Core
 {
@@ -144,6 +145,7 @@ namespace Electron2D.Core
             // Starting Component Systems
             RigidbodySystem.Start();
             RigidbodySensorSystem.Start();
+            ParticleSystemBaseSystem.Start();
             TransformSystem.Start();
             MeshRendererSystem.Start();
             AudioSpatializerSystem.Start();
@@ -186,6 +188,7 @@ namespace Electron2D.Core
                 // Updating Component Systems
                 RigidbodySystem.Update();
                 RigidbodySensorSystem.Update();
+                ParticleSystemBaseSystem.Update();
                 TransformSystem.Update();
                 MeshRendererSystem.Update();
                 AudioSpatializerSystem.Update();
@@ -220,7 +223,7 @@ namespace Electron2D.Core
             Debug.CloseLogFile();
             DisplayManager.CloseWindow();
         }
-        
+
         private void RunPhysicsThread(CancellationToken _token, double _physicsTimestep, Vector2 _worldLowerBound, Vector2 _worldUpperBound, Vector2 _gravity,
             bool _doSleep, int _velocityIterations = 8, int _positionIterations = 2)
         {
@@ -229,7 +232,7 @@ namespace Electron2D.Core
             double lastTickTime = 0;
             while (!_token.IsCancellationRequested)
             {
-                if(lastTickTime + _physicsTimestep <= Glfw.Time)
+                if (lastTickTime + _physicsTimestep <= Glfw.Time)
                 {
                     double delta = Glfw.Time - lastTickTime;
                     Time.FixedDeltaTime = (float)delta;
