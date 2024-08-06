@@ -11,6 +11,7 @@ namespace Electron2D.Core.UserInterface
             public bool isMiddleClicked;
             public bool isRightClicked;
             public bool isClicked;
+            public bool isInteractable;
         }
 
         private List<UiComponent> activeComponents = new List<UiComponent>();
@@ -39,7 +40,6 @@ namespace Electron2D.Core.UserInterface
         public void UnregisterUiComponent(UiComponent _component)
         {
             if (!activeComponents.Contains(_component)) return;
-            int index = activeComponents.IndexOf(_component);
 
             activeComponents.Remove(_component);
         }
@@ -53,6 +53,31 @@ namespace Electron2D.Core.UserInterface
                 UiComponent component = activeComponents[i];
                 UiFrameTickData lastFrame = activeComponents[i].LastFrameData;
                 UiFrameTickData thisFrame = activeComponents[i].ThisFrameData;
+
+                // Checking if UI Component has just disabled interactability
+                thisFrame.isInteractable = activeComponents[i].Interactable;
+                if (lastFrame.isInteractable == true && thisFrame.isInteractable == false)
+                {
+                    if (lastFrame.isHovered)
+                    {
+                        thisFrame.isHovered = false;
+                        component.InvokeUiAction(UiEvent.HoverEnd);
+                    }
+
+                    component.InvokeUiAction(UiEvent.InteractabilityEnd);
+                    Debug.Log("Interactability Ended...");
+                }
+                if (!activeComponents[i].Interactable)
+                {
+                    thisFrame.isClicked = false;
+                    lastFrame.isHovered = false;
+                    lastFrame.isLeftClicked = false;
+                    lastFrame.isMiddleClicked = false;
+                    lastFrame.isRightClicked = false;
+                    lastFrame.isClicked = false;
+                    lastFrame.isInteractable = false;
+                    continue;
+                }
 
                 thisFrame.isHovered = activeComponents[i].CheckBounds(activeComponents[i].UseScreenPosition ? mousePosScreen : mousePos);
                 if (thisFrame.isHovered)
@@ -148,6 +173,7 @@ namespace Electron2D.Core.UserInterface
                 lastFrame.isMiddleClicked = thisFrame.isMiddleClicked;
                 lastFrame.isRightClicked = thisFrame.isRightClicked;
                 lastFrame.isClicked = thisFrame.isClicked;
+                lastFrame.isInteractable = thisFrame.isInteractable;
             }
         }
     }

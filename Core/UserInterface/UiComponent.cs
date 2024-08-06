@@ -77,6 +77,7 @@ namespace Electron2D.Core.UserInterface
         protected MeshRenderer meshRenderer;
         private UiCanvas ParentCanvas;
 
+        public bool Interactable = true;
         public float ExtraInteractionPixels;
         public float RightXBound
         {
@@ -307,6 +308,7 @@ namespace Electron2D.Core.UserInterface
         Position,
         Resize,
         Anchor,
-        Visibility
+        Visibility,
+        InteractabilityEnd
     }
 }

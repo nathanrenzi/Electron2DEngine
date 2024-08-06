@@ -92,7 +92,7 @@ namespace Electron2D.Core.UserInterface
         public float HandlePadding;
         public bool ForceWholeNumbers = false;
         public bool AllowNonHandleValueUpdates = true;
-        public bool Interactable;
+        public bool SliderInteractable;
 
         private Panel backgroundPanel;
         private Panel sliderPanel;
@@ -103,16 +103,16 @@ namespace Electron2D.Core.UserInterface
         private bool initialized = false;
 
         public SliderSimple(Color _backgroundColor, Color _sliderColor, Color _handleColor, float _value, float _minValue, float _maxValue,
-            int _sizeX, int _sliderHeight, int _backgroundHeight, int _handleSize, int _handlePadding = 0, int _uiRenderLayer = 0, bool _useScreenPosition = true, bool _interactable = true,
+            int _sizeX, int _sliderHeight, int _backgroundHeight, int _handleSize, int _handlePadding = 0, int _uiRenderLayer = 0, bool _useScreenPosition = true, bool _sliderInteractable = true,
             bool _allowNonHandleValueUpdates = true, bool _forceWholeNumbers = false)
-            : base(_uiRenderLayer, _sizeX, (int)MathF.Max(_sliderHeight, _backgroundHeight), true, _useScreenPosition, false, false)
+            : base(_uiRenderLayer, _sizeX, (int)MathF.Max(_sliderHeight, _backgroundHeight), 0, true, _useScreenPosition, false, false)
         {
             SliderHeight = _sliderHeight;
             BackgroundHeight = _backgroundHeight;
             HandleSize = _handleSize;
             HandlePadding = _handlePadding;
             ForceWholeNumbers = _forceWholeNumbers;
-            Interactable = _interactable;
+            SliderInteractable = _sliderInteractable;
             AllowNonHandleValueUpdates = _allowNonHandleValueUpdates;
             MinValue = _minValue;
             MaxValue = _maxValue;
@@ -156,7 +156,7 @@ namespace Electron2D.Core.UserInterface
 
         private void OnUpdate_Interact()
         {
-            if (!Interactable) return;
+            if (!SliderInteractable) return;
 
             if(backgroundListener.ClickHeld && AllowNonHandleValueUpdates)
             {
