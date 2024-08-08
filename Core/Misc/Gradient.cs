@@ -62,7 +62,6 @@ namespace Electron2D.Core.Misc
                 }
             }
 
-            Debug.LogError("Gradient fallback value");
             return Color.Black;
         }
 
