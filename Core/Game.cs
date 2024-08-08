@@ -10,7 +10,6 @@ using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Audio;
 using Electron2D.Core.Management;
-using Electron2D.Core.Particles;
 
 namespace Electron2D.Core
 {

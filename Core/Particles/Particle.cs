@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
 
-namespace Electron2D.Core.Particles
+namespace Electron2D.Core
 {
     public class Particle
     {
@@ -13,6 +13,7 @@ namespace Electron2D.Core.Particles
         public Color Color { get; set; }
         public float Size { get; set; }
         public float Lifetime { get; set; }
+        public float InitialLifetime { get; set; }
         public bool IsDead { get; set; }
 
         public void Initialize(Vector2 _origin, Vector2 _position, Vector2 _velocity, float _rotation, float _angularVelocity, Color _color, float _size, float _lifetime)
@@ -24,23 +25,9 @@ namespace Electron2D.Core.Particles
             AngularVelocity = _angularVelocity;
             Color = _color;
             Size = _size;
+            InitialLifetime = _lifetime;
             Lifetime = _lifetime;
-
             IsDead = false;
-        }
-
-        public void Update()
-        {
-            if (IsDead) return;
-
-            Lifetime -= Time.DeltaTime;
-            Position += Velocity * Time.DeltaTime;
-            Rotation += AngularVelocity * Time.DeltaTime;
-
-            if (Lifetime <= 0)
-            {
-                IsDead = true;
-            }
         }
     }
 }

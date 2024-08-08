@@ -3,7 +3,6 @@ using Electron2D.Core.Audio;
 using Electron2D.Core.ECS;
 using Electron2D.Core.Management;
 using Electron2D.Core.Misc;
-using Electron2D.Core.Particles;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
@@ -59,9 +58,32 @@ namespace Electron2D.Build
             //test2.Play();
 
             particleEntity.AddComponent(new Transform());
-            particleEntity.AddComponent(new ParticleSystem(true, true, true, false, ParticleEmissionShape.Circle, Vector2.UnitY, 360, 150,
-                1000, new Vector2(10, 20), new Vector2(0, 360), new Vector2(0, 10), new Vector2(0.1f, 0.25f), new Vector2(20, 35), new Gradient(new Color[] { Color.White, Color.Pink, Color.Purple }),
-                Material.Create(GlobalShaders.DefaultTexturedVertex, Color.White)));
+
+            Curve sizeCurve = new Curve(new List<Curve.Point> {new Curve.Point(0f, 1f, new Curve.Handle(-0.5f, 0f), new Curve.Handle(0.5f, 0f)),
+                new Curve.Point(1f, 0f, new Curve.Handle(-0.5f, 0f), new Curve.Handle(0.5f, 0f))});
+
+            Curve speedCurve = new Curve(new List<Curve.Point> {new Curve.Point(0f, 1f, new Curve.Handle(-0.5f, 0f), new Curve.Handle(0.5f, 0f)),
+                new Curve.Point(1f, 0f, new Curve.Handle(-0.5f, 0f), new Curve.Handle(0.5f, 0f))});
+
+            Gradient colorGradient = new Gradient();
+            colorGradient.Add(Color.Transparent, 0);
+            colorGradient.Add(Color.White, 0.1f);
+            colorGradient.Add(Color.Transparent, 1);
+
+            ParticleSystem particleSystem = new ParticleSystem(true, true, true, false, 1000, Material.Create(GlobalShaders.DefaultTexturedVertex, Color.White), 2)
+                .SetSize(10, 20)
+                .SetLifetime(0.1f, 1f)
+                .SetSpeed(30, 50)
+                .SetEmissionDirection(new Vector2(0, 1))
+                .SetEmissionSpreadAngle(360)
+                .SetAngularVelocity(0, 40)
+                .SetColor(new Gradient(new Color[] { Color.White, Color.Pink, Color.Purple }))
+                .SetEmissionsPerSecond(150)
+                .SetStartRotation(0, 360)
+                .SetColorOverLifetime(colorGradient)
+                .SetSizeOverLifetime(sizeCurve)
+                .SetSpeedOverLifetime(speedCurve);
+            particleEntity.AddComponent(particleSystem);
         }
 
 

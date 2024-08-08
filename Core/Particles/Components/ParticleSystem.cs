@@ -2,15 +2,13 @@
 using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Numerics;
 
-namespace Electron2D.Core.Particles
+namespace Electron2D.Core
 {
     public class ParticleSystemBaseSystem : BaseSystem<ParticleSystem> { }
     public class ParticleSystem : Component, IRenderable
     {
-        #region Particle System
         public bool IsLoop { get; set; }
         public bool IsPlaying { get; set; }
         public bool IsWorldSpace { get; set; }
@@ -19,30 +17,24 @@ namespace Electron2D.Core.Particles
         public float LoopTime { get; private set; }
         public List<Particle> Particles { get; private set; }
         public int RenderLayer { get; }
-        #endregion
-
-        #region Emission Settings
-        public ParticleEmissionShape EmissionShape { get; set; }
-        public Vector2 EmissionDirection { get; set; }
-        public float EmissionMaxAngle { get; set; }
-        public float EmissionParticlesPerSecond { get; set; }
-        #endregion
-
-        #region Start Settings
-        public Vector2 StartSizeRange { get; set; }
-        public Vector2 StartRotationRange { get; set; }
-        public Vector2 StartAngularVelocityRange { get; set; }
-        public Vector2 StartLifetimeRange { get; set; }
-        public Vector2 StartSpeedRange { get; set; }
-        public Gradient StartColorRange { get; set; }
-        #endregion
-
-        #region Particle Settings
+        public ParticleEmissionShape EmissionShape { get; set; } = ParticleEmissionShape.Circle;
+        public Vector2 EmissionDirection { get; set; } = Vector2.UnitY;
+        public float EmissionSpreadAngle { get; set; } = 10;
+        public float EmissionParticlesPerSecond { get; set; } = 30;
+        public Vector2 SizeRange { get; set; } = new Vector2(10);
+        public Vector2 StartRotationRange { get; set; } = Vector2.Zero;
+        public Vector2 AngularVelocityRange { get; set; } = Vector2.Zero;
+        public Vector2 LifetimeRange { get; set; } = Vector2.One;
+        public Vector2 SpeedRange { get; set; } = new Vector2(20, 20);
+        public Gradient ColorRange { get; set; } = new Gradient(Color.White);
         public Gradient ColorOverLifetime { get; private set; }
-        public bool ColorOverLifetimeEnabled { get; private set; }
-        #endregion
+        private bool colorOverLifetimeEnabled;
+        public Curve SizeOverLifetime { get; private set; }
+        private bool sizeOverLifetimeEnabled;
+        public Curve SpeedOverLifetime { get; private set; }
+        private bool speedOverLifetimeEnabled;
 
-        #region Private
+        #region Private Fields
         private float[] vertices;
         private uint[] indices;
         private MeshRenderer renderer;
@@ -58,26 +50,13 @@ namespace Electron2D.Core.Particles
         private Vector2 calculatedVelocity;
         #endregion
 
-        public ParticleSystem(bool _playOnAwake, bool _isLoop, bool _isWorldSpace, bool _inheritVelocity, ParticleEmissionShape _emissionShape, Vector2 _emissionDirection,
-            float _emissionMaxAngle, float _emissionParticlesPerSecond, int _maxParticles, Vector2 _startSizeRange, Vector2 _startRotationRange,
-            Vector2 _startAngularVelocityRange, Vector2 _startLifetimeRange, Vector2 _startSpeedRange,
-            Gradient _startColorRange, Material _material, int _renderLayer = 1)
+        public ParticleSystem(bool _playOnAwake, bool _isLoop, bool _isWorldSpace, bool _inheritVelocity, int _maxParticles, Material _material, int _renderLayer = 1)
         {
             playOnAwake = _playOnAwake;
             IsLoop = _isLoop;
             IsWorldSpace = _isWorldSpace;
             InheritVelocity = _inheritVelocity;
-            EmissionShape = _emissionShape;
-            EmissionDirection = _emissionDirection;
-            EmissionMaxAngle = _emissionMaxAngle;
-            EmissionParticlesPerSecond = _emissionParticlesPerSecond;
             MaxParticles = _maxParticles;
-            StartSizeRange = _startSizeRange;
-            StartRotationRange = _startRotationRange;
-            StartAngularVelocityRange = _startAngularVelocityRange;
-            StartLifetimeRange = _startLifetimeRange;
-            StartSpeedRange = _startSpeedRange;
-            StartColorRange = _startColorRange;
             RenderLayer = _renderLayer;
             material = _material;
 
@@ -94,6 +73,123 @@ namespace Electron2D.Core.Particles
 
             ParticleSystemBaseSystem.Register(this);
             RenderLayerManager.OrderRenderable(this);
+        }
+
+        public ParticleSystem SetEmissionsPerSecond(float emissionsPerSecond)
+        {
+            EmissionParticlesPerSecond = emissionsPerSecond;
+            return this;
+        }
+
+        public ParticleSystem SetEmissionDirection(Vector2 direction)
+        {
+            EmissionDirection = direction;
+            return this;
+        }
+
+        public ParticleSystem SetEmissionSpreadAngle(float angle)
+        {
+            EmissionSpreadAngle = angle;
+            return this;
+        }
+
+        public ParticleSystem SetEmissionShape(ParticleEmissionShape shape)
+        {
+            EmissionShape = shape;
+            return this;
+        }
+
+        public ParticleSystem SetSize(float min, float max)
+        {
+            SizeRange = new Vector2(min, max);
+            return this;
+        }
+
+        public ParticleSystem SetSize(float size)
+        {
+            SizeRange = new Vector2(size, size);
+            return this;
+        }
+
+        public ParticleSystem SetStartRotation(float min, float max)
+        {
+            StartRotationRange = new Vector2(min, max);
+            return this;
+        }
+
+        public ParticleSystem SetStartRotation(float rotation)
+        {
+            StartRotationRange = new Vector2(rotation, rotation);
+            return this;
+        }
+
+        public ParticleSystem SetAngularVelocity(float min, float max)
+        {
+            AngularVelocityRange = new Vector2(min, max);
+            return this;
+        }
+
+        public ParticleSystem SetAngularVelocity(float angularVelocity)
+        {
+            AngularVelocityRange = new Vector2(angularVelocity, angularVelocity);
+            return this;
+        }
+
+        public ParticleSystem SetLifetime(float min, float max)
+        {
+            LifetimeRange = new Vector2(min, max);
+            return this;
+        }
+
+        public ParticleSystem SetLifetime(float lifetime)
+        {
+            LifetimeRange = new Vector2(lifetime, lifetime);
+            return this;
+        }
+
+        public ParticleSystem SetSpeed(float min, float max)
+        {
+            SpeedRange = new Vector2(min, max);
+            return this;
+        }
+
+        public ParticleSystem SetSpeed(float speed)
+        {
+            SpeedRange = new Vector2(speed, speed);
+            return this;
+        }
+
+        public ParticleSystem SetColor(Color color)
+        {
+            ColorRange = new Gradient(color);
+            return this;
+        }
+
+        public ParticleSystem SetColor(Gradient gradient)
+        {
+            ColorRange = gradient;
+            return this;
+        }
+
+        public ParticleSystem SetColorOverLifetime(Gradient colorOverLifetime)
+        {
+            colorOverLifetimeEnabled = true;
+            ColorOverLifetime = colorOverLifetime;
+            return this;
+        }
+
+        public ParticleSystem SetSizeOverLifetime(Curve sizeCurve)
+        {
+            sizeOverLifetimeEnabled = true;
+            SizeOverLifetime = sizeCurve;
+            return this;
+        }
+
+        public ParticleSystem SetSpeedOverLifetime(Curve speedCurve)
+        {
+            speedOverLifetimeEnabled = true;
+            SpeedOverLifetime = speedCurve;
+            return this;
         }
 
         public override void OnAdded()
@@ -164,6 +260,7 @@ namespace Electron2D.Core.Particles
         {
             if (!IsPlaying) return;
 
+            // Particle spawn check
             if (Time.GameTime > lastSpawnedTime + spawnInterval)
             {
                 lastSpawnedTime = Time.GameTime;
@@ -171,9 +268,21 @@ namespace Electron2D.Core.Particles
                 SpawnParticle();
             }
 
+            // Updating all particles
             for (int i = 0; i < Particles.Count; i++)
             {
-                Particles[i].Update();
+                Particle particle = Particles[i];
+
+                // Used for particle over-lifetime effects (if enabled)
+                float t = 1 - (particle.Lifetime / particle.InitialLifetime);
+
+                particle.Position += particle.Velocity * Time.DeltaTime * (speedOverLifetimeEnabled ? SpeedOverLifetime.Evaluate(t) : 1);
+                particle.Rotation += particle.AngularVelocity * Time.DeltaTime;
+                particle.Lifetime -= Time.DeltaTime;
+                if (particle.Lifetime <= 0)
+                {
+                    particle.IsDead = true;
+                }
             }
 
             UpdateMesh();
@@ -207,27 +316,27 @@ namespace Electron2D.Core.Particles
             }
 
             // Spawn direction
-            float spawnDirRotation = (float)(random.NextDouble() * EmissionMaxAngle);
-            Vector2 spawnDirection = MathEx.RotateVector2(EmissionDirection, spawnDirRotation - (EmissionMaxAngle / 2f));
+            float spawnDirRotation = (float)(random.NextDouble() * EmissionSpreadAngle);
+            Vector2 spawnDirection = MathEx.RotateVector2(EmissionDirection, spawnDirRotation - (EmissionSpreadAngle / 2f));
 
             // Spawn speed
-            float spawnSpeed = MathEx.RandomFloatInRange(random, StartSpeedRange.X, StartSpeedRange.Y);
+            float spawnSpeed = MathEx.RandomFloatInRange(random, SpeedRange.X, SpeedRange.Y);
 
             // Spawn rotation
             float spawnRotation = MathEx.RandomFloatInRange(random, StartRotationRange.X, StartRotationRange.Y);
 
             // Spawn angular velocity
-            float spawnAngularVelocity = MathEx.RandomFloatInRange(random, StartAngularVelocityRange.X, StartAngularVelocityRange.Y);
+            float spawnAngularVelocity = MathEx.RandomFloatInRange(random, AngularVelocityRange.X, AngularVelocityRange.Y);
 
             // Spawn color
             float percentage = (float)random.NextDouble();
-            Color spawnColor = StartColorRange.Evaluate(percentage);
+            Color spawnColor = ColorRange.Evaluate(percentage);
 
             // Spawn size
-            float spawnSize = MathEx.RandomFloatInRange(random, StartSizeRange.X, StartSizeRange.Y);
+            float spawnSize = MathEx.RandomFloatInRange(random, SizeRange.X, SizeRange.Y);
 
             // Spawn lifetime
-            float spawnLifetime = MathEx.RandomFloatInRange(random, StartLifetimeRange.X, StartLifetimeRange.Y);
+            float spawnLifetime = MathEx.RandomFloatInRange(random, LifetimeRange.X, LifetimeRange.Y);
 
             p.Initialize(transform.Position, Vector2.Zero, (spawnDirection * spawnSpeed) + (InheritVelocity ? calculatedVelocity : Vector2.Zero), spawnRotation,
                 spawnAngularVelocity, spawnColor, spawnSize, spawnLifetime);
@@ -241,7 +350,7 @@ namespace Electron2D.Core.Particles
             {
                 if (Particles[i].IsDead) continue;
 
-                CreateParticleMesh(x, Particles[i]);
+                UpdateParticleMesh(x, Particles[i]);
                 indices[(x * 6) + 0] = (uint)((x * 4) + 2);
                 indices[(x * 6) + 1] = (uint)((x * 4) + 1);
                 indices[(x * 6) + 2] = (uint)((x * 4) + 0);
@@ -267,10 +376,13 @@ namespace Electron2D.Core.Particles
             }
         }
 
-        private void CreateParticleMesh(int _index, Particle _particle)
+        private void UpdateParticleMesh(int _index, Particle _particle)
         {
+            // Used for particle over-lifetime effects (if enabled)
+            float t = 1 - (_particle.Lifetime / _particle.InitialLifetime);
+
             int i = _index * 32;
-            float hs = _particle.Size / 2f;
+            float hs = _particle.Size * (sizeOverLifetimeEnabled ? SizeOverLifetime.Evaluate(t) : 1) / 2f;
 
             Vector2 tl = MathEx.RotateVector2(new Vector2(-hs, hs), _particle.Rotation);
             Vector2 tr = MathEx.RotateVector2(new Vector2(hs, hs), _particle.Rotation);
@@ -280,45 +392,57 @@ namespace Electron2D.Core.Particles
             float xpos = _particle.Position.X + (IsWorldSpace ? _particle.Origin.X - transform.Position.X : 0) * 2;
             float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y - transform.Position.Y : 0) * 2;
 
+            Vector4 color;
+            if(colorOverLifetimeEnabled)
+            {
+                Color eval = ColorOverLifetime.Evaluate(t);
+                color = new Vector4((_particle.Color.R / 255f) * (eval.R / 255f), (_particle.Color.G / 255f) * (eval.G / 255f),
+                    (_particle.Color.B / 255f) * (eval.B / 255f), (_particle.Color.A / 255f) * (eval.A / 255f));
+            }
+            else
+            {
+                color = new Vector4(_particle.Color.R, _particle.Color.G, _particle.Color.B, _particle.Color.A);
+            }
+
             // Top Left
             vertices[i + 0] = tl.X + xpos;
             vertices[i + 1] = tl.Y + ypos;
             vertices[i + 2] = 0;
             vertices[i + 3] = 1;
-            vertices[i + 4] = _particle.Color.R / 255f;
-            vertices[i + 5] = _particle.Color.G / 255f;
-            vertices[i + 6] = _particle.Color.B / 255f;
-            vertices[i + 7] = _particle.Color.A / 255f;
+            vertices[i + 4] = color.X;
+            vertices[i + 5] = color.Y;
+            vertices[i + 6] = color.Z;
+            vertices[i + 7] = color.W;
 
             // Top Right
             vertices[i + 8] = tr.X + xpos;
             vertices[i + 9] = tr.Y + ypos;
             vertices[i + 10] = 1;
             vertices[i + 11] = 1;
-            vertices[i + 12] = _particle.Color.R / 255f;
-            vertices[i + 13] = _particle.Color.G / 255f;
-            vertices[i + 14] = _particle.Color.B / 255f;
-            vertices[i + 15] = _particle.Color.A / 255f;
+            vertices[i + 12] = color.X;
+            vertices[i + 13] = color.Y;
+            vertices[i + 14] = color.Z;
+            vertices[i + 15] = color.W;
 
             // Bottom Right
             vertices[i + 16] = br.X + xpos;
             vertices[i + 17] = br.Y + ypos;
             vertices[i + 18] = 1;
             vertices[i + 19] = 0;
-            vertices[i + 20] = _particle.Color.R / 255f;
-            vertices[i + 21] = _particle.Color.G / 255f;
-            vertices[i + 22] = _particle.Color.B / 255f;
-            vertices[i + 23] = _particle.Color.A / 255f;
+            vertices[i + 20] = color.X;
+            vertices[i + 21] = color.Y;
+            vertices[i + 22] = color.Z;
+            vertices[i + 23] = color.W;
 
             // Bottom Left
             vertices[i + 24] = bl.X + xpos;
             vertices[i + 25] = bl.Y + ypos;
             vertices[i + 26] = 0;
             vertices[i + 27] = 0;
-            vertices[i + 28] = _particle.Color.R / 255f;
-            vertices[i + 29] = _particle.Color.G / 255f;
-            vertices[i + 30] = _particle.Color.B / 255f;
-            vertices[i + 31] = _particle.Color.A / 255f;
+            vertices[i + 28] = color.X;
+            vertices[i + 29] = color.Y;
+            vertices[i + 30] = color.Z;
+            vertices[i + 31] = color.W;
         }
         #endregion
 
