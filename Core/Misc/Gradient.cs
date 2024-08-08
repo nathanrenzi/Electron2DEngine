@@ -40,11 +40,11 @@ namespace Electron2D.Core.Misc
             }
 
             // Edge cases
-            if (_percentage <= 0)
+            if (_percentage <= ColorsSorted.Keys[0])
             {
                 return ColorsSorted.Values[0];
             }
-            else if (_percentage >= 1)
+            else if (_percentage >= ColorsSorted.Keys[ColorsSorted.Keys.Count - 1])
             {
                 return ColorsSorted.Values[ColorsSorted.Values.Count - 1];
             }

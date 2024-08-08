@@ -31,5 +31,18 @@ namespace Electron2D.Core
             float amount = diff * ((float)_random.NextDouble() + float.Epsilon);
             return _min + amount;
         }
+
+        public static Vector2 RandomPositionInsideCircle(Random _random, float _radius)
+        {
+            var angle = _random.NextDouble() * Math.PI * 2;
+            var distance = Math.Sqrt(_random.NextDouble()) * _radius;
+            return new Vector2((float)(distance * Math.Cos(angle)), (float)(distance * Math.Sin(angle)));
+        }
+
+        public static Vector2 RandomPositionOnCircle(Random _random, float _radius)
+        {
+            var angle = _random.NextDouble() * Math.PI * 2;
+            return new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)) * _radius;
+        }
     }
 }

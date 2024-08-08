@@ -17,10 +17,12 @@ namespace Electron2D.Core
         public float LoopTime { get; private set; }
         public List<Particle> Particles { get; private set; }
         public int RenderLayer { get; }
-        public ParticleEmissionShape EmissionShape { get; set; } = ParticleEmissionShape.Circle;
+        public ParticleEmissionShape EmissionShape { get; set; } = ParticleEmissionShape.VolumeCircle;
+        public float EmissionSize { get; set; } = 1;
         public Vector2 EmissionDirection { get; set; } = Vector2.UnitY;
         public float EmissionSpreadAngle { get; set; } = 10;
         public float EmissionParticlesPerSecond { get; set; } = 30;
+        public bool EmitAlongEmissionShapeNormal { get; set; } = false;
         public Vector2 SizeRange { get; set; } = new Vector2(10);
         public Vector2 StartRotationRange { get; set; } = Vector2.Zero;
         public Vector2 AngularVelocityRange { get; set; } = Vector2.Zero;
@@ -40,17 +42,19 @@ namespace Electron2D.Core
         private MeshRenderer renderer;
         private Transform transform;
         private Transform fakeTransform;
-        private Random random = new Random(DateTime.Now.Millisecond);
+        private Random random;
+        private int randomSeed;
         private bool playOnAwake;
         private Material material;
         private float spawnInterval { get { return 1f / EmissionParticlesPerSecond; } }
         private float lastSpawnedTime = -10;
+        private float spawnTime;
 
         private Vector2 lastPosition;
         private Vector2 calculatedVelocity;
         #endregion
 
-        public ParticleSystem(bool _playOnAwake, bool _isLoop, bool _isWorldSpace, bool _inheritVelocity, int _maxParticles, Material _material, int _renderLayer = 1)
+        public ParticleSystem(bool _playOnAwake, bool _isLoop, bool _isWorldSpace, bool _inheritVelocity, int _maxParticles, Material _material, int _renderLayer = 1, int _randomSeed = -1)
         {
             playOnAwake = _playOnAwake;
             IsLoop = _isLoop;
@@ -71,8 +75,17 @@ namespace Electron2D.Core
             //Pre-allocating particle list
             Particles = new List<Particle>(MaxParticles);
 
+            randomSeed = _randomSeed == -1 ? DateTime.Now.Millisecond : _randomSeed;
+            random = new Random(randomSeed);
+
             ParticleSystemBaseSystem.Register(this);
             RenderLayerManager.OrderRenderable(this);
+        }
+
+        public ParticleSystem SetEmitAlongEmissionShapeNormal(bool flag)
+        {
+            EmitAlongEmissionShapeNormal = flag;
+            return this;
         }
 
         public ParticleSystem SetEmissionsPerSecond(float emissionsPerSecond)
@@ -93,9 +106,10 @@ namespace Electron2D.Core
             return this;
         }
 
-        public ParticleSystem SetEmissionShape(ParticleEmissionShape shape)
+        public ParticleSystem SetEmissionShape(ParticleEmissionShape shape, float size)
         {
             EmissionShape = shape;
+            EmissionSize = size;
             return this;
         }
 
@@ -261,10 +275,9 @@ namespace Electron2D.Core
             if (!IsPlaying) return;
 
             // Particle spawn check
-            if (Time.GameTime > lastSpawnedTime + spawnInterval)
+            while (spawnTime > spawnInterval)
             {
-                lastSpawnedTime = Time.GameTime;
-
+                spawnTime -= spawnInterval;
                 SpawnParticle();
             }
 
@@ -292,6 +305,7 @@ namespace Electron2D.Core
             lastPosition = transform.Position;
 
             LoopTime += Time.DeltaTime;
+            spawnTime += Time.DeltaTime;
         }
 
         private void SpawnParticle()
@@ -315,10 +329,6 @@ namespace Electron2D.Core
                 Particles.Add(p);
             }
 
-            // Spawn direction
-            float spawnDirRotation = (float)(random.NextDouble() * EmissionSpreadAngle);
-            Vector2 spawnDirection = MathEx.RotateVector2(EmissionDirection, spawnDirRotation - (EmissionSpreadAngle / 2f));
-
             // Spawn speed
             float spawnSpeed = MathEx.RandomFloatInRange(random, SpeedRange.X, SpeedRange.Y);
 
@@ -338,7 +348,59 @@ namespace Electron2D.Core
             // Spawn lifetime
             float spawnLifetime = MathEx.RandomFloatInRange(random, LifetimeRange.X, LifetimeRange.Y);
 
-            p.Initialize(transform.Position, Vector2.Zero, (spawnDirection * spawnSpeed) + (InheritVelocity ? calculatedVelocity : Vector2.Zero), spawnRotation,
+            // Spawn position
+            Vector2 spawnPosition = transform.Position;
+            Vector2 alongNormal = Vector2.Zero;
+            switch(EmissionShape)
+            {
+                case ParticleEmissionShape.VolumeSquare:
+                    Vector2 squareVolumePos = new Vector2(MathEx.RandomFloatInRange(random, -EmissionSize / 2f, EmissionSize / 2f),
+                        MathEx.RandomFloatInRange(random, -EmissionSize / 2f, EmissionSize / 2f));
+                    spawnPosition += squareVolumePos;
+                    alongNormal = Vector2.Normalize(squareVolumePos);
+                    break;
+                case ParticleEmissionShape.VolumeCircle:
+                    Vector2 circleVolumePos = MathEx.RandomPositionInsideCircle(random, EmissionSize / 2f);
+                    spawnPosition += circleVolumePos;
+                    alongNormal = Vector2.Normalize(circleVolumePos);
+                    break;
+                case ParticleEmissionShape.Square:
+                    float x;
+                    float y;
+                    float sign = random.NextDouble() < 0.5 ? -1 : 1;
+                    bool xAxis = random.NextDouble() < 0.5;
+                    if(xAxis)
+                    {
+                        x = sign;
+                        y = MathEx.RandomFloatInRange(random, -1, 1);
+                    }
+                    else
+                    {
+                        x = MathEx.RandomFloatInRange(random, -1, 1);
+                        y = sign;
+                    }
+                    Vector2 squarePos = new Vector2(x, y) * EmissionSize/2f;
+                    spawnPosition += squarePos;
+                    alongNormal = new Vector2(xAxis ? sign : 0, !xAxis ? sign : 0);
+                    break;
+                case ParticleEmissionShape.Circle:
+                    Vector2 circlePos = MathEx.RandomPositionOnCircle(random, EmissionSize / 2f);
+                    spawnPosition += circlePos;
+                    alongNormal = Vector2.Normalize(circlePos);
+                    break;
+                case ParticleEmissionShape.Line:
+                    float lineOffset = MathEx.RandomFloatInRange(random, -EmissionSize / 2f, EmissionSize / 2f);       
+                    spawnPosition += Vector2.Normalize(new Vector2(EmissionDirection.Y, EmissionDirection.X)) * lineOffset;
+                    alongNormal = EmissionDirection;
+                    break;
+            }
+
+            // Spawn direction
+            float spawnDirRotation = (float)(random.NextDouble() * EmissionSpreadAngle);
+            Vector2 spawnDirection = MathEx.RotateVector2(EmitAlongEmissionShapeNormal ? alongNormal : EmissionDirection,
+                spawnDirRotation - (EmissionSpreadAngle / 2f));
+
+            p.Initialize(spawnPosition, Vector2.Zero, (spawnDirection * spawnSpeed) + (InheritVelocity ? calculatedVelocity : Vector2.Zero), spawnRotation,
                 spawnAngularVelocity, spawnColor, spawnSize, spawnLifetime);
         }
 
@@ -462,7 +524,9 @@ namespace Electron2D.Core
 
     public enum ParticleEmissionShape
     {
-        Box,
+        VolumeSquare,
+        VolumeCircle,
+        Square,
         Circle,
         Line
     }
