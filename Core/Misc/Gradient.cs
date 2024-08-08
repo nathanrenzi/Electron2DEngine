@@ -39,9 +39,19 @@ namespace Electron2D.Core.Misc
                 return ColorsSorted.Values[0];
             }
 
-            for (int i = 0; i < ColorsSorted.Keys.Count; i++)
+            // Edge cases
+            if (_percentage <= 0)
             {
-                if (i + 1 <= ColorsSorted.Keys.Count - 1 && ColorsSorted.Keys[i] <= _percentage && ColorsSorted.Keys[i] >= _percentage)
+                return ColorsSorted.Values[0];
+            }
+            else if (_percentage >= 1)
+            {
+                return ColorsSorted.Values[ColorsSorted.Values.Count - 1];
+            }
+
+            for (int i = 0; i < ColorsSorted.Keys.Count - 1; i++)
+            {
+                if (ColorsSorted.Keys[i] <= _percentage && ColorsSorted.Keys[i + 1] >= _percentage)
                 {
                     Color c1 = ColorsSorted.Values[i];
                     Color c2 = ColorsSorted.Values[i + 1];
@@ -52,19 +62,8 @@ namespace Electron2D.Core.Misc
                 }
             }
 
-            // Edge cases
-            if (_percentage <= 0)
-            {
-                return ColorsSorted.Values[0];
-            }
-            else if (_percentage >= 1)
-            {
-                return ColorsSorted.Values[ColorsSorted.Values.Count - 1];
-            }
-            else
-            {
-                return Color.Black;
-            }
+            Debug.LogError("Gradient fallback value");
+            return Color.Black;
         }
 
         private static int LinearInterp(int _start, int _end, float _percentage) => _start + (int)Math.Round(_percentage * (_end - _start));

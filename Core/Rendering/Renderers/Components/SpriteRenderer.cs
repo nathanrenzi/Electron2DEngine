@@ -58,10 +58,10 @@ namespace Electron2D.Core
         protected override void CreateBufferLayout()
         {
             // Telling the vertex array how the vertices are structured
-            layout = new BufferLayout();
-            layout.Add<float>(2); // Position
-            layout.Add<float>(2); // UV
-            layout.Add<float>(1); // Texture Index
+            Layout = new BufferLayout();
+            Layout.Add<float>(2); // Position
+            Layout.Add<float>(2); // UV
+            Layout.Add<float>(1); // Texture Index
         }
 
         /// <summary>

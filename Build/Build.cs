@@ -1,7 +1,9 @@
 ﻿using Electron2D.Core;
 using Electron2D.Core.Audio;
+using Electron2D.Core.ECS;
 using Electron2D.Core.Management;
 using Electron2D.Core.Misc;
+using Electron2D.Core.Particles;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
@@ -25,6 +27,8 @@ namespace Electron2D.Build
 
         private AudioInstance test;
         private AudioInstance test2;
+
+        private Entity particleEntity = new Entity();
 
         public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
             $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8,
@@ -51,8 +55,13 @@ namespace Electron2D.Build
             AudioSpatializer spatializer = new AudioSpatializer(true, new AudioInstance[] { test, test2 });
             Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Magenta));
             s.AddComponent(spatializer);
-            test.Play();
-            test2.Play();
+            //test.Play();
+            //test2.Play();
+
+            particleEntity.AddComponent(new Transform());
+            particleEntity.AddComponent(new ParticleSystem(true, true, true, false, ParticleEmissionShape.Circle, Vector2.UnitY, 360, 150,
+                1000, new Vector2(10, 20), new Vector2(0, 360), new Vector2(0, 10), new Vector2(0.1f, 0.25f), new Vector2(20, 35), new Gradient(new Color[] { Color.White, Color.Pink, Color.Purple }),
+                Material.Create(GlobalShaders.DefaultTexturedVertex, Color.White)));
         }
 
 
@@ -60,6 +69,8 @@ namespace Electron2D.Build
         {
             CameraMovement();
             CalculateFPS();
+
+            particleEntity.GetComponent<Transform>().Position = Input.GetMouseWorldPosition();
 
             test.Pitch += Input.ScrollDelta * 0.1f;
 

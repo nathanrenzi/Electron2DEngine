@@ -94,6 +94,7 @@
     <None Remove="Core\Rendering\Shaders\DefaultInterface.glsl" />
     <None Remove="Core\Rendering\Shaders\DefaultText.glsl" />
     <None Remove="Core\Rendering\Shaders\DefaultTextureArray.glsl" />
+    <None Remove="Core\Rendering\Shaders\DefaultTexturedVertex.glsl" />
   </ItemGroup>
 
   <ItemGroup>
@@ -275,6 +276,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultTextureArray.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultTexturedVertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultVertex.glsl">

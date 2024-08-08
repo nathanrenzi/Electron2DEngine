@@ -16,7 +16,6 @@ namespace Electron2D.Core.Rendering
         public VertexBuffer vertexBuffer { get; protected set; }
         public VertexArray vertexArray { get; protected set; }
         public IndexBuffer indexBuffer { get; protected set; }
-        public BufferLayout layout { get; protected set; }
         public Material Material { get; protected set; }
         public int RenderLayer { get; protected set; }
         public Action OnBeforeRender { get; set; }
@@ -26,6 +25,7 @@ namespace Electron2D.Core.Rendering
         /// <summary>
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
         /// </summary>
+        public BufferLayout Layout { get; set; }
         public bool UseUnscaledProjectionMatrix { get; set; } = false;
         public bool UseCustomIndexRenderCount { get; set; } = false;
         public int CustomIndexRenderCount { get; set; } = 0;
@@ -96,12 +96,12 @@ namespace Electron2D.Core.Rendering
         public void SetVertexValueAll(int _type, float _value)
         {
             if (!HasVertexData) return;
-            int loops = vertices.Length / layout.GetRawStride();
+            int loops = vertices.Length / Layout.GetRawStride();
 
             // Setting the value for each vertex
             for (int i = 0; i < loops; i++)
             {
-                vertices[(i * layout.GetRawStride()) + _type] = _value;
+                vertices[(i * Layout.GetRawStride()) + _type] = _value;
             }
 
             IsVertexDirty = true;
@@ -114,7 +114,7 @@ namespace Electron2D.Core.Rendering
         /// <returns></returns>
         public float GetVertexValue(int _type, int _vertex = 0)
         {
-            return vertices[(_vertex * layout.GetRawStride()) + _type];
+            return vertices[(_vertex * Layout.GetRawStride()) + _type];
         }
 
         #endregion
@@ -122,7 +122,7 @@ namespace Electron2D.Core.Rendering
         /// <summary>
         /// Loads all resources necessary for the renderer, such as the shader and buffers.
         /// </summary>
-        public void Load()
+        public void Load(bool _createBufferLayoutOnLoad = true)
         {
             if (!HasVertexData) return;
 
@@ -130,9 +130,12 @@ namespace Electron2D.Core.Rendering
             vertexBuffer = new VertexBuffer(vertices);
             indexBuffer = new IndexBuffer(indices);
 
-            CreateBufferLayout();
+            if(_createBufferLayoutOnLoad)
+            {
+                CreateBufferLayout();
+            }          
 
-            vertexArray.AddBuffer(vertexBuffer, layout);
+            vertexArray.AddBuffer(vertexBuffer, Layout);
 
             IsLoaded = true;
         }
@@ -140,9 +143,9 @@ namespace Electron2D.Core.Rendering
         protected virtual void CreateBufferLayout()
         {
             // Telling the vertex array how the vertices are structured
-            layout = new BufferLayout();
-            layout.Add<float>(2); // Position
-            layout.Add<float>(2); // UV
+            Layout = new BufferLayout();
+            Layout.Add<float>(2); // Position
+            Layout.Add<float>(2); // UV
         }
 
         public unsafe void Render()

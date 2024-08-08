@@ -85,7 +85,7 @@ namespace Electron2D.Core.Particles
 
             // Pre-allocating arrays
             // 4 vertices * (X + Y + U + V) * total particles
-            vertices = new float[4 * 4 * _maxParticles];
+            vertices = new float[4 * 8 * _maxParticles];
             // 6 indices (2 triangles) * total particles
             indices = new uint[6 * _maxParticles];
 
@@ -107,6 +107,13 @@ namespace Electron2D.Core.Particles
             renderer = new MeshRenderer(transform, material);
             renderer.UseCustomIndexRenderCount = true;
             renderer.OnBeforeRender += SetModelMatrix;
+            BufferLayout layout = new BufferLayout();
+            layout.Add<float>(2);
+            layout.Add<float>(2);
+            layout.Add<float>(4);
+            renderer.Layout = layout;
+            renderer.SetVertexArrays(vertices, indices, false, renderer.IsLoaded);
+            renderer.Load(false);
 
             if (playOnAwake) Play();
         }
@@ -253,13 +260,16 @@ namespace Electron2D.Core.Particles
             {
                 renderer.Enabled = true;
                 renderer.CustomIndexRenderCount = x * 6;
-                renderer.SetVertexArrays(vertices, indices, !renderer.IsLoaded, renderer.IsLoaded);
+                if (renderer.IsLoaded)
+                {
+                    renderer.SetVertexArrays(vertices, indices, !renderer.IsLoaded, renderer.IsLoaded);
+                }
             }
         }
 
         private void CreateParticleMesh(int _index, Particle _particle)
         {
-            int i = _index * 16;
+            int i = _index * 32;
             float hs = _particle.Size / 2f;
 
             Vector2 tl = MathEx.RotateVector2(new Vector2(-hs, hs), _particle.Rotation);
@@ -275,24 +285,40 @@ namespace Electron2D.Core.Particles
             vertices[i + 1] = tl.Y + ypos;
             vertices[i + 2] = 0;
             vertices[i + 3] = 1;
+            vertices[i + 4] = _particle.Color.R / 255f;
+            vertices[i + 5] = _particle.Color.G / 255f;
+            vertices[i + 6] = _particle.Color.B / 255f;
+            vertices[i + 7] = _particle.Color.A / 255f;
 
             // Top Right
-            vertices[i + 4] = tr.X + xpos;
-            vertices[i + 5] = tr.Y + ypos;
-            vertices[i + 6] = 1;
-            vertices[i + 7] = 1;
+            vertices[i + 8] = tr.X + xpos;
+            vertices[i + 9] = tr.Y + ypos;
+            vertices[i + 10] = 1;
+            vertices[i + 11] = 1;
+            vertices[i + 12] = _particle.Color.R / 255f;
+            vertices[i + 13] = _particle.Color.G / 255f;
+            vertices[i + 14] = _particle.Color.B / 255f;
+            vertices[i + 15] = _particle.Color.A / 255f;
 
             // Bottom Right
-            vertices[i + 8] = br.X + xpos;
-            vertices[i + 9] = br.Y + ypos;
-            vertices[i + 10] = 1;
-            vertices[i + 11] = 0;
+            vertices[i + 16] = br.X + xpos;
+            vertices[i + 17] = br.Y + ypos;
+            vertices[i + 18] = 1;
+            vertices[i + 19] = 0;
+            vertices[i + 20] = _particle.Color.R / 255f;
+            vertices[i + 21] = _particle.Color.G / 255f;
+            vertices[i + 22] = _particle.Color.B / 255f;
+            vertices[i + 23] = _particle.Color.A / 255f;
 
             // Bottom Left
-            vertices[i + 12] = bl.X + xpos;
-            vertices[i + 13] = bl.Y + ypos;
-            vertices[i + 14] = 0;
-            vertices[i + 15] = 0;
+            vertices[i + 24] = bl.X + xpos;
+            vertices[i + 25] = bl.Y + ypos;
+            vertices[i + 26] = 0;
+            vertices[i + 27] = 0;
+            vertices[i + 28] = _particle.Color.R / 255f;
+            vertices[i + 29] = _particle.Color.G / 255f;
+            vertices[i + 30] = _particle.Color.B / 255f;
+            vertices[i + 31] = _particle.Color.A / 255f;
         }
         #endregion
 

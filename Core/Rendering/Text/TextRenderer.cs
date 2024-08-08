@@ -311,9 +311,9 @@ namespace Electron2D.Core.Rendering.Text
         protected override void CreateBufferLayout()
         {
             // Telling the vertex array how the vertices are structured
-            layout = new BufferLayout();
-            layout.Add<float>(2); // Position
-            layout.Add<float>(2); // UV
+            Layout = new BufferLayout();
+            Layout.Add<float>(2); // Position
+            Layout.Add<float>(2); // UV
         }
 
         private unsafe void UpdateMesh()
