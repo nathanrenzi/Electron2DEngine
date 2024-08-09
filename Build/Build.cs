@@ -11,6 +11,7 @@ using Electron2D.Core.UserInterface;
 using GLFW;
 using System.Drawing;
 using System.Numerics;
+using DotnetNoise;
 
 namespace Electron2D.Build
 {
@@ -70,14 +71,16 @@ namespace Electron2D.Build
             colorGradient.Add(Color.White, 0.1f);
             colorGradient.Add(Color.Transparent, 1);
 
-            ParticleSystem particleSystem = new ParticleSystem(true, true, true, false, 1000, Material.Create(GlobalShaders.DefaultTexturedVertex, Color.White), 2)
+            ParticleSystem particleSystem = new ParticleSystem(true, true, true, false, false, 1000, Material.Create(GlobalShaders.DefaultTexturedVertex,
+                ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png")), 2)
                 .SetSize(10, 15)
-                .SetLifetime(0.3f, 1f)
-                .SetSpeed(100, 200)
+                .SetLifetime(1f, 3f)
+                .SetSpeed(50, 100)
                 .SetEmissionShape(ParticleEmissionShape.Circle, 100)
                 .SetEmitAlongEmissionShapeNormal(true)
+                .SetInvertEmissionDirection(true)
                 .SetEmissionDirection(new Vector2(0, 1))
-                .SetEmissionSpreadAngle(90)
+                .SetEmissionSpreadAngle(0)
                 .SetAngularVelocity(0, 40)
                 .SetColor(new Gradient(new Color[] { Color.White, Color.Pink, Color.Purple }))
                 .SetEmissionsPerSecond(250)

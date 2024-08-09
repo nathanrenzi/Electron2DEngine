@@ -9,8 +9,11 @@ namespace Electron2D.Core
     public class ParticleSystemBaseSystem : BaseSystem<ParticleSystem> { }
     public class ParticleSystem : Component, IRenderable
     {
+        private const int PREWARM_STEPS = 100;
+
         public bool IsLoop { get; set; }
         public bool IsPlaying { get; set; }
+        public bool Prewarm { get; private set; }
         public bool IsWorldSpace { get; set; }
         public bool InheritVelocity { get; set; }
         public int MaxParticles { get; }
@@ -23,6 +26,7 @@ namespace Electron2D.Core
         public float EmissionSpreadAngle { get; set; } = 10;
         public float EmissionParticlesPerSecond { get; set; } = 30;
         public bool EmitAlongEmissionShapeNormal { get; set; } = false;
+        public bool InvertEmissionDirection { get; set; } = false;
         public Vector2 SizeRange { get; set; } = new Vector2(10);
         public Vector2 StartRotationRange { get; set; } = Vector2.Zero;
         public Vector2 AngularVelocityRange { get; set; } = Vector2.Zero;
@@ -47,18 +51,19 @@ namespace Electron2D.Core
         private bool playOnAwake;
         private Material material;
         private float spawnInterval { get { return 1f / EmissionParticlesPerSecond; } }
-        private float lastSpawnedTime = -10;
         private float spawnTime;
 
         private Vector2 lastPosition;
         private Vector2 calculatedVelocity;
         #endregion
 
-        public ParticleSystem(bool _playOnAwake, bool _isLoop, bool _isWorldSpace, bool _inheritVelocity, int _maxParticles, Material _material, int _renderLayer = 1, int _randomSeed = -1)
+        public ParticleSystem(bool _playOnAwake, bool _prewarm, bool _isLoop, bool _isWorldSpace, bool _inheritVelocity,
+            int _maxParticles, Material _material, int _renderLayer = 1, int _randomSeed = -1)
         {
             playOnAwake = _playOnAwake;
             IsLoop = _isLoop;
             IsWorldSpace = _isWorldSpace;
+            Prewarm = _prewarm;
             InheritVelocity = _inheritVelocity;
             MaxParticles = _maxParticles;
             RenderLayer = _renderLayer;
@@ -80,6 +85,12 @@ namespace Electron2D.Core
 
             ParticleSystemBaseSystem.Register(this);
             RenderLayerManager.OrderRenderable(this);
+        }
+
+        public ParticleSystem SetInvertEmissionDirection(bool flag)
+        {
+            InvertEmissionDirection = flag;
+            return this;
         }
 
         public ParticleSystem SetEmitAlongEmissionShapeNormal(bool flag)
@@ -224,8 +235,42 @@ namespace Electron2D.Core
             renderer.Layout = layout;
             renderer.SetVertexArrays(vertices, indices, false, renderer.IsLoaded);
             renderer.Load(false);
+            if (Prewarm) PrewarmParticles(); // Currently does not work
 
             if (playOnAwake) Play();
+        }
+
+        private void PrewarmParticles()
+        {
+            int spawnCount = (int)(LifetimeRange.Y / EmissionParticlesPerSecond);
+            for (int i = 0; i < spawnCount; i++)
+            {
+                SpawnParticle();
+            }
+
+            float deltaTime = LifetimeRange.Y / PREWARM_STEPS;
+
+            for (int x = 0; x < PREWARM_STEPS; x++)
+            {
+                // Updating all particles
+                for (int i = 0; i < Particles.Count; i++)
+                {
+                    Particle particle = Particles[i];
+
+                    // Used for particle over-lifetime effects (if enabled)
+                    float t = 1 - (particle.Lifetime / particle.InitialLifetime);
+
+                    particle.Position += particle.Velocity * deltaTime * (speedOverLifetimeEnabled ? SpeedOverLifetime.Evaluate(t) : 1);
+                    particle.Rotation += particle.AngularVelocity * deltaTime;
+                    particle.Lifetime -= deltaTime;
+                    if (particle.Lifetime <= 0)
+                    {
+                        particle.IsDead = true;
+                    }
+                }
+            }
+
+            UpdateMesh();
         }
 
         #region Setters
@@ -349,7 +394,7 @@ namespace Electron2D.Core
             float spawnLifetime = MathEx.RandomFloatInRange(random, LifetimeRange.X, LifetimeRange.Y);
 
             // Spawn position
-            Vector2 spawnPosition = transform.Position;
+            Vector2 spawnPosition = IsWorldSpace ? transform.Position : Vector2.Zero;
             Vector2 alongNormal = Vector2.Zero;
             switch(EmissionShape)
             {
@@ -399,6 +444,7 @@ namespace Electron2D.Core
             float spawnDirRotation = (float)(random.NextDouble() * EmissionSpreadAngle);
             Vector2 spawnDirection = MathEx.RotateVector2(EmitAlongEmissionShapeNormal ? alongNormal : EmissionDirection,
                 spawnDirRotation - (EmissionSpreadAngle / 2f));
+            if (InvertEmissionDirection) spawnDirection *= -1;
 
             p.Initialize(spawnPosition, Vector2.Zero, (spawnDirection * spawnSpeed) + (InheritVelocity ? calculatedVelocity : Vector2.Zero), spawnRotation,
                 spawnAngularVelocity, spawnColor, spawnSize, spawnLifetime);
@@ -451,8 +497,8 @@ namespace Electron2D.Core
             Vector2 br = MathEx.RotateVector2(new Vector2(hs, -hs), _particle.Rotation);
             Vector2 bl = MathEx.RotateVector2(new Vector2(-hs, -hs), _particle.Rotation);
 
-            float xpos = _particle.Position.X + (IsWorldSpace ? _particle.Origin.X - transform.Position.X : 0) * 2;
-            float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y - transform.Position.Y : 0) * 2;
+            float xpos = _particle.Position.X + (IsWorldSpace ? _particle.Origin.X - transform.Position.X : _particle.Origin.X) * 2;
+            float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y - transform.Position.Y : _particle.Origin.Y) * 2;
 
             Vector4 color;
             if(colorOverLifetimeEnabled)
