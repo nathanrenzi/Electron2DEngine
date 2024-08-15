@@ -71,8 +71,9 @@ namespace Electron2D.Build
             colorGradient.Add(Color.White, 0.1f);
             colorGradient.Add(Color.Transparent, 1);
 
-            ParticleSystem particleSystem = new ParticleSystem(true, true, true, false, false, 1000, Material.Create(GlobalShaders.DefaultTexturedVertex,
+            ParticleSystem particleSystem = new ParticleSystem(true, true, true, false, 1000, Material.Create(GlobalShaders.DefaultTexturedVertex,
                 ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png")), 2)
+                .SetBurstEmissionMode(false, 10)
                 .SetSize(10, 15)
                 .SetLifetime(1f, 3f)
                 .SetSpeed(50, 100)
@@ -83,7 +84,7 @@ namespace Electron2D.Build
                 .SetEmissionSpreadAngle(0)
                 .SetAngularVelocity(0, 40)
                 .SetColor(new Gradient(new Color[] { Color.White, Color.Pink, Color.Purple }))
-                .SetEmissionsPerSecond(250)
+                //.SetEmissionsPerSecond(250)
                 .SetStartRotation(0, 360)
                 .SetColorOverLifetime(colorGradient)
                 .SetSizeOverLifetime(sizeCurve)

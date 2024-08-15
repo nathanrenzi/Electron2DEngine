@@ -3,6 +3,7 @@ using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering;
 using System.Drawing;
 using System.Numerics;
+using DotnetNoise;
 
 namespace Electron2D.Core
 {
@@ -11,16 +12,19 @@ namespace Electron2D.Core
     {
         private const int PREWARM_STEPS = 100;
 
-        public bool IsLoop { get; set; }
+        public bool IsLoop { get; set; } = true;
         public bool IsPlaying { get; set; }
         public bool Prewarm { get; private set; }
         public bool IsWorldSpace { get; set; }
         public bool InheritVelocity { get; set; }
         public int MaxParticles { get; }
         public float LoopTime { get; private set; }
+        public float Duration { get; private set; } = 5f;
+        public int BurstSpawnAmount { get; private set; } = 30;
         public List<Particle> Particles { get; private set; }
         public int RenderLayer { get; }
         public ParticleEmissionShape EmissionShape { get; set; } = ParticleEmissionShape.VolumeCircle;
+        public ParticleEmissionMode EmissionMode { get; private set; } = ParticleEmissionMode.Constant;
         public float EmissionSize { get; set; } = 1;
         public Vector2 EmissionDirection { get; set; } = Vector2.UnitY;
         public float EmissionSpreadAngle { get; set; } = 10;
@@ -40,6 +44,11 @@ namespace Electron2D.Core
         public Curve SpeedOverLifetime { get; private set; }
         private bool speedOverLifetimeEnabled;
 
+        public float NoiseStrength { get; private set; } = 0;
+        public float NoiseSpeed { get; private set; } = 0;
+        public float NoiseFrequency { get; private set; } = 1;
+        private bool noiseEnabled;
+
         #region Private Fields
         private float[] vertices;
         private uint[] indices;
@@ -50,6 +59,8 @@ namespace Electron2D.Core
         private int randomSeed;
         private bool playOnAwake;
         private Material material;
+        private FastNoise noise;
+        private int currentBurstAmount;
         private float spawnInterval { get { return 1f / EmissionParticlesPerSecond; } }
         private float spawnTime;
 
@@ -57,11 +68,10 @@ namespace Electron2D.Core
         private Vector2 calculatedVelocity;
         #endregion
 
-        public ParticleSystem(bool _playOnAwake, bool _prewarm, bool _isLoop, bool _isWorldSpace, bool _inheritVelocity,
+        public ParticleSystem(bool _playOnAwake, bool _prewarm, bool _isWorldSpace, bool _inheritVelocity,
             int _maxParticles, Material _material, int _renderLayer = 1, int _randomSeed = -1)
         {
             playOnAwake = _playOnAwake;
-            IsLoop = _isLoop;
             IsWorldSpace = _isWorldSpace;
             Prewarm = _prewarm;
             InheritVelocity = _inheritVelocity;
@@ -82,9 +92,51 @@ namespace Electron2D.Core
 
             randomSeed = _randomSeed == -1 ? DateTime.Now.Millisecond : _randomSeed;
             random = new Random(randomSeed);
+            noise = new FastNoise(randomSeed);
 
             ParticleSystemBaseSystem.Register(this);
             RenderLayerManager.OrderRenderable(this);
+        }
+
+        public ParticleSystem SetConstantEmissionMode(bool isLoop, float duration = -1, float emissionsPerSecond = -1)
+        {
+            if (emissionsPerSecond != -1)
+            {
+                EmissionParticlesPerSecond = emissionsPerSecond;
+            }
+            EmissionMode = ParticleEmissionMode.Constant;
+            IsLoop = isLoop;
+            if(!IsLoop && duration == -1)
+            {
+                Debug.LogError("Duration of -1 is not valid for a non-looping particle system.");
+                Duration = 1;
+            }
+            else
+            {
+                Duration = duration;
+            }
+            return this;
+        }
+
+        public ParticleSystem SetBurstEmissionMode(bool isLoop, int burstSpawnAmount, float loopDelay = -1, float emissionsPerSecond = -1)
+        {
+            if(emissionsPerSecond != -1)
+            {
+                EmissionParticlesPerSecond = emissionsPerSecond;
+            }
+            EmissionMode = ParticleEmissionMode.Burst;
+            IsLoop = isLoop;
+            if (!IsLoop && loopDelay == -1)
+            {
+                Debug.LogError("Loop delay (duration) of -1 is not valid for a non-looping burst particle system.");
+                Duration = 1;
+            }
+            else
+            {
+                Duration = loopDelay;
+            }
+            BurstSpawnAmount = burstSpawnAmount;
+            return this;
         }
 
         public ParticleSystem SetInvertEmissionDirection(bool flag)
@@ -217,6 +269,15 @@ namespace Electron2D.Core
             return this;
         }
 
+        public ParticleSystem SetNoiseSettings(float noiseStrength, float noiseFrequency, float noiseSpeed)
+        {
+            noiseEnabled = true;
+            NoiseStrength = noiseStrength;
+            NoiseFrequency = noiseFrequency;
+            NoiseSpeed = noiseSpeed;
+            return this;
+        }
+
         public override void OnAdded()
         {
             transform = GetComponent<Transform>();
@@ -276,7 +337,7 @@ namespace Electron2D.Core
         #region Setters
         private void SetModelMatrix()
         {
-            if(IsWorldSpace)
+            if (IsWorldSpace)
             {
                 renderer.Material.Shader.SetMatrix4x4("model", fakeTransform.GetScaleMatrix() * fakeTransform.GetRotationMatrix() * transform.GetPositionMatrix());
             }
@@ -293,6 +354,8 @@ namespace Electron2D.Core
         {
             renderer.Enabled = true;
             IsPlaying = true;
+            currentBurstAmount = 0;
+            LoopTime = 0;
         }
 
         public void SetPaused(bool _pause)
@@ -320,11 +383,33 @@ namespace Electron2D.Core
             if (!IsPlaying) return;
 
             // Particle spawn check
-            while (spawnTime > spawnInterval)
+            if(EmissionMode == ParticleEmissionMode.Constant)
             {
-                spawnTime -= spawnInterval;
-                SpawnParticle();
+                if(IsLoop || (!IsLoop && LoopTime <= Duration))
+                {
+                    while (spawnTime > spawnInterval)
+                    {
+                        spawnTime -= spawnInterval;
+                        SpawnParticle();
+                    }
+                }
             }
+            else if(EmissionMode == ParticleEmissionMode.Burst)
+            {
+                if(IsLoop && LoopTime > Duration)
+                {
+                    currentBurstAmount = 0;
+                    LoopTime = 0;
+                }
+                while (spawnTime > spawnInterval && currentBurstAmount < BurstSpawnAmount)
+                {
+                    spawnTime -= spawnInterval;
+                    currentBurstAmount++;
+                    SpawnParticle();
+                }
+            }
+
+            ApplyNoise();
 
             // Updating all particles
             for (int i = 0; i < Particles.Count; i++)
@@ -350,7 +435,34 @@ namespace Electron2D.Core
             lastPosition = transform.Position;
 
             LoopTime += Time.DeltaTime;
-            spawnTime += Time.DeltaTime;
+            if(EmissionMode == ParticleEmissionMode.Constant)
+            {
+                spawnTime += Time.DeltaTime;
+            }
+            else if(EmissionMode == ParticleEmissionMode.Burst)
+            {
+                if(currentBurstAmount < BurstSpawnAmount)
+                {
+                    spawnTime += Time.DeltaTime;
+                }
+            }
+        }
+
+        private void ApplyNoise()
+        {
+            if (!noiseEnabled) return;
+            for (int i = 0; i < Particles.Count; i++)
+            {
+                Particle p = Particles[i];
+
+                float x = noise.GetSimplex(randomSeed + p.Position.X * NoiseFrequency + LoopTime * NoiseSpeed,
+                    randomSeed + p.Position.Y * NoiseFrequency + LoopTime * NoiseSpeed);
+                float y = noise.GetSimplex(randomSeed + p.Position.X * NoiseFrequency + LoopTime * NoiseSpeed,
+                    randomSeed + p.Position.Y * NoiseFrequency + LoopTime * NoiseSpeed, randomSeed + 1337 * NoiseFrequency);
+                Vector2 velocityOffset = new Vector2(x, y) * NoiseStrength;
+
+                p.Velocity += velocityOffset * Time.DeltaTime;
+            }
         }
 
         private void SpawnParticle()
@@ -396,7 +508,7 @@ namespace Electron2D.Core
             // Spawn position
             Vector2 spawnPosition = IsWorldSpace ? transform.Position : Vector2.Zero;
             Vector2 alongNormal = Vector2.Zero;
-            switch(EmissionShape)
+            switch (EmissionShape)
             {
                 case ParticleEmissionShape.VolumeSquare:
                     Vector2 squareVolumePos = new Vector2(MathEx.RandomFloatInRange(random, -EmissionSize / 2f, EmissionSize / 2f),
@@ -414,7 +526,7 @@ namespace Electron2D.Core
                     float y;
                     float sign = random.NextDouble() < 0.5 ? -1 : 1;
                     bool xAxis = random.NextDouble() < 0.5;
-                    if(xAxis)
+                    if (xAxis)
                     {
                         x = sign;
                         y = MathEx.RandomFloatInRange(random, -1, 1);
@@ -424,7 +536,7 @@ namespace Electron2D.Core
                         x = MathEx.RandomFloatInRange(random, -1, 1);
                         y = sign;
                     }
-                    Vector2 squarePos = new Vector2(x, y) * EmissionSize/2f;
+                    Vector2 squarePos = new Vector2(x, y) * EmissionSize / 2f;
                     spawnPosition += squarePos;
                     alongNormal = new Vector2(xAxis ? sign : 0, !xAxis ? sign : 0);
                     break;
@@ -434,7 +546,7 @@ namespace Electron2D.Core
                     alongNormal = Vector2.Normalize(circlePos);
                     break;
                 case ParticleEmissionShape.Line:
-                    float lineOffset = MathEx.RandomFloatInRange(random, -EmissionSize / 2f, EmissionSize / 2f);       
+                    float lineOffset = MathEx.RandomFloatInRange(random, -EmissionSize / 2f, EmissionSize / 2f);
                     spawnPosition += Vector2.Normalize(new Vector2(EmissionDirection.Y, EmissionDirection.X)) * lineOffset;
                     alongNormal = EmissionDirection;
                     break;
@@ -501,7 +613,7 @@ namespace Electron2D.Core
             float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y - transform.Position.Y : _particle.Origin.Y) * 2;
 
             Vector4 color;
-            if(colorOverLifetimeEnabled)
+            if (colorOverLifetimeEnabled)
             {
                 Color eval = ColorOverLifetime.Evaluate(t);
                 color = new Vector4((_particle.Color.R / 255f) * (eval.R / 255f), (_particle.Color.G / 255f) * (eval.G / 255f),
@@ -575,5 +687,11 @@ namespace Electron2D.Core
         Square,
         Circle,
         Line
+    }
+
+    public enum ParticleEmissionMode
+    {
+        Constant,
+        Burst
     }
 }
