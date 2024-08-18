@@ -455,10 +455,10 @@ namespace Electron2D.Core
             {
                 Particle p = Particles[i];
 
-                float x = noise.GetSimplex(randomSeed + p.Position.X * NoiseFrequency + LoopTime * NoiseSpeed,
-                    randomSeed + p.Position.Y * NoiseFrequency + LoopTime * NoiseSpeed);
-                float y = noise.GetSimplex(randomSeed + p.Position.X * NoiseFrequency + LoopTime * NoiseSpeed,
-                    randomSeed + p.Position.Y * NoiseFrequency + LoopTime * NoiseSpeed, randomSeed + 1337 * NoiseFrequency);
+                float x = noise.GetSimplex(randomSeed + (p.Position.X + p.Origin.X) * NoiseFrequency + LoopTime * NoiseSpeed,
+                    randomSeed + (p.Position.Y + p.Origin.Y) * NoiseFrequency + LoopTime * NoiseSpeed);
+                float y = noise.GetSimplex(randomSeed + (p.Position.X + p.Origin.X) * NoiseFrequency + LoopTime * NoiseSpeed,
+                    randomSeed + (p.Position.Y + p.Origin.Y) * NoiseFrequency + LoopTime * NoiseSpeed, randomSeed * 1337 * NoiseFrequency);
                 Vector2 velocityOffset = new Vector2(x, y) * NoiseStrength;
 
                 p.Velocity += velocityOffset * Time.DeltaTime;
