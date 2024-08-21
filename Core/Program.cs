@@ -5,7 +5,7 @@ namespace Electron2D.Core
 {
     public class Program
     {
-        public static Game game { get; private set; }
+        public static Game Game { get; private set; }
         public static string BuildDate = "";
 
         [STAThread]
@@ -13,8 +13,8 @@ namespace Electron2D.Core
         {
             GetBuildDate();
             AudioSystem.Initialize();
-            game = new Build.Build(1920, 1080);
-            game.Run();
+            Game = new Build.Build(1920, 1080);
+            Game.Run();
         }
 
         private static void GetBuildDate()

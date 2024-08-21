@@ -21,7 +21,7 @@ namespace Electron2D.Core
         public static event Action OnLateUpdateEvent;
         public static readonly float REFERENCE_WINDOW_WIDTH = 1920f;
         public static readonly float REFERENCE_WINDOW_HEIGHT = 1080f;
-        public static float WINDOW_SCALE { get { return Program.game.CurrentWindowWidth / REFERENCE_WINDOW_WIDTH; } }
+        public static float WINDOW_SCALE { get { return Program.Game.CurrentWindowWidth / REFERENCE_WINDOW_WIDTH; } }
 
         public int CurrentWindowWidth { get; protected set; }
         public int CurrentWindowHeight { get; protected set; }
@@ -37,6 +37,7 @@ namespace Electron2D.Core
         protected Camera2D StartCamera { get; set; }
 
         private bool showElectronSplashscreen;
+        private BlendMode currentBlendMode = BlendMode.Interpolative;
 
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -15f,
             float _physicsLowerBoundX = -100000, float _physicsLowerBoundY = -100000, float _physicsUpperBoundX = 100000, float _physicsUpperBoundY = 100000,
@@ -59,6 +60,30 @@ namespace Electron2D.Core
         public void SetBackgroundColor(Color _backgroundColor)
         {
             BackgroundColor = _backgroundColor;
+        }
+
+        public void SetBlendingMode(BlendMode _blendMode)
+        {
+            currentBlendMode = _blendMode;
+        }
+
+        private void ApplyBlendingMode()
+        {
+            switch (currentBlendMode)
+            {
+                case BlendMode.Interpolative:
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    break;
+                case BlendMode.Additive:
+                    glBlendFunc(GL_ONE, GL_ONE);
+                    break;
+                case BlendMode.Multiplicative:
+                    glBlendFunc(GL_DST_COLOR, GL_ZERO);
+                    break;
+                default:
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    break;
+            }
         }
 
         public void Run()
@@ -86,7 +111,7 @@ namespace Electron2D.Core
             // Setup
             glEnable(GL_BLEND);
             glEnable(GL_STENCIL_TEST);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            ApplyBlendingMode();
             // -----------
 
             #region Splashscreen
@@ -203,6 +228,7 @@ namespace Electron2D.Core
 
                 // Rendering
                 double rendST = Glfw.Time;
+                ApplyBlendingMode();
                 RenderCall();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);

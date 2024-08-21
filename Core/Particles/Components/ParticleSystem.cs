@@ -22,6 +22,7 @@ namespace Electron2D.Core
         public float Duration { get; private set; } = 5f;
         public int BurstSpawnAmount { get; private set; } = 30;
         public List<Particle> Particles { get; private set; }
+        public BlendMode BlendMode { get; private set; }
         public int RenderLayer { get; }
         public ParticleEmissionShape EmissionShape { get; set; } = ParticleEmissionShape.VolumeCircle;
         public ParticleEmissionMode EmissionMode { get; private set; } = ParticleEmissionMode.Constant;
@@ -96,6 +97,12 @@ namespace Electron2D.Core
 
             ParticleSystemBaseSystem.Register(this);
             RenderLayerManager.OrderRenderable(this);
+        }
+
+        public ParticleSystem SetBlendMode(BlendMode blendMode)
+        {
+            BlendMode = blendMode;
+            return this;
         }
 
         public ParticleSystem SetConstantEmissionMode(bool isLoop, float duration = -1, float emissionsPerSecond = -1)
@@ -676,7 +683,9 @@ namespace Electron2D.Core
 
         public void Render()
         {
+            Program.Game.SetBlendingMode(BlendMode);
             renderer.Render();
+            Program.Game.SetBlendingMode(BlendMode.Interpolative);
         }
     }
 

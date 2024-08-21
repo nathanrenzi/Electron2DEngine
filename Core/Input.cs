@@ -135,7 +135,7 @@ namespace Electron2D.Core
             double y;
             Glfw.GetCursorPosition(DisplayManager.Instance.Window, out x, out y);
 
-            Vector2 offset = offsetToMiddle ? new Vector2(Program.game.CurrentWindowWidth / 2f, Program.game.CurrentWindowHeight / 2f) : Vector2.Zero;
+            Vector2 offset = offsetToMiddle ? new Vector2(Program.Game.CurrentWindowWidth / 2f, Program.Game.CurrentWindowHeight / 2f) : Vector2.Zero;
             return new Vector2((float)x - offset.X, DisplayManager.Instance.WindowSize.Y - (float)y - offset.Y);
         }
 
@@ -146,8 +146,8 @@ namespace Electron2D.Core
             Vector2 worldPosition = GetMouseScreenPositionRaw();
 
             // Centering the position
-            worldPosition.Y -= Program.game.CurrentWindowHeight / 2;
-            worldPosition.X -= Program.game.CurrentWindowWidth / 2;
+            worldPosition.Y -= Program.Game.CurrentWindowHeight / 2;
+            worldPosition.X -= Program.Game.CurrentWindowWidth / 2;
             // ----------------------
 
             // Scaling the cursor
