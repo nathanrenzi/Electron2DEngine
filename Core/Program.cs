@@ -1,5 +1,4 @@
-﻿using Electron2D.Build;
-using Electron2D.Core.Audio;
+﻿using Electron2D.Core.Audio;
 
 namespace Electron2D.Core
 {
@@ -13,7 +12,7 @@ namespace Electron2D.Core
         {
             GetBuildDate();
             AudioSystem.Initialize();
-            Game = new Build.Build(1920, 1080);
+            Game = new Build(1920, 1080);
             Game.Run();
         }
 
