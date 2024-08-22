@@ -5,7 +5,7 @@ public class Build : Game
 {
     public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
         $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8,
-        _errorCheckingEnabled: true, _showElectronSplashscreen: false)
+        _errorCheckingEnabled: true, _showElectronSplashscreen: true)
     { }
 
 
