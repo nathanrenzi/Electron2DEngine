@@ -9,84 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Build\Resources\Textures\Tiles\**" />
     <Compile Remove="Core\Mapping\**" />
     <Compile Remove="Core\Rendering\Renderers\Batching\**" />
-    <EmbeddedResource Remove="Build\Resources\Textures\Tiles\**" />
     <EmbeddedResource Remove="Core\Mapping\**" />
     <EmbeddedResource Remove="Core\Rendering\Renderers\Batching\**" />
-    <None Remove="Build\Resources\Textures\Tiles\**" />
     <None Remove="Core\Mapping\**" />
     <None Remove="Core\Rendering\Renderers\Batching\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Build\Resources\Audio\SFX\testloop.wav" />
-    <None Remove="Build\Resources\Audio\SFX\testloop2.wav" />
-    <None Remove="Build\Resources\Audio\SFX\testsfx.mp3" />
     <None Remove="Build\Resources\BuildDate.txt" />
-    <None Remove="Build\Resources\Fonts\NotoSans.ttf" />
-    <None Remove="Build\Resources\Fonts\OpenSans.ttf" />
-    <None Remove="Build\Resources\Shaders\FunShader.glsl" />
-    <None Remove="Build\Resources\Shaders\LitShader.glsl" />
-    <None Remove="Build\Resources\Textures\basicSpritesheet1.png" />
-    <None Remove="Build\Resources\Textures\boid1.png" />
-    <None Remove="Build\Resources\Textures\boid2.png" />
-    <None Remove="Build\Resources\Textures\boidSpritesheet.png" />
-    <None Remove="Build\Resources\Textures\brick.png" />
-    <None Remove="Build\Resources\Textures\brickNormal.png" />
-    <None Remove="Build\Resources\Textures\DefaultParticle.png" />
-    <None Remove="Build\Resources\Textures\EnvironmentTiles.png" />
-    <None Remove="Build\Resources\Textures\EnvironmentTilesNormal.png" />
-    <None Remove="Build\Resources\Textures\FantasyTileset\TX Plant.png" />
-    <None Remove="Build\Resources\Textures\FantasyTileset\TX Player.png" />
-    <None Remove="Build\Resources\Textures\FantasyTileset\TX Props.png" />
-    <None Remove="Build\Resources\Textures\FantasyTileset\TX Shadow Plant.png" />
-    <None Remove="Build\Resources\Textures\FantasyTileset\TX Shadow.png" />
-    <None Remove="Build\Resources\Textures\FantasyTileset\TX Struct.png" />
-    <None Remove="Build\Resources\Textures\FantasyTileset\TX Tileset Grass.png" />
-    <None Remove="Build\Resources\Textures\FantasyTileset\TX Tileset Stone Ground.png" />
-    <None Remove="Build\Resources\Textures\FantasyTileset\TX Tileset Wall.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Attack.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Attack2.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Attack2NoMovement.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_AttackCombo.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_AttackComboNoMovement.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_AttackNoMovement.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Crouch.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_CrouchAll.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_CrouchAttack.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_CrouchTransition.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_CrouchWalk.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Dash.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Death.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_DeathNoMovement.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Fall.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Hit.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Idle.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Jump.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_JumpFallInbetween.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Roll.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Run.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_Slide.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_SlideAll.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_SlideTransitionEnd.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_SlideTransitionStart.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_TurnAround.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_WallClimb.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_WallClimbNoMovement.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_WallHang.png" />
-    <None Remove="Build\Resources\Textures\KnightSpritesheets\_WallSlide.png" />
-    <None Remove="Build\Resources\Textures\Knight\KnightIdle.png" />
-    <None Remove="Build\Resources\Textures\mouseBorder.png" />
-    <None Remove="Build\Resources\Textures\rubble.png" />
-    <None Remove="Build\Resources\Textures\rubbleNormal.png" />
-    <None Remove="Build\Resources\Textures\TestNormal.jpg" />
-    <None Remove="Build\Resources\Textures\test_array.png" />
-    <None Remove="Build\Resources\Textures\tiles1.png" />
-    <None Remove="Build\Resources\Textures\tilesNormal1.png" />
-    <None Remove="Build\Resources\Textures\UserInterfaceTextures.png" />
-    <None Remove="Build\Resources\Textures\white_circle.png" />
     <None Remove="Core\Audio\Electron2DFmodBank.bank" />
     <None Remove="Core\Audio\Electron2DRiff.mp3" />
     <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
@@ -99,160 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Build\Resources\Audio\SFX\testloop.wav">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Audio\SFX\testloop2.wav">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Audio\SFX\testsfx.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Build\BuildDate.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Fonts\NotoSans.ttf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Fonts\OpenSans.ttf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\DefaultParticle.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Plant.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Player.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Props.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Shadow Plant.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Shadow.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Struct.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Tileset Grass.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Tileset Stone Ground.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\FantasyTileset\TX Tileset Wall.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Attack.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Attack2.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Attack2NoMovement.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_AttackCombo.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_AttackComboNoMovement.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_AttackNoMovement.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Crouch.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_CrouchAll.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_CrouchAttack.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_CrouchTransition.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_CrouchWalk.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Dash.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Death.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_DeathNoMovement.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Fall.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Hit.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Idle.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Jump.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_JumpFallInbetween.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Roll.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Run.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_Slide.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_SlideAll.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_SlideTransitionEnd.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_SlideTransitionStart.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_TurnAround.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_WallClimb.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_WallClimbNoMovement.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_WallHang.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\KnightSpritesheets\_WallSlide.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\Knight\KnightIdle.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\TestNormal.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\test_array.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\tiles1.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\tilesNormal1.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Textures\white_circle.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Audio\Electron2DRiff.mp3">
@@ -268,9 +47,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultLit.glsl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Build\Resources\Shaders\FunShader.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultText.glsl">
@@ -303,12 +79,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Build\Resources\Textures\test.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Build\Resources\Textures\test2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Folder Include="Build\Resources\" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

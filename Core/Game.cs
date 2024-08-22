@@ -301,10 +301,10 @@ namespace Electron2D.Core
             }
         }
 
-        protected virtual void Initialize() { }      // This is ran when the Game is first initialized
-        protected virtual void Load() { }            // This is ran when the Game is ready to load content
-        protected virtual void Update() { }          // This is ran every frame before Render()
-        protected virtual void Render() { }          // This is ran every frame after Update()
+        protected virtual void Initialize() { }      // This is ran when the game is first initialized
+        protected virtual void Load() { }            // This is ran when the game is ready to load content
+        protected virtual void Update() { }          // This is ran every frame
+        protected virtual void Render() { }          // This is ran every frame right before rendering
         protected virtual void OnGameClose() { }     // This is ran when the game is closing
     }
 }

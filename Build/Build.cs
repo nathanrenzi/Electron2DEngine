@@ -1,222 +1,41 @@
 ﻿using Electron2D.Core;
-using Electron2D.Core.Audio;
-using Electron2D.Core.ECS;
-using Electron2D.Core.Management;
-using Electron2D.Core.Misc;
-using Electron2D.Core.PhysicsBox2D;
-using Electron2D.Core.Rendering;
-using Electron2D.Core.Rendering.Shaders;
-using Electron2D.Core.Rendering.Text;
-using Electron2D.Core.UserInterface;
-using GLFW;
 using System.Drawing;
-using System.Numerics;
-using DotnetNoise;
 
-namespace Electron2D.Build
+public class Build : Game
 {
-    public class Build : Game
+    public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
+        $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8,
+        _errorCheckingEnabled: true, _showElectronSplashscreen: false)
+    { }
+
+
+    // This is ran when the game is first initialized
+    protected override void Initialize()
     {
-        private TextLabel fpsLabel;
-        private UiComponent fpsBackground;
-        private int displayFrames;
-        private int frames;
-        private float lastFrameCountTime;
-        private float physicsHitCooldown = 0.05f;
-        private float lastPhysicsHitTime = -10;
 
-        private AudioInstance test;
-        private AudioInstance test2;
+    }
 
-        private Entity particleEntity = new Entity();
+    // This is ran when the game is ready to load content
+    protected override void Load()
+    {
+        SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
+    }
 
-        public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
-            $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8,
-            _errorCheckingEnabled: true, _showElectronSplashscreen: false) { }
+    // This is ran every frame
+    protected override void Update()
+    {
 
-        
-        protected override void Load()
-        {
-            // Load Custom Component Systems
-            // Ex. ComponentSystem.Start();
-            // -----------------------------
-            SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
-            InitializeFPSLabel();
+    }
 
-            AudioSystem.MasterVolume = 0.5f;
-            AudioClip clip = AudioSystem.LoadClip("Build/Resources/Audio/SFX/testloop.wav");
-            test = AudioSystem.CreateInstance(clip, _volume: 0.3f);
-            test.IsLoop = true;
+    // This is ran every frame right before rendering
+    protected unsafe override void Render()
+    {
 
-            AudioClip clip2 = AudioSystem.LoadClip("Build/Resources/Audio/SFX/testloop2.wav");
-            test2 = AudioSystem.CreateInstance(clip2, _volume: 0);
-            test2.IsLoop = true;
+    }
 
-            AudioSpatializer spatializer = new AudioSpatializer(true, new AudioInstance[] { test, test2 });
-            Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Magenta));
-            s.AddComponent(spatializer);
-            //test.Play();
-            //test2.Play();
+    // This is ran when the game is closing
+    protected override void OnGameClose()
+    {
 
-            particleEntity.AddComponent(new Transform());
-
-            Curve sizeCurve = new Curve(new List<Curve.Point> {new Curve.Point(0f, 1f, new Curve.Handle(-0.5f, 0f), new Curve.Handle(0.5f, 0f)),
-                new Curve.Point(1f, 0f, new Curve.Handle(-0.5f, 0f), new Curve.Handle(0.5f, 0f))});
-
-            Curve speedCurve = new Curve(new List<Curve.Point> {new Curve.Point(0f, 1f, new Curve.Handle(-0.5f, 0f), new Curve.Handle(0.5f, 0f)),
-                new Curve.Point(1f, 0f, new Curve.Handle(-0.5f, 0f), new Curve.Handle(0.5f, 0f))});
-
-            Gradient colorGradient = new Gradient();
-            colorGradient.Add(Color.Transparent, 0);
-            colorGradient.Add(Color.FromArgb(12, Color.White), 0.1f);
-            colorGradient.Add(Color.Transparent, 1);
-            //colorGradient.Add(Color.Transparent, 0);
-            //colorGradient.Add(Color.White, 0.1f);
-            //colorGradient.Add(Color.Transparent, 1);
-
-            ParticleSystem particleSystem = new ParticleSystem(true, false, true, false, 5000, Material.Create(GlobalShaders.DefaultTexturedVertex,
-                ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png")), 2)
-                .SetBlendMode(BlendMode.Interpolative)
-                .SetConstantEmissionMode(true)
-                .SetNoiseSettings(500f, 1, 50)
-                .SetSize(20, 50)
-                .SetLifetime(5f)
-                .SetSpeed(150)
-                .SetEmissionShape(ParticleEmissionShape.Circle, 100)
-                .SetEmitAlongEmissionShapeNormal(true)
-                .SetInvertEmissionDirection(false)
-                .SetEmissionDirection(new Vector2(0, 1))
-                .SetEmissionSpreadAngle(0)
-                .SetAngularVelocity(0, 40)
-                .SetColor(Color.White)
-                .SetEmissionsPerSecond(800)
-                .SetStartRotation(0, 360)
-                .SetColorOverLifetime(colorGradient)
-                .SetSizeOverLifetime(sizeCurve)
-                .SetSpeedOverLifetime(speedCurve);
-            particleEntity.AddComponent(particleSystem);
-        }
-
-
-        protected override void Update()
-        {
-            CameraMovement();
-            CalculateFPS();
-
-            particleEntity.GetComponent<Transform>().Position = Input.GetMouseWorldPosition();
-
-            test.Pitch += Input.ScrollDelta * 0.1f;
-
-            if(Input.GetKey(Keys.Space))
-            {
-                test2.Volume = 0.2f;
-            }
-            else
-            {
-                test2.Volume = 0f;
-            }
-
-            if(Input.GetMouseButtonDown(MouseButton.Right))
-            {
-                CreateRigidbody();
-            }
-
-            for (int i = 0; i < sprites.Count; i++)
-            {
-                sprites[i].Item1.Transform.Scale = Vector2.One * 40 * Easing.EaseOutQuad(MathEx.Clamp01((Time.GameTime - sprites[i].Item2) * 20f));
-            }
-        }
-
-        private List<(Sprite, float)> sprites = new List<(Sprite, float)>();
-        private void CreateRigidbody()
-        {
-            Random rand = new Random();
-            Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture,
-                Color.FromArgb(255, rand.Next(0, 256), rand.Next(0, 256), rand.Next(0, 256))), 0, 40, 40);
-            RigidbodyDynamicDef df = new RigidbodyDynamicDef()
-            {
-                Shape = RigidbodyShape.Box,
-            };
-            s.Transform.Position = Input.GetMouseWorldPosition();
-            s.AddComponent(Rigidbody.CreateDynamic(df));
-            //spawnSound.Play();
-            sprites.Add((s, Time.GameTime));
-
-            s.GetComponent<Rigidbody>().OnBeginContact += (rb) => PlayRigidbodyHitSound(s.GetComponent<Rigidbody>());
-        }
-
-        private void PlayRigidbodyHitSound(Rigidbody _rb)
-        {
-            float _gameTime = Time.GameTime;
-            float _lastTime = lastPhysicsHitTime + physicsHitCooldown;
-            float magnitute = MathF.Abs(MathF.Sqrt((_rb.CalculatedVelocity.X * _rb.CalculatedVelocity.X)
-                + (_rb.CalculatedVelocity.Y * _rb.CalculatedVelocity.Y)));
-            float maxMagnitude = 40;
-            float volume = MathEx.Clamp01(magnitute / maxMagnitude);
-            volume = volume < 0.1f ? 0 : volume;
-
-            if (_gameTime < _lastTime || volume == 0)
-            {
-                return;
-            }
-            lastPhysicsHitTime = _gameTime;
-
-            // play physics hit
-        }
-
-        private void CameraMovement()
-        {
-            Camera2D.Main.Zoom += Input.ScrollDelta;
-            Camera2D.Main.Zoom = Math.Clamp(Camera2D.Main.Zoom, 0.2f, 2);
-
-            float moveSpeed = 1000;
-            if (Input.GetKey(Keys.W))
-            {
-                Camera2D.Main.Transform.Position += new Vector2(0, moveSpeed * Time.DeltaTime);
-            }
-            if (Input.GetKey(Keys.A))
-            {
-                Camera2D.Main.Transform.Position += new Vector2(-moveSpeed * Time.DeltaTime, 0);
-            }
-            if (Input.GetKey(Keys.S))
-            {
-                Camera2D.Main.Transform.Position += new Vector2(0, -moveSpeed * Time.DeltaTime);
-            }
-            if (Input.GetKey(Keys.D))
-            {
-                Camera2D.Main.Transform.Position += new Vector2(moveSpeed * Time.DeltaTime, 0);
-            }
-        }
-
-        private void InitializeFPSLabel()
-        {
-            fpsLabel = new TextLabel("FPS: 0", "Build/Resources/Fonts/OpenSans.ttf",
-                30, Color.White, Color.White, new Vector2(130, 30), TextAlignment.Left, TextAlignment.Center,
-                TextAlignmentMode.Geometry, TextOverflowMode.Disabled, _uiRenderLayer: 11);
-            Material m = Material.Create(GlobalShaders.DefaultTexture, Color.FromArgb(60, 0, 0, 0), ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png"));
-            fpsBackground = new SlicedUiComponent(m, 160, 40, 100, 100, 100, 100, 200, 0.2f);
-
-            fpsLabel.Anchor = new Vector2(-1, 1);
-            fpsLabel.Transform.Position = new Vector2((-1920 / 2) + 23, (1080 / 2) - 20);
-            fpsBackground.Transform.Position = new Vector2((-1920 / 2) + 70 + 20, (1080 / 2) - 15 - 20);
-        }
-
-        private void CalculateFPS()
-        {
-            frames++;
-            if (Time.GameTime - lastFrameCountTime >= 1)
-            {
-                lastFrameCountTime = Time.GameTime;
-                displayFrames = frames;
-                frames = 0;
-            }
-
-            fpsLabel.Text = $"FPS: {displayFrames}";
-        }
-
-        protected unsafe override void Render()
-        {
-
-        }
     }
 }
