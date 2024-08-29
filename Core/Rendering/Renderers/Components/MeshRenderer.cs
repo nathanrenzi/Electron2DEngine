@@ -13,6 +13,7 @@ namespace Electron2D.Core.Rendering
         public float[] vertices { get; protected set; }
         public uint[] indices { get; protected set; }
 
+        public BufferLayout Layout { get; protected set; }
         public VertexBuffer vertexBuffer { get; protected set; }
         public VertexArray vertexArray { get; protected set; }
         public IndexBuffer indexBuffer { get; protected set; }
@@ -25,7 +26,6 @@ namespace Electron2D.Core.Rendering
         /// <summary>
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
         /// </summary>
-        public BufferLayout Layout { get; set; }
         public bool UseUnscaledProjectionMatrix { get; set; } = false;
         public bool UseCustomIndexRenderCount { get; set; } = false;
         public int CustomIndexRenderCount { get; set; } = 0;
@@ -146,6 +146,12 @@ namespace Electron2D.Core.Rendering
             Layout = new BufferLayout();
             Layout.Add<float>(2); // Position
             Layout.Add<float>(2); // UV
+        }
+
+        public void SetBufferLayoutBeforeLoad(BufferLayout _layout)
+        {
+            if (IsLoaded) return;
+            Layout = _layout;
         }
 
         public unsafe void Render()

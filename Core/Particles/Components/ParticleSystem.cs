@@ -300,7 +300,7 @@ namespace Electron2D.Core
             layout.Add<float>(2);
             layout.Add<float>(2);
             layout.Add<float>(4);
-            renderer.Layout = layout;
+            renderer.SetBufferLayoutBeforeLoad(layout);
             renderer.SetVertexArrays(vertices, indices, false, renderer.IsLoaded);
             renderer.Load(false);
             if (Prewarm) PrewarmParticles(); // Currently does not work
