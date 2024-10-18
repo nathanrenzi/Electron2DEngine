@@ -12,6 +12,7 @@ A 2D game engine written in C#. This project is a self-study meant to give me mo
   - [Box2D.NetStandard v1.0](https://github.com/codingben/box2d-netstandard/tree/v1.0) - Used for 2D physics
   - [FreeTypeSharp](https://github.com/ryancheung/FreeTypeSharp) - Used for font rasterization
   - [NAudio](https://github.com/naudio/NAudio) - Used for audio
+  - [DotnetNoise](https://github.com/cmsommer/DotnetNoise) - Used for noise generation
 
 ## Licensing
 
