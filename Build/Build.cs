@@ -1,11 +1,13 @@
 ﻿using Electron2D.Core;
+using Electron2D.Core.Rendering;
+using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 
 public class Build : Game
 {
     public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
         $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8,
-        _errorCheckingEnabled: true, _showElectronSplashscreen: true)
+        _errorCheckingEnabled: true, _showElectronSplashscreen: false)
     { }
 
 
@@ -19,6 +21,10 @@ public class Build : Game
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
+
+        Shader shader = new Shader(Shader.ParseShader("Build/Resources/Shaders/NoiseMixShader.glsl"), true);
+
+        Sprite sprite = new Sprite(Material.Create(shader), _sizeX: 1000, _sizeY: 1000);
     }
 
     // This is ran every frame
