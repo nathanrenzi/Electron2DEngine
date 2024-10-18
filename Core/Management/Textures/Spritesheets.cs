@@ -13,9 +13,9 @@ namespace Electron2D.Core.Management.Textures
     /// </summary>
     public static class Spritesheets
     {
-        public static IDictionary<Texture2D, SpritesheetElement> spritesheets = new Dictionary<Texture2D, SpritesheetElement>();
+        public static IDictionary<ITexture, SpritesheetElement> spritesheets = new Dictionary<ITexture, SpritesheetElement>();
 
-        public static void Add(Texture2D _texture, int _totalSpriteColumns, int _totalSpriteRows)
+        public static void Add(ITexture _texture, int _totalSpriteColumns, int _totalSpriteRows)
         {
             if (spritesheets.ContainsKey(_texture))
             {
@@ -25,7 +25,7 @@ namespace Electron2D.Core.Management.Textures
             spritesheets.Add(_texture, new SpritesheetElement(_totalSpriteColumns, _totalSpriteRows));
         }
 
-        public static Vector2 GetVertexUV(Texture2D _texture, int _col, int _row, Vector2 _localUV)
+        public static Vector2 GetVertexUV(ITexture _texture, int _col, int _row, Vector2 _localUV)
         {
             if(!spritesheets.ContainsKey(_texture))
             {
