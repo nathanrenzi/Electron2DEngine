@@ -1,4 +1,6 @@
 ﻿using Electron2D.Core;
+using Electron2D.Core.Rendering;
+using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 
 public class Build : Game
@@ -19,6 +21,13 @@ public class Build : Game
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
+
+        TileData[] data = new TileData[]
+        {
+            new TileData() {Material = Material.Create(GlobalShaders.DefaultTexture), Name = "Test"}
+        };
+
+        Tilemap tilemap = new Tilemap(data, new int[100], 16, 10, 10);
     }
 
     // This is ran every frame
