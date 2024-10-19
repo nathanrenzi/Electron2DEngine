@@ -1,4 +1,5 @@
 ﻿using Electron2D.Core;
+using Electron2D.Core.Management;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
@@ -7,7 +8,7 @@ public class Build : Game
 {
     public Build(int _initialWindowWidth, int _initialWindowHeight) : base(_initialWindowWidth, _initialWindowHeight,
         $"Electron2D Build - {Program.BuildDate}", _vsync: false, _antialiasing: false, _physicsPositionIterations: 4, _physicsVelocityIterations: 8,
-        _errorCheckingEnabled: true, _showElectronSplashscreen: true)
+        _errorCheckingEnabled: true, _showElectronSplashscreen: false)
     { }
 
 
@@ -21,13 +22,15 @@ public class Build : Game
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
-
+        StartCamera.Zoom = 5;
         TileData[] data = new TileData[]
         {
-            new TileData() {Material = Material.Create(GlobalShaders.DefaultTexture), Name = "Test"}
+            new TileData() {Material = Material.Create(GlobalShaders.DefaultTexture, ResourceManager.Instance.LoadTexture("Build/Resources/testimage.jpg")), Name = "Test"},
+            new TileData() {Material = Material.Create(GlobalShaders.DefaultTexture), Name = "Test2"}
         };
 
         Tilemap tilemap = new Tilemap(data, new int[100], 16, 10, 10);
+        tilemap.GetComponent<Transform>().Position = new System.Numerics.Vector2(16 * -5, 16 * -5);
     }
 
     // This is ran every frame

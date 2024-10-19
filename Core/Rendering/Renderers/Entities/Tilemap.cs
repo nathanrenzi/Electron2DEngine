@@ -69,7 +69,7 @@ namespace Electron2D.Core
             transform = new Transform();
             AddComponent(transform);
 
-            // Add renderer for each new material, and add it as a component to entity
+            // Add renderer for each new material
             for (int i = 0; i < Data.Length; i++)
             {
                 if (Data[i].Material == null) continue;
@@ -143,7 +143,7 @@ namespace Electron2D.Core
                     mesh.Vertices.Add(xPos + xMod); // X
                     mesh.Vertices.Add(yPos + yMod); // Y
 
-                    // Add submesh sprite support here using the 0, 1 values generated
+                    // UV
                     float u = xMod / realTilePixelSize;
                     float v = yMod / realTilePixelSize;
                     Vector2 newUV = Spritesheets.spritesheets.ContainsKey(data.Material.MainTexture) ?
@@ -155,18 +155,21 @@ namespace Electron2D.Core
                 }
 
                 // Indices
-                int offset = mesh.Vertices.Count; // Multiplying by 4 because there are 4 vertices per quad
-                mesh.Indices.Add((uint)(offset + 0));
-                mesh.Indices.Add((uint)(offset + 1));
-                mesh.Indices.Add((uint)(offset + 2));
-                mesh.Indices.Add((uint)(offset + 0));
-                mesh.Indices.Add((uint)(offset + 2));
-                mesh.Indices.Add((uint)(offset + 3));
+                int vertices = (mesh.Vertices.Count / 4) - 4;
+                mesh.Indices.Add((uint)(vertices + 0));
+                mesh.Indices.Add((uint)(vertices + 1));
+                mesh.Indices.Add((uint)(vertices + 2));
+                mesh.Indices.Add((uint)(vertices + 0));
+                mesh.Indices.Add((uint)(vertices + 2));
+                mesh.Indices.Add((uint)(vertices + 3));
             }
 
             foreach (var m in meshDataDictionary)
             {
-                m.Value.Renderer.SetVertexArrays(m.Value.Vertices.ToArray(), m.Value.Indices.ToArray());
+                if(m.Value.Vertices.Count > 0)
+                {
+                    m.Value.Renderer.SetVertexArrays(m.Value.Vertices.ToArray(), m.Value.Indices.ToArray());
+                }
             }
         }
 
