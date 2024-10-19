@@ -29,7 +29,12 @@ public class Build : Game
             new TileData() {Material = Material.Create(GlobalShaders.DefaultTexture), Name = "Test2"}
         };
 
-        Tilemap tilemap = new Tilemap(data, new int[100], 16, 10, 10);
+        int[] tiles = new int[]
+        {
+            0,0,1,0,-1,1,1,1,0
+        };
+
+        Tilemap tilemap = new Tilemap(data, tiles, 16, 3, 3);
         tilemap.GetComponent<Transform>().Position = new System.Numerics.Vector2(16 * -5, 16 * -5);
     }
 
