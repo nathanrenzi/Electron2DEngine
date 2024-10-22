@@ -1,6 +1,7 @@
 ﻿using Electron2D.Core.Management;
 using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
+using Newtonsoft.Json;
 
 using static Electron2D.OpenGL.GL;
 
@@ -8,6 +9,21 @@ namespace Electron2D.Core.Rendering
 {
     public class Material
     {
+        private struct MaterialData
+        {
+            public bool MainTextureIsSRGBA;
+            public bool MainTextureIsArray;
+            public string MainTexturePath;
+            public bool NormalTextureIsSRGBA;
+            public bool NormalTextureIsArray;
+            public string NormalTexturePath;
+            public string[] ShaderUniformTags;
+            public string ShaderPath;
+            public float NormalScale;
+            public Color MainColor;
+            public bool UsingLinearFiltering;
+        }
+
         private static Texture2D blankTexture = null;
         private static Texture2D blankNormal = null;
 
@@ -66,6 +82,34 @@ namespace Electron2D.Core.Rendering
             return new Material(_materialToCopy.Shader, _materialToCopy.MainTexture, _materialToCopy.NormalTexture,
                 _materialToCopy.MainColor, _materialToCopy.UsingLinearFiltering, _materialToCopy.NormalScale);
         }
+
+        public static Material LoadFromJSON(string json)
+        {
+            MaterialData m = JsonConvert.DeserializeObject<MaterialData>(json);
+            ITexture mainTexture, normalTexture;
+            if(m.MainTextureIsArray)
+            {
+                Debug.LogError("Loading texture arrays in Material.Load() is not yet supported!");
+                return null;
+                //mainTexture = ResourceManager.Instance.LoadTextureArray(mdata.MainTexturePath);
+            }
+            else
+            {
+                mainTexture = ResourceManager.Instance.LoadTexture(m.MainTexturePath, !m.MainTextureIsSRGBA);
+            }
+            if (m.NormalTextureIsArray)
+            {
+                Debug.LogError("Loading texture arrays in Material.Load() is not yet supported!");
+                return null;
+                //normalTexture = ResourceManager.Instance.LoadTextureArray(mdata.NormalTexturePath);
+            }
+            else
+            {
+                normalTexture = ResourceManager.Instance.LoadTexture(m.NormalTexturePath, !m.NormalTextureIsSRGBA);
+            }
+            return Create(new Shader(Shader.ParseShader(m.ShaderPath), true, m.ShaderUniformTags), m.MainColor,
+                mainTexture, normalTexture, m.UsingLinearFiltering, m.NormalScale);
+        }
         #endregion
 
         /// <summary>
@@ -80,6 +124,36 @@ namespace Electron2D.Core.Rendering
             Shader.SetFloat("totalLayers", MainTexture.GetTextureLayers());
             Shader.SetColor("mainColor", MainColor);
             Shader.SetFloat("normalScale", NormalScale);
+        }
+
+        public string SaveAsJSON()
+        {
+            MaterialData m = new MaterialData();
+            Texture2D texture = ResourceManager.Instance.TryGetTexture2DFromITexture(MainTexture);
+            if(texture == null)
+            {
+                Debug.LogError("Loading texture arrays in Material.Save() is not yet supported!");
+                return "";
+            }
+            m.MainTextureIsSRGBA = texture.IsSRGBA;
+            m.MainTextureIsArray = false; // Temp while arrays are not supported
+            m.MainTexturePath = texture.FilePath;
+            Texture2D normal = ResourceManager.Instance.TryGetTexture2DFromITexture(MainTexture);
+            if (normal == null)
+            {
+                Debug.LogError("Loading texture arrays in Material.Save() is not yet supported!");
+                return "";
+            }
+            m.NormalTextureIsSRGBA = normal.IsSRGBA;
+            m.NormalTextureIsArray = false;
+            m.NormalTexturePath = normal.FilePath;
+            m.ShaderUniformTags = Shader.GlobalUniformTags;
+            m.ShaderPath = Shader.FilePath;
+            m.NormalScale = NormalScale;
+            m.MainColor = MainColor;
+            m.UsingLinearFiltering = UsingLinearFiltering;
+
+            return JsonConvert.SerializeObject(m);
         }
     }
 }

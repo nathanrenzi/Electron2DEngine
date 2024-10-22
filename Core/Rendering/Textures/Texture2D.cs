@@ -10,12 +10,16 @@ namespace Electron2D.Core.Rendering
         public uint Handle { get; private set; }
         public int Width { get; set; }
         public int Height { get; set; }
+        public string FilePath { get; }
+        public bool IsSRGBA { get; }
 
-        public Texture2D(uint _handle, int _width, int _height)
+        public Texture2D(uint _handle, int _width, int _height, string _filePath = "", bool _isSRGBA = true)
         {
             Handle = _handle;
             Width = _width;
             Height = _height;
+            FilePath = _filePath;
+            IsSRGBA = _isSRGBA;
         }
 
         ~Texture2D()

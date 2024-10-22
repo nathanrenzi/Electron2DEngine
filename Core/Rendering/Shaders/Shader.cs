@@ -11,6 +11,13 @@ namespace Electron2D.Core.Rendering.Shaders
         public uint ProgramID { get; private set; }
         public bool Compiled { get; private set; }
         public string[] GlobalUniformTags { get; private set; }
+        public string FilePath
+        {
+            get
+            {
+                return shaderProgramSource.FilePath;
+            }
+        }
 
         private readonly IDictionary<string, int> localUniforms = new Dictionary<string, int>();
 
@@ -69,7 +76,7 @@ namespace Electron2D.Core.Rendering.Shaders
                     shaderSource[(int)shaderType] += current + Environment.NewLine;
                 }
             }
-            return new ShaderProgramSource(shaderSource[(int)eShaderType.VERTEX], shaderSource[(int)eShaderType.FRAGMENT]);
+            return new ShaderProgramSource(_filePath, shaderSource[(int)eShaderType.VERTEX], shaderSource[(int)eShaderType.FRAGMENT]);
         }
 
         public unsafe bool Compile()
@@ -89,7 +96,7 @@ namespace Electron2D.Core.Rendering.Shaders
             uint vs, fs;
 
             vs = glCreateShader(GL_VERTEX_SHADER);
-            glShaderSource(vs, shaderProgramSource.vertexShaderSource);
+            glShaderSource(vs, shaderProgramSource.VertexShaderSource);
             glCompileShader(vs);
 
             // Writing any errors to the console
@@ -104,7 +111,7 @@ namespace Electron2D.Core.Rendering.Shaders
             // ------------------
 
             fs = glCreateShader(GL_FRAGMENT_SHADER);
-            glShaderSource(fs, shaderProgramSource.fragmentShaderSource);
+            glShaderSource(fs, shaderProgramSource.FragmentShaderSource);
             glCompileShader(fs);
 
             // Writing any errors to the console

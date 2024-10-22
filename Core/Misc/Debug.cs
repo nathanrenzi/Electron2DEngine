@@ -7,6 +7,7 @@ namespace Electron2D
         public static bool DebuggingEnabled = true;
         public static bool EnableLogMessages = true;
         public static bool EnableErrorMessages = true;
+        public static bool EnableWarningMessages = true;
         public static bool EnableCollapsing = true;
 
         private static string lastMessage = "";
@@ -37,6 +38,19 @@ namespace Electron2D
 
             Console.ForegroundColor = ConsoleColor.Red;
             Write($"ERROR: {_message}");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        /// <summary>
+        /// Used to log formatted and togglable warning messages to the console and the latest log file.
+        /// </summary>
+        /// <param name="_message"></param>
+        public static void LogWarning(object _message)
+        {
+            if (!DebuggingEnabled || !EnableWarningMessages) return;
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Write($"WARNING: {_message}");
             Console.ForegroundColor = ConsoleColor.White;
         }
 

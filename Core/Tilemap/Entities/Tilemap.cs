@@ -1,45 +1,11 @@
-﻿using Box2DX.Common;
-using Electron2D.Core.ECS;
+﻿using Electron2D.Core.ECS;
 using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Rendering;
 using Newtonsoft.Json;
 using System.Numerics;
-using System.Text;
 
 namespace Electron2D.Core
 {
-    public struct TileData
-    {
-        public string Name { get; set; }
-        public int SpriteColumn { get; set; }
-        public int SpriteRow { get; set; }
-        public Material Material { get; set; }
-        public bool AllowRandomRotation { get; set; }
-
-        public TileData(string _name, Material _material, int _spriteColumn = 0, int _spriteRow = 0, bool _allowRandomRotation = false)
-        {
-            Name = _name;
-            Material = _material;
-            SpriteColumn = _spriteColumn;
-            SpriteRow = _spriteRow;
-            AllowRandomRotation = _allowRandomRotation;
-        }
-    }
-
-    public struct TileMesh
-    {
-        public List<float> Vertices;
-        public List<uint> Indices;
-        public MeshRenderer Renderer;
-
-        public TileMesh(Transform _transform, Material _material)
-        {
-            Vertices = new List<float>();
-            Indices = new List<uint>();
-            Renderer = new MeshRenderer(_transform, _material);
-        }
-    }
-
     public class Tilemap : Entity, IRenderable
     {
         public TileData[] Data { get; set; }
@@ -63,7 +29,7 @@ namespace Electron2D.Core
         private int seed;
         private bool isDirty = false;
 
-        public Tilemap(TileData[] _data, int[] _tileArray, int _tilePixelSize, int _sizeX, int _sizeY, int _renderLayer = -1)
+        private Tilemap(TileData[] _data, int[] _tileArray, int _tilePixelSize, int _sizeX, int _sizeY, int _renderLayer = -1)
         {
             TilePixelSize = _tilePixelSize;
             Data = _data;
@@ -72,7 +38,7 @@ namespace Electron2D.Core
             SizeY = _sizeY;
             RenderLayer = _renderLayer;
 
-            seed = (1337 * _sizeX) + _tilePixelSize * _renderLayer;
+            seed = 1337 * _sizeX + _tilePixelSize * _renderLayer;
             random = new Random(seed);
             transform = new Transform();
             AddComponent(transform);
@@ -97,6 +63,61 @@ namespace Electron2D.Core
 
             Game.OnUpdateEvent += RegenerateEntireMesh;
             RenderLayerManager.OrderRenderable(this);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Tilemap"/> set up for rendering with one shared material.
+        /// </summary>
+        /// <param name="_tilePixelSize">The pixel size of each tile on the screen (Does not have anything to
+        ///  do with the pixel size of the material's texture.)</param>
+        /// <param name="_sizeX">The size of the Tilemap on the X axis.</param>
+        /// <param name="_sizeY">The size of the Tilemap on the Y axis.</param>
+        /// <param name="_cloneArrays">Whether the input arrays should be cloned before storing
+        ///  to prevent data overwriting. Note: If the input arrays are being used for multiple tilemaps with shared
+        ///   materials, ensure that this is enabled.</param>
+        /// <returns></returns>
+        public static Tilemap CreateSharedMaterial(Material _material, TileData[] _data, int[] _tileArray, int _tilePixelSize,
+            int _sizeX, int _sizeY, int _renderLayer = -1, bool _cloneArrays = true)
+        {
+            TileData[] data = _data;
+            int[] tiles = _tileArray;
+            if (_cloneArrays)
+            {
+                data = (TileData[])_data.Clone();
+                tiles = (int[])_tileArray.Clone();
+            }
+            else
+            {
+                Debug.LogWarning("Tilemap with shared material is being created without cloning input arrays.");
+            }
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i].Material = _material;
+            }
+            return new Tilemap(data, tiles, _tilePixelSize, _sizeX, _sizeY, _renderLayer);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Tilemap"/> set up for rendering with multiple materials, and multiple renderers.
+        /// </summary>
+        /// <param name="_tilePixelSize">The pixel size of each tile on the screen (Does not have anything to
+        ///  do with the pixel size of the material's texture.)</param>
+        /// <param name="_sizeX">The size of the Tilemap on the X axis.</param>
+        /// <param name="_sizeY">The size of the Tilemap on the Y axis.</param>
+        /// <param name="_cloneArrays">Whether the input arrays should be cloned before storing
+        ///  to prevent data overwriting.</param>
+        /// <returns></returns>
+        public static Tilemap CreateMultiMaterial(TileData[] _data, int[] _tileArray, int _tilePixelSize,
+            int _sizeX, int _sizeY, int _renderLayer = -1, bool _cloneArrays = true)
+        {
+            TileData[] data = _data;
+            int[] tiles = _tileArray;
+            if (_cloneArrays)
+            {
+                data = (TileData[])_data.Clone();
+                tiles = (int[])_tileArray.Clone();
+            }
+            return new Tilemap(data, tiles, _tilePixelSize, _sizeX, _sizeY, _renderLayer);
         }
 
         ~Tilemap()
@@ -126,8 +147,8 @@ namespace Electron2D.Core
                 TileData data = Data[Tiles[i]];
                 TileMesh mesh = meshDataDictionary[data.Material];
 
-                float xPos = (i % SizeX) * realTilePixelSize;
-                float yPos = (i / SizeX) * realTilePixelSize;
+                float xPos = i % SizeX * realTilePixelSize;
+                float yPos = i / SizeX * realTilePixelSize;
 
                 for (int a = 0; a < 4; a++) // Each vertex in the quad
                 {
@@ -164,7 +185,7 @@ namespace Electron2D.Core
                         Spritesheets.GetVertexUV(data.Material.MainTexture,
                         data.SpriteColumn, data.SpriteRow, new Vector2(u, v)) :
                         new Vector2(u, v);
-                    if(data.AllowRandomRotation)
+                    if (data.AllowRandomRotation)
                     {
                         newUV = RotateUV(newUV, TileRotations[i] * 90);
                     }
@@ -173,7 +194,7 @@ namespace Electron2D.Core
                 }
 
                 // Indices
-                int vertices = (mesh.Vertices.Count / 4) - 4;
+                int vertices = mesh.Vertices.Count / 4 - 4;
                 mesh.Indices.Add((uint)(vertices + 0));
                 mesh.Indices.Add((uint)(vertices + 1));
                 mesh.Indices.Add((uint)(vertices + 2));
@@ -184,7 +205,7 @@ namespace Electron2D.Core
 
             foreach (var m in meshDataDictionary)
             {
-                if(m.Value.Vertices.Count > 0)
+                if (m.Value.Vertices.Count > 0)
                 {
                     m.Value.Renderer.SetVertexArrays(m.Value.Vertices.ToArray(), m.Value.Indices.ToArray());
                 }

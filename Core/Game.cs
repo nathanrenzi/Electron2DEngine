@@ -188,7 +188,7 @@ namespace Electron2D.Core
             GC.Collect();
 
             Debug.Log("Initialization complete");
-            Debug.Log("#################### GAME STARTED ####################", ConsoleColor.Yellow);
+            Debug.Log("#################### GAME STARTED ####################", ConsoleColor.DarkGreen);
 
             Load();
             // Rendering before the game loop prevents a black screen when the window is opened

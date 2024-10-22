@@ -31,6 +31,32 @@ namespace Electron2D.Core.Management
             }
         }
 
+        public Texture2D TryGetTexture2DFromITexture(ITexture texture)
+        {
+            foreach (var tex in textureCache)
+            {
+                if(texture == tex.Value)
+                {
+                    return tex.Value;
+                }
+            }
+
+            return null;
+        }
+
+        public Texture2DArray TryGetTextureArrayFromITexture(ITexture texture)
+        {
+            foreach (var tex in textureArrayCache)
+            {
+                if (texture == tex.Value)
+                {
+                    return tex.Value;
+                }
+            }
+
+            return null;
+        }
+
         #region Texture Arrays
         /// <summary>
         /// Removes a texture from the cache. This is called from <see cref="Texture2DArray.Dispose()"/>
