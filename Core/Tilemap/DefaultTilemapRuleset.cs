@@ -70,8 +70,6 @@ namespace Electron2D.Core
             (new Neighbors[] { Neighbors.Down, Neighbors.Left, Neighbors.BottomLeft }, 47),
         };
 
-        public static DefaultTilemapRuleset Instance { get; private set; } = new DefaultTilemapRuleset();
-
         public Vector2 CheckRuleset(int[] _tileAndNeighbors3x3)
         {
             int tileType = _tileAndNeighbors3x3[4]; // Middle tile of 3x3 grid
@@ -140,7 +138,10 @@ namespace Electron2D.Core
                 index = InterpretCompletionResults(CheckListForCompletion(initialList), index);
             }
 
-            return new Vector2()
+            int y = index % 12; // Ruleset template is 12 tiles wide
+            int x = index - (y * 12);
+
+            return new Vector2(x, y);
         }
 
         private List<(Neighbors[], int)> GetTilesWithNeighborType(List<(Neighbors[], int)> list, Neighbors neighbor)
