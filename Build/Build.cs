@@ -31,7 +31,8 @@ public class Build : Game
         StartCamera.Zoom = 4;
         tilemap = Tilemap.CreateSharedMaterial(Material.Create(GlobalShaders.DefaultTexture,
             ResourceManager.Instance.LoadTexture("Build/Resources/autotile.png")),
-            new TileData[] {new TileData("Test", _ruleset: new DefaultTilemapRuleset()), new TileData("Test2", _ruleset: new DefaultTilemapRuleset()) }, tiles,
+            new TileData[] {new TileData("Test", _ruleset: new DefaultTilemapRuleset()).SetAsCollider(new Electron2D.Core.PhysicsBox2D.RigidbodyStaticDef()),
+                new TileData("Test2", _ruleset: new DefaultTilemapRuleset()) }, tiles,
             16, 10, 10);
     }
 

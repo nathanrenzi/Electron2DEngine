@@ -1,4 +1,5 @@
 ﻿using Electron2D.Core.ECS;
+using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Rendering;
 using Newtonsoft.Json;
 using System.Numerics;
@@ -23,6 +24,7 @@ namespace Electron2D.Core
                 return TilePixelSize * 2; // Compensating for Transform 0.5x scaling
             }
         }
+
         private Dictionary<Material, TileMesh> meshDataDictionary = new Dictionary<Material, TileMesh>();
         private Transform transform;
         private Random random;
