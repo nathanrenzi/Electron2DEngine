@@ -109,6 +109,9 @@ namespace Electron2D.Core
 
             List<(Neighbors[], int)> matches = ruleset;
             int index = CheckTilesForMatch(matches, neighborTypes);
+            Debug.EnableCollapsing = false;
+            Debug.Log(index);
+            Debug.EnableCollapsing = true;
 
             int y = index / 12; // Ruleset template is 12 tiles wide
             int x = index - (y * 12);
@@ -118,93 +121,51 @@ namespace Electron2D.Core
 
         private int CheckTilesForMatch(List<(Neighbors[], int)> possibleMatches, List<Neighbors> neighbors)
         {
-            //int advanced = CheckListAdvanced(tileList, neighbors);
-            int advanced = -1;
-            if(advanced == -1)
+            int savedIndex = 0;
+
+            for (int i = 0; i < possibleMatches.Count; i++)
             {
-                for (int i = 0; i < possibleMatches.Count; i++)
+                if (possibleMatches[i].Item1 == null) continue;
+                if (CheckNotMatch(possibleMatches[i], neighbors, Neighbors.Up)) continue;
+                if (CheckNotMatch(possibleMatches[i], neighbors, Neighbors.Right)) continue;
+                if (CheckNotMatch(possibleMatches[i], neighbors, Neighbors.Down)) continue;
+                if (CheckNotMatch(possibleMatches[i], neighbors, Neighbors.Left)) continue;
+                savedIndex = possibleMatches[i].Item2; // Saving the index in case the corner checks fail
+                if(neighbors.Contains(Neighbors.Up))
                 {
-                    if (possibleMatches[i].Item1 == null) continue;
-                    if (possibleMatches[i].Item1.Length != neighbors.Count) continue;
-                    if (possibleMatches[i].Item1.Contains(Neighbors.TopLeft)
-                        || possibleMatches[i].Item1.Contains(Neighbors.TopRight)
-                        || possibleMatches[i].Item1.Contains(Neighbors.BottomLeft)
-                        || possibleMatches[i].Item1.Contains(Neighbors.BottomRight))
+                    if(neighbors.Contains(Neighbors.Left))
                     {
-                        continue;
+                        if (CheckNotMatch(possibleMatches[i], neighbors, Neighbors.TopLeft)) continue;
                     }
-                    if (possibleMatches[i].Item1.Contains(Neighbors.Up) && !neighbors.Contains(Neighbors.Up)
-                        || !possibleMatches[i].Item1.Contains(Neighbors.Up) && neighbors.Contains(Neighbors.Up))
+                    if(neighbors.Contains(Neighbors.Right))
                     {
-                        continue;
+                        if (CheckNotMatch(possibleMatches[i], neighbors, Neighbors.TopRight)) continue;
                     }
-                    if (possibleMatches[i].Item1.Contains(Neighbors.Right) && !neighbors.Contains(Neighbors.Right)
-                        || !possibleMatches[i].Item1.Contains(Neighbors.Right) && neighbors.Contains(Neighbors.Right))
-                    {
-                        continue;
-                    }
-                    if (possibleMatches[i].Item1.Contains(Neighbors.Down) && !neighbors.Contains(Neighbors.Down)
-                        || !possibleMatches[i].Item1.Contains(Neighbors.Down) && neighbors.Contains(Neighbors.Down))
-                    {
-                        continue;
-                    }
-                    if (possibleMatches[i].Item1.Contains(Neighbors.Left) && !neighbors.Contains(Neighbors.Left)
-                        || !possibleMatches[i].Item1.Contains(Neighbors.Left) && neighbors.Contains(Neighbors.Left))
-                    {
-                        continue;
-                    }
-
-                    StringBuilder builder = new StringBuilder();
-                    for (int x = 0; x < possibleMatches[i].Item1.Length; x++)
-                    {
-                        builder.Append(possibleMatches[i].Item1[x] + " ");
-                    }
-                    builder.Append("  |  ");
-                    for (int x = 0; x < neighbors.Count; x++)
-                    {
-                        builder.Append(neighbors[x] + " ");
-                    }
-                    builder.Append(possibleMatches[i].Item2);
-                    
-                    return possibleMatches[i].Item2;
                 }
-            }
-            else
-            {
-                return advanced;
+                if(neighbors.Contains(Neighbors.Down))
+                {
+                    if(neighbors.Contains(Neighbors.Left))
+                    {
+                        if (CheckNotMatch(possibleMatches[i], neighbors, Neighbors.BottomLeft)) continue;
+                    }
+                    if(neighbors.Contains(Neighbors.Right))
+                    {
+                        if (CheckNotMatch(possibleMatches[i], neighbors, Neighbors.BottomRight)) continue;
+                    }
+                }
+
+                return possibleMatches[i].Item2;
             }
 
-            return 0;
+            return savedIndex;
         }
 
-        private int CheckListAdvanced(List<(Neighbors[], int)> tileList, List<Neighbors> neighbors)
+        private bool CheckNotMatch((Neighbors[], int) match, List<Neighbors> neighbors, Neighbors neighborToCheck)
         {
-            for (int i = 0; i < tileList.Count; i++)
-            {
-                if (tileList[i].Item1 == null) continue; // Skipping empty tile
-                if (tileList[i].Item1.Length == neighbors.Count)
-                {
-                    bool match = true;
-                    for (int x = 0; x < neighbors.Count; x++)
-                    {
-                        if (!tileList[i].Item1.Contains(neighbors[x]))
-                        {
-                            match = false;
-                            break;
-                        }
-                    }
-                    if (match)
-                    {
-                        return tileList[i].Item2;
-                    }
-                }
-                else
-                {
-                    continue;
-                }
-            }
-
-            return -1;
+            bool fail = false;
+            fail = !match.Item1.Contains(neighborToCheck) && neighbors.Contains(neighborToCheck);
+            fail = fail || match.Item1.Contains(neighborToCheck) && !neighbors.Contains(neighborToCheck);
+            return fail;
         }
 
         public Vector2 CheckRulesetGetVertexUV(int[] _tileAndNeighbors3x3, Vector2 _localUV)

@@ -31,19 +31,27 @@ public class Build : Game
         StartCamera.Zoom = 4;
         tilemap = Tilemap.CreateSharedMaterial(Material.Create(GlobalShaders.DefaultTexture,
             ResourceManager.Instance.LoadTexture("Build/Resources/autotile.png")),
-            new TileData[] {new TileData("Test", _ruleset: new DefaultTilemapRuleset())}, tiles,
+            new TileData[] {new TileData("Test", _ruleset: new DefaultTilemapRuleset()), new TileData("Test2", _ruleset: new DefaultTilemapRuleset()) }, tiles,
             16, 10, 10);
     }
 
     // This is ran every frame
     protected override void Update()
     {
-        if(Input.GetMouseButtonDown(0))
+        if(Input.GetMouseButtonDown(GLFW.MouseButton.Left))
         {
             Vector2 pos = Input.GetMouseWorldPosition();
             if(pos.X <= 160 && pos.X >= 0 && pos.Y <= 160 && pos.Y >= 0)
             {
                 tilemap.SetTileID((int)(pos.X / 16), (int)(pos.Y / 16), 0);
+            }
+        }
+        if (Input.GetMouseButtonDown(GLFW.MouseButton.Right))
+        {
+            Vector2 pos = Input.GetMouseWorldPosition();
+            if (pos.X <= 160 && pos.X >= 0 && pos.Y <= 160 && pos.Y >= 0)
+            {
+                tilemap.SetTileID((int)(pos.X / 16), (int)(pos.Y / 16), 1);
             }
         }
     }

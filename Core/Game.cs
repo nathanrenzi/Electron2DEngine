@@ -118,7 +118,7 @@ namespace Electron2D.Core
             if (showElectronSplashscreen)
             {
                 // Displaying splashscreen
-                Debug.Log("Displaying splashscreen.");
+                Debug.Log("Displaying splashscreen...");
                 Splashscreen.Initialize();
                 Texture2D splashscreenTexture = TextureFactory.Load("Core/Rendering/CoreTextures/Electron2DSplashscreen.png", true);
                 float splashscreenStartTime = (float)Glfw.Time;
@@ -276,9 +276,6 @@ namespace Electron2D.Core
 
         private void RenderCall()
         {
-            // This is separated into it's own function because it also
-            // needs to be called before the game loop begins to get rid
-            // of a few frames of black screen in the beginning
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
             glClearColor(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, 1);
 

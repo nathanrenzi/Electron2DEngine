@@ -160,10 +160,21 @@ namespace Electron2D.Core
                         int tileIndex = i + x + (y * SizeX);
                         if (tileIndex < Tiles.Length && tileIndex >= 0)
                         {
-                            neighbors[(x+1) + ((y+1) * 3)] = Tiles[tileIndex];
+                            int neighborXPos = (i % SizeX) + x;
+                            if(neighborXPos < 0 || neighborXPos >= SizeX)
+                            {
+                                // This neighbor tile is on another y-level, so mark it as blank instead
+                                neighbors[(x + 1) + ((y + 1) * 3)] = -1;
+                            }
+                            else
+                            {
+                                // Check the actual tile
+                                neighbors[(x + 1) + ((y + 1) * 3)] = Tiles[tileIndex];
+                            }
                         }
                         else
                         {
+                            // Index outside of tile array length
                             neighbors[(x+1) + ((y+1) * 3)] = -1;
                         }
                     }
