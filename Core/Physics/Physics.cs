@@ -342,6 +342,37 @@ namespace Electron2D.Core.PhysicsBox2D
             }
         }
 
+        /// <summary>
+        /// Casts a ray into the physics world, and returns the hit data.
+        /// </summary>
+        /// <param name="_point">The starting point of the ray.</param>
+        /// <param name="_direction">The direction of the ray.</param>
+        /// <param name="_maxDistance">The maximum distance the ray can travel.</param>
+        /// <param name="_solidShapes"></param>
+        /// <returns></returns>
+        public static RaycastHit Raycast(Vector2 _point, Vector2 _direction, float _maxDistance, bool _solidShapes = true)
+        {
+            Segment segment = new Segment();
+            segment.P1 = new Vec2(_point.X, _point.Y);
+            segment.P2 = new Vec2(_direction.X * _maxDistance, _direction.Y * _maxDistance);
+
+            RaycastHit hit = new RaycastHit();
+
+            Vec2 normal;
+            Vec2 point;
+            Fixture fixture = world.RaycastOne(segment, out hit.Distance, out normal, _solidShapes, null);
+            hit.Normal = new Vector2(normal.X, normal.Y);
+            hit.Point = _point + (_direction * hit.Distance);
+            hit.Hit = false;
+            if(fixture != null)
+            {
+                hit.Hit = true;
+                hit.Fixture = fixture;
+            }
+
+            return hit;
+        }
+
         public class WorldContactListener : ContactListener
         {
             public void BeginContact(Contact contact)
