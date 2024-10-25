@@ -2,9 +2,10 @@
 
 namespace Electron2D.Core.Rendering
 {
-    public class VertexArray : IBuffer
+    public class VertexArray : IBuffer, IDisposable
     {
         public uint bufferID { get; }
+        private bool isDisposed = false;
 
         public VertexArray()
         {
@@ -12,8 +13,8 @@ namespace Electron2D.Core.Rendering
         }
 
         ~VertexArray()
-        { 
-            glDeleteVertexArray(bufferID);
+        {
+            Dispose();
         }
 
         public unsafe void AddBuffer(VertexBuffer _vertexBuffer, BufferLayout _bufferLayout)
@@ -43,7 +44,11 @@ namespace Electron2D.Core.Rendering
 
         public void Dispose()
         {
-            glDeleteBuffer(bufferID);
+            if(!isDisposed)
+            {
+                isDisposed = true;
+                glDeleteVertexArray(bufferID);
+            }
         }
     }
 }

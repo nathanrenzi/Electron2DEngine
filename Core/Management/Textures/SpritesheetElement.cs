@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Electron2D.Core.Management
+namespace Electron2D.Core
 {
     /// <summary>
     /// This struct represents a spritesheet on one of the texture slots in the GPU
@@ -15,7 +15,6 @@ namespace Electron2D.Core.Management
         public readonly int totalSpriteColumns;
         public readonly int totalSpriteRows;
 
-        // Eventually add auto generated spritesheets
         public SpritesheetElement(int _totalSpriteColumns, int _totalSpriteRows)
         {
             totalSpriteColumns = _totalSpriteColumns;

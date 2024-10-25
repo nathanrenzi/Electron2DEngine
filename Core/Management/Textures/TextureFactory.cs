@@ -9,6 +9,12 @@ namespace Electron2D.Core.Management
     {
         public static Texture2D Load(string _textureName, bool _loadAsNonSRGBA)
         {
+            if (!File.Exists(_textureName))
+            {
+                Debug.LogError($"File [ {_textureName} ] does not exist!");
+                return null;
+            }
+
             uint handle = glGenTexture();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, handle);
@@ -32,6 +38,12 @@ namespace Electron2D.Core.Management
 
         public static Texture2DArray LoadArray(string _textureName, int _layers, bool _loadAsNonSRGBA)
         {
+            if (!File.Exists(_textureName))
+            {
+                Debug.LogError($"File [ {_textureName} ] does not exist!");
+                return null;
+            }
+
             uint handle = glGenTexture();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
@@ -56,6 +68,12 @@ namespace Electron2D.Core.Management
 
         public static Texture2DArray LoadArray(string _textureName, int _spriteWidth, int _spriteHeight, bool _loadAsNonSRGBA)
         {
+            if (!File.Exists(_textureName))
+            {
+                Debug.LogError($"File [ {_textureName} ] does not exist!");
+                return null;
+            }
+
             uint handle = glGenTexture();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
@@ -109,6 +127,12 @@ namespace Electron2D.Core.Management
 
         public static Texture2DArray LoadArray(string[] _textureNames, bool _loadAsNonSRGBA)
         {
+            if (!File.Exists(_textureNames[0]))
+            {
+                Debug.LogError($"File [ {_textureNames[0]} ] does not exist!");
+                return null;
+            }
+
             uint handle = glGenTexture();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D_ARRAY, handle);

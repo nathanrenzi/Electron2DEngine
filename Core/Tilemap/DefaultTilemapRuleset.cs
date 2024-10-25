@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
+using System.Text;
 
 namespace Electron2D.Core
 {
@@ -95,103 +97,126 @@ namespace Electron2D.Core
             BL = _allowedTileTypes.Contains(_tileAndNeighbors3x3[0]);
             BR = _allowedTileTypes.Contains(_tileAndNeighbors3x3[2]);
 
-            List<(Neighbors[], int)> initialList = ruleset;
-            int index = 0;
-            if(U)
-            {
-                initialList = GetTilesWithNeighborType(initialList, Neighbors.Up);
-                index = InterpretCompletionResults(CheckListForCompletion(initialList), index);
-            }
-            if (R)
-            {
-                initialList = GetTilesWithNeighborType(initialList, Neighbors.Right);
-                index = InterpretCompletionResults(CheckListForCompletion(initialList), index);
-            }
-            if (D)
-            {
-                initialList = GetTilesWithNeighborType(initialList, Neighbors.Down);
-                index = InterpretCompletionResults(CheckListForCompletion(initialList), index);
-            }
-            if (L)
-            {
-                initialList = GetTilesWithNeighborType(initialList, Neighbors.Left);
-                index = InterpretCompletionResults(CheckListForCompletion(initialList), index);
-            }
-            if (TL)
-            {
-                initialList = GetTilesWithNeighborType(initialList, Neighbors.TopLeft);
-                index = InterpretCompletionResults(CheckListForCompletion(initialList), index);
-            }
-            if (TR)
-            {
-                initialList = GetTilesWithNeighborType(initialList, Neighbors.TopRight);
-                index = InterpretCompletionResults(CheckListForCompletion(initialList), index);
-            }
-            if (BL)
-            {
-                initialList = GetTilesWithNeighborType(initialList, Neighbors.BottomLeft);
-                index = InterpretCompletionResults(CheckListForCompletion(initialList), index);
-            }
-            if (BR)
-            {
-                initialList = GetTilesWithNeighborType(initialList, Neighbors.BottomRight);
-                index = InterpretCompletionResults(CheckListForCompletion(initialList), index);
-            }
+            List<Neighbors> neighborTypes = new List<Neighbors>();
+            if (U) neighborTypes.Add(Neighbors.Up);
+            if (R) neighborTypes.Add(Neighbors.Right);
+            if (D) neighborTypes.Add(Neighbors.Down);
+            if (L) neighborTypes.Add(Neighbors.Left);
+            if (TL) neighborTypes.Add(Neighbors.TopLeft);
+            if (TR) neighborTypes.Add(Neighbors.TopRight);
+            if (BL) neighborTypes.Add(Neighbors.BottomLeft);
+            if (BR) neighborTypes.Add(Neighbors.BottomRight);
 
-            int y = index % 12; // Ruleset template is 12 tiles wide
+            List<(Neighbors[], int)> matches = ruleset;
+            int index = CheckTilesForMatch(matches, neighborTypes);
+
+            int y = index / 12; // Ruleset template is 12 tiles wide
             int x = index - (y * 12);
 
             return new Vector2(x, y);
         }
 
-        private List<(Neighbors[], int)> GetTilesWithNeighborType(List<(Neighbors[], int)> list, Neighbors neighbor)
+        private int CheckTilesForMatch(List<(Neighbors[], int)> possibleMatches, List<Neighbors> neighbors)
         {
-            if (list.Count == 0) return list;
-
-            List<(Neighbors[], int)> returnValues = new List<(Neighbors[], int)> ();
-
-            for (int i = 0; i < list.Count; i++)
+            //int advanced = CheckListAdvanced(tileList, neighbors);
+            int advanced = -1;
+            if(advanced == -1)
             {
-                if (list[i].Item1 == null) continue; // Skipping empty tile
-                for (int x = 0; x < list[i].Item1.Length; x++)
+                for (int i = 0; i < possibleMatches.Count; i++)
                 {
-                    if (list[i].Item1[x] == neighbor)
+                    if (possibleMatches[i].Item1 == null) continue;
+                    if (possibleMatches[i].Item1.Length != neighbors.Count) continue;
+                    if (possibleMatches[i].Item1.Contains(Neighbors.TopLeft)
+                        || possibleMatches[i].Item1.Contains(Neighbors.TopRight)
+                        || possibleMatches[i].Item1.Contains(Neighbors.BottomLeft)
+                        || possibleMatches[i].Item1.Contains(Neighbors.BottomRight))
                     {
-                        returnValues.Add(list[i]);
                         continue;
                     }
+                    if (possibleMatches[i].Item1.Contains(Neighbors.Up) && !neighbors.Contains(Neighbors.Up)
+                        || !possibleMatches[i].Item1.Contains(Neighbors.Up) && neighbors.Contains(Neighbors.Up))
+                    {
+                        continue;
+                    }
+                    if (possibleMatches[i].Item1.Contains(Neighbors.Right) && !neighbors.Contains(Neighbors.Right)
+                        || !possibleMatches[i].Item1.Contains(Neighbors.Right) && neighbors.Contains(Neighbors.Right))
+                    {
+                        continue;
+                    }
+                    if (possibleMatches[i].Item1.Contains(Neighbors.Down) && !neighbors.Contains(Neighbors.Down)
+                        || !possibleMatches[i].Item1.Contains(Neighbors.Down) && neighbors.Contains(Neighbors.Down))
+                    {
+                        continue;
+                    }
+                    if (possibleMatches[i].Item1.Contains(Neighbors.Left) && !neighbors.Contains(Neighbors.Left)
+                        || !possibleMatches[i].Item1.Contains(Neighbors.Left) && neighbors.Contains(Neighbors.Left))
+                    {
+                        continue;
+                    }
+
+                    StringBuilder builder = new StringBuilder();
+                    for (int x = 0; x < possibleMatches[i].Item1.Length; x++)
+                    {
+                        builder.Append(possibleMatches[i].Item1[x] + " ");
+                    }
+                    builder.Append("  |  ");
+                    for (int x = 0; x < neighbors.Count; x++)
+                    {
+                        builder.Append(neighbors[x] + " ");
+                    }
+                    builder.Append(possibleMatches[i].Item2);
+                    
+                    return possibleMatches[i].Item2;
+                }
+            }
+            else
+            {
+                return advanced;
+            }
+
+            return 0;
+        }
+
+        private int CheckListAdvanced(List<(Neighbors[], int)> tileList, List<Neighbors> neighbors)
+        {
+            for (int i = 0; i < tileList.Count; i++)
+            {
+                if (tileList[i].Item1 == null) continue; // Skipping empty tile
+                if (tileList[i].Item1.Length == neighbors.Count)
+                {
+                    bool match = true;
+                    for (int x = 0; x < neighbors.Count; x++)
+                    {
+                        if (!tileList[i].Item1.Contains(neighbors[x]))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match)
+                    {
+                        return tileList[i].Item2;
+                    }
+                }
+                else
+                {
+                    continue;
                 }
             }
 
-            return returnValues;
+            return -1;
         }
 
-        private int InterpretCompletionResults(int result, int currentIndex)
+        public Vector2 CheckRulesetGetVertexUV(int[] _tileAndNeighbors3x3, Vector2 _localUV)
         {
-            if(result == -1)
-            {
-                return currentIndex;
-            }
-            else
-            {
-                return result;
-            }
+            int tileType = _tileAndNeighbors3x3[4];
+            return CheckRulesetGetVertexUV(_tileAndNeighbors3x3, new int[] { tileType }, _localUV);
         }
 
-        private int CheckListForCompletion(List<(Neighbors[], int)> list)
+        public Vector2 CheckRulesetGetVertexUV(int[] _tileAndNeighbors3x3, int[] _allowedTileTypes, Vector2 _localUV)
         {
-            if (list.Count == 0)
-            {
-                return 0; // Returns the first index of the ruleset, which is a tile with no neighbors
-            }
-            else if(list.Count == 1)
-            {
-                return list[0].Item2;
-            }
-            else
-            {
-                return -1;
-            }
+            Vector2 pos = CheckRuleset(_tileAndNeighbors3x3, _allowedTileTypes);
+            return Spritesheets.GetVertexUVNonElement(12, 4, (int)pos.X, (int)pos.Y, _localUV);
         }
     }
 }

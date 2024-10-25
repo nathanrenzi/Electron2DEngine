@@ -1,5 +1,4 @@
-﻿using Electron2D.Core.Management.Textures;
-using Electron2D.Core.Rendering;
+﻿using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Text;
 using System.Drawing;
 using System.Linq;

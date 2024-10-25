@@ -1,8 +1,8 @@
 ﻿using Electron2D.Core.ECS;
-using Electron2D.Core.Management.Textures;
 using Electron2D.Core.Rendering;
 using Newtonsoft.Json;
 using System.Numerics;
+using System.Text;
 
 namespace Electron2D.Core
 {
@@ -29,7 +29,8 @@ namespace Electron2D.Core
         private int seed;
         private bool isDirty = false;
 
-        private Tilemap(TileData[] _data, int[] _tileArray, int _tilePixelSize, int _sizeX, int _sizeY, int _renderLayer = -1)
+        private Tilemap(TileData[] _data, int[] _tileArray, int _tilePixelSize,
+            int _sizeX, int _sizeY, int _renderLayer = -1)
         {
             TilePixelSize = _tilePixelSize;
             Data = _data;
@@ -150,6 +151,24 @@ namespace Electron2D.Core
                 float xPos = i % SizeX * realTilePixelSize;
                 float yPos = i / SizeX * realTilePixelSize;
 
+                // Finding tile and its 8 neighbors
+                int[] neighbors = new int[9];
+                for (int y = -1; y < 2; y++)
+                {
+                    for (int x = -1; x < 2; x++)
+                    {
+                        int tileIndex = i + x + (y * SizeX);
+                        if (tileIndex < Tiles.Length && tileIndex >= 0)
+                        {
+                            neighbors[(x+1) + ((y+1) * 3)] = Tiles[tileIndex];
+                        }
+                        else
+                        {
+                            neighbors[(x+1) + ((y+1) * 3)] = -1;
+                        }
+                    }
+                }
+
                 for (int a = 0; a < 4; a++) // Each vertex in the quad
                 {
                     float xMod = 0;
@@ -181,14 +200,23 @@ namespace Electron2D.Core
                     // UV
                     float u = xMod / realTilePixelSize;
                     float v = yMod / realTilePixelSize;
-                    Vector2 newUV = Spritesheets.spritesheets.ContainsKey(data.Material.MainTexture) ?
-                        Spritesheets.GetVertexUV(data.Material.MainTexture,
-                        data.SpriteColumn, data.SpriteRow, new Vector2(u, v)) :
-                        new Vector2(u, v);
-                    if (data.AllowRandomRotation)
+                    Vector2 newUV;
+                    if(data.Ruleset != null)
                     {
-                        newUV = RotateUV(newUV, TileRotations[i] * 90);
+                        newUV = data.Ruleset.CheckRulesetGetVertexUV(neighbors, new Vector2(u, v));
                     }
+                    else
+                    {
+                        newUV = Spritesheets.spritesheets.ContainsKey(data.Material.MainTexture) ?
+                            Spritesheets.GetVertexUV(data.Material.MainTexture,
+                            data.SpriteColumn, data.SpriteRow, new Vector2(u, v)) :
+                            new Vector2(u, v);
+                        if (data.AllowRandomRotation)
+                        {
+                            newUV = RotateUV(newUV, TileRotations[i] * 90);
+                        }
+                    }
+
                     mesh.Vertices.Add(newUV.X); // U
                     mesh.Vertices.Add(newUV.Y); // V
                 }
@@ -207,7 +235,8 @@ namespace Electron2D.Core
             {
                 if (m.Value.Vertices.Count > 0)
                 {
-                    m.Value.Renderer.SetVertexArrays(m.Value.Vertices.ToArray(), m.Value.Indices.ToArray());
+                    m.Value.Renderer.SetVertexArrays(m.Value.Vertices.ToArray(), m.Value.Indices.ToArray(),
+                        !m.Value.Renderer.HasVertexData, _setDirty: true);
                 }
             }
         }

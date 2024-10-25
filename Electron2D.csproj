@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Build\Resources\BuildDate.txt" />
+    <None Remove="Build\Resources\autotile.png" />
     <None Remove="Core\Audio\Electron2DFmodBank.bank" />
     <None Remove="Core\Audio\Electron2DRiff.mp3" />
     <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
@@ -32,6 +32,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Build\BuildDate.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Build\Resources\autotile.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Audio\Electron2DRiff.mp3">
@@ -76,10 +79,6 @@
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Build\Resources\" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

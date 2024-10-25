@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Electron2D.Core.Management.Textures
+namespace Electron2D.Core
 {
     /// <summary>
     /// This class allows for spritesheet calculations and stores the data of all active spritesheets
@@ -15,11 +15,20 @@ namespace Electron2D.Core.Management.Textures
     {
         public static IDictionary<ITexture, SpritesheetElement> spritesheets = new Dictionary<ITexture, SpritesheetElement>();
 
+        public static Vector2 GetVertexUVNonElement(int _totalSpriteColumns,
+            int _totalSpriteRows, int _sampleColumn, int _sampleRow, Vector2 _localUV)
+        {
+            Vector2 stride = new Vector2(1f / _totalSpriteColumns, 1f / _totalSpriteRows);
+
+            return new Vector2((stride.X * _sampleColumn) + (_localUV.X * stride.X),
+                (stride.Y * _sampleRow) + (_localUV.Y * stride.Y));
+        }
+
         public static void Add(ITexture _texture, int _totalSpriteColumns, int _totalSpriteRows)
         {
             if (spritesheets.ContainsKey(_texture))
             {
-                Console.WriteLine($"Trying to add a spritesheet that already exists.");
+                Debug.LogWarning($"Trying to add a spritesheet that already exists.");
                 return;
             }
             spritesheets.Add(_texture, new SpritesheetElement(_totalSpriteColumns, _totalSpriteRows));
@@ -29,13 +38,13 @@ namespace Electron2D.Core.Management.Textures
         {
             if(!spritesheets.ContainsKey(_texture))
             {
-                Console.WriteLine("Requested a spritesheet that does not exist.");
+                Debug.LogWarning("Requested a spritesheet that does not exist.");
                 return _localUV;
             }
 
             if (_col >= spritesheets[_texture].totalSpriteColumns || _row >= spritesheets[_texture].totalSpriteRows)
             {
-                Console.WriteLine("Requested a sprite that is out of the bounds of it's texture.");
+                Debug.LogWarning("Requested a sprite that is out of the bounds of it's texture.");
                 return _localUV;
             }
 
