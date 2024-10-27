@@ -1,20 +1,23 @@
-﻿using Box2DX.Collision;
-using Box2DX.Dynamics;
-using Box2DX.Common;
+﻿using Box2D.NetStandard.Collision;
+using Box2D.NetStandard.Collision.Shapes;
+using Box2D.NetStandard.Common;
+using Box2D.NetStandard.Dynamics.World;
+using Box2D.NetStandard.Dynamics.World.Callbacks;
+using Box2D.NetStandard.Dynamics.Fixtures;
+using Box2D.NetStandard.Dynamics.Bodies;
 using System.Numerics;
+using Box2D.NetStandard.Dynamics.Contacts;
 
 namespace Electron2D.Core.PhysicsBox2D
 {
-    //https://box2d.org/documentation/md__d_1__git_hub_box2d_docs_hello.html
     public static class Physics
     {
         // Scaling the physics so that 50 pixels equates to 1 meter in the simulation
         public static readonly float WorldScalar = 50f;
 
-        private static Queue<(BodyDef, FixtureDef, MassData, bool, bool)> creationQueue;
+        private static Queue<(BodyDef, FixtureDef, MassData, bool)> creationQueue;
         private static Dictionary<uint, Body> physicsBodies;
         private static World world;
-        private static AABB aabb;
         private static bool _stepLock = false;
 
         /// <summary>
@@ -25,18 +28,13 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_worldUpperBound"></param>
         /// <param name="_gravity"></param>
         /// <param name="_doSleep"></param>
-        public static void Initialize(Vector2 _worldLowerBound, Vector2 _worldUpperBound, Vector2 _gravity, bool _doSleep)
+        public static void Initialize(Vector2 _gravity, bool _doSleep)
         {
-            aabb = new AABB()
-            {
-                LowerBound = new Vec2(_worldLowerBound.X, _worldLowerBound.Y),
-                UpperBound = new Vec2(_worldUpperBound.X, _worldUpperBound.Y),
-            };
-
-            creationQueue = new Queue<(BodyDef, FixtureDef, MassData, bool, bool)>();
+            creationQueue = new Queue<(BodyDef, FixtureDef, MassData, bool)>();
             physicsBodies = new Dictionary<uint, Body>();
 
-            world = new World(aabb, new Vec2(_gravity.X, _gravity.Y), _doSleep);
+            world = new World(_gravity);
+            world.SetAllowSleeping(_doSleep);
             world.SetContactFilter(new ContactFilter());
             world.SetContactListener(new WorldContactListener());
         }
@@ -58,61 +56,9 @@ namespace Electron2D.Core.PhysicsBox2D
             int count = 0;
             while(creationQueue.Count > 0 && count < maxCreationPerStep)
             {
-                (BodyDef, FixtureDef, MassData, bool, bool) data = creationQueue.Dequeue();
-
-                // If the MassData is being used (MassData cannot be null)
-                if(data.Item4)
-                {
-                    // Dynamic with specified mass
-                    CreatePhysicsBody(data.Item1, data.Item2, data.Item3, true);
-                }
-                else
-                {
-                    // Dynamic or static
-                    CreatePhysicsBody(data.Item1, data.Item2, data.Item5, true);
-                }
+                (BodyDef, FixtureDef, MassData, bool) data = creationQueue.Dequeue();
+                CreatePhysicsBody(data.Item1, data.Item2, data.Item3, data.Item4, true);
                 count++;
-            }
-        }
-
-        /// <summary>
-        /// Creates a physics body and returns it's ID.
-        /// </summary>
-        /// <param name="_bodyDefinition">The definition of the physics body.</param>
-        /// <param name="_fixtureDef">The definition of the fixture. This determines the shape of the physics body.</param>
-        /// <param name="_autoSetMass">If this is set to true, the physics body will use the shape and density to detemine the mass.
-        /// This also makes the physics body dynamic.</param>
-        /// <returns></returns>
-        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, bool _autoSetMass = false, bool _ignoreQueueCount = false)
-        {
-            uint id = (uint)(physicsBodies.Count + (_ignoreQueueCount ? 0 : creationQueue.Count));
-
-            try
-            {
-                if (_stepLock)
-                {
-                    creationQueue.Enqueue((_bodyDefinition, _fixtureDef, new MassData(), false, _autoSetMass));
-                    return id;
-                }
-
-                Body b = world.CreateBody(_bodyDefinition);
-                if (b == null)
-                {
-                    Debug.LogError("PHYSICS: Error creating physics body! Physics step likely in progress!");
-                }
-
-                b.CreateFixture(_fixtureDef);
-                if (_autoSetMass) b.SetMassFromShapes();
-                physicsBodies.Add(id, b);
-
-                return id;
-            }
-            catch(Exception e)
-            {
-                Debug.LogError($"PHYSICS: Could not create physics body [{id}]");
-                Debug.LogError(e.Message);
-
-                return uint.MaxValue;
             }
         }
 
@@ -120,18 +66,17 @@ namespace Electron2D.Core.PhysicsBox2D
         /// Creates a dynamic physics body and returns it's ID.
         /// </summary>
         /// <param name="_bodyDefinition">The definition of the physics body.</param>
-        /// <param name="_fixtureDef">The definition of the fixture. This determines the shape of the physics body.</param>
-        /// <param name="_massData">The mass data of the physics body. By setting this, the physics body will be dynamic.</param>
+        /// <param name="_fixtureDef">The definition of the fixture. This holds the parameters of the physics body.</param>
+        /// <param name="_massData">The mass data of the physics body.</param>
         /// <returns></returns>
-        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData, bool _ignoreQueueCount = false)
+        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData, bool _isKinematic, bool _ignoreQueueCount = false)
         {
             uint id = (uint)(physicsBodies.Count + (_ignoreQueueCount ? 0 : creationQueue.Count));
-
             try
             {
                 if (_stepLock)
                 {
-                    creationQueue.Enqueue((_bodyDefinition, _fixtureDef, _massData, true, false));
+                    creationQueue.Enqueue((_bodyDefinition, _fixtureDef, _massData, _isKinematic));
                     return id;
                 }
 
@@ -139,9 +84,10 @@ namespace Electron2D.Core.PhysicsBox2D
                 if (b == null)
                 {
                     Debug.LogError("PHYSICS: Error creating physics body! Physics step likely in progress!");
+                    return 0;
                 }
                 b.CreateFixture(_fixtureDef);
-                b.SetMass(_massData);
+                b.SetMassData(_massData);
                 physicsBodies.Add(id, b);
 
                 return id;
@@ -173,7 +119,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public static Vector2 GetBodyPosition(uint _id)
         {
             if (!physicsBodies.ContainsKey(_id)) return Vector2.Zero;
-            Vec2 vec = physicsBodies[_id].GetPosition();
+            Vector2 vec = physicsBodies[_id].GetPosition();
             return new Vector2(vec.X * WorldScalar, vec.Y * WorldScalar);
         }
 
@@ -196,7 +142,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public static Vector2 GetBodyVelocity(uint _id)
         {
             if (!physicsBodies.ContainsKey(_id)) return Vector2.Zero;
-            Vec2 vec = physicsBodies[_id].GetLinearVelocity();
+            Vector2 vec = physicsBodies[_id].GetLinearVelocity();
             return new Vector2(vec.X, vec.Y);
         }
 
@@ -216,18 +162,18 @@ namespace Electron2D.Core.PhysicsBox2D
         /// </summary>
         /// <param name="_id"></param>
         /// <returns></returns>
-        public static FilterData[] GetFilterData(uint _id)
+        public static Filter[] GetFilterData(uint _id)
         {
             if (!physicsBodies.ContainsKey(_id)) return null;
 
-            List<FilterData> filters = new List<FilterData>();
+            List<Filter> filters = new List<Filter>();
 
             Fixture f = physicsBodies[_id].GetFixtureList();
-            filters.Add(f.Filter);
+            filters.Add(f.FilterData);
             while (f.Next != null)
             {
                 f = f.Next;
-                filters.Add(f.Filter);
+                filters.Add(f.FilterData);
             }
 
             return filters.ToArray();
@@ -242,7 +188,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void ApplyForce(uint _id, Vector2 _force, Vector2 _point)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].ApplyForce(new Vec2(_force.X, _force.Y), new Vec2(_point.X, _point.Y));
+            physicsBodies[_id].ApplyLinearImpulse(_force, _point);
         }
 
         /// <summary>
@@ -254,7 +200,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void ApplyImpulse(uint _id, Vector2 _impulse, Vector2 _point)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].ApplyImpulse(new Vec2(_impulse.X, _impulse.Y), new Vec2(_point.X, _point.Y));
+            physicsBodies[_id].ApplyLinearImpulse(_impulse, _point);
         }
 
         /// <summary>
@@ -276,7 +222,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void SetAngle(uint _id, float _angle)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].SetAngle(_angle * (MathF.PI / 180));
+            physicsBodies[_id].SetTransform(physicsBodies[_id].Position, _angle * (MathF.PI / 180));
         }
 
         /// <summary>
@@ -298,7 +244,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void SetVelocity(uint _id, Vector2 _linearVelocity)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].SetLinearVelocity(new Vec2(_linearVelocity.X, _linearVelocity.Y));
+            physicsBodies[_id].SetLinearVelocity(_linearVelocity);
         }
 
         /// <summary>
@@ -309,7 +255,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void SetPosition(uint _id, Vector2 _position)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].SetPosition(new Vec2(_position.X / WorldScalar, _position.Y / WorldScalar));
+            physicsBodies[_id].SetTransform(_position / WorldScalar, physicsBodies[_id].GetAngle());
         }
 
         /// <summary>
@@ -326,19 +272,19 @@ namespace Electron2D.Core.PhysicsBox2D
         /// Sets the filter data of the fixtures on a physics body.
         /// </summary>
         /// <param name="_id"></param>
-        /// <param name="_filterData"></param>
-        public static void SetFilterData(uint _id, FilterData _filterData)
+        /// <param name="_filter"></param>
+        public static void SetFilterData(uint _id, Filter _filter)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
             Fixture f = physicsBodies[_id].GetFixtureList();
-            f.Filter = _filterData;
-            world.Refilter(f);
+            f.FilterData = _filter;
+            f.Refilter();
 
             while (f.Next != null)
             {
                 f = f.Next;
-                f.Filter = _filterData;
-                world.Refilter(f);
+                f.FilterData = _filter;
+                f.Refilter();
             }
         }
 
@@ -350,27 +296,26 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_maxDistance">The maximum distance the ray can travel.</param>
         /// <param name="_solidShapes"></param>
         /// <returns></returns>
-        public static RaycastHit Raycast(Vector2 _point, Vector2 _direction, float _maxDistance, bool _solidShapes = true)
+        public static RaycastHit Raycast(Vector2 _point, Vector2 _direction, float _maxDistance)
         {
-            Segment segment = new Segment();
-            segment.P1 = new Vec2(_point.X, _point.Y);
-            segment.P2 = new Vec2(_direction.X * _maxDistance, _direction.Y * _maxDistance);
-
             RaycastHit hit = new RaycastHit();
 
-            Vec2 normal;
-            Vec2 point;
-            Fixture fixture = world.RaycastOne(segment, out hit.Distance, out normal, _solidShapes, null);
-            hit.Normal = new Vector2(normal.X, normal.Y);
-            hit.Point = _point + (_direction * hit.Distance);
-            hit.Hit = false;
-            if(fixture != null)
-            {
-                hit.Hit = true;
-                hit.Fixture = fixture;
-            }
+            world.RayCast(hit.Callback, _point, _point + (_direction * _maxDistance));
 
             return hit;
+        }
+
+        private static uint GetIDFromBody(Body _body)
+        {
+            foreach (var pair in physicsBodies)
+            {
+                if (pair.Value == _body)
+                {
+                    return pair.Key;
+                }
+            }
+
+            return uint.MaxValue;
         }
 
         public class WorldContactListener : ContactListener
@@ -392,11 +337,11 @@ namespace Electron2D.Core.PhysicsBox2D
                 uint idA = GetIDFromBody(bodyA);
                 uint idB = GetIDFromBody(bodyB);
 
-                if (fixtureA.IsSensor)
+                if (fixtureA.IsSensor())
                 {
                     RigidbodySensor.InvokeCollision(idA, idB, true);
                 }
-                else if (fixtureB.IsSensor)
+                else if (fixtureB.IsSensor())
                 {
                     RigidbodySensor.InvokeCollision(idB, idA, true);
                 }
@@ -406,6 +351,11 @@ namespace Electron2D.Core.PhysicsBox2D
                     Rigidbody.InvokeCollision(idA, idB, true);
                     Rigidbody.InvokeCollision(idB, idA, true);
                 }
+            }
+
+            public override void BeginContact(in Contact contact)
+            {
+                throw new NotImplementedException();
             }
 
             public void EndContact(Contact contact)
@@ -425,11 +375,11 @@ namespace Electron2D.Core.PhysicsBox2D
                 uint idA = GetIDFromBody(bodyA);
                 uint idB = GetIDFromBody(bodyB);
 
-                if (fixtureA.IsSensor)
+                if (fixtureA.IsSensor())
                 {
                     RigidbodySensor.InvokeCollision(idA, idB, false);
                 }
-                else if (fixtureB.IsSensor)
+                else if (fixtureB.IsSensor())
                 {
                     RigidbodySensor.InvokeCollision(idB, idA, false);
                 }
@@ -441,7 +391,17 @@ namespace Electron2D.Core.PhysicsBox2D
                 }
             }
 
+            public override void EndContact(in Contact contact)
+            {
+                
+            }
+
             public void PostSolve(Contact contact, ContactImpulse impulse)
+            {
+                
+            }
+
+            public override void PostSolve(in Contact contact, in ContactImpulse impulse)
             {
                 
             }
@@ -450,19 +410,11 @@ namespace Electron2D.Core.PhysicsBox2D
             {
                 
             }
-        }
 
-        private static uint GetIDFromBody(Body _body)
-        {
-            foreach (var pair in physicsBodies)
+            public override void PreSolve(in Contact contact, in Manifold oldManifold)
             {
-                if (pair.Value == _body)
-                {
-                    return pair.Key;
-                }
+                
             }
-
-            return uint.MaxValue;
         }
     }
 }

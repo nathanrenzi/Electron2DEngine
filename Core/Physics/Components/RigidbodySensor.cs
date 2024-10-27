@@ -1,5 +1,6 @@
-﻿using Box2DX.Common;
-using Box2DX.Dynamics;
+﻿using Box2D.NetStandard.Collision.Shapes;
+using Box2D.NetStandard.Dynamics.Bodies;
+using Box2D.NetStandard.Dynamics.Fixtures;
 using Electron2D.Core.ECS;
 using System.Numerics;
 
@@ -15,7 +16,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public List<Rigidbody> CurrentContacts { get; set; } = new List<Rigidbody>();
 
         public uint ID { get; private set; } = uint.MaxValue;
-        public ColliderSensorShape Shape { get; private set; }
+        public RigidbodySensorShape Shape { get; private set; }
         public Vector2 Size { get; private set; }
         public Vector2 Offset { get; private set; }
 
@@ -39,7 +40,7 @@ namespace Electron2D.Core.PhysicsBox2D
         private Transform transform;
         private bool isValid;
 
-        public RigidbodySensor(Vector2 _size, ColliderSensorShape _shape = ColliderSensorShape.Circle,
+        public RigidbodySensor(Vector2 _size, RigidbodySensorShape _shape = RigidbodySensorShape.Circle,
             ushort _layer = 0x0001, ushort _hitMask = 0xFFFF, short _groupIndex = 0)
         {
             Shape = _shape;
@@ -51,7 +52,7 @@ namespace Electron2D.Core.PhysicsBox2D
             RigidbodySensorSystem.Register(this);
         }
 
-        public RigidbodySensor(Vector2 _size, Vector2 _localOffset, ColliderSensorShape _shape = ColliderSensorShape.Circle,
+        public RigidbodySensor(Vector2 _size, Vector2 _localOffset, RigidbodySensorShape _shape = RigidbodySensorShape.Circle,
             ushort _layer = 0x0001, ushort _hitMask = 0xFFFF, short _groupIndex = 0)
         {
             Shape = _shape;
@@ -123,43 +124,34 @@ namespace Electron2D.Core.PhysicsBox2D
             Vector2 pos = (transform.Position + (transform.Up * Offset.Y) + (transform.Right * Offset.X));
             BodyDef bodyDef = new BodyDef()
             {
-                Position = new Vec2(pos.X, pos.Y),
-                Angle = transform.Rotation,
+                position = pos,
+                angle = transform.Rotation,
             };
 
-            FixtureDef fixtureDef;
-            if (Shape == ColliderSensorShape.Box)
+            FixtureDef fixtureDef = new FixtureDef()
             {
-                PolygonDef polygonDef = new PolygonDef()
+                filter = new Filter()
                 {
-                    Filter = new FilterData()
-                    {
-                        CategoryBits = Layer,
-                        MaskBits = HitMask,
-                        GroupIndex = GroupIndex
-                    },
-                    IsSensor = true
-                };
-                polygonDef.SetAsBox((Size.X - Epsilon) / 2f / Physics.WorldScalar, (Size.Y - Epsilon) / 2f / Physics.WorldScalar);
-                fixtureDef = polygonDef;
-            }
-            else
+                    categoryBits = Layer,
+                    maskBits = HitMask,
+                    groupIndex = GroupIndex
+                },
+                isSensor = true,
+            };
+            switch(this.Shape)
             {
-                CircleDef circleDef = new CircleDef()
-                {
-                    Radius = (Size.X - Epsilon) / 2f / Physics.WorldScalar,
-                    Filter = new FilterData()
+                case RigidbodySensorShape.Box:
+                    fixtureDef.shape = new PolygonShape((transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar, (transform.Scale.Y - Epsilon) / 2f / Physics.WorldScalar);
+                    break;
+                case RigidbodySensorShape.Circle:
+                    fixtureDef.shape = new CircleShape()
                     {
-                        CategoryBits = Layer,
-                        MaskBits = HitMask,
-                        GroupIndex = GroupIndex
-                    },
-                    IsSensor = true
-                };
-                fixtureDef = circleDef;
+                        Radius = (Size.X - Epsilon) / 2f / Physics.WorldScalar,
+                    };
+                    break;
             }
 
-            ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef);
+            ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, new MassData(), true);
             isValid = true;
         }
 
@@ -172,7 +164,7 @@ namespace Electron2D.Core.PhysicsBox2D
         }
     }
 
-    public enum ColliderSensorShape
+    public enum RigidbodySensorShape
     {
         Box,
         Circle
