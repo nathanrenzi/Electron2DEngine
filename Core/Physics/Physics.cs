@@ -7,6 +7,7 @@ using Box2D.NetStandard.Dynamics.Fixtures;
 using Box2D.NetStandard.Dynamics.Bodies;
 using System.Numerics;
 using Box2D.NetStandard.Dynamics.Contacts;
+using Box2D.NetStandard.Dynamics.Joints;
 
 namespace Electron2D.Core.PhysicsBox2D
 {
@@ -37,6 +38,7 @@ namespace Electron2D.Core.PhysicsBox2D
             world.SetAllowSleeping(_doSleep);
             world.SetContactFilter(new ContactFilter());
             world.SetContactListener(new WorldContactListener());
+            world.SetDestructionListener(new WorldDestructionListener());
         }
 
         /// <summary>
@@ -86,8 +88,10 @@ namespace Electron2D.Core.PhysicsBox2D
                     Debug.LogError("PHYSICS: Error creating physics body! Physics step likely in progress!");
                     return 0;
                 }
+                b.SetUserData(id);
                 b.CreateFixture(_fixtureDef);
                 b.SetMassData(_massData);
+                b.SetType(_isKinematic ? BodyType.Kinematic : BodyType.Dynamic);
                 physicsBodies.Add(id, b);
 
                 return id;
@@ -296,26 +300,17 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_maxDistance">The maximum distance the ray can travel.</param>
         /// <param name="_solidShapes"></param>
         /// <returns></returns>
-        public static RaycastHit Raycast(Vector2 _point, Vector2 _direction, float _maxDistance)
+        public static bool Raycast(Vector2 _point, Vector2 _direction, float _maxDistance, out RaycastHit hit)
         {
-            RaycastHit hit = new RaycastHit();
-
+            hit = new RaycastHit();
+            hit.MaxDistance = _maxDistance;
             world.RayCast(hit.Callback, _point, _point + (_direction * _maxDistance));
-
-            return hit;
+            return hit.Hit;
         }
 
         private static uint GetIDFromBody(Body _body)
         {
-            foreach (var pair in physicsBodies)
-            {
-                if (pair.Value == _body)
-                {
-                    return pair.Key;
-                }
-            }
-
-            return uint.MaxValue;
+            return _body.GetUserData<uint>();
         }
 
         public class WorldContactListener : ContactListener
@@ -355,7 +350,7 @@ namespace Electron2D.Core.PhysicsBox2D
 
             public override void BeginContact(in Contact contact)
             {
-                throw new NotImplementedException();
+                
             }
 
             public void EndContact(Contact contact)
@@ -414,6 +409,25 @@ namespace Electron2D.Core.PhysicsBox2D
             public override void PreSolve(in Contact contact, in Manifold oldManifold)
             {
                 
+            }
+        }
+
+        public class WorldDestructionListener : DestructionListener
+        {
+            public override void SayGoodbye(Joint joint)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void SayGoodbye(Fixture fixture)
+            {
+                foreach (var rigidbody in RigidbodySystem.GetComponents())
+                {
+                    if (rigidbody.ID == fixture.Body.GetUserData<uint>())
+                    {
+                        rigidbody.Dispose();
+                    }
+                }
             }
         }
     }

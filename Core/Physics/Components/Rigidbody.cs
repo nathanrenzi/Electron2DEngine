@@ -14,7 +14,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public Action<Rigidbody> OnBeginContact { get; set; }
         public Action<Rigidbody> OnEndContact { get; set; }
         public List<Rigidbody> CurrentContacts { get; set; } = new List<Rigidbody>();
-
+        public bool IsDestroyed { get; private set; }
         public uint ID { get; private set; } = uint.MaxValue;
         public Vector2 Velocity
         {
@@ -132,6 +132,7 @@ namespace Electron2D.Core.PhysicsBox2D
             Layer = _layer;
             HitMask = _hitMask;
             GroupIndex = _groupIndex;
+            ConvexColliderPoints = _convexColliderPoints;
 
             RigidbodySystem.Register(this);
         }
@@ -140,6 +141,7 @@ namespace Electron2D.Core.PhysicsBox2D
         {
             RigidbodySystem.Unregister(this);
             if(ID != uint.MaxValue) Physics.RemovePhysicsBody(ID);
+            Destroy();
         }
 
         public static void InvokeCollision(uint _id, uint _hitId, bool _beginContact)
@@ -234,7 +236,7 @@ namespace Electron2D.Core.PhysicsBox2D
 
         public override void FixedUpdate()
         {
-            if (!isValid || ID == uint.MaxValue) return;
+            if (!isValid || ID == uint.MaxValue || IsDestroyed) return;
 
             // Setting values for interpolation
             oldPosition = transform.Position;
@@ -251,7 +253,7 @@ namespace Electron2D.Core.PhysicsBox2D
 
         public override void Update()
         {
-            if (!isValid || ID == uint.MaxValue || !interpolationReady) return;
+            if (!isValid || ID == uint.MaxValue || !interpolationReady || IsDestroyed) return;
 
             // Interpolation
             float t = MathEx.Clamp01((Time.GameTime - lastLerpTime) / lerpDeltaTime);
@@ -261,6 +263,11 @@ namespace Electron2D.Core.PhysicsBox2D
 
             //      Rotation
             transform.Rotation = (float)(oldAngle * (1.0 - t) + (newAngle * t));
+        }
+
+        public void Destroy()
+        {
+            IsDestroyed = true;
         }
     }
 
@@ -347,7 +354,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// </summary>
         public float AngularDampening = 0.01f;
         /// <summary>
-        /// The density of the rigidbody. This is used when the mass mode is set to <see cref="RigidbodyMode.Kinematic"/>
+        /// The density of the rigidbody./>
         /// </summary>
         public float Density = 1;
         /// <summary>

@@ -3,13 +3,15 @@ using System.Numerics;
 
 namespace Electron2D.Core.PhysicsBox2D
 {
-    public struct RaycastHit
+    public class RaycastHit
     {
         public bool Hit;
         public Vector2 Normal;
         public Vector2 Point;
         public float Fraction;
         public Fixture Fixture;
+        public float Distance = 0;
+        public float MaxDistance = 0;
 
         public RaycastHit()
         {
@@ -22,11 +24,17 @@ namespace Electron2D.Core.PhysicsBox2D
 
         public void Callback(Fixture fixture, Vector2 point, Vector2 normal, float fraction)
         {
-            Hit = true;
+            Hit = fixture != null;
             Fixture = fixture;
-            Point = point;
+            Point = point * Physics.WorldScalar;
             Normal = normal;
             Fraction = fraction;
+            Distance = fraction * MaxDistance;
+        }
+
+        public string ToString()
+        {
+            return $"Hit: {Hit}, Normal: {Normal}, Point: {Point}, Fraction: {Fraction}, Distance: {Distance}, MaxDistance: {MaxDistance}";
         }
     }
 }
