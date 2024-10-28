@@ -1,6 +1,7 @@
 ﻿using Box2D.NetStandard.Collision.Shapes;
 using Box2D.NetStandard.Dynamics.Bodies;
 using Box2D.NetStandard.Dynamics.Fixtures;
+using Box2D.NetStandard.Dynamics.Joints;
 using Electron2D.Core.ECS;
 using System.Numerics;
 
@@ -14,6 +15,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public Action<Rigidbody> OnBeginContact { get; set; }
         public Action<Rigidbody> OnEndContact { get; set; }
         public List<Rigidbody> CurrentContacts { get; set; } = new List<Rigidbody>();
+        public List<uint> Joints { get; private set; } = new List<uint>();
         public bool IsDestroyed { get; private set; }
         public uint ID { get; private set; } = uint.MaxValue;
         public Vector2 Velocity
@@ -139,9 +141,10 @@ namespace Electron2D.Core.PhysicsBox2D
 
         protected override void OnDispose()
         {
+            if (IsDestroyed) return;
             RigidbodySystem.Unregister(this);
             if(ID != uint.MaxValue) Physics.RemovePhysicsBody(ID);
-            Destroy();
+            IsDestroyed = true;
         }
 
         public static void InvokeCollision(uint _id, uint _hitId, bool _beginContact)
@@ -265,9 +268,11 @@ namespace Electron2D.Core.PhysicsBox2D
             transform.Rotation = (float)(oldAngle * (1.0 - t) + (newAngle * t));
         }
 
-        public void Destroy()
+        public Joint CreateJoint(JointDef _jointDef)
         {
-            IsDestroyed = true;
+            uint id = Physics.CreateJoint(_jointDef);
+            Joints.Add(id);
+            return joint;
         }
     }
 

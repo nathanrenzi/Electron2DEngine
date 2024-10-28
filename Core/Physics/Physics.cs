@@ -1,23 +1,42 @@
 ﻿using Box2D.NetStandard.Collision;
 using Box2D.NetStandard.Collision.Shapes;
-using Box2D.NetStandard.Common;
+using Box2D.NetStandard.Dynamics.Bodies;
+using Box2D.NetStandard.Dynamics.Contacts;
+using Box2D.NetStandard.Dynamics.Fixtures;
+using Box2D.NetStandard.Dynamics.Joints;
+using Box2D.NetStandard.Dynamics.Joints.Distance;
 using Box2D.NetStandard.Dynamics.World;
 using Box2D.NetStandard.Dynamics.World.Callbacks;
-using Box2D.NetStandard.Dynamics.Fixtures;
-using Box2D.NetStandard.Dynamics.Bodies;
 using System.Numerics;
-using Box2D.NetStandard.Dynamics.Contacts;
-using Box2D.NetStandard.Dynamics.Joints;
 
 namespace Electron2D.Core.PhysicsBox2D
 {
     public static class Physics
     {
+        private enum PhysicsCallType
+        {
+            RemoveBody,
+            ApplyForce,
+            ApplyImpulse,
+            ApplyTorque,
+            SetAngle,
+            SetAngularVelocity,
+            SetVelocity,
+            SetPosition,
+            SetBodyFixedRotation,
+            SetFilterData,
+            CreateJoint,
+            RemoveJoint,
+        }
+
         // Scaling the physics so that 50 pixels equates to 1 meter in the simulation
         public static readonly float WorldScalar = 50f;
 
         private static Queue<(BodyDef, FixtureDef, MassData, bool)> creationQueue;
+        private static Queue<(PhysicsCallType, uint, object[])> physicsCallQueue;
         private static Dictionary<uint, Body> physicsBodies;
+        private static Dictionary<uint, Joint> joints;
+        private static int jointsInQueue = 0;
         private static World world;
         private static bool _stepLock = false;
 
@@ -32,7 +51,9 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void Initialize(Vector2 _gravity, bool _doSleep)
         {
             creationQueue = new Queue<(BodyDef, FixtureDef, MassData, bool)>();
+            physicsCallQueue = new Queue<(PhysicsCallType, uint, object[])>();
             physicsBodies = new Dictionary<uint, Body>();
+            joints = new Dictionary<uint, Joint>();
 
             world = new World(_gravity);
             world.SetAllowSleeping(_doSleep);
@@ -54,13 +75,97 @@ namespace Electron2D.Core.PhysicsBox2D
             _stepLock = false;
 
             // Creating physics bodies that were queued during the step
-            const int maxCreationPerStep = 20;
-            int count = 0;
-            while(creationQueue.Count > 0 && count < maxCreationPerStep)
+            while(creationQueue.Count > 0)
             {
                 (BodyDef, FixtureDef, MassData, bool) data = creationQueue.Dequeue();
                 CreatePhysicsBody(data.Item1, data.Item2, data.Item3, data.Item4, true);
-                count++;
+            }
+
+            // Calling physics methods that were queued during the step
+            while(physicsCallQueue.Count > 0)
+            {
+                (PhysicsCallType, uint, object[]) data = physicsCallQueue.Dequeue();
+                switch(data.Item1)
+                {
+                    case PhysicsCallType.RemoveBody:
+                        RemovePhysicsBody(data.Item2);
+                        break;
+                    case PhysicsCallType.ApplyForce:
+                        ApplyForce(data.Item2, (Vector2)data.Item3[0], (Vector2)data.Item3[1]);
+                        break;
+                    case PhysicsCallType.ApplyImpulse:
+                        ApplyImpulse(data.Item2, (Vector2)data.Item3[0], (Vector2)data.Item3[1]);
+                        break;
+                    case PhysicsCallType.ApplyTorque:
+                        ApplyTorque(data.Item2, (float)data.Item3[0]);
+                        break;
+                    case PhysicsCallType.SetAngle:
+                        SetAngle(data.Item2, (float)data.Item3[0]);
+                        break;
+                    case PhysicsCallType.SetAngularVelocity:
+                        SetAngularVelocity(data.Item2, (float)data.Item3[0]);
+                        break;
+                    case PhysicsCallType.SetVelocity:
+                        SetVelocity(data.Item2, (Vector2)data.Item3[0]);
+                        break;
+                    case PhysicsCallType.SetPosition:
+                        SetPosition(data.Item2, (Vector2)data.Item3[0]);
+                        break;
+                    case PhysicsCallType.SetBodyFixedRotation:
+                        SetBodyFixedRotation(data.Item2, (bool)data.Item3[0]);
+                        break;
+                    case PhysicsCallType.SetFilterData:
+                        SetFilterData(data.Item2, (Filter)data.Item3[0]);
+                        break;
+                    case PhysicsCallType.CreateJoint:
+                        CreateJoint((JointDef)data.Item3[0], true);
+                        jointsInQueue--;
+                        break;
+                    case PhysicsCallType.RemoveJoint:
+                        RemoveJoint(data.Item2);
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates a joint from a joint definition.
+        /// </summary>
+        /// <param name="_jointDef"></param>
+        /// <returns></returns>
+        public static uint CreateJoint(JointDef _jointDef, bool _ignoreQueueCount = false)
+        {
+            uint id = (uint)(joints.Count + (_ignoreQueueCount ? 0 : jointsInQueue));
+            if(_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.CreateJoint, id, new object[] { _jointDef }));
+                jointsInQueue++;
+                return id;
+            }
+            else
+            {
+                Joint joint = world.CreateJoint(_jointDef);
+                joint.UserData = id;
+                joints.Add(id, joint);
+                return id;
+            }
+        }
+
+        /// <summary>
+        /// Removes a joint.
+        /// </summary>
+        /// <param name="_jointDef"></param>
+        /// <returns></returns>
+        public static void RemoveJoint(uint _id)
+        {
+            if (_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.RemoveJoint, _id, new object[0]));
+            }
+            else
+            {
+                Joint joint = joints[_id];
+                world.DestroyJoint(joint);
             }
         }
 
@@ -112,7 +217,14 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void RemovePhysicsBody(uint _id)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            world.DestroyBody(physicsBodies[_id]);
+            if(_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.RemoveBody, _id, new object[0]));
+            }
+            else
+            {
+                world.DestroyBody(physicsBodies[_id]);
+            }
         }
 
         /// <summary>
@@ -192,7 +304,14 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void ApplyForce(uint _id, Vector2 _force, Vector2 _point)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].ApplyLinearImpulse(_force, _point);
+            if(_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.ApplyForce, _id, new object[] { _force, _point }));
+            }
+            else
+            {
+                physicsBodies[_id].ApplyLinearImpulse(_force, _point);
+            }
         }
 
         /// <summary>
@@ -204,7 +323,14 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void ApplyImpulse(uint _id, Vector2 _impulse, Vector2 _point)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].ApplyLinearImpulse(_impulse, _point);
+            if(_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.ApplyImpulse, _id, new object[] { _impulse, _point }));
+            }
+            else
+            {
+                physicsBodies[_id].ApplyLinearImpulse(_impulse, _point);
+            }
         }
 
         /// <summary>
@@ -215,7 +341,14 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void ApplyTorque(uint _id, float _torque)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].ApplyTorque(_torque);
+            if(_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.ApplyTorque, _id, new object[] { _torque }));
+            }
+            else
+            {
+                physicsBodies[_id].ApplyTorque(_torque);
+            }
         }
 
         /// <summary>
@@ -226,7 +359,14 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void SetAngle(uint _id, float _angle)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].SetTransform(physicsBodies[_id].Position, _angle * (MathF.PI / 180));
+            if(_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.ApplyTorque, _id, new object[] { _angle }));
+            }
+            else
+            {
+                physicsBodies[_id].SetTransform(physicsBodies[_id].Position, _angle * (MathF.PI / 180));
+            }
         }
 
         /// <summary>
@@ -237,7 +377,14 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void SetAngularVelocity(uint _id, float _angularVelocity)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].SetAngularVelocity(_angularVelocity);
+            if(_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.SetAngularVelocity, _id, new object[] { _angularVelocity }));
+            }
+            else
+            {
+                physicsBodies[_id].SetAngularVelocity(_angularVelocity);
+            }
         }
 
         /// <summary>
@@ -248,7 +395,14 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void SetVelocity(uint _id, Vector2 _linearVelocity)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].SetLinearVelocity(_linearVelocity);
+            if(_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.SetVelocity, _id, new object[] { _linearVelocity }));
+            }
+            else
+            {
+                physicsBodies[_id].SetLinearVelocity(_linearVelocity);
+            }
         }
 
         /// <summary>
@@ -259,7 +413,14 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void SetPosition(uint _id, Vector2 _position)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].SetTransform(_position / WorldScalar, physicsBodies[_id].GetAngle());
+            if(_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.SetPosition, _id, new object[] { _position }));
+            }
+            else
+            {
+                physicsBodies[_id].SetTransform(_position / WorldScalar, physicsBodies[_id].GetAngle());
+            }
         }
 
         /// <summary>
@@ -269,7 +430,14 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void SetBodyFixedRotation(uint _id, bool _fixedRotation)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            physicsBodies[_id].SetFixedRotation(_fixedRotation);
+            if(_stepLock)
+            {
+                physicsCallQueue.Enqueue((PhysicsCallType.SetBodyFixedRotation, _id, new object[] { _fixedRotation }));
+            }
+            else
+            {
+                physicsBodies[_id].SetFixedRotation(_fixedRotation);
+            }
         }
 
         /// <summary>
@@ -280,15 +448,22 @@ namespace Electron2D.Core.PhysicsBox2D
         public static void SetFilterData(uint _id, Filter _filter)
         {
             if (!physicsBodies.ContainsKey(_id)) return;
-            Fixture f = physicsBodies[_id].GetFixtureList();
-            f.FilterData = _filter;
-            f.Refilter();
-
-            while (f.Next != null)
+            if(_stepLock)
             {
-                f = f.Next;
+                physicsCallQueue.Enqueue((PhysicsCallType.SetFilterData, _id, new object[] { _filter }));
+            }
+            else
+            {
+                Fixture f = physicsBodies[_id].GetFixtureList();
                 f.FilterData = _filter;
                 f.Refilter();
+
+                while (f.Next != null)
+                {
+                    f = f.Next;
+                    f.FilterData = _filter;
+                    f.Refilter();
+                }
             }
         }
 
