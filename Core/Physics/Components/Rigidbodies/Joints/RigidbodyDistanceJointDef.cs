@@ -17,12 +17,6 @@ namespace Electron2D.Core.PhysicsBox2D
 
         public JointDef GetPhysicsDefinition()
         {
-            if(RigidbodyA == null || RigidbodyB == null)
-            {
-                Debug.LogError("PHYSICS: Cannot get joint definition when one or more rigidbodies are null.");
-                return null;
-            }
-
             DistanceJointDef d = new DistanceJointDef();
             d.bodyA = RigidbodyA.PhysicsBody;
             d.bodyB = RigidbodyB.PhysicsBody;

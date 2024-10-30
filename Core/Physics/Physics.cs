@@ -63,6 +63,15 @@ namespace Electron2D.Core.PhysicsBox2D
         }
 
         /// <summary>
+        /// Gets the physics world.
+        /// </summary>
+        /// <returns></returns>
+        public static World GetWorld()
+        {
+            return world;
+        }
+
+        /// <summary>
         /// Steps the physics simulation. This should only be called by the physics thread.
         /// </summary>
         /// <param name="_deltaTime"></param>

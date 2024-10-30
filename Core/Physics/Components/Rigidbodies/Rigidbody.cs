@@ -15,7 +15,7 @@ namespace Electron2D.Core.PhysicsBox2D
         public Action<Rigidbody> OnBeginContact { get; set; }
         public Action<Rigidbody> OnEndContact { get; set; }
         public List<Rigidbody> CurrentContacts { get; set; } = new List<Rigidbody>();
-        public List<uint> Joints { get; private set; } = new List<uint>();
+        public Dictionary<uint, Rigidbody> Joints = new Dictionary<uint, Rigidbody>();
         public bool IsDestroyed { get; private set; }
         public uint ID { get; private set; } = uint.MaxValue;
         public Body PhysicsBody
@@ -277,22 +277,29 @@ namespace Electron2D.Core.PhysicsBox2D
 
         public uint CreateJoint(IRigidbodyJointDef _jointDef)
         {
+            if(_jointDef.RigidbodyA == null || _jointDef.RigidbodyB == null)
+            {
+                Debug.LogError("PHYSICS: Cannot create a joint when one or more rigidbodies are null.");
+            }
+
             uint id = Physics.CreateJoint(_jointDef.GetPhysicsDefinition());
-            Joints.Add(id);
+            _jointDef.RigidbodyA.Joints.Add(id, _jointDef.RigidbodyB);
+            _jointDef.RigidbodyB.Joints.Add(id, _jointDef.RigidbodyA);
             return id;
         }
 
         public void RemoveJoint(uint _id)
         {
-            if (!Joints.Contains(_id)) return;
-            Joints.Remove(_id);
+            if (!Joints.ContainsKey(_id)) return;
+            Joints[_id].Joints.Remove(_id); // Removing from paired body
+            Joints.Remove(_id); // Removing from this body
             Physics.RemoveJoint(_id);
         }
 
         public Joint GetJoint(uint _id)
         {
             // Only returning the joint object if this rigidbody is connected to it
-            if(Joints.Contains(_id))
+            if(Joints.ContainsKey(_id))
             {
                 return Physics.GetJoint(_id);
             }
