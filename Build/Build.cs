@@ -28,6 +28,32 @@ public class Build : Game
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
 
         s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Red), 0, 20, 20);
+
+        Sprite entity = new Sprite(Material.Create(GlobalShaders.DefaultTexture), 0, 40, 40);
+        entity.GetComponent<Transform>().Position = new Vector2(0, 100);
+        entity.GetComponent<Transform>().Scale = new Vector2(40, 40);
+        entity.AddComponent(Rigidbody.CreateKinematic(
+            new RigidbodyKinematicDef()
+            {
+                Shape = RigidbodyShape.Box
+            }));
+
+        Sprite entity2 = new Sprite(Material.Create(GlobalShaders.DefaultTexture), 0, 40, 40);
+        entity2.GetComponent<Transform>().Position = Vector2.Zero;
+        entity2.GetComponent<Transform>().Scale = new Vector2(40, 40);
+        entity2.AddComponent(Rigidbody.CreateDynamic(
+            new RigidbodyDynamicDef()
+            {
+                Shape = RigidbodyShape.Box,
+                MassData = new Box2D.NetStandard.Collision.Shapes.MassData() { mass = 1 },
+            }));
+
+        entity2.GetComponent<Rigidbody>().CreateJoint(new RigidbodyDistanceJointDef()
+        {
+            RigidbodyA = entity.GetComponent<Rigidbody>(),
+            RigidbodyB = entity2.GetComponent<Rigidbody>(),
+            Length = 50
+        });
     }
 
     // This is ran every frame

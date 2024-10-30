@@ -133,10 +133,15 @@ namespace Electron2D.Core.PhysicsBox2D
         /// </summary>
         /// <param name="_jointDef"></param>
         /// <returns></returns>
-        public static uint CreateJoint(JointDef _jointDef, bool _ignoreQueueCount = false)
+        public static uint CreateJoint(JointDef _jointDef)
+        {
+            return CreateJoint(_jointDef, false);
+        }
+
+        private static uint CreateJoint(JointDef _jointDef, bool _ignoreQueueCount)
         {
             uint id = (uint)(joints.Count + (_ignoreQueueCount ? 0 : jointsInQueue));
-            if(_stepLock)
+            if (_stepLock)
             {
                 physicsCallQueue.Enqueue((PhysicsCallType.CreateJoint, id, new object[] { _jointDef }));
                 jointsInQueue++;
@@ -164,8 +169,32 @@ namespace Electron2D.Core.PhysicsBox2D
             }
             else
             {
-                Joint joint = joints[_id];
-                world.DestroyJoint(joint);
+                if(!joints.ContainsKey(_id))
+                {
+                    Debug.LogError($"PHYSICS: Joint with ID: [ {_id} ] does not exist, cannot remove.");
+                }
+                else
+                {
+                    Joint joint = joints[_id];
+                    world.DestroyJoint(joint);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the joint with the given ID, or null if it does not exist
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <returns></returns>
+        public static Joint GetJoint(uint _id)
+        {
+            if(joints.ContainsKey(_id))
+            {
+                return joints[_id];
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -176,7 +205,12 @@ namespace Electron2D.Core.PhysicsBox2D
         /// <param name="_fixtureDef">The definition of the fixture. This holds the parameters of the physics body.</param>
         /// <param name="_massData">The mass data of the physics body.</param>
         /// <returns></returns>
-        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData, bool _isKinematic, bool _ignoreQueueCount = false)
+        public static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData, bool _isKinematic)
+        {
+            return CreatePhysicsBody(_bodyDefinition, _fixtureDef, _massData, _isKinematic, false);
+        }
+
+        private static uint CreatePhysicsBody(BodyDef _bodyDefinition, FixtureDef _fixtureDef, MassData _massData, bool _isKinematic, bool _ignoreQueueCount)
         {
             uint id = (uint)(physicsBodies.Count + (_ignoreQueueCount ? 0 : creationQueue.Count));
             try
@@ -201,7 +235,7 @@ namespace Electron2D.Core.PhysicsBox2D
 
                 return id;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.LogError($"PHYSICS: Could not create physics body [{id}]");
                 Debug.LogError(e.Message);
@@ -223,6 +257,10 @@ namespace Electron2D.Core.PhysicsBox2D
             }
             else
             {
+                if(!physicsBodies.ContainsKey(_id))
+                {
+                    Debug.LogError($"PHYSICS: Body with ID: [ {_id} ] does not exist, cannot remove.");
+                }
                 world.DestroyBody(physicsBodies[_id]);
             }
         }
@@ -293,6 +331,23 @@ namespace Electron2D.Core.PhysicsBox2D
             }
 
             return filters.ToArray();
+        }
+
+        /// <summary>
+        /// Gets the physics body associated with the given ID
+        /// </summary>
+        /// <param name="_id"></param>
+        /// <returns></returns>
+        public static Body GetBody(uint _id)
+        {
+            if (physicsBodies.ContainsKey(_id))
+            {
+                return physicsBodies[_id];
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>

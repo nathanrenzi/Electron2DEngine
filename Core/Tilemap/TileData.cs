@@ -11,7 +11,7 @@ namespace Electron2D.Core
         public Material Material { get; set; }
         public bool AllowRandomRotation { get; set; }
         public bool IsCollider { get; private set; } = false;
-        public RigidbodyStaticDef PhysicsSettings { get; private set; }
+        public RigidbodyKinematicDef PhysicsSettings { get; private set; }
         public ITilemapRuleset Ruleset { get; set; }
 
         public TileData(Material _material, string _name, int _spriteColumn = 0,
@@ -24,7 +24,7 @@ namespace Electron2D.Core
             SpriteRow = _spriteRow;
             AllowRandomRotation = _allowRandomRotation;
             Ruleset = _ruleset;
-            PhysicsSettings = new RigidbodyStaticDef();
+            PhysicsSettings = new RigidbodyKinematicDef();
         }
 
         public TileData(string _name, int _spriteColumn = 0, int _spriteRow = 0,
@@ -36,10 +36,10 @@ namespace Electron2D.Core
             SpriteRow = _spriteRow;
             AllowRandomRotation = _allowRandomRotation;
             Ruleset = _ruleset;
-            PhysicsSettings = new RigidbodyStaticDef();
+            PhysicsSettings = new RigidbodyKinematicDef();
         }
 
-        public TileData SetAsCollider(RigidbodyStaticDef _physicsSettings)
+        public TileData SetAsCollider(RigidbodyKinematicDef _physicsSettings)
         {
             IsCollider = true;
             PhysicsSettings = _physicsSettings;

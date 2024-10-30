@@ -18,6 +18,13 @@ namespace Electron2D.Core.PhysicsBox2D
         public List<uint> Joints { get; private set; } = new List<uint>();
         public bool IsDestroyed { get; private set; }
         public uint ID { get; private set; } = uint.MaxValue;
+        public Body PhysicsBody
+        {
+            get
+            {
+                return Physics.GetBody(ID);
+            }
+        }
         public Vector2 Velocity
         {
             get
@@ -109,7 +116,7 @@ namespace Electron2D.Core.PhysicsBox2D
                 RigidbodyMode.Dynamic, _definition.Layer, _definition.HitMask, _definition.GroupIndex, _definition.ConvexColliderPoints);
         }
 
-        public static Rigidbody CreateKinematic(RigidbodyStaticDef _definition)
+        public static Rigidbody CreateKinematic(RigidbodyKinematicDef _definition)
         {
             return new Rigidbody(true, new Vector2(0, 0), 0, new MassData(), _definition.Friction, _definition.Bounciness, 1, 0.0f, 0.0f, false, _definition.Shape,
                 RigidbodyMode.Kinematic, _definition.Layer, _definition.HitMask, _definition.GroupIndex, _definition.ConvexColliderPoints);
@@ -268,11 +275,31 @@ namespace Electron2D.Core.PhysicsBox2D
             transform.Rotation = (float)(oldAngle * (1.0 - t) + (newAngle * t));
         }
 
-        public Joint CreateJoint(JointDef _jointDef)
+        public uint CreateJoint(IRigidbodyJointDef _jointDef)
         {
-            uint id = Physics.CreateJoint(_jointDef);
+            uint id = Physics.CreateJoint(_jointDef.GetPhysicsDefinition());
             Joints.Add(id);
-            return joint;
+            return id;
+        }
+
+        public void RemoveJoint(uint _id)
+        {
+            if (!Joints.Contains(_id)) return;
+            Joints.Remove(_id);
+            Physics.RemoveJoint(_id);
+        }
+
+        public Joint GetJoint(uint _id)
+        {
+            // Only returning the joint object if this rigidbody is connected to it
+            if(Joints.Contains(_id))
+            {
+                return Physics.GetJoint(_id);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 
@@ -292,7 +319,7 @@ namespace Electron2D.Core.PhysicsBox2D
     /// <summary>
     /// Defines a static rigidbody.
     /// </summary>
-    public struct RigidbodyStaticDef
+    public struct RigidbodyKinematicDef
     {
         /// <summary>
         /// The friction of the rigidbody against other rigidbodies.
@@ -326,7 +353,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// </summary>
         public Vector2[] ConvexColliderPoints = new Vector2[0];
 
-        public RigidbodyStaticDef() { }
+        public RigidbodyKinematicDef() { }
     }
 
     /// <summary>
