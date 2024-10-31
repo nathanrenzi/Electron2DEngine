@@ -4,8 +4,6 @@ using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
 using System.Numerics;
 using Electron2D.Core.PhysicsBox2D;
-using Electron2D;
-using Box2D.NetStandard.Dynamics.Joints;
 
 public class Build : Game
 {
@@ -49,11 +47,14 @@ public class Build : Game
                 MassData = new Box2D.NetStandard.Collision.Shapes.MassData() { mass = 1 },
             }));
 
-        entity2.GetComponent<Rigidbody>().CreateJoint(new RigidbodyDistanceJointDef()
+        entity2.GetComponent<Rigidbody>().CreateJoint(new RigidbodyWeldJointDef()
         {
             RigidbodyA = entity.GetComponent<Rigidbody>(),
             RigidbodyB = entity2.GetComponent<Rigidbody>(),
-            Length = 50
+            Damping = 0.2f,
+            Stiffness = 0.5f,
+            CollideConnected = true,
+            LocalAnchorB = new Vector2(0, -40)
         });
     }
 

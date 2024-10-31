@@ -543,7 +543,14 @@ namespace Electron2D.Core.PhysicsBox2D
         {
             hit = new RaycastHit();
             hit.MaxDistance = _maxDistance;
-            world.RayCast(hit.Callback, _point, _point + (_direction * _maxDistance));
+            try
+            {
+                world.RayCast(hit.Callback, _point, _point + (_direction * _maxDistance));
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
             return hit.Hit;
         }
 
