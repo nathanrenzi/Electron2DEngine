@@ -51,8 +51,8 @@ public class Build : Game
         {
             RigidbodyA = entity.GetComponent<Rigidbody>(),
             RigidbodyB = entity2.GetComponent<Rigidbody>(),
-            Damping = 0.2f,
-            Stiffness = 0.5f,
+            Damping = 1f,
+            Stiffness = 1f,
             CollideConnected = true,
             LocalAnchorB = new Vector2(0, -40)
         });

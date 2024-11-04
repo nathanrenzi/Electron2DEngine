@@ -1,4 +1,7 @@
-﻿using Electron2D.Core.ECS;
+﻿using Box2D.NetStandard.Collision.Shapes;
+using Box2D.NetStandard.Dynamics.Bodies;
+using Box2D.NetStandard.Dynamics.Fixtures;
+using Electron2D.Core.ECS;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Rendering;
 using Newtonsoft.Json;
@@ -14,6 +17,8 @@ namespace Electron2D.Core
         public int SizeY { get; set; }
         public int[] Tiles { get; set; }
         public byte[] TileRotations { get; set; }
+        public Dictionary<int, uint> CollisionBodies = new Dictionary<int, uint>();
+        private Dictionary<int, bool> CollisionRecalculationList = new Dictionary<int, bool>();
         public int TilePixelSize { get; set; }
         public int RenderLayer;
 
@@ -30,6 +35,7 @@ namespace Electron2D.Core
         private Random random;
         private int seed;
         private bool isDirty = false;
+        private bool isColliderDirty = false;
 
         private Tilemap(TileData[] _data, int[] _tileArray, int _tilePixelSize,
             int _sizeX, int _sizeY, int _renderLayer = -1)
@@ -63,6 +69,7 @@ namespace Electron2D.Core
             }
 
             isDirty = true;
+            isColliderDirty = true;
 
             Game.OnUpdateEvent += RegenerateEntireMesh;
             RenderLayerManager.OrderRenderable(this);
@@ -141,6 +148,7 @@ namespace Electron2D.Core
 
         private void RegenerateEntireMesh()
         {
+            if (!isDirty && isColliderDirty) RegenerateColliders();
             if (!isDirty) return;
             isDirty = false;
 
@@ -150,8 +158,9 @@ namespace Electron2D.Core
                 TileData data = Data[Tiles[i]];
                 TileMesh mesh = meshDataDictionary[data.Material];
 
-                float xPos = i % SizeX * realTilePixelSize;
-                float yPos = i / SizeX * realTilePixelSize;
+                Vector2 pos = FromIndex(i);
+                float xPos = pos.X * realTilePixelSize;
+                float yPos = pos.Y * realTilePixelSize;
 
                 // Finding tile and its 8 neighbors
                 int[] neighbors = new int[9];
@@ -252,6 +261,43 @@ namespace Electron2D.Core
                         !m.Value.Renderer.HasVertexData, _setDirty: true);
                 }
             }
+
+            RegenerateColliders();
+        }
+
+        private void RegenerateColliders()
+        {
+            if (!isColliderDirty) return;
+            isColliderDirty = false;
+
+            foreach (var entry in CollisionRecalculationList)
+            {
+                int index = entry.Key;
+                bool add = entry.Value;
+
+                if (add)
+                {
+                    BodyDef def = new BodyDef()
+                    {
+                        position = ((FromIndex(index) * SizeX) + transform.Position) / Physics.WorldScalar
+                    };
+                    FixtureDef fdef = new FixtureDef();
+                    PolygonShape shape = new PolygonShape();
+                    shape.SetAsBox(TilePixelSize / Physics.WorldScalar, TilePixelSize / Physics.WorldScalar);
+                    fdef.shape = shape;
+                    uint body = Physics.CreatePhysicsBody(def, fdef, new MassData(), true);
+                    CollisionBodies.Add(index, body);
+                }
+                else
+                {
+                    if(CollisionBodies.ContainsKey(index))
+                    {
+                        Physics.RemovePhysicsBody(CollisionBodies[index]);
+                        CollisionBodies.Remove(index);
+                    }
+                }
+            }
+            CollisionRecalculationList.Clear();
         }
 
         private Vector2 RotateUV(Vector2 _uv, float _degrees)
@@ -264,9 +310,21 @@ namespace Electron2D.Core
             );
         }
 
-        public void SetTileID(int _x, int _y, byte _tileID) { Tiles[_x + _y * SizeY] = _tileID; isDirty = true; }
-        public int GetTileID(int _x, int _y) => Tiles[_x + _y * SizeY];
+        public void SetTileID(int _x, int _y, byte _tileID)
+        {
+            int index = ToIndex(_x, _y);
+            int currentTile = Tiles[index];
+            if (!(Data[currentTile].IsCollider && Data[_tileID].IsCollider))
+            {
+                isColliderDirty = true;
+            }
+            Tiles[ToIndex(_x, _y)] = _tileID;
+            isDirty = true;
+        }
+        public int GetTileID(int _x, int _y) => Tiles[ToIndex(_x, _y)];
         public TileData GetTileData(int _x, int _y) => Data[GetTileID(_x, _y)];
+        private int ToIndex(int _x, int _y) => _x + _y * SizeX;
+        private Vector2 FromIndex(int index) => new Vector2(index % SizeX, index / SizeX);
 
         public int GetRenderLayer() => RenderLayer;
 
