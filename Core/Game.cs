@@ -53,8 +53,8 @@ namespace Electron2D.Core
             showElectronSplashscreen = _showElectronSplashscreen;
 
             // Starting Physics Thread
-            PhysicsThread = new Thread(() => RunPhysicsThread(PhysicsCancellationToken.Token, _physicsTimestep, new Vector2(_physicsLowerBoundX, _physicsLowerBoundY),
-                new Vector2(_physicsUpperBoundX, _physicsUpperBoundY), new Vector2(0, _physicsGravity), true, _physicsVelocityIterations, _physicsPositionIterations));
+            PhysicsThread = new Thread(() => RunPhysicsThread(PhysicsCancellationToken.Token, _physicsTimestep, 
+                new Vector2(0, _physicsGravity), true, _physicsVelocityIterations, _physicsPositionIterations));
         }
 
         public void SetBackgroundColor(Color _backgroundColor)
@@ -247,10 +247,10 @@ namespace Electron2D.Core
             DisplayManager.CloseWindow();
         }
 
-        private void RunPhysicsThread(CancellationToken _token, double _physicsTimestep, Vector2 _worldLowerBound, Vector2 _worldUpperBound, Vector2 _gravity,
+        private void RunPhysicsThread(CancellationToken _token, double _physicsTimestep, Vector2 _gravity,
             bool _doSleep, int _velocityIterations = 8, int _positionIterations = 2)
         {
-            Physics.Initialize(_worldLowerBound, _worldUpperBound, _gravity, _doSleep);
+            Physics.Initialize(_gravity, _doSleep);
 
             double lastTickTime = 0;
             while (!_token.IsCancellationRequested)

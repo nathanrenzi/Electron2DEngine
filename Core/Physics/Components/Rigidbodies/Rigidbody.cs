@@ -1,6 +1,7 @@
-﻿using Box2DX.Collision;
-using Box2DX.Common;
-using Box2DX.Dynamics;
+﻿using Box2D.NetStandard.Collision.Shapes;
+using Box2D.NetStandard.Dynamics.Bodies;
+using Box2D.NetStandard.Dynamics.Fixtures;
+using Box2D.NetStandard.Dynamics.Joints;
 using Electron2D.Core.ECS;
 using System.Numerics;
 
@@ -14,8 +15,16 @@ namespace Electron2D.Core.PhysicsBox2D
         public Action<Rigidbody> OnBeginContact { get; set; }
         public Action<Rigidbody> OnEndContact { get; set; }
         public List<Rigidbody> CurrentContacts { get; set; } = new List<Rigidbody>();
-
+        public Dictionary<uint, Rigidbody> Joints = new Dictionary<uint, Rigidbody>();
+        public bool IsDestroyed { get; private set; }
         public uint ID { get; private set; } = uint.MaxValue;
+        public Body PhysicsBody
+        {
+            get
+            {
+                return Physics.GetBody(ID);
+            }
+        }
         public Vector2 Velocity
         {
             get
@@ -51,7 +60,7 @@ namespace Electron2D.Core.PhysicsBox2D
                 Physics.SetAngularVelocity(ID, value);
             }
         }
-        public RigidbodyMassMode MassMode { get; private set; }
+        public RigidbodyMode Mode { get; private set; }
         public RigidbodyShape Shape { get; private set; }
         public bool IsStatic { get; private set; }
 
@@ -71,6 +80,10 @@ namespace Electron2D.Core.PhysicsBox2D
         /// If both GroupIndex values are the same and negative, don't collide.
         /// </summary>
         public short GroupIndex { get; private set; }
+        /// <summary>
+        /// Vertex array for a custom convex collider. Only used when <see cref="Shape"/> is set to <see cref="RigidbodyShape.ConvexMesh"/>
+        /// </summary>
+        public Vector2[] ConvexColliderPoints { get; private set; }
 
         // Starting Values
         private Vector2 velocity;
@@ -100,18 +113,18 @@ namespace Electron2D.Core.PhysicsBox2D
         {
             return new Rigidbody(false, _definition.Velocity, _definition.AngularVelocity, _definition.MassData, _definition.Friction, _definition.Bounciness,
                 _definition.Density, _definition.LinearDampening, _definition.AngularDampening, _definition.FixedRotation, _definition.Shape,
-                _definition.MassMode, _definition.Layer, _definition.HitMask, _definition.GroupIndex);
+                RigidbodyMode.Dynamic, _definition.Layer, _definition.HitMask, _definition.GroupIndex, _definition.ConvexColliderPoints);
         }
 
-        public static Rigidbody CreateStatic(RigidbodyStaticDef _definition)
+        public static Rigidbody CreateKinematic(RigidbodyKinematicDef _definition)
         {
             return new Rigidbody(true, new Vector2(0, 0), 0, new MassData(), _definition.Friction, _definition.Bounciness, 1, 0.0f, 0.0f, false, _definition.Shape,
-                RigidbodyMassMode.ManualMassUseData, _definition.Layer, _definition.HitMask, _definition.GroupIndex);
+                RigidbodyMode.Kinematic, _definition.Layer, _definition.HitMask, _definition.GroupIndex, _definition.ConvexColliderPoints);
         }
 
         private Rigidbody(bool _isStatic, Vector2 _startVelocity, float _startAngularVelocity, MassData _massData, float _friction, float _bounciness,
             float _density, float _linearDampening, float _angularDampening, bool _fixedRotation, RigidbodyShape _rigidbodyShape,
-            RigidbodyMassMode _rigidbodyMode, ushort _layer, ushort _hitMask, short _groupIndex)
+            RigidbodyMode _rigidbodyMode, ushort _layer, ushort _hitMask, short _groupIndex, Vector2[] _convexColliderPoints)
         {
             IsStatic = _isStatic;
             velocity = _startVelocity;
@@ -123,19 +136,22 @@ namespace Electron2D.Core.PhysicsBox2D
             density = _density;
             massData = _massData;
             fixedRotation = _fixedRotation;
-            MassMode = _rigidbodyMode;
+            Mode = _rigidbodyMode;
             Shape = _rigidbodyShape;
             Layer = _layer;
             HitMask = _hitMask;
             GroupIndex = _groupIndex;
+            ConvexColliderPoints = _convexColliderPoints;
 
             RigidbodySystem.Register(this);
         }
 
         protected override void OnDispose()
         {
+            if (IsDestroyed) return;
             RigidbodySystem.Unregister(this);
             if(ID != uint.MaxValue) Physics.RemovePhysicsBody(ID);
+            IsDestroyed = true;
         }
 
         public static void InvokeCollision(uint _id, uint _hitId, bool _beginContact)
@@ -178,7 +194,7 @@ namespace Electron2D.Core.PhysicsBox2D
             transform = GetComponent<Transform>();
             if (transform == null)
             {
-                Debug.LogError("PHYSICS: A rigidbody is trying to be added to an entity without a Transform component, removing collider...");
+                Debug.LogError("PHYSICS: A rigidbody is trying to be added to an entity without a Transform component, removing...");
                 Entity.RemoveComponent(this);
                 isValid = false;
                 Dispose();
@@ -187,83 +203,50 @@ namespace Electron2D.Core.PhysicsBox2D
 
             BodyDef bodyDef = new BodyDef()
             {
-                Position = new Vec2(transform.Position.X / Physics.WorldScalar, transform.Position.Y / Physics.WorldScalar),
-                Angle = transform.Rotation,
-                LinearVelocity = new Vec2(velocity.X, velocity.Y),
-                AngularVelocity = angularVelocity,
-                LinearDamping = linearDampening,
-                AngularDamping = angularDampening,
-                FixedRotation = fixedRotation
+                position = transform.Position / Physics.WorldScalar,
+                angle = transform.Rotation,
+                linearVelocity = velocity,
+                angularVelocity = angularVelocity,
+                linearDamping = linearDampening,
+                angularDamping = angularDampening,
+                fixedRotation = fixedRotation
             };
 
-            FixtureDef fixtureDef;
-            if(Shape == RigidbodyShape.Box)
+            FixtureDef fixtureDef = new FixtureDef()
             {
-                PolygonDef polygonDef = new PolygonDef()
+                density = density,
+                friction = friction,
+                restitution = bounciness,
+                filter = new Filter()
                 {
-                    Density = density,
-                    Friction = friction,
-                    Restitution = bounciness,
-                    Filter = new FilterData()
-                    {
-                        CategoryBits = Layer,
-                        MaskBits = HitMask,
-                        GroupIndex = GroupIndex
-                    }
-                };
-                polygonDef.SetAsBox((transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar, (transform.Scale.Y - Epsilon) / 2f / Physics.WorldScalar);
-                fixtureDef = polygonDef;
-            }
-            else if(Shape == RigidbodyShape.Circle)
-            {
-                CircleDef circleDef = new CircleDef()
-                {
-                    Density = density,
-                    Friction = friction,
-                    Restitution = bounciness,
-                    Radius = (transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar,
-                    Filter = new FilterData()
-                    {
-                        CategoryBits = Layer,
-                        MaskBits = HitMask,
-                        GroupIndex = GroupIndex
-                    }
-                };
-                fixtureDef = circleDef;
-            }
-            else
-            {
-                // Should only get this error when developing
-                Debug.LogError($"Unsupported rigidbody shape {Shape}.");
-                return;
-            }
-            
-            if(!IsStatic)
-            {
-                if(MassMode == RigidbodyMassMode.ManualMassUseData)
-                {
-                    // Normal Mass
-                    ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, massData);
-                    isValid = true;
+                    categoryBits = Layer,
+                    maskBits = HitMask,
+                    groupIndex = GroupIndex
                 }
-                else if(MassMode == RigidbodyMassMode.AutoMassIgnoreData)
-                {
-                    // Auto Mass
-                    ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, true);
-                    isValid = true;
-                }
-            }
-            else
+            };
+            switch(this.Shape)
             {
-                // Static Rigidbody
-                ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, false);
-                isValid = true;
+                case RigidbodyShape.Box:
+                    fixtureDef.shape = new PolygonShape((transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar, (transform.Scale.Y - Epsilon) / 2f / Physics.WorldScalar);
+                    break;
+                case RigidbodyShape.Circle:
+                    fixtureDef.shape = new CircleShape()
+                    {
+                        Radius = (transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar
+                    };
+                    break;
+                case RigidbodyShape.ConvexMesh:
+                    fixtureDef.shape = new PolygonShape();
+                    break;
             }
+
+            ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, massData, Mode == RigidbodyMode.Kinematic);
+            isValid = true;
         }
 
         public override void FixedUpdate()
         {
-            if (!isValid || ID == uint.MaxValue) return;
+            if (!isValid || ID == uint.MaxValue || IsDestroyed) return;
 
             // Setting values for interpolation
             oldPosition = transform.Position;
@@ -280,7 +263,7 @@ namespace Electron2D.Core.PhysicsBox2D
 
         public override void Update()
         {
-            if (!isValid || ID == uint.MaxValue || !interpolationReady) return;
+            if (!isValid || ID == uint.MaxValue || !interpolationReady || IsDestroyed) return;
 
             // Interpolation
             float t = MathEx.Clamp01((Time.GameTime - lastLerpTime) / lerpDeltaTime);
@@ -291,6 +274,40 @@ namespace Electron2D.Core.PhysicsBox2D
             //      Rotation
             transform.Rotation = (float)(oldAngle * (1.0 - t) + (newAngle * t));
         }
+
+        public uint CreateJoint(IRigidbodyJointDef _jointDef)
+        {
+            if(_jointDef.RigidbodyA == null || _jointDef.RigidbodyB == null)
+            {
+                Debug.LogError("PHYSICS: Cannot create a joint when one or more rigidbodies are null.");
+            }
+
+            uint id = Physics.CreateJoint(_jointDef.GetPhysicsDefinition());
+            _jointDef.RigidbodyA.Joints.Add(id, _jointDef.RigidbodyB);
+            _jointDef.RigidbodyB.Joints.Add(id, _jointDef.RigidbodyA);
+            return id;
+        }
+
+        public void RemoveJoint(uint _id)
+        {
+            if (!Joints.ContainsKey(_id)) return;
+            Joints[_id].Joints.Remove(_id); // Removing from paired body
+            Joints.Remove(_id); // Removing from this body
+            Physics.RemoveJoint(_id);
+        }
+
+        public Joint GetJoint(uint _id)
+        {
+            // Only returning the joint object if this rigidbody is connected to it
+            if(Joints.ContainsKey(_id))
+            {
+                return Physics.GetJoint(_id);
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 
     public enum RigidbodyShape
@@ -300,16 +317,16 @@ namespace Electron2D.Core.PhysicsBox2D
         ConvexMesh
     }
 
-    public enum RigidbodyMassMode
+    public enum RigidbodyMode
     {
-        AutoMassIgnoreData,
-        ManualMassUseData,
+        Kinematic,
+        Dynamic,
     }
 
     /// <summary>
     /// Defines a static rigidbody.
     /// </summary>
-    public struct RigidbodyStaticDef
+    public struct RigidbodyKinematicDef
     {
         /// <summary>
         /// The friction of the rigidbody against other rigidbodies.
@@ -320,7 +337,7 @@ namespace Electron2D.Core.PhysicsBox2D
         /// </summary>
         public float Bounciness = 0;
         /// <summary>
-        /// The shape of the rigidbody. NOTE: CONVEX MESH MODE IS NOT IMPLEMENTED YET
+        /// The shape of the rigidbody.
         /// </summary>
         public RigidbodyShape Shape = RigidbodyShape.Box;
         /// <summary>
@@ -338,8 +355,12 @@ namespace Electron2D.Core.PhysicsBox2D
         /// If both GroupIndex values are the same and negative, don't collide.
         /// </summary>
         public short GroupIndex = 0;
+        /// <summary>
+        /// Vertex array for a custom convex collider. Only used when <see cref="Shape"/> is set to <see cref="RigidbodyShape.ConvexMesh"/>
+        /// </summary>
+        public Vector2[] ConvexColliderPoints = new Vector2[0];
 
-        public RigidbodyStaticDef() { }
+        public RigidbodyKinematicDef() { }
     }
 
     /// <summary>
@@ -372,11 +393,11 @@ namespace Electron2D.Core.PhysicsBox2D
         /// </summary>
         public float AngularDampening = 0.01f;
         /// <summary>
-        /// The density of the rigidbody. This is used when the mass mode is set to <see cref="RigidbodyMassMode.AutoMassIgnoreData"/>
+        /// The density of the rigidbody./>
         /// </summary>
         public float Density = 1;
         /// <summary>
-        /// The mass data of the rigidbody. This will only be used when <see cref="MassMode"/> is set to <see cref="RigidbodyMassMode.ManualMassUseData"/>
+        /// The mass data of the rigidbody.
         /// </summary>
         public MassData MassData = new MassData();
         /// <summary>
@@ -390,13 +411,9 @@ namespace Electron2D.Core.PhysicsBox2D
         /// </summary>
         public bool IsBullet = false;
         /// <summary>
-        /// The shape of the rigidbody. NOTE: CONVEX MESH MODE IS NOT IMPLEMENTED YET
+        /// The shape of the rigidbody.
         /// </summary>
         public RigidbodyShape Shape = RigidbodyShape.Box;
-        /// <summary>
-        /// The mass mode of the rigidbody. The <see cref="MassData"/> field will only be used when this is set to <see cref="RigidbodyMassMode.ManualMassUseData"/>
-        /// </summary>
-        public RigidbodyMassMode MassMode = RigidbodyMassMode.AutoMassIgnoreData;
         /// <summary>
         /// The layer of this rigidbody determines how other rigidbodies will interact with this one.
         /// </summary>
@@ -412,6 +429,10 @@ namespace Electron2D.Core.PhysicsBox2D
         /// If both GroupIndex values are the same and negative, don't collide.
         /// </summary>
         public short GroupIndex = 0;
+        /// <summary>
+        /// Vertex array for a custom convex collider. Only used when <see cref="Shape"/> is set to <see cref="RigidbodyShape.ConvexMesh"/>
+        /// </summary>
+        public Vector2[] ConvexColliderPoints = new Vector2[0];
 
         public RigidbodyDynamicDef() { }
     }
