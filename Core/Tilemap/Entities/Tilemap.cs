@@ -1,10 +1,12 @@
 ﻿using Box2D.NetStandard.Collision.Shapes;
 using Box2D.NetStandard.Dynamics.Bodies;
 using Box2D.NetStandard.Dynamics.Fixtures;
+using Box2D.NetStandard.Dynamics.World;
 using Electron2D.Core.ECS;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Rendering;
 using Newtonsoft.Json;
+using System;
 using System.Numerics;
 using System.Text;
 
@@ -17,8 +19,9 @@ namespace Electron2D.Core
         public int SizeY { get; set; }
         public int[] Tiles { get; set; }
         public byte[] TileRotations { get; set; }
-        public Dictionary<int, uint> CollisionBodies = new Dictionary<int, uint>();
-        private Dictionary<int, bool> CollisionRecalculationList = new Dictionary<int, bool>();
+        public uint CollisionBody { get; private set; } = 999999999;
+        public Dictionary<Vector2, Fixture> CollisionFixtures { get; set; } = new();
+        public Dictionary<Vector2, bool> CollisionFixtureUpdates { get; set; } = new();
         public int TilePixelSize { get; set; }
         public int RenderLayer;
 
@@ -270,34 +273,40 @@ namespace Electron2D.Core
             if (!isColliderDirty) return;
             isColliderDirty = false;
 
-            foreach (var entry in CollisionRecalculationList)
+            Body body = null;
+            foreach (var entry in CollisionFixtureUpdates)
             {
-                int index = entry.Key;
+                Vector2 localPosition = entry.Key;
                 bool add = entry.Value;
 
                 if (add)
                 {
-                    BodyDef def = new BodyDef()
-                    {
-                        position = ((FromIndex(index) * SizeX) + transform.Position) / Physics.WorldScalar
-                    };
+                    Vector2 fixturePosition = (localPosition + (Vector2.One * 0.5f)) * SizeX / Physics.WorldScalar;
                     FixtureDef fdef = new FixtureDef();
                     PolygonShape shape = new PolygonShape();
-                    shape.SetAsBox(TilePixelSize / Physics.WorldScalar, TilePixelSize / Physics.WorldScalar);
+                    shape.SetAsBox(TilePixelSize / Physics.WorldScalar, TilePixelSize / Physics.WorldScalar, fixturePosition, 0);
                     fdef.shape = shape;
-                    uint body = Physics.CreatePhysicsBody(def, fdef, new MassData(), true);
-                    CollisionBodies.Add(index, body);
+                    if (CollisionBody == 999999999)
+                    {
+                        // Body is not initialized
+                        BodyDef bodyDef = new BodyDef()
+                        {
+                            position = transform.Position / Physics.WorldScalar
+                        };
+                        CollisionBody = Physics.CreatePhysicsBody(bodyDef, fdef, new MassData(), true);
+                    }
+                    if(body == null)
+                    {
+                        body = Physics.GetBody(CollisionBody);
+                    }
+                    CollisionFixtures.Add(localPosition, body.CreateFixture(fdef));
                 }
                 else
                 {
-                    if(CollisionBodies.ContainsKey(index))
-                    {
-                        Physics.RemovePhysicsBody(CollisionBodies[index]);
-                        CollisionBodies.Remove(index);
-                    }
+                    CollisionFixtures.Remove(localPosition);
                 }
             }
-            CollisionRecalculationList.Clear();
+            CollisionFixtureUpdates.Clear();
         }
 
         private Vector2 RotateUV(Vector2 _uv, float _degrees)
