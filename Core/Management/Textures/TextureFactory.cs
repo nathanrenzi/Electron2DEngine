@@ -179,10 +179,15 @@ namespace Electron2D.Core.Management
 
         public static unsafe Texture2D Create(int _width, int _height)
         {
+            return Create(_width, _height, GL_RGBA);
+        }
+
+        public static unsafe Texture2D Create(int _width, int _height, int _glColorSetting)
+        {
             uint handle = glGenTexture();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, handle);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, _glColorSetting, _width, _height, 0, _glColorSetting, GL_UNSIGNED_BYTE, NULL);
 
             return new Texture2D(handle, _width, _height);
         }

@@ -10,6 +10,7 @@ using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Audio;
 using Electron2D.Core.Management;
+using Electron2D.Core.Rendering.PostProcessing;
 
 namespace Electron2D.Core
 {
@@ -30,7 +31,7 @@ namespace Electron2D.Core
         public bool AntialiasingEnabled { get; }
         public bool ErrorCheckingEnabled { get; }
 
-        public static Color BackgroundColor { get; private set; } = Color.Black;
+        public Color BackgroundColor { get; private set; } = Color.Black;
 
         protected Thread PhysicsThread { get; private set; }
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
@@ -229,7 +230,10 @@ namespace Electron2D.Core
                 // Rendering
                 double rendST = Glfw.Time;
                 ApplyBlendingMode();
+                PostProcessor.Instance.BeforeGameRender();
                 RenderCall();
+                PostProcessor.Instance.AfterGameRender();
+                PostProcessor.Instance.PostProcess();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
                 if(ErrorCheckingEnabled) LogErrors();

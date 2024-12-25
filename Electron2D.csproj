@@ -27,6 +27,13 @@
     <None Remove="Core\Rendering\Shaders\DefaultText.glsl" />
     <None Remove="Core\Rendering\Shaders\DefaultTextureArray.glsl" />
     <None Remove="Core\Rendering\Shaders\DefaultTexturedVertex.glsl" />
+    <None Remove="Core\Rendering\Shaders\Misc\PostProcessingInverted.glsl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Core\Rendering\Shaders\Misc\PostProcessingInverted.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

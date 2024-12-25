@@ -2,7 +2,7 @@
 {
     public interface IBuffer
     {
-        uint bufferID { get; }
+        uint BufferID { get; }
         void Bind();
         void Unbind();
         void Dispose();
