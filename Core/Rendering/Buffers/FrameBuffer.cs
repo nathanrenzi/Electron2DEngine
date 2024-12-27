@@ -11,7 +11,7 @@ namespace Electron2D.Core.Rendering
 
         private bool _isDisposed = false;
 
-        public FrameBuffer(int glRenderBufferSamples, int glRenderBufferStorageSetting, int glRenderBufferAttachmentSetting, bool attachTexture2D, bool attachRenderBuffer)
+        public FrameBuffer(int glRenderBufferSamples, int glRenderBufferFormatSetting, int glRenderBufferAttachmentSetting, bool attachTexture2D, bool attachRenderBuffer)
         {
             BufferID = glGenFramebuffer();
             Bind();
@@ -26,8 +26,16 @@ namespace Electron2D.Core.Rendering
             {
                 RenderBufferID = glGenRenderbuffer();
                 glBindRenderbuffer(RenderBufferID);
-                glRenderbufferStorageMultisample(GL_RENDERBUFFER, glRenderBufferSamples, glRenderBufferStorageSetting,
-                    Program.Game.CurrentWindowWidth, Program.Game.CurrentWindowHeight);
+                // Handling multisampled vs nonmultisampled renderbuffers
+                if(glRenderBufferSamples <= 1)
+                {
+                    glRenderbufferStorage(GL_RENDERBUFFER, glRenderBufferFormatSetting, Program.Game.CurrentWindowWidth, Program.Game.CurrentWindowHeight);
+                }
+                else
+                {
+                    glRenderbufferStorageMultisample(GL_RENDERBUFFER, glRenderBufferSamples, glRenderBufferFormatSetting,
+                        Program.Game.CurrentWindowWidth, Program.Game.CurrentWindowHeight);
+                }
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, glRenderBufferAttachmentSetting, GL_RENDERBUFFER, RenderBufferID);
                 glBindRenderbuffer(0);
             }

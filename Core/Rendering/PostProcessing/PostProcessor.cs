@@ -25,7 +25,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
         private List<PostProcessingStack> _stacks = new List<PostProcessingStack>();
 
         // Used to write frame data to (faster)
-        private FrameBuffer _multisampledFrameBuffer;
+        private FrameBuffer _renderBuffer;
 
         // Used to create a texture from frame data and swap between for multiple post processing effects
         private FrameBuffer _frameBuffer1;
@@ -50,7 +50,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
         {
             _TEMP_PostProcessShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/Misc/PostProcessingInverted.glsl"), true);
 
-            _multisampledFrameBuffer = new FrameBuffer(4, GL_RGB, GL_COLOR_ATTACHMENT0, false, true);
+            _renderBuffer = new FrameBuffer(4, GL_RGB, GL_COLOR_ATTACHMENT0, false, true);
             _frameBuffer1 = new FrameBuffer(0, 0, 0, true, false);
             _frameBuffer2 = new FrameBuffer(0, 0, 0, true, false);
 
@@ -64,7 +64,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
 
         public void BeforeGameRender()
         {
-            _multisampledFrameBuffer.Bind();
+            _renderBuffer.Bind();
             Color clearColor = Program.Game.BackgroundColor;
             glClearColor(clearColor.R / 255f, clearColor.G / 255f, clearColor.B / 255f, clearColor.A / 255f);
             glClear(GL_COLOR_BUFFER_BIT);
@@ -74,10 +74,10 @@ namespace Electron2D.Core.Rendering.PostProcessing
         {
             int width = Program.Game.CurrentWindowWidth;
             int height = Program.Game.CurrentWindowHeight;
-            _multisampledFrameBuffer.BindRead();
+            _renderBuffer.BindRead();
             _frameBuffer1.BindWrite();
             glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbinds both read and write
+            glBindFramebuffer(GL_FRAMEBUFFER, 0); // Binds both READ and WRITE framebuffer to default framebuffer
         }
 
         public void PostProcess()

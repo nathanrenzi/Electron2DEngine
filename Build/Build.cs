@@ -1,4 +1,5 @@
-﻿using Electron2D.Core;
+﻿using Electron2D;
+using Electron2D.Core;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;

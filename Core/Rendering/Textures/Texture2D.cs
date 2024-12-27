@@ -27,6 +27,8 @@ namespace Electron2D.Core.Rendering
             Dispose(false);
         }
 
+        public uint GetHandle() => Handle;
+
         public void Use(int _textureSlot)
         {
             glActiveTexture(_textureSlot);
