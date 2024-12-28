@@ -1,6 +1,7 @@
 ﻿using Electron2D;
 using Electron2D.Core;
 using Electron2D.Core.Rendering;
+using Electron2D.Core.Rendering.PostProcessing;
 using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 
@@ -22,7 +23,7 @@ public class Build : Game
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
-
+        PostProcessor.Instance.Initialize(); // Forcing the post processor to initialize
         Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Red), _sizeX: 100, _sizeY: 100);
     }
 

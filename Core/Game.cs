@@ -163,7 +163,7 @@ namespace Electron2D.Core
                 splashscreenAudio?.Dispose();
                 Splashscreen.Dispose();
                 splashscreenTexture.Dispose();
-                Debug.Log("Splashscreen ended.");
+                Debug.Log("Splashscreen ended");
             }
             #endregion
 
@@ -193,6 +193,7 @@ namespace Electron2D.Core
 
             Load();
             // Rendering before the game loop prevents a black screen when the window is opened
+            GLClear();
             RenderCall();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
@@ -230,10 +231,11 @@ namespace Electron2D.Core
                 // Rendering
                 double rendST = Glfw.Time;
                 ApplyBlendingMode();
+                GLClear();
                 PostProcessor.Instance.BeforeGameRender();
                 RenderCall();
                 PostProcessor.Instance.AfterGameRender();
-                PostProcessor.Instance.PostProcess();
+                PostProcessor.Instance.Render();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
                 if(ErrorCheckingEnabled) LogErrors();
@@ -278,11 +280,14 @@ namespace Electron2D.Core
             }
         }
 
-        private void RenderCall()
+        private void GLClear()
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
             glClearColor(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, 1);
+        }
 
+        private void RenderCall()
+        {
             Render();
             RenderLayerManager.RenderAllLayers();
         }

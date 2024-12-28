@@ -1,5 +1,6 @@
 ﻿using Electron2D.Core.Management;
 using System.Drawing;
+using System.Drawing.Imaging;
 using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Core.Rendering
@@ -43,6 +44,22 @@ namespace Electron2D.Core.Rendering
             {
                 glTexSubImage2D(GL_TEXTURE_2D, 0, _bounds.Left, _bounds.Top, _bounds.Width, _bounds.Height, GL_RGBA, GL_UNSIGNED_BYTE, ptr);
             }
+        }
+
+        public unsafe void Save(string _filePath)
+        {
+            Use(GL_TEXTURE0);
+            Bitmap bitmap = new Bitmap(Width, Height);
+            var data = bitmap.LockBits(
+                        new Rectangle(0, 0, Width, Height),
+                        ImageLockMode.ReadOnly,
+                        PixelFormat.Format32bppArgb);
+
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
+
+            bitmap.UnlockBits(data);
+            bitmap.Save(_filePath, ImageFormat.Png);
+            bitmap.Dispose();
         }
 
         public void SetFilteringMode(bool _linear)

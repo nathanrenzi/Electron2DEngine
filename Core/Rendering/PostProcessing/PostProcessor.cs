@@ -1,5 +1,7 @@
-﻿using Electron2D.Core.Rendering.Shaders;
+﻿using Electron2D.Core.Management;
+using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
+using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Core.Rendering.PostProcessing
@@ -33,7 +35,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
 
         private Shader _TEMP_PostProcessShader;
 
-        private float[] vertices = new float[]
+        private float[] _vertices = new float[]
         {
             -1.0f, -1.0f, 0.0f, 0.0f,
             1.0f, 1.0f, 1.0f, 1.0f,
@@ -43,27 +45,33 @@ namespace Electron2D.Core.Rendering.PostProcessing
             1.0f, -1.0f, 1.0f, 0.0f,
             1.0f, 1.0f, 1.0f, 1.0f
         };
-        private VertexBuffer vertexBuffer;
-        private VertexArray vertexArray;
+        private VertexBuffer _vertexBuffer;
+        private VertexArray _vertexArray;
+        private bool _initialized;
 
-        public PostProcessor()
+        public void Initialize()
         {
+            if (_initialized) return;
+
             _TEMP_PostProcessShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/Misc/PostProcessingInverted.glsl"), true);
 
             _renderBuffer = new FrameBuffer(4, GL_RGB, GL_COLOR_ATTACHMENT0, false, true);
             _frameBuffer1 = new FrameBuffer(0, 0, 0, true, false);
-            _frameBuffer2 = new FrameBuffer(0, 0, 0, true, false);
+            //_frameBuffer2 = new FrameBuffer(0, 0, 0, true, false);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-            vertexArray = new VertexArray();
-            vertexBuffer = new VertexBuffer(vertices);
+            _vertexArray = new VertexArray();
+            _vertexBuffer = new VertexBuffer(_vertices);
             BufferLayout layout = new BufferLayout();
             layout.Add<float>(2); // Position
             layout.Add<float>(2); // UV
-            vertexArray.AddBuffer(vertexBuffer, layout);
+            _vertexArray.AddBuffer(_vertexBuffer, layout);
         }
 
         public void BeforeGameRender()
         {
+            if (!_initialized) return;
+
             _renderBuffer.Bind();
             Color clearColor = Program.Game.BackgroundColor;
             glClearColor(clearColor.R / 255f, clearColor.G / 255f, clearColor.B / 255f, clearColor.A / 255f);
@@ -72,6 +80,8 @@ namespace Electron2D.Core.Rendering.PostProcessing
 
         public void AfterGameRender()
         {
+            if (!_initialized) return;
+
             int width = Program.Game.CurrentWindowWidth;
             int height = Program.Game.CurrentWindowHeight;
             _renderBuffer.BindRead();
@@ -80,17 +90,26 @@ namespace Electron2D.Core.Rendering.PostProcessing
             glBindFramebuffer(GL_FRAMEBUFFER, 0); // Binds both READ and WRITE framebuffer to default framebuffer
         }
 
-        public void PostProcess()
+        public void Render()
         {
+            if (!_initialized) return;
+
             _TEMP_PostProcessShader.Use();
             _frameBuffer1.AttachedTexture.Use(GL_TEXTURE0);
-            vertexArray.Bind();
+
+            _vertexArray.Bind();
             glDrawArrays(GL_TRIANGLES, 0, 6);
-            vertexArray.Unbind();
+            _vertexArray.Unbind();
         }
 
         public void RegisterStack(PostProcessingStack stack)
         {
+            if(!_initialized)
+            {
+                _initialized = true;
+                Initialize();
+            }
+
             bool inserted = false;
             for (int i = 0; i < _stacks.Count; i++)
             {
