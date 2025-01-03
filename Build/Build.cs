@@ -23,7 +23,9 @@ public class Build : Game
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
-        PostProcessor.Instance.Initialize(); // Forcing the post processor to initialize
+        // Forcing the post processor to initialize
+        // This should be moved to Game.cs with a parameter in the constructor to enable or disable it
+        PostProcessor.Instance.Initialize();
         Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Red), _sizeX: 100, _sizeY: 100);
     }
 

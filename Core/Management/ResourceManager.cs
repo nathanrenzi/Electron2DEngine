@@ -194,12 +194,28 @@ namespace Electron2D.Core.Management
         /// <summary>
         /// Creates a blank texture object.
         /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
+        /// <param name="_width"></param>
+        /// <param name="_height"></param>
         /// <returns></returns>
         public object CreateTexture(int _width, int _height)
         {
             Texture2D texture = TextureFactory.Create(_width, _height);
+            textureHandleCache.Add(texture.Handle, texture);
+            return texture.Handle;
+        }
+
+        /// <summary>
+        /// Creates a blank texture object.
+        /// </summary>
+        /// <param name="_width"></param>
+        /// <param name="_height"></param>
+        /// <param name="_glColorSetting">The color setting of the texture, ex. <see cref="OpenGL.GL.GL_RGBA"/></param>
+        /// <param name="_callTexParameterMethods">Whether the texture parameter methods should be called after creating the texture,
+        /// dictating the wrapping and filtering modes.</param>
+        /// <returns></returns>
+        public object CreateTexture(int _width, int _height, int _glColorSetting, bool _callTexParameterMethods)
+        {
+            Texture2D texture = TextureFactory.Create(_width, _height, _glColorSetting, _callTexParameterMethods);
             textureHandleCache.Add(texture.Handle, texture);
             return texture.Handle;
         }

@@ -22,5 +22,5 @@ uniform sampler2D frameBufferTexture;
 void main()
 {
     vec4 res = texture(frameBufferTexture, texCoord);
-    FragColor = res;//vec4(1 - res.r, 1 - res.g, 1 - res.b, 1.0f);
+    FragColor = vec4(1 - res.r, 1 - res.g, 1 - res.b, 1.0f);
 }

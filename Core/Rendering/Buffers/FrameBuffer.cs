@@ -18,7 +18,7 @@ namespace Electron2D.Core.Rendering
 
             if(attachTexture2D)
             {
-                AttachedTexture = TextureFactory.Create(Program.Game.CurrentWindowWidth, Program.Game.CurrentWindowHeight, GL_RGB);
+                AttachedTexture = TextureFactory.Create(Program.Game.CurrentWindowWidth, Program.Game.CurrentWindowHeight, GL_RGB, true);
                 AttachedTexture.Use(GL_TEXTURE0);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, AttachedTexture.Handle, 0);
             }
