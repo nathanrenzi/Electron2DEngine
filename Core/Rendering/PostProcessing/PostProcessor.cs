@@ -47,11 +47,12 @@ namespace Electron2D.Core.Rendering.PostProcessing
         };
         private VertexBuffer _vertexBuffer;
         private VertexArray _vertexArray;
-        private bool _initialized;
+        private bool _initialized = false;
 
         public void Initialize()
         {
             if (_initialized) return;
+            _initialized = true;
 
             _TEMP_PostProcessShader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/Misc/PostProcessingInverted.glsl"), true);
 

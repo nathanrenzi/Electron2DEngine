@@ -11,8 +11,6 @@
   <ItemGroup>
     <Compile Remove="Core\Mapping\**" />
     <Compile Remove="Core\Rendering\Renderers\Batching\**" />
-    <EmbeddedResource Remove="Core\Mapping\**" />
-    <EmbeddedResource Remove="Core\Rendering\Renderers\Batching\**" />
     <None Remove="Core\Mapping\**" />
     <None Remove="Core\Rendering\Renderers\Batching\**" />
   </ItemGroup>
