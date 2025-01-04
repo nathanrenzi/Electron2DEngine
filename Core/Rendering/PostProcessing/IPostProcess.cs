@@ -2,6 +2,6 @@
 {
     public interface IPostProcess
     {
-        public void PostProcess(FrameBuffer readBuffer, FrameBuffer writeBuffer);
+        public void PostProcess(FrameBuffer readBuffer);
     }
 }

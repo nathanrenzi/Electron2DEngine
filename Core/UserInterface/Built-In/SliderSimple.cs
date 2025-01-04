@@ -124,7 +124,7 @@ namespace Electron2D.Core.UserInterface
             sliderPanel = new Panel(_sliderColor, _uiRenderLayer + 1, _sizeX, _sliderHeight, _useScreenPosition);
             sliderPanel.Anchor = new Vector2(-1, 0);
 
-            Texture2D t = ResourceManager.Instance.LoadTexture("Build/Resources/Textures/white_circle.png");
+            Texture2D t = ResourceManager.Instance.LoadTexture("Core/Rendering/Textures/BuiltIn/Circle.png");
             handlePanel = new Panel(_handleColor, _uiRenderLayer + 2, _handleSize, _handleSize, _useScreenPosition);
             handlePanel.AddUiListener(handleListener);
 

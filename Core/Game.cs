@@ -27,6 +27,7 @@ namespace Electron2D.Core
         public int CurrentWindowWidth { get; protected set; }
         public int CurrentWindowHeight { get; protected set; }
         public string CurrentWindowTitle { get; protected set; }
+        public bool PostProcessingEnabled { get; }
         public bool VsyncEnabled { get; }
         public bool AntialiasingEnabled { get; }
         public bool ErrorCheckingEnabled { get; }
@@ -42,7 +43,7 @@ namespace Electron2D.Core
 
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -15f,
             float _physicsLowerBoundX = -100000, float _physicsLowerBoundY = -100000, float _physicsUpperBoundX = 100000, float _physicsUpperBoundY = 100000,
-            int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _vsync = false, bool _antialiasing = true, bool _errorCheckingEnabled = false,
+            int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _enablePostProcessing = true, bool _vsync = false, bool _antialiasing = true, bool _errorCheckingEnabled = false,
             bool _showElectronSplashscreen = true)
         {
             CurrentWindowWidth = _initialWindowWidth;
@@ -51,6 +52,7 @@ namespace Electron2D.Core
             VsyncEnabled = _vsync;
             AntialiasingEnabled = _antialiasing;
             ErrorCheckingEnabled = _errorCheckingEnabled;
+            PostProcessingEnabled = _enablePostProcessing;
             showElectronSplashscreen = _showElectronSplashscreen;
 
             // Starting Physics Thread
@@ -185,7 +187,7 @@ namespace Electron2D.Core
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
 
             GlobalUI.MainCanvas.Initialize();
-
+            if(PostProcessingEnabled) PostProcessor.Instance.Initialize();
             GC.Collect();
 
             Debug.Log("Initialization complete");
