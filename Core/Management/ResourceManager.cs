@@ -1,10 +1,11 @@
-﻿using Electron2D.Core.Rendering;
+﻿using Electron2D.Core.Management;
+using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Text;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace Electron2D.Core.Management
+namespace Electron2D.Core
 {
     public sealed class ResourceManager
     {
@@ -213,9 +214,11 @@ namespace Electron2D.Core.Management
         /// <param name="_callTexParameterMethods">Whether the texture parameter methods should be called after creating the texture,
         /// dictating the wrapping and filtering modes.</param>
         /// <returns></returns>
-        public object CreateTexture(int _width, int _height, int _glColorSetting, bool _callTexParameterMethods)
+        public object CreateTexture(int _width, int _height, int _glColorSetting,
+            int _glTextureFilterSetting, int _glTextureWrapSetting)
         {
-            Texture2D texture = TextureFactory.Create(_width, _height, _glColorSetting, _callTexParameterMethods);
+            Texture2D texture = TextureFactory.Create(_width, _height, _glColorSetting,
+                _glTextureFilterSetting, _glTextureWrapSetting);
             textureHandleCache.Add(texture.Handle, texture);
             return texture.Handle;
         }

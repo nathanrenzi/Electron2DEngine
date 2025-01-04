@@ -1,11 +1,9 @@
-﻿using Electron2D;
-using Electron2D.Core;
+﻿using Electron2D.Core;
+using Electron2D.Core.Management;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.PostProcessing;
 using Electron2D.Core.Rendering.Shaders;
-using Electron2D.Core.UserInterface;
 using System.Drawing;
-using System.Numerics;
 
 public class Build : Game
 {
@@ -21,16 +19,26 @@ public class Build : Game
 
     }
 
+    ChromaticAberrationPostProcess c;
     // This is ran when the game is ready to load content
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
+        Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture,
+            ResourceManager.Instance.LoadTexture("Build/Resources/Textures/MossyStone.jpg")), 0, 1920, 1080);
+        PostProcessingStack stack = new PostProcessingStack(0);
+        c = new ChromaticAberrationPostProcess(1);
+        stack.Add(c);
+        PostProcessor.Instance.Register(stack);
     }
 
     // This is ran every frame
     protected override void Update()
     {
-
+        if(Input.GetKey(GLFW.Keys.W))
+        {
+            c.Intensity += Time.DeltaTime;
+        }
     }
 
     // This is ran every frame right before rendering

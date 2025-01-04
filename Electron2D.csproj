@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Build\Resources\Textures\MossyStone.jpg" />
     <None Remove="Core\Audio\Electron2DFmodBank.bank" />
     <None Remove="Core\Audio\Electron2DRiff.mp3" />
     <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
@@ -25,6 +26,7 @@
     <None Remove="Core\Rendering\Shaders\DefaultText.glsl" />
     <None Remove="Core\Rendering\Shaders\DefaultTextureArray.glsl" />
     <None Remove="Core\Rendering\Shaders\DefaultTexturedVertex.glsl" />
+    <None Remove="Core\Rendering\Shaders\PostProcessing\ChromaticAberration.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\DefaultPostProcessing.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\Inverted.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\Vignette.glsl" />
@@ -32,6 +34,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Build\Resources\Textures\MossyStone.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\ChromaticAberration.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\DefaultPostProcessing.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -92,10 +100,6 @@
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Build\Resources\" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

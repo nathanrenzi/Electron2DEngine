@@ -179,23 +179,21 @@ namespace Electron2D.Core.Management
 
         public static unsafe Texture2D Create(int _width, int _height)
         {
-            return Create(_width, _height, GL_RGBA, false);
+            return Create(_width, _height, GL_RGBA, GL_NEAREST, GL_REPEAT);
         }
 
-        public static unsafe Texture2D Create(int _width, int _height, int _glColorSetting, bool _callTexParameterMethods)
+        public static unsafe Texture2D Create(int _width, int _height, int _glColorSetting,
+            int _glTextureFilterSetting, int _glTextureWrapSetting)
         {
             uint handle = glGenTexture();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, handle);
             glTexImage2D(GL_TEXTURE_2D, 0, _glColorSetting, _width, _height, 0, _glColorSetting, GL_UNSIGNED_BYTE, NULL);
 
-            if(_callTexParameterMethods)
-            {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            }
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, _glTextureFilterSetting);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, _glTextureFilterSetting);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, _glTextureWrapSetting);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, _glTextureWrapSetting);
 
             return new Texture2D(handle, _width, _height);
         }
