@@ -238,6 +238,7 @@ namespace Electron2D.Core
                 RenderCall();
                 PostProcessor.Instance.AfterGameRender();
                 PostProcessor.Instance.Render();
+                RenderLayerManager.RenderAllLayersIgnorePostProcessing();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
                 if(ErrorCheckingEnabled) LogErrors();

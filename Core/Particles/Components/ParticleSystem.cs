@@ -51,6 +51,7 @@ namespace Electron2D.Core
         private bool noiseEnabled;
 
         #region Private Fields
+        private bool ignorePostProcessing;
         private float[] vertices;
         private uint[] indices;
         private MeshRenderer renderer;
@@ -70,7 +71,7 @@ namespace Electron2D.Core
         #endregion
 
         public ParticleSystem(bool _playOnAwake, bool _prewarm, bool _isWorldSpace, bool _inheritVelocity,
-            int _maxParticles, Material _material, int _renderLayer = 1, int _randomSeed = -1)
+            int _maxParticles, Material _material, int _renderLayer = 1, int _randomSeed = -1, bool _ignorePostProcessing = false)
         {
             playOnAwake = _playOnAwake;
             IsWorldSpace = _isWorldSpace;
@@ -79,6 +80,7 @@ namespace Electron2D.Core
             MaxParticles = _maxParticles;
             RenderLayer = _renderLayer;
             material = _material;
+            ignorePostProcessing = _ignorePostProcessing;
 
             fakeTransform = new Transform();
 
@@ -686,6 +688,11 @@ namespace Electron2D.Core
             Program.Game.SetBlendingMode(BlendMode);
             renderer.Render();
             Program.Game.SetBlendingMode(BlendMode.Interpolative);
+        }
+
+        public bool ShouldIgnorePostProcessing()
+        {
+            return ignorePostProcessing;
         }
     }
 

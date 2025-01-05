@@ -3,6 +3,7 @@ using Electron2D.Core.Management;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.PostProcessing;
 using Electron2D.Core.Rendering.Shaders;
+using Electron2D.Core.UserInterface;
 using System.Drawing;
 
 public class Build : Game
@@ -19,26 +20,35 @@ public class Build : Game
 
     }
 
-    ChromaticAberrationPostProcess c;
     // This is ran when the game is ready to load content
+    ColorGradingPostProcess c;
+    SliderSimple[] sliders = new SliderSimple[5];
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
         Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture,
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/MossyStone.jpg")), 0, 1920, 1080);
         PostProcessingStack stack = new PostProcessingStack(0);
-        c = new ChromaticAberrationPostProcess(1);
+        c = new ColorGradingPostProcess(Color.White, 0f, 0f, 0f, 0f, 0f);
         stack.Add(c);
         PostProcessor.Instance.Register(stack);
+
+        for(int i = 0; i < sliders.Length; i++)
+        {
+            sliders[i] = new SliderSimple(Color.Black, Color.Red, Color.White,
+                0, -1, i == 1 ? 4 : 1, 300, 20, 15, 30, 15, _ignorePostProcessing: false);
+            sliders[i].Transform.Position = new System.Numerics.Vector2(0, (i * 50) - 480);
+        }
     }
 
     // This is ran every frame
     protected override void Update()
     {
-        if(Input.GetKey(GLFW.Keys.W))
-        {
-            c.Intensity += Time.DeltaTime;
-        }
+        c.HueShift = sliders[0].Value;
+        c.Saturation = sliders[1].Value;
+        c.Brightness = sliders[2].Value;
+        c.Contrast = sliders[3].Value;
+        c.Temperature = sliders[4].Value;
     }
 
     // This is ran every frame right before rendering

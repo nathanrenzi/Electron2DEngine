@@ -50,7 +50,9 @@ namespace Electron2D.Core.UserInterface
         {
             get
             {
-                return MathF.Min(MathF.Max(value / (MaxValue - MinValue), 0), 1);
+                float length = MaxValue - MinValue;
+                float distance = value - MinValue;
+                return distance / length;
             }
             set
             {
@@ -104,8 +106,9 @@ namespace Electron2D.Core.UserInterface
 
         public SliderSimple(Color _backgroundColor, Color _sliderColor, Color _handleColor, float _value, float _minValue, float _maxValue,
             int _sizeX, int _sliderHeight, int _backgroundHeight, int _handleSize, int _handlePadding = 0, int _uiRenderLayer = 0, bool _useScreenPosition = true, bool _sliderInteractable = true,
-            bool _allowNonHandleValueUpdates = true, bool _forceWholeNumbers = false)
-            : base(_uiRenderLayer, _sizeX, (int)MathF.Max(_sliderHeight, _backgroundHeight), 0, true, _useScreenPosition, false, false)
+            bool _allowNonHandleValueUpdates = true, bool _forceWholeNumbers = false, bool _ignorePostProcessing = false)
+            : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, (int)MathF.Max(_sliderHeight, _backgroundHeight),
+                  0, true, _useScreenPosition, false, false)
         {
             SliderHeight = _sliderHeight;
             BackgroundHeight = _backgroundHeight;
@@ -118,14 +121,16 @@ namespace Electron2D.Core.UserInterface
             MaxValue = _maxValue;
             Value = _value;
 
-            backgroundPanel = new Panel(_backgroundColor, _uiRenderLayer, _sizeX, _backgroundHeight, _useScreenPosition);
+            backgroundPanel = new Panel(_backgroundColor, _uiRenderLayer, _sizeX, _backgroundHeight,
+                _useScreenPosition, _ignorePostProcessing);
             backgroundPanel.AddUiListener(backgroundListener);
 
-            sliderPanel = new Panel(_sliderColor, _uiRenderLayer + 1, _sizeX, _sliderHeight, _useScreenPosition);
+            sliderPanel = new Panel(_sliderColor, _uiRenderLayer + 1, _sizeX, _sliderHeight,
+                _useScreenPosition, _ignorePostProcessing);
             sliderPanel.Anchor = new Vector2(-1, 0);
 
-            Texture2D t = ResourceManager.Instance.LoadTexture("Core/Rendering/Textures/BuiltIn/Circle.png");
-            handlePanel = new Panel(_handleColor, _uiRenderLayer + 2, _handleSize, _handleSize, _useScreenPosition);
+            handlePanel = new Panel(_handleColor, _uiRenderLayer + 2, _handleSize, _handleSize,
+                _useScreenPosition, _ignorePostProcessing);
             handlePanel.AddUiListener(handleListener);
 
             initialized = true;

@@ -65,8 +65,9 @@ namespace Electron2D.Core.UserInterface
         /// <param name="_imageSize">The size of the input image.</param>
         /// <param name="_borderScale">The scale of the border.</param>
         public SlicedUiComponent(Material _material, int _sizeX, int _sizeY,
-            int _left, int _right, int _top, int _bottom, float _imageSize, float _borderScale = 1f)
-            : base(_sizeX: _sizeX, _sizeY: _sizeY)
+            int _left, int _right, int _top, int _bottom, float _imageSize, float _borderScale = 1f,
+            bool _ignorePostProcessing = false)
+            : base(_ignorePostProcessing, _sizeX: _sizeX, _sizeY: _sizeY)
         {
             left = _left;
             right = _right;

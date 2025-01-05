@@ -6,7 +6,7 @@ namespace Electron2D.Core
     public class TransformSystem : BaseSystem<Transform> { }
     public class Transform : Component
     {
-        public Action onPositionChanged { get; set; }
+        public Action OnPositionChanged { get; set; }
 
         public Vector2 Position
         {
@@ -14,7 +14,7 @@ namespace Electron2D.Core
             set
             {
                 position = value;
-                onPositionChanged?.Invoke();
+                OnPositionChanged?.Invoke();
             }
         }
         private Vector2 position;

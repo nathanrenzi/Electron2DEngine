@@ -54,5 +54,10 @@ namespace Electron2D.Core
         {
             Renderer.Render();
         }
+
+        public bool ShouldIgnorePostProcessing()
+        {
+            return false;
+        }
     }
 }

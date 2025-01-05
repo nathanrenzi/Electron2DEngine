@@ -7,5 +7,6 @@
     {
         public int GetRenderLayer();
         public void Render();
+        public bool ShouldIgnorePostProcessing();
     }
 }

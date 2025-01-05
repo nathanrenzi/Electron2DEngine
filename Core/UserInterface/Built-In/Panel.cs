@@ -19,14 +19,14 @@ namespace Electron2D.Core.UserInterface
         private List<float> tempVertexList = new List<float>();
 
         public Panel(Color _mainColor, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
-            bool _useScreenPosition = true) : base(_uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
+            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
         {
             GenerateVertices();
             SetColor(_mainColor);
             meshRenderer.SetVertexArrays(Vertices, Indices);
         }
         public Panel(Material _material, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
-            bool _useScreenPosition = true) : base(_uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
+            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
         {
             GenerateVertices();
             meshRenderer.SetMaterial(_material);

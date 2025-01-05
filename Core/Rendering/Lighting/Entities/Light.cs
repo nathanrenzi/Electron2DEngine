@@ -73,7 +73,7 @@ namespace Electron2D.Core
 
             Transform = new Transform();
             AddComponent(Transform);
-            Transform.onPositionChanged += () => IsDirty = true;
+            Transform.OnPositionChanged += () => IsDirty = true;
 
             LightManager.Instance.RegisterLight(this, _type);
         }
