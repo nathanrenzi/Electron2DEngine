@@ -1,5 +1,6 @@
 ﻿using Electron2D.Core.Management;
 using System.Drawing;
+using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Core.Rendering
@@ -27,6 +28,8 @@ namespace Electron2D.Core.Rendering
         }
 
         public uint GetHandle() => Handle;
+
+        public Vector2 GetSize() => new Vector2(Width, Height);
 
         public void Use(int _textureSlot)
         {

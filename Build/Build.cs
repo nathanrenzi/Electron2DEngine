@@ -22,7 +22,7 @@ public class Build : Game
 
     // This is ran when the game is ready to load content
     ColorGradingPostProcess c;
-    SliderSimple[] sliders = new SliderSimple[5];
+    Slider[] sliders = new Slider[5];
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
@@ -33,10 +33,26 @@ public class Build : Game
         stack.Add(c);
         PostProcessor.Instance.Register(stack);
 
-        for(int i = 0; i < sliders.Length; i++)
+        SlicedPanelDef slicedDef1 = new SlicedPanelDef(0.5f, 0.5f, 0.5f, 0.5f, 15);
+        SlicedPanelDef slicedDef2 = new SlicedPanelDef(0.5f, 0.5f, 0.5f, 0.5f, 7.5f);
+
+        SliderDef def1 = new SliderDef(
+            Material.CreateCircle(Color.Black),
+            Material.CreateCircle(Color.Red),
+            Material.CreateCircle(Color.White),
+            300, 30, 15, 30, slicedDef1, slicedDef2, slicedDef1,
+            0, 1, -1, 15);
+
+        SliderDef def2 = new SliderDef(
+            Material.CreateCircle(Color.Black),
+            Material.CreateCircle(Color.Red),
+            Material.CreateCircle(Color.White),
+            300, 30, 15, 30, slicedDef1, slicedDef2, slicedDef1,
+            0, 4, -1, 15);
+
+        for (int i = 0; i < sliders.Length; i++)
         {
-            sliders[i] = new SliderSimple(Color.Black, Color.Red, Color.White,
-                0, -1, i == 1 ? 4 : 1, 300, 20, 15, 30, 15, _ignorePostProcessing: false);
+            sliders[i] = new Slider(i == 4 ? def2 : def1);
             sliders[i].Transform.Position = new System.Numerics.Vector2(0, (i * 50) - 480);
         }
     }
@@ -44,11 +60,11 @@ public class Build : Game
     // This is ran every frame
     protected override void Update()
     {
-        c.HueShift = sliders[0].Value;
-        c.Saturation = sliders[1].Value;
-        c.Brightness = sliders[2].Value;
-        c.Contrast = sliders[3].Value;
-        c.Temperature = sliders[4].Value;
+        //c.HueShift = sliders[0].Value;
+        //c.Saturation = sliders[1].Value;
+        //c.Brightness = sliders[2].Value;
+        //c.Contrast = sliders[3].Value;
+        //c.Temperature = sliders[4].Value;
     }
 
     // This is ran every frame right before rendering

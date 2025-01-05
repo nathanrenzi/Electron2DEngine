@@ -31,7 +31,6 @@
     <None Remove="Core\Rendering\Shaders\PostProcessing\DefaultPostProcessing.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\Inverted.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\Vignette.glsl" />
-    <None Remove="Core\Rendering\Textures\BuiltIn\Circle.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -92,7 +91,7 @@
     <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\Vignette.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Textures\BuiltIn\Circle.png">
+    <EmbeddedResource Include="Core\Rendering\CoreTextures\Circle.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
