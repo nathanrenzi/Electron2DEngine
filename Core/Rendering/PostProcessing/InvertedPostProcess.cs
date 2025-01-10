@@ -11,10 +11,11 @@ namespace Electron2D.Core.Rendering.PostProcessing
             _shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/PostProcessing/Inverted.glsl"), true);
         }
 
-        public void PostProcess(FrameBuffer readBuffer)
+        public int PostProcess(int signal, FrameBuffer readBuffer)
         {
             _shader.Use();
             readBuffer.AttachedTexture.Use(OpenGL.GL.GL_TEXTURE0);
+            return 0;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
             Roundness = roundness;
         }
 
-        public void PostProcess(FrameBuffer readBuffer)
+        public int PostProcess(int signal, FrameBuffer readBuffer)
         {
             _shader.Use();
             _shader.SetVector2("resolution",
@@ -32,6 +32,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
             _shader.SetFloat("radius", Radius);
             _shader.SetFloat("roundness", Roundness);
             readBuffer.AttachedTexture.Use(OpenGL.GL.GL_TEXTURE0);
+            return 0;
         }
     }
 }

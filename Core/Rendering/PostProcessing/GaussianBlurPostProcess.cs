@@ -22,9 +22,23 @@ namespace Electron2D.Core.Rendering.PostProcessing
             _shader = new Shader(Shader.ParseShader("Core/Rendering/Shaders/PostProcessing/GaussianBlur.glsl"), true);
         }
 
-        public void PostProcess(FrameBuffer readBuffer)
+        public int PostProcess(int signal, FrameBuffer readBuffer)
         {
+            int retVal = 0;
             _shader.Use();
+            if(signal == 0)
+            {
+                // Horizontal blur
+                _shader.SetVector2("direction", new System.Numerics.Vector2(1, 0));
+                retVal = 1;
+            }
+            else if(signal == 1)
+            {
+                // Vertical blur
+                _shader.SetVector2("direction", new System.Numerics.Vector2(0, 1));
+                retVal = 0;
+            }
+
             if (_lastSigmaSize != Sigma || _lastKernelSize != KernelSize)
             {
                 Kernel = new float[KernelSize * 2 + 1];
@@ -47,6 +61,8 @@ namespace Electron2D.Core.Rendering.PostProcessing
             _shader.SetFloat("blurRadius", BlurRadius);
 
             readBuffer.AttachedTexture.Use(OpenGL.GL.GL_TEXTURE0);
+
+            return retVal;
         }
 
         private float SampleGaussianEquation(int x)

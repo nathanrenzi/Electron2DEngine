@@ -17,6 +17,7 @@ out vec4 FragColor;
 
 in vec2 texCoord;
 
+uniform vec2 direction;
 uniform sampler2D frameBufferTexture;
 uniform float blurRadius;
 uniform int kernelSize;
@@ -30,7 +31,7 @@ void main()
     int N = kernelSize * 2 + 1;
     for (int i = 0; i < N; ++i)
     {
-        vec2 tc = texCoord + vec2(1, 0) * float(i - kernelSize) * blurRadius * 0.0005;
+        vec2 tc = texCoord + direction * float(i - kernelSize) * blurRadius * 0.0005;
         res += coeffs[i] * texture(frameBufferTexture, tc);
     }
     FragColor = res;

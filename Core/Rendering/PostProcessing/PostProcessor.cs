@@ -102,21 +102,25 @@ namespace Electron2D.Core.Rendering.PostProcessing
             {
                 for (int i = 0; i < _stacks[s].Size; i++)
                 {
-                    if(_readingBuffer1)
+                    int signal = 0;
+                    do
                     {
-                        _frameBuffer1.BindRead();
-                        _frameBuffer2.BindWrite();
-                        _stacks[s].Get(i).PostProcess(_frameBuffer1);
-                        glDrawArrays(GL_TRIANGLES, 0, 6);
-                    }
-                    else
-                    {
-                        _frameBuffer1.BindWrite();
-                        _frameBuffer2.BindRead();
-                        _stacks[s].Get(i).PostProcess(_frameBuffer2);
-                        glDrawArrays(GL_TRIANGLES, 0, 6);
-                    }
-                    _readingBuffer1 = !_readingBuffer1;
+                        if (_readingBuffer1)
+                        {
+                            _frameBuffer1.BindRead();
+                            _frameBuffer2.BindWrite();
+                            signal = _stacks[s].Get(i).PostProcess(signal, _frameBuffer1);
+                            glDrawArrays(GL_TRIANGLES, 0, 6);
+                        }
+                        else
+                        {
+                            _frameBuffer1.BindWrite();
+                            _frameBuffer2.BindRead();
+                            signal = _stacks[s].Get(i).PostProcess(signal, _frameBuffer2);
+                            glDrawArrays(GL_TRIANGLES, 0, 6);
+                        }
+                        _readingBuffer1 = !_readingBuffer1;
+                    } while (signal != 0);
                 }
             }
             glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -51,7 +51,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
             Temperature = temperature;
         }
 
-        public void PostProcess(FrameBuffer readBuffer)
+        public int PostProcess(int signal, FrameBuffer readBuffer)
         {
             _shader.Use();
             _shader.SetColor("colorFilter", ColorFilter);
@@ -61,6 +61,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
             _shader.SetFloat("contrast", Contrast);
             _shader.SetFloat("temperature", Temperature);
             readBuffer.AttachedTexture.Use(OpenGL.GL.GL_TEXTURE0);
+            return 0;
         }
     }
 }
