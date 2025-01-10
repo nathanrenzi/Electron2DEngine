@@ -1,4 +1,5 @@
 ﻿using Electron2D.Core.Rendering;
+using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.UserInterface;
 using System.Drawing;
 using System.Numerics;
@@ -165,6 +166,25 @@ namespace Electron2D.Core.UserInterface
             {
                 defaultUV[i * 2 + 0] = vertices[i * stride + (int)MeshVertexAttribute.UvX];
                 defaultUV[i * 2 + 1] = vertices[i * stride + (int)MeshVertexAttribute.UvY];
+            }
+        }
+
+        protected override void OnUiEvent(UiEvent _event)
+        {
+            switch (_event)
+            {
+                case UiEvent.Resize:
+                    if(meshRenderer != null)
+                    {
+                        RebuildMesh();
+                    }
+                    break;
+                case UiEvent.Anchor:
+                    if(meshRenderer != null)
+                    {
+                        RebuildMesh();
+                    }
+                    break;
             }
         }
     }

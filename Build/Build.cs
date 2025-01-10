@@ -52,7 +52,7 @@ public class Build : Game
 
         for (int i = 0; i < sliders.Length; i++)
         {
-            sliders[i] = new Slider(i == 4 ? def2 : def1);
+            sliders[i] = new Slider(i == 1 ? def2 : def1);
             sliders[i].Transform.Position = new System.Numerics.Vector2(0, (i * 50) - 480);
         }
     }
@@ -60,11 +60,11 @@ public class Build : Game
     // This is ran every frame
     protected override void Update()
     {
-        //c.HueShift = sliders[0].Value;
-        //c.Saturation = sliders[1].Value;
-        //c.Brightness = sliders[2].Value;
-        //c.Contrast = sliders[3].Value;
-        //c.Temperature = sliders[4].Value;
+        c.HueShift = sliders[0].Value;
+        c.Saturation = sliders[1].Value;
+        c.Brightness = sliders[2].Value;
+        c.Contrast = sliders[3].Value;
+        c.Temperature = sliders[4].Value;
     }
 
     // This is ran every frame right before rendering

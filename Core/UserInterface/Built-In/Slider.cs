@@ -96,12 +96,9 @@ namespace Electron2D.Core.UserInterface
         public bool AllowNonHandleValueUpdates = true;
         public bool SliderInteractable;
 
-        private Panel backgroundPanel;
-        private Panel sliderPanel;
-        private Panel handlePanel;
-        private SlicedPanel backgroundSlicedPanel;
-        private SlicedPanel sliderSlicedPanel;
-        private SlicedPanel handleSlicedPanel;
+        private UiComponent backgroundPanel;
+        private UiComponent sliderPanel;
+        private UiComponent handlePanel;
         private SliderListener handleListener = new SliderListener();
         private SliderListener backgroundListener = new SliderListener();
 
@@ -125,9 +122,9 @@ namespace Electron2D.Core.UserInterface
 
             if(_def.BackgroundPanelDef != null)
             {
-                backgroundSlicedPanel = new SlicedPanel(_def.BackgroundMaterial, _def.SizeX, BackgroundSizeY,
+                backgroundPanel = new SlicedPanel(_def.BackgroundMaterial, _def.SizeX, BackgroundSizeY,
                     _def.BackgroundPanelDef, _uiRenderLayer, _ignorePostProcessing);
-                backgroundSlicedPanel.AddUiListener(backgroundListener);
+                backgroundPanel.AddUiListener(backgroundListener);
             }
             else
             {
@@ -138,9 +135,9 @@ namespace Electron2D.Core.UserInterface
 
             if (_def.SliderPanelDef != null)
             {
-                sliderSlicedPanel = new SlicedPanel(_def.SliderMaterial, _def.SizeX - HandlePadding, SliderSizeY,
+                sliderPanel = new SlicedPanel(_def.SliderMaterial, _def.SizeX - HandlePadding, SliderSizeY,
                     _def.SliderPanelDef, _uiRenderLayer + 1, _ignorePostProcessing);
-                sliderSlicedPanel.Anchor = new Vector2(-1, 0);
+                sliderPanel.Anchor = new Vector2(-1, 0);
             }
             else
             {
@@ -151,9 +148,9 @@ namespace Electron2D.Core.UserInterface
 
             if (_def.HandlePanelDef != null)
             {
-                handleSlicedPanel = new SlicedPanel(_def.HandleMaterial, HandleSizeXY, HandleSizeXY,
+                handlePanel = new SlicedPanel(_def.HandleMaterial, HandleSizeXY, HandleSizeXY,
                     _def.HandlePanelDef, _uiRenderLayer + 2, _ignorePostProcessing);
-                handleSlicedPanel.AddUiListener(handleListener);
+                handlePanel.AddUiListener(handleListener);
             }
             else
             {
@@ -177,43 +174,16 @@ namespace Electron2D.Core.UserInterface
         {
             if (!initialized) return;
 
-            if(backgroundSlicedPanel != null)
-            {
-                backgroundSlicedPanel.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
-                backgroundSlicedPanel.SizeX = SizeX;
-                backgroundSlicedPanel.SizeY = BackgroundSizeY;
-                backgroundSlicedPanel.RebuildMesh(); // temp, add ui event rebuilding to sliced panel
-            }
-            else
-            {
-                backgroundPanel.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
-                backgroundPanel.SizeX = SizeX;
-                backgroundPanel.SizeY = BackgroundSizeY;
-            }
+            backgroundPanel.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
+            backgroundPanel.SizeX = SizeX;
+            backgroundPanel.SizeY = BackgroundSizeY;
 
             float endPosition = ((SizeX-HandlePadding*2) * Value01);
-            if(sliderSlicedPanel != null)
-            {
-                sliderSlicedPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding / 2f, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
-                sliderSlicedPanel.SizeX = endPosition + HandlePadding;
-                sliderSlicedPanel.SizeY = SliderSizeY;
-                sliderSlicedPanel.RebuildMesh();
-            }
-            else
-            {
-                sliderPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding / 2f, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
-                sliderPanel.SizeX = endPosition + HandlePadding;
-                sliderPanel.SizeY = SliderSizeY;
-            }
+            sliderPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding / 2f, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
+            sliderPanel.SizeX = endPosition + HandlePadding;
+            sliderPanel.SizeY = SliderSizeY;
 
-            if(handleSlicedPanel != null)
-            {
-                handleSlicedPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding + endPosition, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
-            }
-            else
-            {
-                handlePanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding + endPosition, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
-            }
+            handlePanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding + endPosition, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
         }
 
         private void OnUpdate_Interact()
