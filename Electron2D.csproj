@@ -29,6 +29,7 @@
     <None Remove="Core\Rendering\Shaders\PostProcessing\ChromaticAberration.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\ColorGrading.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\DefaultPostProcessing.glsl" />
+    <None Remove="Core\Rendering\Shaders\PostProcessing\GaussianBlur.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\Inverted.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\Vignette.glsl" />
   </ItemGroup>
@@ -44,6 +45,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\DefaultPostProcessing.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\GaussianBlur.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\Inverted.glsl">

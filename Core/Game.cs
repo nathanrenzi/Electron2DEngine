@@ -234,10 +234,12 @@ namespace Electron2D.Core
                 double rendST = Glfw.Time;
                 ApplyBlendingMode();
                 GLClear();
+                double ppST = Glfw.Time;
                 PostProcessor.Instance.BeforeGameRender();
                 RenderCall();
                 PostProcessor.Instance.AfterGameRender();
                 PostProcessor.Instance.Render();
+                PerformanceTimings.PostProcessingMilliseconds = (Glfw.Time - ppST) * 1000;
                 RenderLayerManager.RenderAllLayersIgnorePostProcessing();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);

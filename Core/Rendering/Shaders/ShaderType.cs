@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Electron2D.Core.Rendering.Shaders
 {
-    public enum eShaderType
+    public enum ShaderType
     {
         NONE = -1,
         VERTEX = 0,

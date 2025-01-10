@@ -46,7 +46,7 @@ namespace Electron2D.Core.Rendering.Shaders
         public static ShaderProgramSource ParseShader(string _filePath)
         {
             string[] shaderSource = new string[2];
-            eShaderType shaderType = eShaderType.NONE;
+            ShaderType shaderType = ShaderType.NONE;
             if(!File.Exists(_filePath))
             {
                 Debug.LogError("Shader does not exist: " + _filePath);
@@ -60,11 +60,11 @@ namespace Electron2D.Core.Rendering.Shaders
                 {
                     if(current.ToLower().Contains("vertex"))
                     {
-                        shaderType = eShaderType.VERTEX;
+                        shaderType = ShaderType.VERTEX;
                     }
                     else if(current.ToLower().Contains("fragment"))
                     {
-                        shaderType = eShaderType.FRAGMENT;
+                        shaderType = ShaderType.FRAGMENT;
                     }
                     else
                     {
@@ -76,7 +76,7 @@ namespace Electron2D.Core.Rendering.Shaders
                     shaderSource[(int)shaderType] += current + Environment.NewLine;
                 }
             }
-            return new ShaderProgramSource(_filePath, shaderSource[(int)eShaderType.VERTEX], shaderSource[(int)eShaderType.FRAGMENT]);
+            return new ShaderProgramSource(_filePath, shaderSource[(int)ShaderType.VERTEX], shaderSource[(int)ShaderType.FRAGMENT]);
         }
 
         public unsafe bool Compile()
@@ -105,7 +105,7 @@ namespace Electron2D.Core.Rendering.Shaders
             {
                 // Failed to compile
                 string error = glGetShaderInfoLog(vs);
-                Debug.LogError("ERROR COMPILING VERTEX SHADER: " + error);
+                Debug.LogError("Vertex Shader: " + error);
                 return false;
             }
             // ------------------
@@ -120,7 +120,7 @@ namespace Electron2D.Core.Rendering.Shaders
             {
                 // Failed to compile
                 string error = glGetShaderInfoLog(fs);
-                Debug.LogError("ERROR COMPILING FRAGMENT SHADER: " + error);
+                Debug.LogError("Fragment Shader: " + error);
                 return false;
             }
             // ------------------
