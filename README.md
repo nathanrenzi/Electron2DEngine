@@ -2,6 +2,8 @@
 
 A 2D game engine written in C#. This project is a self-study meant to give me more experience with large projects and to gain a better understanding of how game engines work.
 
+In order to download and use this respository, a [GLFW pre-compiled binary](https://www.glfw.org/download) must be placed in the build directory.
+
 ## Author
 
   - [**Nathan Renzi**](https://github.com/nathanrenzi)
