@@ -34,7 +34,7 @@ namespace Electron2D.Core
             }
 
             scrollCallback = new MouseCallback(ScrollCallback);
-            Glfw.SetScrollCallback(DisplayManager.Instance.Window, scrollCallback);
+            Glfw.SetScrollCallback(Display.Window, scrollCallback);
         }
 
         public static void ScrollCallback(Window _window, double _xOffset, double _yOffset)
@@ -66,12 +66,12 @@ namespace Electron2D.Core
             for (int i = 0; i < totalKeyCount; i++)
             {
                 if ((int)keyValues[i] == -1) continue; // Passing Unknown (-1) into the GetKey function causes an error
-                KEYS[i] = Glfw.GetKey(DisplayManager.Instance.Window, keyValues[i]) == InputState.Press;
+                KEYS[i] = Glfw.GetKey(Display.Window, keyValues[i]) == InputState.Press;
             }
             for (int i = 0; i < MOUSE.Length; i++)
             {
                 // Mouse presses
-                MOUSE[i] = Glfw.GetMouseButton(DisplayManager.Instance.Window, (MouseButton)i);
+                MOUSE[i] = Glfw.GetMouseButton(Display.Window, (MouseButton)i);
             }
 
             scrollCallbackFrame = false;
@@ -133,30 +133,30 @@ namespace Electron2D.Core
         {
             double x;
             double y;
-            Glfw.GetCursorPosition(DisplayManager.Instance.Window, out x, out y);
+            Glfw.GetCursorPosition(Display.Window, out x, out y);
 
-            Vector2 offset = offsetToMiddle ? new Vector2(Program.Game.CurrentWindowWidth / 2f, Program.Game.CurrentWindowHeight / 2f) : Vector2.Zero;
-            return new Vector2((float)x - offset.X, DisplayManager.Instance.WindowSize.Y - (float)y - offset.Y);
+            Vector2 offset = offsetToMiddle ? Display.WindowSize / 2f : Vector2.Zero;
+            return new Vector2((float)x - offset.X, Display.WindowSize.Y - (float)y - offset.Y);
         }
 
-        public static Vector2 GetMouseScreenPositionScaled(bool offsetToMiddle = false) => GetMouseScreenPositionRaw(offsetToMiddle) / Game.WINDOW_SCALE;
+        public static Vector2 GetMouseScreenPositionScaled(bool offsetToMiddle = false) => GetMouseScreenPositionRaw(offsetToMiddle) / Display.WindowScale;
 
         public static Vector2 GetMouseWorldPosition()
         {
             Vector2 worldPosition = GetMouseScreenPositionRaw();
 
             // Centering the position
-            worldPosition.Y -= Program.Game.CurrentWindowHeight / 2;
-            worldPosition.X -= Program.Game.CurrentWindowWidth / 2;
+            worldPosition.Y -= Display.WindowSize.Y / 2;
+            worldPosition.X -= Display.WindowSize.X / 2;
             // ----------------------
 
             // Scaling the cursor
-            worldPosition /= Game.WINDOW_SCALE;
+            worldPosition /= Display.WindowScale;
             // ----------------------
 
             // Offsetting and scaling the position based on the current camera
             worldPosition /= Camera2D.Main.Zoom;
-            worldPosition += (Camera2D.Main.Transform.Position / Game.WINDOW_SCALE);
+            worldPosition += (Camera2D.Main.Transform.Position / Display.WindowScale);
             // ----------------------
 
             return new Vector2(worldPosition.X, worldPosition.Y);

@@ -20,6 +20,7 @@
   <ItemGroup>
     <None Remove="Core\Audio\Electron2DFmodBank.bank" />
     <None Remove="Core\Audio\Electron2DRiff.mp3" />
+    <None Remove="Core\DefaultSettings.json" />
     <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
     <None Remove="Core\Rendering\CoreTextures\BlankTexture.png" />
     <None Remove="Core\Rendering\CoreTextures\Electron2DSplashscreen.png" />
@@ -34,6 +35,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Audio\Electron2DRiff.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\DefaultSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\CoreTextures\BlankNormal.png">
