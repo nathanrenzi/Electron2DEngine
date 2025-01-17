@@ -18,7 +18,7 @@ namespace Electron2D.Core.UserInterface
             }
         }
         private bool visible = true;
-
+        private bool ignorePostProcessing { get; }
         public bool UsingMeshRenderer { get; }
         public bool UseScreenPosition
         {
@@ -138,11 +138,11 @@ namespace Electron2D.Core.UserInterface
         private bool showBoundsDebug = false;
         private Sprite s1, s2, s3, s4;
 
-        public UiComponent(int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, int _extraInteractionSize = 0,
+        public UiComponent(bool _ignorePostProcessing, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, int _extraInteractionSize = 0,
             bool _initialize = true, bool _useScreenPosition = true, bool _useMeshRenderer = true, bool _autoRender = true)
         {
             Transform = new Transform();
-            Transform.onPositionChanged += () => InvokeUiAction(UiEvent.Position);
+            Transform.OnPositionChanged += () => InvokeUiAction(UiEvent.Position);
 
             AddComponent(Transform);
             SizeX = _sizeX;
@@ -153,6 +153,7 @@ namespace Electron2D.Core.UserInterface
             UsingMeshRenderer = _useMeshRenderer;
             registerRenderable = _autoRender;
             ExtraInteractionPixels = _extraInteractionSize;
+            ignorePostProcessing = _ignorePostProcessing;
 
             if (UsingMeshRenderer)
             {
@@ -164,8 +165,16 @@ namespace Electron2D.Core.UserInterface
             if (_initialize) Initialize();
             SetColor(Color.White);
 
-            if (_autoRender) RenderLayerManager.OrderRenderable(this);
+            if (_autoRender)
+            {
+                RenderLayerManager.OrderRenderable(this);
+            }
             GlobalUI.MainCanvas.RegisterUiComponent(this);
+        }
+
+        public bool ShouldIgnorePostProcessing()
+        {
+            return ignorePostProcessing;
         }
 
         ~UiComponent()

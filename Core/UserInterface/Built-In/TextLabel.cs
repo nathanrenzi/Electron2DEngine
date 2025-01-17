@@ -81,7 +81,7 @@ namespace Electron2D.Core.UserInterface
             Vector2 _bounds, TextAlignment _horizontalAlignment = TextAlignment.Left, TextAlignment _verticalAlignment = TextAlignment.Top,
             TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline, TextOverflowMode _overflowMode = TextOverflowMode.Disabled,
             int _outlineSize = 0, int _uiRenderLayer = 0, Shader _customShader = null,
-            bool _useScreenPosition = true) : base(_uiRenderLayer, _useScreenPosition: _useScreenPosition, _useMeshRenderer: false)
+            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, _useScreenPosition: _useScreenPosition, _useMeshRenderer: false)
         {
             SizeX = _bounds.X;
             SizeY = _bounds.Y;

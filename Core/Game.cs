@@ -10,6 +10,7 @@ using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Audio;
 using Electron2D.Core.Management;
+using Electron2D.Core.Rendering.PostProcessing;
 
 namespace Electron2D.Core
 {
@@ -26,11 +27,12 @@ namespace Electron2D.Core
         public int CurrentWindowWidth { get; protected set; }
         public int CurrentWindowHeight { get; protected set; }
         public string CurrentWindowTitle { get; protected set; }
+        public bool PostProcessingEnabled { get; }
         public bool VsyncEnabled { get; }
         public bool AntialiasingEnabled { get; }
         public bool ErrorCheckingEnabled { get; }
 
-        public static Color BackgroundColor { get; private set; } = Color.Black;
+        public Color BackgroundColor { get; private set; } = Color.Black;
 
         protected Thread PhysicsThread { get; private set; }
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
@@ -41,7 +43,7 @@ namespace Electron2D.Core
 
         public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -15f,
             float _physicsLowerBoundX = -100000, float _physicsLowerBoundY = -100000, float _physicsUpperBoundX = 100000, float _physicsUpperBoundY = 100000,
-            int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _vsync = false, bool _antialiasing = true, bool _errorCheckingEnabled = false,
+            int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _enablePostProcessing = true, bool _vsync = false, bool _antialiasing = true, bool _errorCheckingEnabled = false,
             bool _showElectronSplashscreen = true)
         {
             CurrentWindowWidth = _initialWindowWidth;
@@ -50,6 +52,7 @@ namespace Electron2D.Core
             VsyncEnabled = _vsync;
             AntialiasingEnabled = _antialiasing;
             ErrorCheckingEnabled = _errorCheckingEnabled;
+            PostProcessingEnabled = _enablePostProcessing;
             showElectronSplashscreen = _showElectronSplashscreen;
 
             // Starting Physics Thread
@@ -162,7 +165,7 @@ namespace Electron2D.Core
                 splashscreenAudio?.Dispose();
                 Splashscreen.Dispose();
                 splashscreenTexture.Dispose();
-                Debug.Log("Splashscreen ended.");
+                Debug.Log("Splashscreen ended");
             }
             #endregion
 
@@ -184,7 +187,7 @@ namespace Electron2D.Core
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
 
             GlobalUI.MainCanvas.Initialize();
-
+            if(PostProcessingEnabled) PostProcessor.Instance.Initialize();
             GC.Collect();
 
             Debug.Log("Initialization complete");
@@ -192,6 +195,7 @@ namespace Electron2D.Core
 
             Load();
             // Rendering before the game loop prevents a black screen when the window is opened
+            GLClear();
             RenderCall();
 
             while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
@@ -229,7 +233,14 @@ namespace Electron2D.Core
                 // Rendering
                 double rendST = Glfw.Time;
                 ApplyBlendingMode();
+                GLClear();
+                double ppST = Glfw.Time;
+                PostProcessor.Instance.BeforeGameRender();
                 RenderCall();
+                PostProcessor.Instance.AfterGameRender();
+                PostProcessor.Instance.Render();
+                PerformanceTimings.PostProcessingMilliseconds = (Glfw.Time - ppST) * 1000;
+                RenderLayerManager.RenderAllLayersIgnorePostProcessing();
 
                 Glfw.SwapBuffers(DisplayManager.Instance.Window);
                 if(ErrorCheckingEnabled) LogErrors();
@@ -274,11 +285,14 @@ namespace Electron2D.Core
             }
         }
 
-        private void RenderCall()
+        private void GLClear()
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
             glClearColor(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, 1);
+        }
 
+        private void RenderCall()
+        {
             Render();
             RenderLayerManager.RenderAllLayers();
         }

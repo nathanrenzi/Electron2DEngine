@@ -344,5 +344,10 @@ namespace Electron2D.Core
                 m.Value.Renderer.Render();
             }
         }
+
+        public bool ShouldIgnorePostProcessing()
+        {
+            return false;
+        }
     }
 }

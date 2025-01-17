@@ -83,6 +83,21 @@ namespace Electron2D.Core.Rendering
                 _materialToCopy.MainColor, _materialToCopy.UsingLinearFiltering, _materialToCopy.NormalScale);
         }
 
+        public static Material Create(Color _color)
+        {
+            return Create(GlobalShaders.DefaultTexture, _color);
+        }
+
+        public static Material CreateCircle(Shader _shader, Color _color)
+        {
+            return Create(_shader, _color, ResourceManager.Instance.LoadTexture("Core/Rendering/CoreTextures/Circle.png"));
+        }
+
+        public static Material CreateCircle(Color _color)
+        {
+            return CreateCircle(GlobalShaders.DefaultTexture, _color);
+        }
+
         public static Material LoadFromJSON(string json)
         {
             MaterialData m = JsonConvert.DeserializeObject<MaterialData>(json);

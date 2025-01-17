@@ -4,12 +4,12 @@ namespace Electron2D.Core.Rendering
 {
     public class VertexArray : IBuffer, IDisposable
     {
-        public uint bufferID { get; }
+        public uint BufferID { get; }
         private bool isDisposed = false;
 
         public VertexArray()
         {
-            bufferID = glGenVertexArray();
+            BufferID = glGenVertexArray();
         }
 
         ~VertexArray()
@@ -34,7 +34,7 @@ namespace Electron2D.Core.Rendering
 
         public void Bind()
         {
-            glBindVertexArray(bufferID);
+            glBindVertexArray(BufferID);
         }
 
         public void Unbind()
@@ -47,7 +47,7 @@ namespace Electron2D.Core.Rendering
             if(!isDisposed)
             {
                 isDisposed = true;
-                glDeleteVertexArray(bufferID);
+                glDeleteVertexArray(BufferID);
             }
         }
     }
