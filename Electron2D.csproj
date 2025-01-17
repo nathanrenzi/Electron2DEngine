@@ -31,6 +31,7 @@
     <None Remove="Core\Rendering\Shaders\PostProcessing\DefaultPostProcessing.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\GaussianBlur.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\Inverted.glsl" />
+    <None Remove="Core\Rendering\Shaders\PostProcessing\LensDistortion.glsl" />
     <None Remove="Core\Rendering\Shaders\PostProcessing\Vignette.glsl" />
   </ItemGroup>
 
@@ -90,6 +91,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\DefaultTexture.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\LensDistortion.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\Vignette.glsl">

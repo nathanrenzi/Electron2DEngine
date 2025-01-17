@@ -23,15 +23,15 @@ public class Build : Game
     }
 
     // This is ran when the game is ready to load content
-    GaussianBlurPostProcess c;
-    Slider[] sliders = new Slider[2];
+    LensDistortionPostProcess c;
+    Slider[] sliders = new Slider[1];
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
         Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture,
             ResourceManager.Instance.LoadTexture("Build/Resources/Textures/MossyStone.jpg")), 0, 1920, 1080);
         PostProcessingStack stack = new PostProcessingStack(0);
-        c = new GaussianBlurPostProcess(1, 0.7f, 32);
+        c = new LensDistortionPostProcess(0, Color.Red);
         stack.Add(c);
         PostProcessor.Instance.Register(stack);
 
@@ -43,23 +43,19 @@ public class Build : Game
             Material.CreateCircle(Color.Red),
             Material.CreateCircle(Color.White),
             300, 30, 15, 30, slicedDef1, slicedDef2, slicedDef1,
-            0, 50, 0, 15);
+            0, 1, -1, 15);
 
         for (int i = 0; i < sliders.Length; i++)
         {
             sliders[i] = new Slider(def1, _ignorePostProcessing: true);
             sliders[i].Transform.Position = new System.Numerics.Vector2(0, (i * 50) - 480);
         }
-        sliders[1].MinValue = 0.1f;
-        sliders[1].MaxValue = 8f;
-        sliders[1].Value = 0.1f;
     }
 
     // This is ran every frame
     protected override void Update()
     {
-        c.BlurRadius = sliders[0].Value;
-        c.Sigma = sliders[1].Value;
+        c.Intensity = sliders[0].Value;
     }
 
     // This is ran every frame right before rendering
