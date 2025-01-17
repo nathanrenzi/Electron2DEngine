@@ -1,4 +1,5 @@
 ﻿using Electron2D.Core.ECS;
+using Electron2D.Core.Rendering;
 using System.Numerics;
 
 namespace Electron2D.Core.Audio
@@ -8,7 +9,7 @@ namespace Electron2D.Core.Audio
     {
         public List<AudioInstance> AudioInstances { get; private set; } = new List<AudioInstance>();
         public float MinRange { get; set; } = 100f;
-        public float MaxRange { get; set; } = Game.REFERENCE_WINDOW_WIDTH * 0.5f;
+        public float MaxRange { get; set; } = Display.REFERENCE_WINDOW_WIDTH * 0.5f;
         public float PanningSpatializationMultiplier { get; set; } = 1.0f;
         public float VolumeSpatializationMultiplier { get; set; } = 1.0f;
         public bool Is3D { get; }
@@ -81,7 +82,7 @@ namespace Electron2D.Core.Audio
 
         private void CalculatePanning()
         {
-            DirectionBasedPanning = ((transform.Position.X - AudioSpatialListener.Instance.GetPosition().X) / (Game.REFERENCE_WINDOW_WIDTH * 0.5f)) * MathEx.Clamp(PanningSpatializationMultiplier, 0, 10);
+            DirectionBasedPanning = ((transform.Position.X - AudioSpatialListener.Instance.GetPosition().X) / (Display.REFERENCE_WINDOW_WIDTH * 0.5f)) * MathEx.Clamp(PanningSpatializationMultiplier, 0, 10);
         }
 
         public override void OnAdded()

@@ -1,4 +1,5 @@
-﻿using Electron2D.Core.Rendering.Text;
+﻿using Electron2D.Core.Rendering;
+using Electron2D.Core.Rendering.Text;
 using FreeTypeSharp;
 using FreeTypeSharp.Native;
 using System.Drawing;
@@ -29,7 +30,7 @@ namespace Electron2D.Core.Management
             }
 
             // Setting font pixel size, 0 width means dynamically scaled with height
-            FT_Set_Pixel_Sizes(face, 0, (uint)(_fontSize * Game.WINDOW_SCALE));
+            FT_Set_Pixel_Sizes(face, 0, (uint)(_fontSize * Display.WindowScale));
 
             FreeTypeFaceFacade f = new FreeTypeFaceFacade(library, face);
 
@@ -79,11 +80,11 @@ namespace Electron2D.Core.Management
 
                 glTexSubImage2D(GL_TEXTURE_2D, 0, pos, 0, (int)f.GlyphBitmap.width, (int)f.GlyphBitmap.rows, GL_RED, GL_UNSIGNED_BYTE, f.GlyphBitmap.buffer);
 
-                Character character = new Character(new Vector2((int)f.GlyphBitmap.width / Game.WINDOW_SCALE, (int)f.GlyphBitmap.rows / Game.WINDOW_SCALE),
+                Character character = new Character(new Vector2((int)f.GlyphBitmap.width / Display.WindowScale, (int)f.GlyphBitmap.rows / Display.WindowScale),
                     new Vector2(pos / (float)atlasWidth, (pos + (int)f.GlyphBitmap.width) / (float)atlasWidth), // UV X (Left, Right)
                     new Vector2(0, f.GlyphBitmap.rows / (float)atlasHeight),                                    // UV Y (Top, Bottom)
-                    new Vector2(f.GlyphBitmapLeft / Game.WINDOW_SCALE, f.GlyphBitmapTop / Game.WINDOW_SCALE),   // Bearing
-                    (uint)(f.GlyphMetricHorizontalAdvance / Game.WINDOW_SCALE));                                // Advance
+                    new Vector2(f.GlyphBitmapLeft / Display.WindowScale, f.GlyphBitmapTop / Display.WindowScale),   // Bearing
+                    (uint)(f.GlyphMetricHorizontalAdvance / Display.WindowScale));                                // Advance
                 store.AddCharacter((char)c, character);
 
                 pos += (int)f.GlyphBitmap.width;

@@ -3,10 +3,8 @@ using Electron2D.Core.Rendering;
 using static Electron2D.OpenGL.GL;
 using System.Numerics;
 using Electron2D.Core.Misc;
-using Electron2D.Core.Rendering.Shaders;
 using Electron2D.Core.UserInterface;
 using System.Drawing;
-using Electron2D.Core.Rendering.Text;
 using Electron2D.Core.PhysicsBox2D;
 using Electron2D.Core.Audio;
 using Electron2D.Core.Management;
@@ -20,45 +18,14 @@ namespace Electron2D.Core
         public static event Action OnUpdateEvent;
         public static event Action OnFixedUpdateEvent;
         public static event Action OnLateUpdateEvent;
-        public static readonly float REFERENCE_WINDOW_WIDTH = 1920f;
-        public static readonly float REFERENCE_WINDOW_HEIGHT = 1080f;
-        public static float WINDOW_SCALE { get { return Program.Game.CurrentWindowWidth / REFERENCE_WINDOW_WIDTH; } }
-
-        public int CurrentWindowWidth { get; protected set; }
-        public int CurrentWindowHeight { get; protected set; }
-        public string CurrentWindowTitle { get; protected set; }
-        public bool PostProcessingEnabled { get; }
-        public bool VsyncEnabled { get; }
-        public bool AntialiasingEnabled { get; }
-        public bool ErrorCheckingEnabled { get; }
-
-        public Color BackgroundColor { get; private set; } = Color.Black;
+        public Settings Settings { get; private set; }
+        public static Color BackgroundColor { get; private set; } = Color.Black;
 
         protected Thread PhysicsThread { get; private set; }
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
         protected Camera2D StartCamera { get; set; }
 
-        private bool showElectronSplashscreen;
         private BlendMode currentBlendMode = BlendMode.Interpolative;
-
-        public Game(int _initialWindowWidth, int _initialWindowHeight, string _initialWindowTitle, float _physicsTimestep = 0.016f, float _physicsGravity = -15f,
-            float _physicsLowerBoundX = -100000, float _physicsLowerBoundY = -100000, float _physicsUpperBoundX = 100000, float _physicsUpperBoundY = 100000,
-            int _physicsVelocityIterations = 6, int _physicsPositionIterations = 2, bool _enablePostProcessing = true, bool _vsync = false, bool _antialiasing = true, bool _errorCheckingEnabled = false,
-            bool _showElectronSplashscreen = true)
-        {
-            CurrentWindowWidth = _initialWindowWidth;
-            CurrentWindowHeight = _initialWindowHeight;
-            CurrentWindowTitle = _initialWindowTitle;
-            VsyncEnabled = _vsync;
-            AntialiasingEnabled = _antialiasing;
-            ErrorCheckingEnabled = _errorCheckingEnabled;
-            PostProcessingEnabled = _enablePostProcessing;
-            showElectronSplashscreen = _showElectronSplashscreen;
-
-            // Starting Physics Thread
-            PhysicsThread = new Thread(() => RunPhysicsThread(PhysicsCancellationToken.Token, _physicsTimestep, 
-                new Vector2(0, _physicsGravity), true, _physicsVelocityIterations, _physicsPositionIterations));
-        }
 
         public void SetBackgroundColor(Color _backgroundColor)
         {
@@ -93,13 +60,22 @@ namespace Electron2D.Core
         {
             Debug.OpenLogFile();
             Debug.Log("Starting initialization...");
+            Display.Initialize();
+            Cursor.Initialize();
+            Settings = Settings.LoadSettingsFile();
+
+            // Starting Physics Thread
+            PhysicsThread = new Thread(() => RunPhysicsThread(PhysicsCancellationToken.Token, EngineSettings.PhysicsTimestep,
+                new Vector2(0, EngineSettings.PhysicsGravity), true, EngineSettings.PhysicsVelocityIterations,
+                EngineSettings.PhysicsPositionIterations));
+
             Initialize();
 
             StartCamera = new Camera2D(Vector2.Zero, 1);
             StartCamera.AddComponent(new AudioSpatialListener());
 
-            DisplayManager.Instance.CreateWindow(CurrentWindowWidth, CurrentWindowHeight, CurrentWindowTitle, AntialiasingEnabled, ErrorCheckingEnabled);
-            if(VsyncEnabled)
+            Display.CreateWindow(Settings.WindowWidth, Settings.WindowHeight, Settings.WindowTitle);
+            if(Settings.Vsync)
             {
                 // VSYNC ON
                 Glfw.SwapInterval(1);
@@ -118,7 +94,7 @@ namespace Electron2D.Core
             // -----------
 
             #region Splashscreen
-            if (showElectronSplashscreen)
+            if (EngineSettings.ShowElectron2DSplashscreen)
             {
                 // Displaying splashscreen
                 Debug.Log("Displaying splashscreen...");
@@ -131,7 +107,7 @@ namespace Electron2D.Core
                 float currentTime = -bufferTime;
                 bool hasPlayedAudio = false;
                 AudioInstance splashscreenAudio = AudioSystem.CreateInstance("Core/Audio/Electron2DRiff.mp3", _volume: 0.3f);
-                while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
+                while (!Glfw.WindowShouldClose(Display.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
                 {
                     Input.ProcessInput(); // Letting the window know the program is responding
 
@@ -158,7 +134,7 @@ namespace Electron2D.Core
                         hasPlayedAudio = true;
                         splashscreenAudio.Play();
                     }
-                    Glfw.SwapBuffers(DisplayManager.Instance.Window);
+                    Glfw.SwapBuffers(Display.Window);
 
                     currentTime = (float)Glfw.Time - splashscreenStartTime;
                 }
@@ -198,7 +174,7 @@ namespace Electron2D.Core
             GLClear();
             RenderCall();
 
-            while (!Glfw.WindowShouldClose(DisplayManager.Instance.Window))
+            while (!Glfw.WindowShouldClose(Display.Window))
             {
                 Time.DeltaTime = (float)Glfw.Time - Time.GameTime;
                 Time.GameTime = (float)Glfw.Time;
@@ -242,20 +218,13 @@ namespace Electron2D.Core
                 PerformanceTimings.PostProcessingMilliseconds = (Glfw.Time - ppST) * 1000;
                 RenderLayerManager.RenderAllLayersIgnorePostProcessing();
 
-                Glfw.SwapBuffers(DisplayManager.Instance.Window);
-                if(ErrorCheckingEnabled) LogErrors();
+                Glfw.SwapBuffers(Display.Window);
+                if(EngineSettings.GraphicsErrorCheckingEnabled) LogErrors();
                 PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
                 // -------------------------------
             }
 
-            OnGameClose();
-            PhysicsCancellationToken.Cancel();
-            PhysicsThread.Join();
-            PhysicsCancellationToken.Dispose();
-            AudioSystem.Dispose();
-
-            Debug.CloseLogFile();
-            DisplayManager.CloseWindow();
+            Exit(false);
         }
 
         private void RunPhysicsThread(CancellationToken _token, double _physicsTimestep, Vector2 _gravity,
@@ -305,11 +274,30 @@ namespace Electron2D.Core
 
             string description;
             ErrorCode code = Glfw.GetError(out description);
+            if(code != ErrorCode.None)
+            {
+                Debug.LogError($"GLFW {description} | {code}");
+            }
             while (code != ErrorCode.None)
             {
                 code = Glfw.GetError(out description);
                 Debug.LogError($"GLFW {description} | {code}");
             }
+        }
+
+        /// <summary>
+        /// Exits the game.
+        /// </summary>
+        public void Exit(bool terminateGlfw = true)
+        {
+            Display.DestroyWindow();
+            OnGameClose();
+            PhysicsCancellationToken.Cancel();
+            PhysicsThread.Join();
+            PhysicsCancellationToken.Dispose();
+            AudioSystem.Dispose();
+            Debug.CloseLogFile();
+            if (terminateGlfw) Glfw.Terminate();
         }
 
         protected virtual void Initialize() { }      // This is ran when the game is first initialized

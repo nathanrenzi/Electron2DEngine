@@ -23,11 +23,11 @@ namespace Electron2D.Core.Rendering
 
         public Matrix4x4 GetProjectionMatrix()
         {
-            float positionScale = Game.WINDOW_SCALE;
-            float left = (Transform.Position.X * positionScale) - DisplayManager.Instance.WindowSize.X / 2f;
-            float right = (Transform.Position.X * positionScale) + DisplayManager.Instance.WindowSize.X / 2f;
-            float top = (Transform.Position.Y * positionScale) + DisplayManager.Instance.WindowSize.Y / 2f;
-            float bottom = (Transform.Position.Y * positionScale) - DisplayManager.Instance.WindowSize.Y / 2f;
+            float positionScale = Display.WindowScale;
+            float left = (Transform.Position.X * positionScale) - Display.WindowSize.X / 2f;
+            float right = (Transform.Position.X * positionScale) + Display.WindowSize.X / 2f;
+            float top = (Transform.Position.Y * positionScale) + Display.WindowSize.Y / 2f;
+            float bottom = (Transform.Position.Y * positionScale) - Display.WindowSize.Y / 2f;
 
             Matrix4x4 orthoMatrix = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, 0.01f, 100f);
             Matrix4x4 zoomMatrix = Matrix4x4.CreateScale(Zoom);
@@ -41,10 +41,10 @@ namespace Electron2D.Core.Rendering
         /// <returns></returns>
         public Matrix4x4 GetUnscaledProjectionMatrix()
         {
-            float left = 0 - DisplayManager.Instance.WindowSize.X / 2f;
-            float right = 0 + DisplayManager.Instance.WindowSize.X / 2f;
-            float top = 0 + DisplayManager.Instance.WindowSize.Y / 2f;
-            float bottom = 0 - DisplayManager.Instance.WindowSize.Y / 2f;
+            float left = 0 - Display.WindowSize.X / 2f;
+            float right = 0 + Display.WindowSize.X / 2f;
+            float top = 0 + Display.WindowSize.Y / 2f;
+            float bottom = 0 - Display.WindowSize.Y / 2f;
 
             Matrix4x4 orthoMatrix = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, 0.01f, 100f);
             Matrix4x4 zoomMatrix = Matrix4x4.CreateScale(1);
