@@ -21,7 +21,7 @@ uniform vec2 direction;
 uniform sampler2D frameBufferTexture;
 uniform float blurRadius;
 uniform int kernelSize;
-#define MAX_COEFFICIENT_ARRAY_SIZE 2048
+#define MAX_COEFFICIENT_ARRAY_SIZE 129
 uniform float coeffs[MAX_COEFFICIENT_ARRAY_SIZE];
 
 
