@@ -60,6 +60,7 @@ namespace Electron2D.Core
             Debug.OpenLogFile();
             Debug.Log("Starting initialization...");
             Display.Initialize();
+            Cursor.Initialize();
             Settings = Settings.LoadSettingsFile();
 
             // Starting Physics Thread

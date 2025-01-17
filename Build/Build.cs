@@ -2,8 +2,8 @@
 using System.Drawing;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.Shaders;
-using System.Numerics;
-using Electron2D.Core.PhysicsBox2D;
+using Electron2D;
+using Electron2D.Core.Management;
 
 public class Build : Game
 {
@@ -24,17 +24,13 @@ public class Build : Game
     // This is ran every frame
     protected override void Update()
     {
-        if(Input.GetKeyDown(GLFW.Keys.Alpha1))
+        if (Input.GetMouseButtonDown(GLFW.MouseButton.Left))
         {
-            Display.SetWindowMode(WindowMode.Fullscreen);
+            Cursor.SetType(GLFW.CursorType.Arrow);
         }
-        else if(Input.GetKeyDown(GLFW.Keys.Alpha2))
+        if (Input.GetMouseButtonDown(GLFW.MouseButton.Right))
         {
-            Display.SetWindowMode(WindowMode.Windowed);
-        }
-        else if(Input.GetKeyDown(GLFW.Keys.Alpha3))
-        {
-            Display.SetWindowMode(WindowMode.BorderlessWindow);
+            Cursor.SetType(GLFW.CursorType.Hand);
         }
     }
 
