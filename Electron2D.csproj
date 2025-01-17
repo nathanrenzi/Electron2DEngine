@@ -9,101 +9,94 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Core\Mapping\**" />
-    <Compile Remove="Core\Rendering\Renderers\Batching\**" />
-    <None Remove="Core\Mapping\**" />
-    <None Remove="Core\Rendering\Renderers\Batching\**" />
+    <Compile Remove="Source\Mapping\**" />
+    <Compile Remove="Source\Rendering\Renderers\Batching\**" />
+    <None Remove="Source\Mapping\**" />
+    <None Remove="Source\Rendering\Renderers\Batching\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Build\Resources\Textures\MossyStone.jpg" />
-    <None Remove="Core\Audio\Electron2DFmodBank.bank" />
-    <None Remove="Core\Audio\Electron2DRiff.mp3" />
-    <None Remove="Core\DefaultSettings.json" />
-    <None Remove="Core\Rendering\CoreTextures\BlankNormal.png" />
-    <None Remove="Core\Rendering\CoreTextures\BlankTexture.png" />
-    <None Remove="Core\Rendering\CoreTextures\Electron2DSplashscreen.png" />
-    <None Remove="Core\Rendering\Shaders\DefaultInterface.glsl" />
-    <None Remove="Core\Rendering\Shaders\DefaultText.glsl" />
-    <None Remove="Core\Rendering\Shaders\DefaultTextureArray.glsl" />
-    <None Remove="Core\Rendering\Shaders\DefaultTexturedVertex.glsl" />
-    <None Remove="Core\Rendering\Shaders\PostProcessing\ChromaticAberration.glsl" />
-    <None Remove="Core\Rendering\Shaders\PostProcessing\ColorGrading.glsl" />
-    <None Remove="Core\Rendering\Shaders\PostProcessing\DefaultPostProcessing.glsl" />
-    <None Remove="Core\Rendering\Shaders\PostProcessing\GaussianBlur.glsl" />
-    <None Remove="Core\Rendering\Shaders\PostProcessing\Inverted.glsl" />
-    <None Remove="Core\Rendering\Shaders\PostProcessing\LensDistortion.glsl" />
-    <None Remove="Core\Rendering\Shaders\PostProcessing\Vignette.glsl" />
+    <None Remove="Source\Audio\Electron2DFmodBank.bank" />
+    <None Remove="Source\Audio\Electron2DRiff.mp3" />
+    <None Remove="Source\DefaultSettings.json" />
+    <None Remove="Resources\Built-In\Textures\BlankNormal.png" />
+    <None Remove="Resources\Built-In\Textures\BlankTexture.png" />
+    <None Remove="Resources\Built-In\Textures\Electron2DSplashscreen.png" />
+    <None Remove="Source\Rendering\Shaders\DefaultInterface.glsl" />
+    <None Remove="Source\Rendering\Shaders\DefaultText.glsl" />
+    <None Remove="Source\Rendering\Shaders\DefaultTextureArray.glsl" />
+    <None Remove="Source\Rendering\Shaders\DefaultTexturedVertex.glsl" />
+    <None Remove="Resources\Built-In\Shaders\PostProcessing\ChromaticAberration.glsl" />
+    <None Remove="Resources\Built-In\Shaders\PostProcessing\ColorGrading.glsl" />
+    <None Remove="Resources\Built-In\Shaders\PostProcessing\DefaultPostProcessing.glsl" />
+    <None Remove="Resources\Built-In\Shaders\PostProcessing\GaussianBlur.glsl" />
+    <None Remove="Resources\Built-In\Shaders\PostProcessing\Inverted.glsl" />
+    <None Remove="Resources\Built-In\Shaders\PostProcessing\LensDistortion.glsl" />
+    <None Remove="Resources\Built-In\Shaders\PostProcessing\Vignette.glsl" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Build\Resources\Textures\MossyStone.jpg">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\ChromaticAberration.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\ChromaticAberration.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\ColorGrading.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\ColorGrading.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\DefaultPostProcessing.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\DefaultPostProcessing.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\GaussianBlur.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\GaussianBlur.glsl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\Inverted.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\Inverted.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Build\BuildDate.txt">
+    <EmbeddedResource Include="Resources\Built-In\Audio\Electron2DRiff.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Audio\Electron2DRiff.mp3">
+    <EmbeddedResource Include="DefaultSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\DefaultSettings.json">
+    <EmbeddedResource Include="Resources\Built-In\Textures\BlankNormal.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\CoreTextures\BlankNormal.png">
+    <EmbeddedResource Include="Resources\Built-In\Textures\BlankTexture.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\CoreTextures\BlankTexture.png">
+    <EmbeddedResource Include="Resources\Built-In\Textures\Electron2DSplashscreen.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\CoreTextures\Electron2DSplashscreen.png">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultLit.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultLit.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultText.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultText.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultInterface.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultInterface.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultTextureArray.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultTextureArray.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultTexturedVertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultTexturedVertex.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultVertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultVertex.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultTexture.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\DefaultTexture.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\LensDistortion.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\LensDistortion.glsl">
+    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\Vignette.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\Shaders\PostProcessing\Vignette.glsl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Core\Rendering\CoreTextures\Circle.png">
+    <EmbeddedResource Include="Resources\Built-In\Textures\Circle.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
