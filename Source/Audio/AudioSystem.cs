@@ -24,12 +24,13 @@ namespace Electron2D.Audio
         private static MixingSampleProvider mixer;
         private static VolumeSampleProvider masterVolumeSampleProvider;
 
-        public static void Initialize(int _sampleRate = 44100, int _channelCount = 2)
+        public static void Initialize(float _masterVolume, int _sampleRate = 44100, int _channelCount = 2)
         {
             outputDevice = new WasapiOut(NAudio.CoreAudioApi.AudioClientShareMode.Shared, 50);
             mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(_sampleRate, _channelCount));
             mixer.ReadFully = true;
             masterVolumeSampleProvider = new VolumeSampleProvider(mixer);
+            MasterVolume = MathEx.Clamp(_masterVolume, 0, 2);
             outputDevice.Init(masterVolumeSampleProvider);
             outputDevice.Play();
         }

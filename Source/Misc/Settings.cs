@@ -7,24 +7,23 @@ namespace Electron2D
 {
     public class Settings
     {
-        // Graphics Settings
         public int WindowWidth { get; }
         public int WindowHeight { get; }
-        public string WindowTitle { get; }
         public WindowMode WindowMode { get; }
         public bool Vsync { get; }
         public AntialiasingMode AntialiasingMode { get; }
         public int RefreshRate { get; }
+        public float AudioMasterVolume { get; }
 
         private Settings(SettingsJson json)
         {
             WindowWidth = json.WindowWidth;
             WindowHeight = json.WindowHeight;
-            WindowTitle = json.WindowTitle;
             WindowMode = json.WindowMode;
             Vsync = json.Vsync;
             AntialiasingMode = json.AntialiasingMode;
             RefreshRate = json.RefreshRate;
+            AudioMasterVolume = json.AudioMasterVolume;
         }
 
         public static Settings LoadSettingsFile()
@@ -67,8 +66,8 @@ namespace Electron2D
 
         private void WriteToJson()
         {
-            SettingsJson settingsJson = new SettingsJson(WindowWidth, WindowHeight, WindowTitle, WindowMode,
-                Vsync, AntialiasingMode, RefreshRate);
+            SettingsJson settingsJson = new SettingsJson(WindowWidth, WindowHeight, WindowMode,
+                Vsync, AntialiasingMode, RefreshRate, AudioMasterVolume);
             string json = JsonConvert.SerializeObject(settingsJson, Formatting.Indented);
             File.WriteAllText("Settings.json", json);
         }

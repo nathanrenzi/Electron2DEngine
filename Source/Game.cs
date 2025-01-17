@@ -56,25 +56,25 @@ namespace Electron2D
             }
         }
 
-        public void Run()
+        public void Run(Settings settings)
         {
+            Settings = settings;
             Debug.OpenLogFile();
             Debug.Log("Starting initialization...");
             Display.Initialize();
             Cursor.Initialize();
-            Settings = Settings.LoadSettingsFile();
 
             // Starting Physics Thread
-            PhysicsThread = new Thread(() => RunPhysicsThread(PhysicsCancellationToken.Token, EngineSettings.PhysicsTimestep,
-                new Vector2(0, EngineSettings.PhysicsGravity), true, EngineSettings.PhysicsVelocityIterations,
-                EngineSettings.PhysicsPositionIterations));
+            PhysicsThread = new Thread(() => RunPhysicsThread(PhysicsCancellationToken.Token, ProjectSettings.PhysicsTimestep,
+                new Vector2(0, ProjectSettings.PhysicsGravity), true, ProjectSettings.PhysicsVelocityIterations,
+                ProjectSettings.PhysicsPositionIterations));
 
             Initialize();
 
             StartCamera = new Camera2D(Vector2.Zero, 1);
             StartCamera.AddComponent(new AudioSpatialListener());
 
-            Display.CreateWindow(Settings.WindowWidth, Settings.WindowHeight, Settings.WindowTitle);
+            Display.CreateWindow(Settings.WindowWidth, Settings.WindowHeight, ProjectSettings.WindowTitle);
             if(Settings.Vsync)
             {
                 // VSYNC ON
@@ -94,7 +94,7 @@ namespace Electron2D
             // -----------
 
             #region Splashscreen
-            if (EngineSettings.ShowElectron2DSplashscreen)
+            if (ProjectSettings.ShowElectron2DSplashscreen)
             {
                 // Displaying splashscreen
                 Debug.Log("Displaying splashscreen...");
@@ -219,7 +219,7 @@ namespace Electron2D
                 RenderLayerManager.RenderAllLayersIgnorePostProcessing();
 
                 Glfw.SwapBuffers(Display.Window);
-                if(EngineSettings.GraphicsErrorCheckingEnabled) LogErrors();
+                if(ProjectSettings.GraphicsErrorCheckingEnabled) LogErrors();
                 PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
                 // -------------------------------
             }

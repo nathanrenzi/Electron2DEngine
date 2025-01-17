@@ -9,9 +9,10 @@ namespace Electron2D
         [STAThread]
         public static void Main(string[] args)
         {
-            AudioSystem.Initialize();
+            Settings settings = Settings.LoadSettingsFile();
+            AudioSystem.Initialize(settings.AudioMasterVolume);
             Game = new Build();
-            Game.Run();
+            Game.Run(settings);
         }
     }
 }
