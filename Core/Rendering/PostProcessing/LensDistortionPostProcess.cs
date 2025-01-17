@@ -32,7 +32,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
         {
             _shader.Use();
             _shader.SetVector2("resolution",
-                new Vector2(Program.Game.CurrentWindowWidth, Program.Game.CurrentWindowHeight));
+                new Vector2(Display.WindowSize.X, Display.WindowSize.Y));
             _shader.SetFloat("intensity", Intensity);
             _shader.SetColor("clearColor", ClearColor);
             readBuffer.AttachedTexture.Use(OpenGL.GL.GL_TEXTURE0);

@@ -163,7 +163,7 @@ namespace Electron2D.Core
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
 
             GlobalUI.MainCanvas.Initialize();
-            if(PostProcessingEnabled) PostProcessor.Instance.Initialize();
+            PostProcessor.Instance.Initialize();
             GC.Collect();
 
             Debug.Log("Initialization complete");

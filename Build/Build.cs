@@ -5,8 +5,7 @@ using Electron2D.Core.Misc;
 using Electron2D.Core.Rendering;
 using Electron2D.Core.Rendering.PostProcessing;
 using Electron2D.Core.Rendering.Shaders;
-using Electron2D;
-using Electron2D.Core.Management;
+using System.Drawing;
 
 public class Build : Game
 {
@@ -20,8 +19,6 @@ public class Build : Game
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
-
-        Sprite s = new Sprite(Material.Create(GlobalShaders.DefaultTexture, Color.Red));
     }
 
     // This is ran every frame

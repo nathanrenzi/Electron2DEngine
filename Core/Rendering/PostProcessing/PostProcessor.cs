@@ -75,7 +75,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
             if (!_initialized) return;
 
             _renderBuffer.Bind();
-            Color clearColor = Program.Game.BackgroundColor;
+            Color clearColor = Game.BackgroundColor;
             glClearColor(clearColor.R / 255f, clearColor.G / 255f, clearColor.B / 255f, clearColor.A / 255f);
             glClear(GL_COLOR_BUFFER_BIT);
         }
@@ -84,8 +84,8 @@ namespace Electron2D.Core.Rendering.PostProcessing
         {
             if (!_initialized) return;
 
-            int width = Program.Game.CurrentWindowWidth;
-            int height = Program.Game.CurrentWindowHeight;
+            int width = (int)Display.WindowSize.X;
+            int height = (int)Display.WindowSize.Y;
             _renderBuffer.BindRead();
             _frameBuffer1.BindWrite();
             _readingBuffer1 = true;

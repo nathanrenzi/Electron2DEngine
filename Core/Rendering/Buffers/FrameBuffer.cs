@@ -18,7 +18,7 @@ namespace Electron2D.Core.Rendering
 
             if(attachTexture2D)
             {
-                AttachedTexture = TextureFactory.Create(Program.Game.CurrentWindowWidth, Program.Game.CurrentWindowHeight,
+                AttachedTexture = TextureFactory.Create((int)Display.WindowSize.X, (int)Display.WindowSize.Y,
                     GL_RGB, GL_NEAREST, GL_CLAMP_TO_EDGE);
                 AttachedTexture.Use(GL_TEXTURE0);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, AttachedTexture.Handle, 0);
@@ -31,12 +31,13 @@ namespace Electron2D.Core.Rendering
                 // Handling multisampled vs nonmultisampled renderbuffers
                 if(glRenderBufferSamples <= 1)
                 {
-                    glRenderbufferStorage(GL_RENDERBUFFER, glRenderBufferFormatSetting, Program.Game.CurrentWindowWidth, Program.Game.CurrentWindowHeight);
+                    glRenderbufferStorage(GL_RENDERBUFFER, glRenderBufferFormatSetting, (int)Display.WindowSize.X,
+                        (int)Display.WindowSize.Y);
                 }
                 else
                 {
                     glRenderbufferStorageMultisample(GL_RENDERBUFFER, glRenderBufferSamples, glRenderBufferFormatSetting,
-                        Program.Game.CurrentWindowWidth, Program.Game.CurrentWindowHeight);
+                        (int)Display.WindowSize.X, (int)Display.WindowSize.Y);
                 }
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, glRenderBufferAttachmentSetting, GL_RENDERBUFFER, RenderBufferID);
                 glBindRenderbuffer(0);

@@ -26,7 +26,7 @@ namespace Electron2D.Core.Rendering.PostProcessing
         {
             _shader.Use();
             _shader.SetVector2("resolution",
-                new Vector2(Program.Game.CurrentWindowWidth, Program.Game.CurrentWindowHeight));
+                new Vector2(Display.WindowSize.X, Display.WindowSize.Y));
             _shader.SetFloat("intensity", Intensity);
             _shader.SetFloat("redOffset", RedOffset);
             _shader.SetFloat("greenOffset", GreenOffset);
