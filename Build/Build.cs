@@ -1,10 +1,6 @@
 ﻿using Electron2D;
 using Electron2D.Core;
 using Electron2D.Core.Management;
-using Electron2D.Core.Misc;
-using Electron2D.Core.Rendering;
-using Electron2D.Core.Rendering.PostProcessing;
-using Electron2D.Core.Rendering.Shaders;
 using System.Drawing;
 
 public class Build : Game
