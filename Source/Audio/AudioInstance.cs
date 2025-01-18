@@ -1,4 +1,6 @@
-﻿namespace Electron2D.Audio
+﻿using NAudio.Wave;
+
+namespace Electron2D.Audio
 {
     public class AudioInstance : IDisposable
     {
@@ -12,6 +14,7 @@
         public float Panning { get; set; }
         public float PanningAdditive { get; set; } = 0.0f;
         public float Pitch { get; set; }
+
         public bool IsLoop
         {
             get
@@ -49,6 +52,16 @@
         public void SetSpatializerReference(AudioSpatializer _spatializer)
         {
             spatializer = _spatializer;
+        }
+
+        /// <summary>
+        /// Adds an audio effect to this audio instance. Must be added before the audio instance is played.
+        /// </summary>
+        /// <param name="effect"></param>
+        public void AddEffect(IAudioEffect effect)
+        {
+            effect.Initialize(Stream.SampleProvider);
+            Stream.SampleProvider = effect;
         }
 
         public void Play()

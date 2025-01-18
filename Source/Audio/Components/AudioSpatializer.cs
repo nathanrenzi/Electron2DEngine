@@ -12,14 +12,23 @@ namespace Electron2D.Audio
         public float PanningSpatializationMultiplier { get; set; } = 1.0f;
         public float VolumeSpatializationMultiplier { get; set; } = 1.0f;
         public bool Is3D { get; }
-        // add bezier curve for falloff
-
+        public Curve FalloffCurve { get; set;  }
         public float DirectionBasedPanning { get; private set; }
         public float DistanceBasedVolumeMultiplier01 { get; private set; }
 
         private Transform transform;
 
-        public AudioSpatializer(bool _is3D, AudioInstance[] _audioInstances)
+        public AudioSpatializer(bool _is3D, AudioInstance _audioInstance, Curve _falloffCurve = null)
+        {
+            Is3D = _is3D;
+
+            AddAudioInstance(_audioInstance);
+
+            FalloffCurve = _falloffCurve;
+            AudioSpatializerSystem.Register(this);
+        }
+
+        public AudioSpatializer(bool _is3D, AudioInstance[] _audioInstances, Curve _falloffCurve = null)
         {
             Is3D = _is3D;
 
@@ -28,13 +37,15 @@ namespace Electron2D.Audio
                 AddAudioInstance(_audioInstances[i]);
             }
 
+            FalloffCurve = _falloffCurve;
             AudioSpatializerSystem.Register(this);
         }
 
-        public AudioSpatializer(bool _is3D)
+        public AudioSpatializer(bool _is3D, Curve _falloffCurve = null)
         {
             Is3D = _is3D;
 
+            FalloffCurve = _falloffCurve;
             AudioSpatializerSystem.Register(this);
         }
 

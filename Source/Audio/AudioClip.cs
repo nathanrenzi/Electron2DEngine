@@ -30,6 +30,11 @@ namespace Electron2D.Audio
             }
         }
 
+        ~AudioClip()
+        {
+            ResourceManager.Instance.RemoveAudioClip(this);
+        }
+
         public AudioStream GetNewStream(AudioInstance _instance, bool _is3D, IPanStrategy _panStrategy = null)
         {
             return new AudioStream(_instance, new AudioFileReader(FileName), _is3D, _panStrategy);

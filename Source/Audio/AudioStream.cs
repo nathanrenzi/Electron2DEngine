@@ -6,7 +6,7 @@ namespace Electron2D.Audio
     public class AudioStream : WaveStream
     {
         public Action OnStreamEnd { get; set; }
-        public ISampleProvider SampleProvider { get; private set; }
+        public ISampleProvider SampleProvider { get; set; }
         public IPanStrategy PanStrategy { get; }
         public bool Is3D { get; }
 

@@ -1,4 +1,5 @@
 ﻿using Electron2D;
+using Electron2D.Audio;
 using System.Drawing;
 
 public class Build : Game
@@ -13,6 +14,11 @@ public class Build : Game
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
+        AudioInstance instance = new AudioInstance(
+            ResourceManager.Instance.LoadAudioClip("Resources/Built-In/Audio/TestAudio.mp3"),
+            1, 1, true);
+        instance.AddEffect(new AudioReverbEffect(.05f, 10f, 0.2f, 0.1f));
+        instance.Play();
     }
 
     // This is ran every frame
