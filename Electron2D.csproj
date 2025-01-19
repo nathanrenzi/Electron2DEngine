@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <None Remove="Resources\Built-In\Audio\TestAudio.mp3" />
+    <None Remove="Resources\Built-In\Audio\TestAudio2.mp3" />
     <None Remove="Source\Audio\Electron2DFmodBank.bank" />
     <None Remove="Source\Audio\Electron2DRiff.mp3" />
     <None Remove="Source\DefaultSettings.json" />
@@ -38,6 +39,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\Built-In\Audio\TestAudio.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Built-In\Audio\TestAudio2.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\ChromaticAberration.glsl">
