@@ -37,7 +37,7 @@ namespace Electron2D.Audio
             Quality = quality;
             DryWetMix = dryWetMix;
             _combFilters = new CombFilter[quality];
-            Settings = settings;
+            Settings = new ReverbFilterSettings(settings);
         }
 
         public void Initialize(ISampleProvider sampleProvider)
@@ -46,6 +46,16 @@ namespace Electron2D.Audio
             _initialized = true;
             SetFilterSettings(Settings);
             SetupCombFilters();
+        }
+
+        public void SetDecayTime(float decayTimeInSeconds)
+        {
+            Settings.DecayTimeInSeconds = decayTimeInSeconds;
+        }
+
+        public void SetDampening(float dampening)
+        {
+            Settings.Dampening = MathEx.Clamp01(dampening);
         }
 
         public void SetFilterSettings(ReverbFilterSettings settings)
