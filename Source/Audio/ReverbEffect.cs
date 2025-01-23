@@ -6,20 +6,7 @@ namespace Electron2D.Audio
 {
     public class ReverbEffect : IAudioEffect, ISampleProvider
     {
-        public ReverbAllPassSettings AllPassSettings { get; private set; }
-        public float DecayTimeInSeconds { get; private set; }
-        public float Dampening
-        {
-            get
-            {
-                return _damping;
-            }
-            set
-            {
-                _damping = MathEx.Clamp01(value);
-            }
-        }
-        private float _damping;
+        public ReverbFilterSettings Settings { get; private set; }
         public float DryWetMix
         {
             get
@@ -45,35 +32,34 @@ namespace Electron2D.Audio
         private const float _offsetMax = 1.05f;
         private bool _initialized = false;
 
-        public ReverbEffect(float decayTimeInSeconds, float dampening, float dryWetMix, int quality = 40)
+        public ReverbEffect(ReverbFilterSettings settings, float dryWetMix, int quality = 40)
         {
             Quality = quality;
-            DecayTimeInSeconds = decayTimeInSeconds;
-            Dampening = dampening;
             DryWetMix = dryWetMix;
             _combFilters = new CombFilter[quality];
-            AllPassSettings = new ReverbAllPassSettings();
+            Settings = settings;
         }
 
         public void Initialize(ISampleProvider sampleProvider)
         {
             Source = sampleProvider;
             _initialized = true;
-            SetAllPassSettings(AllPassSettings);
+            SetFilterSettings(Settings);
             SetupCombFilters();
         }
 
-        public void SetAllPassSettings(ReverbAllPassSettings settings)
+        public void SetFilterSettings(ReverbFilterSettings settings)
         {
-            AllPassSettings = settings;
+            Settings = settings;
             if (_initialized )
             {
+                settings.Dampening = MathEx.Clamp01(settings.Dampening);
                 _allPassFilter1 = BiQuadFilter.AllPassFilter(WaveFormat.SampleRate,
-                    AllPassSettings.Frequency1, AllPassSettings.Resonance1);
+                    settings.AllPassFrequency1, settings.AllPassResonance1);
                 _allPassFilter2 = BiQuadFilter.AllPassFilter(WaveFormat.SampleRate,
-                    AllPassSettings.Frequency2, AllPassSettings.Resonance2);
+                    settings.AllPassFrequency2, settings.AllPassResonance2);
                 _allPassFilter3 = BiQuadFilter.AllPassFilter(WaveFormat.SampleRate,
-                    AllPassSettings.Frequency3, AllPassSettings.Resonance3);
+                    settings.AllPassFrequency3, settings.AllPassResonance3);
             }
         }
 
@@ -82,8 +68,8 @@ namespace Electron2D.Audio
             for (int i = 0; i < _combFilters.Length; i++)
             {
                 float offset = 1 / Quality * GetRandomOffset();
-                float decayTimeInSeconds = DecayTimeInSeconds - (offset * i * i);
-                _combFilters[i] = new CombFilter((int)(decayTimeInSeconds * Source.WaveFormat.SampleRate), Dampening);
+                float decayTimeInSeconds = Settings.DecayTimeInSeconds - (offset * i * i);
+                _combFilters[i] = new CombFilter((int)(decayTimeInSeconds * Source.WaveFormat.SampleRate), Settings.Dampening);
             }
         }
 
@@ -113,34 +99,6 @@ namespace Electron2D.Audio
             }
 
             return samplesRead;
-        }
-
-        public struct ReverbAllPassSettings
-        {
-            public float Frequency1;
-            public float Resonance1;
-            public float Frequency2;
-            public float Resonance2;
-            public float Frequency3;
-            public float Resonance3;
-
-            public static ReverbAllPassSettings NormalRoom = new ReverbAllPassSettings(80, 0.7f, 200, 1.0f, 400, 1.2f);
-            public static ReverbAllPassSettings LargeRoom = new ReverbAllPassSettings(100f, 0.6f, 300f, 0.8f, 800f, 1.0f);
-            public static ReverbAllPassSettings SmallRoom = new ReverbAllPassSettings(120f, 0.5f, 250f, 0.7f, 500f, 1.0f);
-            public static ReverbAllPassSettings BrightStudio = new ReverbAllPassSettings(150f, 0.5f, 400f, 0.9f, 1200f, 1.2f);
-            public static ReverbAllPassSettings Cave = new ReverbAllPassSettings(80f, 0.7f, 200f, 0.9f, 600f, 1.1f);
-            public static ReverbAllPassSettings WarmConcertHall = new ReverbAllPassSettings(90f, 0.6f, 350f, 0.8f, 900f, 1.0f);
-
-            public ReverbAllPassSettings(float frequency1, float resonance1, float frequency2, float resonance2,
-                float frequency3, float resonance3)
-            {
-                Frequency1 = frequency1;
-                Resonance1 = resonance1;
-                Frequency2 = frequency2;
-                Resonance2 = resonance2;
-                Frequency3 = frequency3;
-                Resonance3 = resonance3;
-            }
         }
     }
 }
