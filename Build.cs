@@ -17,7 +17,8 @@ public class Build : Game
         AudioInstance instance = new AudioInstance(
             ResourceManager.Instance.LoadAudioClip("Resources/Built-In/Audio/TestAudio2.mp3"),
             1, 1, true);
-        ReverbEffect r = new ReverbEffect(ReverbFilterSettings.NormalRoom, 1, 200);
+        instance.Pitch = 1f;
+        ReverbEffect r = new ReverbEffect(ReverbFilterSettings.LargeRoom, 1, 40);
         instance.AddEffect(r);
         instance.Play();
     }
