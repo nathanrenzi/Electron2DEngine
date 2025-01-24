@@ -11,87 +11,90 @@ namespace Electron2D.Audio
         {
             get
             {
-                return masterVolumeSampleProvider.Volume;
+                return _masterVolumeSampleProvider.Volume;
             }
             set
             {
-                masterVolumeSampleProvider.Volume = value;
+                _masterVolumeSampleProvider.Volume = value;
             }
         }
 
-        private static Dictionary<string, AudioClip> cachedClips = new Dictionary<string, AudioClip>();
-        private static IWavePlayer outputDevice;
-        private static MixingSampleProvider mixer;
-        private static VolumeSampleProvider masterVolumeSampleProvider;
+        private static Dictionary<string, AudioClip> _cachedClips = new Dictionary<string, AudioClip>();
+        private static IWavePlayer _outputDevice;
+        private static MixingSampleProvider _mixer;
+        private static VolumeSampleProvider _masterVolumeSampleProvider;
 
-        public static void Initialize(float _masterVolume, int _sampleRate = 44100, int _channelCount = 2)
+        public static void Initialize(float masterVolume, int sampleRate = 44100, int channelCount = 2)
         {
-            outputDevice = new WasapiOut(NAudio.CoreAudioApi.AudioClientShareMode.Shared, 50);
-            mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(_sampleRate, _channelCount));
-            mixer.ReadFully = true;
-            masterVolumeSampleProvider = new VolumeSampleProvider(mixer);
-            MasterVolume = MathEx.Clamp(_masterVolume, 0, 2);
-            outputDevice.Init(masterVolumeSampleProvider);
-            outputDevice.Play();
+            _outputDevice = new WasapiOut(NAudio.CoreAudioApi.AudioClientShareMode.Shared, 0);
+            _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channelCount));
+            _mixer.ReadFully = true;
+            _masterVolumeSampleProvider = new VolumeSampleProvider(_mixer);
+            MasterVolume = MathEx.Clamp(masterVolume, 0, 2);
+            _outputDevice.Init(_masterVolumeSampleProvider);
+            _outputDevice.Play();
         }
 
-        public static AudioInstance CreateInstance(string _fileName, float _volume = 1, float _pitch = 1, bool _isLoop = false)
+        public static AudioInstance CreateInstance(string fileName, float volume = 1, float pitch = 1, bool isLoop = false)
         {
             AudioClip clip;
-            if(cachedClips.ContainsKey(_fileName))
+            if(_cachedClips.ContainsKey(fileName))
             {
-                clip = cachedClips[_fileName];
+                clip = _cachedClips[fileName];
             }
             else
             {
-                clip = new AudioClip(_fileName);
-                cachedClips.Add(_fileName, clip);
+                clip = new AudioClip(fileName);
+                _cachedClips.Add(fileName, clip);
             }
 
-            return new AudioInstance(clip, _volume, _pitch, _isLoop);
+            return new AudioInstance(clip, volume, pitch, isLoop);
         }
 
-        public static AudioInstance CreateInstance(AudioClip _clip, float _volume = 1, float _pitch = 1, bool _isLoop = false)
+        public static AudioInstance CreateInstance(AudioClip clip, float volume = 1, float pitch = 1, bool isLoop = false)
         {
-            return new AudioInstance(_clip, _volume, _pitch, _isLoop);
+            return new AudioInstance(clip, volume, pitch, isLoop);
         }
 
-        public static AudioClip LoadClip(string _fileName)
+        public static AudioClip LoadClip(string fileName)
         {
-            if (cachedClips.ContainsKey(_fileName))
+            if (_cachedClips.ContainsKey(fileName))
             {
-                return cachedClips[_fileName];
+                return _cachedClips[fileName];
             }
             else
             {
-                AudioClip clip = new AudioClip(_fileName);
-                cachedClips.Add(_fileName, clip);
+                AudioClip clip = new AudioClip(fileName);
+                _cachedClips.Add(fileName, clip);
                 return clip;
             }
         }
 
-        public static void PlayAudioInstance(AudioInstance _audioInstance)
+        public static void PlayAudioInstance(AudioInstance audioInstance)
         {
-            mixer.AddMixerInput(ConvertToRightChannelCount(_audioInstance.Stream.SampleProvider));
+            if (_mixer.MixerInputs.Contains(audioInstance.Stream.SampleProvider)) return;
+            _mixer.AddMixerInput(ConvertToRightChannelCount(audioInstance.Stream.SampleProvider));
         }
 
-        private static ISampleProvider ConvertToRightChannelCount(ISampleProvider _input)
+        private static ISampleProvider ConvertToRightChannelCount(ISampleProvider input)
         {
-            if (_input.WaveFormat.Channels == mixer.WaveFormat.Channels)
+            if (input.WaveFormat.Channels == _mixer.WaveFormat.Channels)
             {
-                return _input;
+                return input;
             }
-            if (_input.WaveFormat.Channels == 1 && mixer.WaveFormat.Channels == 2)
+            if (input.WaveFormat.Channels == 1 && _mixer.WaveFormat.Channels == 2)
             {
-                return new MonoToStereoSampleProvider(_input);
+                return new MonoToStereoSampleProvider(input);
             }
             throw new NotImplementedException("Not yet implemented this channel count conversion");
         }
 
         public static void Dispose()
         {
-            mixer.RemoveAllMixerInputs();
-            cachedClips.Clear();
+            _mixer.RemoveAllMixerInputs();
+            _cachedClips.Clear();
+            _outputDevice.Stop();
+            _outputDevice.Dispose();
         }
     }
 }

@@ -37,21 +37,21 @@ namespace Electron2D.UserInterface
 
         private void SetComponentSizes()
         {
-            float expandXSize = parent.SizeX - (Padding.X + Padding.Y);
-            float expandYSize = parent.SizeY - (Padding.Z + Padding.W);
+            float expandXSize = _parent.SizeX - (Padding.X + Padding.Y);
+            float expandYSize = _parent.SizeY - (Padding.Z + Padding.W);
 
             if(Direction == ListDirection.Vertical)
             {
-                expandYSize -= (components.Count - 1) * Spacing;
-                expandYSize /= components.Count;
+                expandYSize -= (Components.Count - 1) * Spacing;
+                expandYSize /= Components.Count;
             }
             else
             {
-                expandXSize -= (components.Count - 1) * Spacing;
-                expandXSize /= components.Count;
+                expandXSize -= (Components.Count - 1) * Spacing;
+                expandXSize /= Components.Count;
             }
 
-            foreach (var component in components)
+            foreach (var component in Components)
             {
                 // Size X
                 if(ControlSizeMode is SizeMode.Width or SizeMode.WidthHeight)
@@ -82,8 +82,8 @@ namespace Electron2D.UserInterface
 
             Vector2 anchor = Vector2.Zero;
 
-            float totalSize = ((components.Count - 1) * Spacing);
-            foreach (var component in components)
+            float totalSize = ((Components.Count - 1) * Spacing);
+            foreach (var component in Components)
             {
                 totalSize += Direction == ListDirection.Vertical ? component.SizeY : component.SizeX;
             }
@@ -91,15 +91,15 @@ namespace Electron2D.UserInterface
             switch (VerticalAlignment)
             {
                 case LayoutAlignment.Top:
-                    yPosition = parent.TopYBound - Padding.Z;
+                    yPosition = _parent.TopYBound - Padding.Z;
                     anchor.Y = 1;
                     break;
                 case LayoutAlignment.Center:
-                    yPosition = Direction == ListDirection.Vertical ? parent.TopYBound - (totalSize / 2f) : 0;
+                    yPosition = Direction == ListDirection.Vertical ? _parent.TopYBound - (totalSize / 2f) : 0;
                     anchor.Y = 0;
                     break;
                 case LayoutAlignment.Bottom:
-                    yPosition = parent.BottomYBound + Padding.W;
+                    yPosition = _parent.BottomYBound + Padding.W;
                     anchor.Y = -1;
                     break;
             }
@@ -107,23 +107,23 @@ namespace Electron2D.UserInterface
             switch (HorizontalAlignment)
             {
                 case LayoutAlignment.Left:
-                    xPosition = parent.LeftXBound + Padding.X;
+                    xPosition = _parent.LeftXBound + Padding.X;
                     anchor.X = -1;
                     break;
                 case LayoutAlignment.Center:
-                    xPosition = Direction == ListDirection.Horizontal ? parent.RightXBound - (totalSize / 2f) : 0;
+                    xPosition = Direction == ListDirection.Horizontal ? _parent.RightXBound - (totalSize / 2f) : 0;
                     anchor.X = 0;
                     break;
                 case LayoutAlignment.Right:
-                    xPosition = parent.RightXBound - Padding.Y;
+                    xPosition = _parent.RightXBound - Padding.Y;
                     anchor.X = 1;
                     break;
             }
 
-            foreach (var component in components)
+            foreach (var component in Components)
             {
                 component.Anchor = anchor;
-                component.Transform.Position = new Vector2(xPosition, yPosition) + parent.Transform.Position;
+                component.Transform.Position = new Vector2(xPosition, yPosition) + _parent.Transform.Position;
 
                 if(Direction == ListDirection.Vertical)
                 {
@@ -152,7 +152,7 @@ namespace Electron2D.UserInterface
 
         private void UpdateComponentMeshes()
         {
-            foreach (var component in components)
+            foreach (var component in Components)
             {
                 component.UpdateMesh();
             }

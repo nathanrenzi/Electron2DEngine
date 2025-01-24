@@ -24,7 +24,7 @@ namespace Electron2D.Audio
             Is3D = _is3D;
 
             volumeSampleProvider = new VolumeSampleProvider(this.ToSampleProvider());
-            pitchShiftingSampleProvider = new SmbPitchShiftingSampleProvider(volumeSampleProvider, 1024, 8, 1);
+            //pitchShiftingSampleProvider = new SmbPitchShiftingSampleProvider(volumeSampleProvider, 1024, 8, 1);
             if (_panStrategy == null)
             {
                 PanStrategy = new SinPanStrategy();
@@ -36,14 +36,16 @@ namespace Electron2D.Audio
 
             if(Is3D)
             {
-                panningSampleProvider = new PanningSampleProvider(pitchShiftingSampleProvider.ToMono());
+                //panningSampleProvider = new PanningSampleProvider(pitchShiftingSampleProvider.ToMono());
+                panningSampleProvider = new PanningSampleProvider(volumeSampleProvider.ToMono());
                 panningSampleProvider.PanStrategy = PanStrategy;
 
                 SampleProvider = panningSampleProvider;
             }
             else
             {
-                SampleProvider = pitchShiftingSampleProvider;
+                //SampleProvider = pitchShiftingSampleProvider;
+                SampleProvider = volumeSampleProvider;
             }
         }
 
@@ -66,7 +68,7 @@ namespace Electron2D.Audio
             if(audioInstance.PlaybackState == PlaybackState.Playing)
             {
                 volumeSampleProvider.Volume = audioInstance.Volume * audioInstance.VolumeMultiplier;
-                pitchShiftingSampleProvider.PitchFactor = audioInstance.Pitch;
+                //pitchShiftingSampleProvider.PitchFactor = audioInstance.Pitch;
                 if(Is3D) panningSampleProvider.Pan = MathEx.Clamp(audioInstance.Panning + audioInstance.PanningAdditive, -1, 1);
 
                 while (totalBytesRead < _count)
@@ -87,14 +89,10 @@ namespace Electron2D.Audio
                 }
                 return totalBytesRead;
             }
-            else if(audioInstance.PlaybackState == PlaybackState.Stopped)
-            {
-                return 0;
-            }
             else
             {
                 volumeSampleProvider.Volume = 0.0f;
-                return _count;
+                return 0;
             }
         }
     }

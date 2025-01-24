@@ -666,11 +666,19 @@ namespace Electron2D.PhysicsBox2D
 
             public override void SayGoodbye(Fixture fixture)
             {
-                foreach (var rigidbody in RigidbodySystem.GetComponents())
+                foreach (var rigidbody in Rigidbody.Rigidbodies)
                 {
                     if (rigidbody.ID == fixture.Body.GetUserData<uint>())
                     {
                         rigidbody.Dispose();
+                    }
+                }
+
+                foreach (var sensor in RigidbodySensor.Sensors)
+                {
+                    if (sensor.ID == fixture.Body.GetUserData<uint>())
+                    {
+                        sensor.Dispose();
                     }
                 }
             }

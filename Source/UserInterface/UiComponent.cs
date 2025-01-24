@@ -2,83 +2,81 @@
 using Electron2D.Rendering;
 using System.Drawing;
 using Electron2D.Rendering.Shaders;
-using Electron2D.ECS;
 
 namespace Electron2D.UserInterface
 {
-    public abstract class UiComponent : Entity, IRenderable
+    public abstract class UiComponent : IRenderable
     {
         public bool Visible
         {
-            get => visible;
+            get => _visible;
             set
             {
-                visible = value;
+                _visible = value;
                 InvokeUiAction(UiEvent.Visibility);
             }
         }
-        private bool visible = true;
-        private bool ignorePostProcessing { get; }
+        private bool _visible = true;
+        private bool _ignorePostProcessing { get; }
         public bool UsingMeshRenderer { get; }
         public bool UseScreenPosition
         {
-            get => useScreenPosition;
+            get => _useScreenPosition;
             set
             {
-                useScreenPosition = value;
-                if (meshRenderer != null) meshRenderer.UseUnscaledProjectionMatrix = value;
+                _useScreenPosition = value;
+                if (Renderer != null) Renderer.UseUnscaledProjectionMatrix = value;
             }
         }
-        private bool useScreenPosition;
-        private bool registerRenderable;
+        private bool _useScreenPosition;
+        private bool _registerRenderable;
         public float SizeX
         {
-            get { return sizeX; }
+            get { return _sizeX; }
             set
             {
-                sizeX = value;
+                _sizeX = value;
                 InvokeUiAction(UiEvent.Resize);
                 UpdateMesh();
             }
         }
-        private float sizeX;
+        private float _sizeX;
         public float SizeY
         {
-            get { return sizeY; }
+            get { return _sizeY; }
             set
             {
-                sizeY = value;
+                _sizeY = value;
                 InvokeUiAction(UiEvent.Resize);
                 UpdateMesh();
             }
         }
-        private float sizeY;
+        private float _sizeY;
         public Vector2 Anchor
         {
-            get => anchor;
+            get => _anchor;
             set
             {
-                anchor = value;
+                _anchor = value;
                 InvokeUiAction(UiEvent.Anchor);
                 UpdateMesh();
             }
         }
-        private Vector2 anchor;
+        private Vector2 _anchor;
 
-        public Transform Transform;
+        public MeshRenderer Renderer { get; private set; }
+        public Transform Transform { get; private set; }
         public int UiRenderLayer { get; private set; }
+        public bool Interactable { get; set; } = true;
+        public float ExtraInteractionPixels { get; set; }
         public List<UiListener> Listeners { get; private set; } = new List<UiListener>();
         public LayoutGroup ChildLayoutGroup { get; private set; }
         public UiCanvas.UiFrameTickData ThisFrameData = new UiCanvas.UiFrameTickData();
         public UiCanvas.UiFrameTickData LastFrameData = new UiCanvas.UiFrameTickData();
         public UiConstraints Constraints;
 
-        protected bool isLoaded = false;
-        protected MeshRenderer meshRenderer;
-        private UiCanvas ParentCanvas;
-
-        public bool Interactable = true;
-        public float ExtraInteractionPixels;
+        protected bool _isLoaded = false;
+        private UiCanvas _parentCanvas;
         public float RightXBound
         {
             get
@@ -108,64 +106,32 @@ namespace Electron2D.UserInterface
             }
         }
 
-        public bool ShowBoundsDebug
-        {
-            get => showBoundsDebug;
-            set
-            {
-                showBoundsDebug = value;
-
-                // Creating the sprites for the bounds.
-                if (s1 == null && showBoundsDebug)
-                {
-                    // Initializing debug sprites
-                    Shader shader = GlobalShaders.DefaultTexture;
-                    s1 = new Sprite(Material.Create(shader, Color.Black), _renderLayer: (int)RenderLayer.Interface + 100);
-                    s1.Renderer.UseUnscaledProjectionMatrix = true;
-                    s2 = new Sprite(Material.Create(shader, Color.Black), _renderLayer: (int)RenderLayer.Interface + 100);
-                    s2.Renderer.UseUnscaledProjectionMatrix = true;
-                    s3 = new Sprite(Material.Create(shader, Color.Black), _renderLayer: (int)RenderLayer.Interface + 100);
-                    s3.Renderer.UseUnscaledProjectionMatrix = true;
-                    s4 = new Sprite(Material.Create(shader, Color.Black), _renderLayer: (int)RenderLayer.Interface + 100);
-                    s4.Renderer.UseUnscaledProjectionMatrix = true;
-                    s1.Transform.Scale = Vector2.Zero;
-                    s2.Transform.Scale = Vector2.Zero;
-                    s3.Transform.Scale = Vector2.Zero;
-                    s4.Transform.Scale = Vector2.Zero;
-                }
-            }
-        }
-        private bool showBoundsDebug = false;
-        private Sprite s1, s2, s3, s4;
-
-        public UiComponent(bool _ignorePostProcessing, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100, int _extraInteractionSize = 0,
-            bool _initialize = true, bool _useScreenPosition = true, bool _useMeshRenderer = true, bool _autoRender = true)
+        public UiComponent(bool ignorePostProcessing, int uiRenderLayer = 0, int sizeX = 100, int sizeY = 100, int extraInteractionSize = 0,
+            bool initialize = true, bool useScreenPosition = true, bool useMeshRenderer = true, bool autoRender = true)
         {
             Transform = new Transform();
             Transform.OnPositionChanged += () => InvokeUiAction(UiEvent.Position);
 
-            AddComponent(Transform);
-            SizeX = _sizeX;
-            SizeY = _sizeY;
+            SizeX = sizeX;
+            SizeY = sizeY;
             Constraints = new UiConstraints(this);
-            UiRenderLayer = _uiRenderLayer;
-            UseScreenPosition = _useScreenPosition;
-            UsingMeshRenderer = _useMeshRenderer;
-            registerRenderable = _autoRender;
-            ExtraInteractionPixels = _extraInteractionSize;
-            ignorePostProcessing = _ignorePostProcessing;
+            UiRenderLayer = uiRenderLayer;
+            UseScreenPosition = useScreenPosition;
+            UsingMeshRenderer = useMeshRenderer;
+            _registerRenderable = autoRender;
+            ExtraInteractionPixels = extraInteractionSize;
+            _ignorePostProcessing = ignorePostProcessing;
 
             if (UsingMeshRenderer)
             {
-                meshRenderer = new MeshRenderer(Transform, Material.Create(GlobalShaders.DefaultInterface));
-                AddComponent(meshRenderer);
-                if (UseScreenPosition) meshRenderer.UseUnscaledProjectionMatrix = true;
+                Renderer = new MeshRenderer(Transform, Material.Create(GlobalShaders.DefaultInterface));
+                if (UseScreenPosition) Renderer.UseUnscaledProjectionMatrix = true;
             }
 
-            if (_initialize) Initialize();
+            if (initialize) Initialize();
             SetColor(Color.White);
 
-            if (_autoRender)
+            if (autoRender)
             {
                 RenderLayerManager.OrderRenderable(this);
             }
@@ -174,41 +140,41 @@ namespace Electron2D.UserInterface
 
         public bool ShouldIgnorePostProcessing()
         {
-            return ignorePostProcessing;
+            return _ignorePostProcessing;
         }
 
         ~UiComponent()
         {
-            if (registerRenderable) RenderLayerManager.RemoveRenderable(this);
+            if (_registerRenderable) RenderLayerManager.RemoveRenderable(this);
             GlobalUI.MainCanvas.UnregisterUiComponent(this);
         }
 
         public void Initialize()
         {
             ApplyConstraints();
-            if (isLoaded == false)
+            if (_isLoaded == false)
             {
                 Load();
-                isLoaded = true;
+                _isLoaded = true;
             }
         }
 
         protected virtual void Load()
         {
-            if (UsingMeshRenderer) meshRenderer.Load();
+            if (UsingMeshRenderer) Renderer.Load();
             InvokeUiAction(UiEvent.Load);
         }
 
         public virtual void UpdateMesh() { }
 
-        public virtual void SetColor(Color _color)
+        public virtual void SetColor(Color color)
         {
-            if (UsingMeshRenderer) meshRenderer.Material.MainColor = _color;
+            if (UsingMeshRenderer) Renderer.Material.MainColor = color;
         }
 
-        public void SetLayoutGroup(LayoutGroup _layoutGroup)
+        public void SetLayoutGroup(LayoutGroup layoutGroup)
         {
-            ChildLayoutGroup = _layoutGroup;
+            ChildLayoutGroup = layoutGroup;
             ChildLayoutGroup.SetUiParent(this);
         }
 
@@ -217,74 +183,62 @@ namespace Electron2D.UserInterface
             Constraints.ApplyConstraints();
         }
 
-        public void SetRenderLayer(int _uiRenderLayer)
+        public void SetRenderLayer(int uiRenderLayer)
         {
-            if (_uiRenderLayer == UiRenderLayer) return;
-            RenderLayerManager.OrderRenderable(this, true, UiRenderLayer + (int)RenderLayer.Interface, _uiRenderLayer + (int)RenderLayer.Interface);
-            UiRenderLayer = _uiRenderLayer;
+            if (uiRenderLayer == UiRenderLayer) return;
+            RenderLayerManager.OrderRenderable(this, true, UiRenderLayer + (int)RenderLayer.Interface, uiRenderLayer + (int)RenderLayer.Interface);
+            UiRenderLayer = uiRenderLayer;
         }
 
-        public virtual bool CheckBounds(Vector2 _position)
+        public virtual bool CheckBounds(Vector2 position)
         {
-            Vector2 pos = _position;
+            Vector2 pos = position;
 
             return pos.X >= LeftXBound + Transform.Position.X - ExtraInteractionPixels && pos.X <= RightXBound + Transform.Position.X + ExtraInteractionPixels
                 && pos.Y >= BottomYBound + Transform.Position.Y - ExtraInteractionPixels && pos.Y <= TopYBound + Transform.Position.Y + ExtraInteractionPixels;
         }
 
-        public void AddUiListener(UiListener _listener)
+        public void AddUiListener(UiListener listener)
         {
-            if (Listeners.Contains(_listener))
+            if (Listeners.Contains(listener))
             {
                 Debug.LogError("UI LISTENER: Trying to add a listener that is already registered.");
                 return;
             }
-            Listeners.Add(_listener);
+            Listeners.Add(listener);
         }
 
-        public void RemoveUiListener(UiListener _listener)
+        public void RemoveUiListener(UiListener listener)
         {
-            Listeners.Remove(_listener);
+            Listeners.Remove(listener);
         }
 
-        public void InvokeUiAction(UiEvent _event)
+        public void InvokeUiAction(UiEvent uiEvent)
         {
             for (int i = 0; i < Listeners.Count; i++)
             {
-                Listeners[i].OnUiAction(this, _event);
+                Listeners[i].OnUiAction(this, uiEvent);
             }
-            OnUiEvent(_event);
+            OnUiEvent(uiEvent);
         }
 
-        public void SetParentCanvas(UiCanvas _canvas)
+        public void SetParentCanvas(UiCanvas canvas)
         {
-            ParentCanvas = _canvas;
+            _parentCanvas = canvas;
         }
 
         public UiCanvas GetParentCanvas()
         {
-            return ParentCanvas;
+            return _parentCanvas;
         }
 
-        protected virtual void OnUiEvent(UiEvent _event) { }
+        protected virtual void OnUiEvent(UiEvent uiEvent) { }
 
         public virtual void Render()
         {
-            if (ShowBoundsDebug && s1 != null)
-            {
-                s1.Transform.Position = new Vector2(Transform.Position.X + LeftXBound, Transform.Position.Y + (SizeY / 2f * -Anchor.Y));
-                s1.Transform.Scale = new Vector2(1, SizeY);
-                s2.Transform.Position = new Vector2(Transform.Position.X + RightXBound, Transform.Position.Y + (SizeY / 2f * -Anchor.Y));
-                s2.Transform.Scale = new Vector2(1, SizeY);
-                s3.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + TopYBound);
-                s3.Transform.Scale = new Vector2(SizeX, 1);
-                s4.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + BottomYBound);
-                s4.Transform.Scale = new Vector2(SizeX, 1);
-            }
-
             if (Visible && UsingMeshRenderer)
             {
-                meshRenderer.Render();
+                Renderer.Render();
             }
         }
 
@@ -293,7 +247,7 @@ namespace Electron2D.UserInterface
 
     public interface UiListener
     {
-        public void OnUiAction(object _sender, UiEvent _event);
+        public void OnUiAction(object sender, UiEvent uiEvent);
     }
 
     public enum UiEvent

@@ -9,14 +9,13 @@ namespace Electron2D.Audio
     public class AudioClip
     {
         public string FileName { get; }
-        //public float[] AudioData { get; private set; }
         public WaveFormat WaveFormat { get; private set; }
         
-        public AudioClip(string _fileName)
+        public AudioClip(string fileName)
         {
-            FileName = _fileName;
+            FileName = fileName;
 
-            using (var audioFileReader = new AudioFileReader(_fileName))
+            using (var audioFileReader = new AudioFileReader(fileName))
             {       
                 WaveFormat = audioFileReader.WaveFormat;
                 var wholeFile = new List<float>((int)(audioFileReader.Length / 4));
@@ -26,7 +25,6 @@ namespace Electron2D.Audio
                 {
                     wholeFile.AddRange(readBuffer.Take(samplesRead));
                 }
-                //AudioData = wholeFile.ToArray();
             }
         }
 

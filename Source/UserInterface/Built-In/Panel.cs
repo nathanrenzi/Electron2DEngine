@@ -18,18 +18,18 @@ namespace Electron2D.UserInterface
         private List<float> tempVertexList = new List<float>();
 
         public Panel(Color _mainColor, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
-            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
+            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, _sizeY, useScreenPosition: _useScreenPosition)
         {
             GenerateVertices();
             SetColor(_mainColor);
-            meshRenderer.SetVertexArrays(Vertices, Indices);
+            Renderer.SetVertexArrays(Vertices, Indices);
         }
         public Panel(Material _material, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
-            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, _sizeY, _useScreenPosition: _useScreenPosition)
+            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, _sizeY, useScreenPosition: _useScreenPosition)
         {
             GenerateVertices();
-            meshRenderer.SetMaterial(_material);
-            meshRenderer.SetVertexArrays(Vertices, Indices);
+            Renderer.SetMaterial(_material);
+            Renderer.SetVertexArrays(Vertices, Indices);
         }
 
         private void GenerateVertices()
@@ -68,9 +68,9 @@ namespace Electron2D.UserInterface
 
         public override void UpdateMesh()
         {
-            if (meshRenderer == null) return;
+            if (Renderer == null) return;
             GenerateVertices();
-            meshRenderer.IsVertexDirty = true;
+            Renderer.IsVertexDirty = true;
         }
     }
 }

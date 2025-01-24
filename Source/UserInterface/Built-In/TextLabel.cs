@@ -11,33 +11,33 @@ namespace Electron2D.UserInterface
         {
             get
             {
-                return textRenderer.Text;
+                return Renderer.Text;
             }
             set
             {
-                textRenderer.Text = value;
+                Renderer.Text = value;
             }
         }
         public Color TextColor
         {
             get
             {
-                return textRenderer.TextColor;
+                return Renderer.TextColor;
             }
             set
             {
-                textRenderer.TextColor = value;
+                Renderer.TextColor = value;
             }
         }
         public Color OutlineColor
         {
             get
             {
-                return textRenderer.OutlineColor;
+                return Renderer.OutlineColor;
             }
             set
             {
-                textRenderer.OutlineColor = value;
+                Renderer.OutlineColor = value;
             }
         }
         public Vector2 Bounds
@@ -54,33 +54,33 @@ namespace Electron2D.UserInterface
         }
         public TextAlignment HorizontalAlignment
         {
-            get { return textRenderer.HorizontalAlignment; }
-            set { textRenderer.HorizontalAlignment = value; }
+            get { return Renderer.HorizontalAlignment; }
+            set { Renderer.HorizontalAlignment = value; }
         }
         public TextAlignment VerticalAlignment
         {
-            get { return textRenderer.VerticalAlignment; }
-            set { textRenderer.VerticalAlignment = value; }
+            get { return Renderer.VerticalAlignment; }
+            set { Renderer.VerticalAlignment = value; }
         }
         public TextAlignmentMode AlignmentMode
         {
-            get { return textRenderer.AlignmentMode; }
-            set { textRenderer.AlignmentMode = value; }
+            get { return Renderer.AlignmentMode; }
+            set { Renderer.AlignmentMode = value; }
         }
         public TextOverflowMode OverflowMode
         {
-            get { return textRenderer.OverflowMode; }
-            set { textRenderer.OverflowMode = value; }
+            get { return Renderer.OverflowMode; }
+            set { Renderer.OverflowMode = value; }
         }
 
-        private TextRenderer textRenderer;
+        public new TextRenderer Renderer { get; private set; }
         private FontGlyphStore fgh;
 
         public TextLabel(string _text, string _fontFile, int _fontSize, Color _textColor, Color _outlineColor,
             Vector2 _bounds, TextAlignment _horizontalAlignment = TextAlignment.Left, TextAlignment _verticalAlignment = TextAlignment.Top,
             TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline, TextOverflowMode _overflowMode = TextOverflowMode.Disabled,
             int _outlineSize = 0, int _uiRenderLayer = 0, Shader _customShader = null,
-            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, _useScreenPosition: _useScreenPosition, _useMeshRenderer: false)
+            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, useScreenPosition: _useScreenPosition, useMeshRenderer: false)
         {
             SizeX = _bounds.X;
             SizeY = _bounds.Y;
@@ -96,9 +96,8 @@ namespace Electron2D.UserInterface
             {
                 shader = GlobalShaders.DefaultText;
             }
-            textRenderer = new TextRenderer(Transform, fgh, shader, _text, _bounds, _textColor, _outlineColor,
+            Renderer = new TextRenderer(Transform, fgh, shader, _text, _bounds, _textColor, _outlineColor,
                 _horizontalAlignment, _verticalAlignment, _alignmentMode, _overflowMode);
-            AddComponent(textRenderer);
         }
 
         protected override void OnUiEvent(UiEvent _event)
@@ -106,15 +105,15 @@ namespace Electron2D.UserInterface
             switch(_event)
             {
                 case UiEvent.Resize:
-                    if (textRenderer != null)
+                    if (Renderer != null)
                     {
-                        textRenderer.Bounds = new Rectangle(0, 0, (int)SizeX, (int)SizeY);
+                        Renderer.Bounds = new Rectangle(0, 0, (int)SizeX, (int)SizeY);
                     }
                     break;
                 case UiEvent.Anchor:
-                    if(textRenderer != null)
+                    if(Renderer != null)
                     {
-                        textRenderer.Anchor = Anchor;
+                        Renderer.Anchor = Anchor;
                     }
                     break;
             }
@@ -123,7 +122,7 @@ namespace Electron2D.UserInterface
         public override void Render()
         {
             if (!Visible) return;
-            textRenderer.Render();
+            Renderer.Render();
         }
     }
 }

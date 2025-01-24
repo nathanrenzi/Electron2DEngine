@@ -5,7 +5,7 @@ namespace Electron2D.UserInterface
     /// <summary>
     /// A simple color-only slider component. Will be updated with a textured one.
     /// </summary>
-    public class Slider : UiComponent
+    public class Slider : UiComponent, IGameClass
     {
         /// <summary>
         /// Listens to UI events. Replace with a non-private listener class for all UI in the future.
@@ -91,73 +91,86 @@ namespace Electron2D.UserInterface
         public bool AllowNonHandleValueUpdates = true;
         public bool SliderInteractable;
 
-        private UiComponent backgroundPanel;
-        private UiComponent sliderPanel;
-        private UiComponent handlePanel;
-        private SliderListener handleListener = new SliderListener();
-        private SliderListener backgroundListener = new SliderListener();
+        private UiComponent _backgroundPanel;
+        private UiComponent _sliderPanel;
+        private UiComponent _handlePanel;
+        private SliderListener _handleListener = new SliderListener();
+        private SliderListener _backgroundListener = new SliderListener();
 
-        private bool initialized = false;
+        private bool _initialized = false;
 
-        public Slider(SliderDef _def, bool _useScreenPosition = true, int _uiRenderLayer = 0,
-            bool _ignorePostProcessing = false)
-            : base(_ignorePostProcessing, _uiRenderLayer, _def.SizeX, (int)MathF.Max(_def.SliderSizeY, _def.BackgroundSizeY),
-                0, true, _useScreenPosition, false, false)
+        public Slider(SliderDef def, bool useScreenPosition = true, int uiRenderLayer = 0,
+            bool ignorePostProcessing = false)
+            : base(ignorePostProcessing, uiRenderLayer, def.SizeX, (int)MathF.Max(def.SliderSizeY, def.BackgroundSizeY),
+                0, true, useScreenPosition, false, false)
         {
-            SliderSizeY = _def.SliderSizeY;
-            BackgroundSizeY = _def.BackgroundSizeY;
-            HandleSizeXY = _def.HandleSizeXY;
-            HandlePadding = _def.HandlePadding;
-            ForceWholeNumbers = _def.ForceWholeNumbers;
-            SliderInteractable = _def.Interactable;
-            AllowNonHandleValueUpdates = _def.AllowNonHandleValueUpdates;
-            MinValue = _def.MinValue;
-            MaxValue = _def.MaxValue;
-            Value = _def.InitialValue;
+            SliderSizeY = def.SliderSizeY;
+            BackgroundSizeY = def.BackgroundSizeY;
+            HandleSizeXY = def.HandleSizeXY;
+            HandlePadding = def.HandlePadding;
+            ForceWholeNumbers = def.ForceWholeNumbers;
+            SliderInteractable = def.Interactable;
+            AllowNonHandleValueUpdates = def.AllowNonHandleValueUpdates;
+            MinValue = def.MinValue;
+            MaxValue = def.MaxValue;
+            Value = def.InitialValue;
 
-            if(_def.BackgroundPanelDef != null)
+            if(def.BackgroundPanelDef != null)
             {
-                backgroundPanel = new SlicedPanel(_def.BackgroundMaterial, _def.SizeX, BackgroundSizeY,
-                    _def.BackgroundPanelDef, _uiRenderLayer, _ignorePostProcessing);
-                backgroundPanel.AddUiListener(backgroundListener);
+                _backgroundPanel = new SlicedPanel(def.BackgroundMaterial, def.SizeX, BackgroundSizeY,
+                    def.BackgroundPanelDef, uiRenderLayer, ignorePostProcessing);
+                _backgroundPanel.AddUiListener(_backgroundListener);
             }
             else
             {
-                backgroundPanel = new Panel(_def.BackgroundMaterial, _uiRenderLayer, _def.SizeX,
-                    _def.BackgroundSizeY, _useScreenPosition, _ignorePostProcessing);
-                backgroundPanel.AddUiListener(backgroundListener);
+                _backgroundPanel = new Panel(def.BackgroundMaterial, uiRenderLayer, def.SizeX,
+                    def.BackgroundSizeY, useScreenPosition, ignorePostProcessing);
+                _backgroundPanel.AddUiListener(_backgroundListener);
             }
 
-            if (_def.SliderPanelDef != null)
+            if (def.SliderPanelDef != null)
             {
-                sliderPanel = new SlicedPanel(_def.SliderMaterial, _def.SizeX - HandlePadding, SliderSizeY,
-                    _def.SliderPanelDef, _uiRenderLayer + 1, _ignorePostProcessing);
-                sliderPanel.Anchor = new Vector2(-1, 0);
+                _sliderPanel = new SlicedPanel(def.SliderMaterial, def.SizeX - HandlePadding, SliderSizeY,
+                    def.SliderPanelDef, uiRenderLayer + 1, ignorePostProcessing);
+                _sliderPanel.Anchor = new Vector2(-1, 0);
             }
             else
             {
-                sliderPanel = new Panel(_def.SliderMaterial, _uiRenderLayer + 1, _def.SizeX - HandlePadding,
-                    _def.SliderSizeY, _useScreenPosition, _ignorePostProcessing);
-                sliderPanel.Anchor = new Vector2(-1, 0);
+                _sliderPanel = new Panel(def.SliderMaterial, uiRenderLayer + 1, def.SizeX - HandlePadding,
+                    def.SliderSizeY, useScreenPosition, ignorePostProcessing);
+                _sliderPanel.Anchor = new Vector2(-1, 0);
             }
 
-            if (_def.HandlePanelDef != null)
+            if (def.HandlePanelDef != null)
             {
-                handlePanel = new SlicedPanel(_def.HandleMaterial, HandleSizeXY, HandleSizeXY,
-                    _def.HandlePanelDef, _uiRenderLayer + 2, _ignorePostProcessing);
-                handlePanel.AddUiListener(handleListener);
+                _handlePanel = new SlicedPanel(def.HandleMaterial, HandleSizeXY, HandleSizeXY,
+                    def.HandlePanelDef, uiRenderLayer + 2, ignorePostProcessing);
+                _handlePanel.AddUiListener(_handleListener);
             }
             else
             {
-                handlePanel = new Panel(_def.HandleMaterial, _uiRenderLayer + 2, _def.HandleSizeXY,
-                    _def.HandleSizeXY, _useScreenPosition, _ignorePostProcessing);
-                handlePanel.AddUiListener(handleListener);
+                _handlePanel = new Panel(def.HandleMaterial, uiRenderLayer + 2, def.HandleSizeXY,
+                    def.HandleSizeXY, useScreenPosition, ignorePostProcessing);
+                _handlePanel.AddUiListener(_handleListener);
             }
 
-            initialized = true;
+            _initialized = true;
 
             UpdateDisplay();
-            Game.UpdateEvent += OnUpdate_Interact;
+            Program.Game.RegisterGameClass(this);
+        }
+
+        ~Slider()
+        {
+            Dispose();
+        }
+
+        public void FixedUpdate() { }
+        public void Dispose()
+        {
+            Renderer.Dispose();
+            Program.Game.UnregisterGameClass(this);
+            GC.SuppressFinalize(this);
         }
 
         public override void UpdateMesh()
@@ -167,39 +180,39 @@ namespace Electron2D.UserInterface
 
         private void UpdateDisplay()
         {
-            if (!initialized) return;
+            if (!_initialized) return;
 
-            backgroundPanel.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
-            backgroundPanel.SizeX = SizeX;
-            backgroundPanel.SizeY = BackgroundSizeY;
+            _backgroundPanel.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
+            _backgroundPanel.SizeX = SizeX;
+            _backgroundPanel.SizeY = BackgroundSizeY;
 
             float endPosition = ((SizeX-HandlePadding*2) * Value01);
-            sliderPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding / 2f, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
-            sliderPanel.SizeX = endPosition + HandlePadding;
-            sliderPanel.SizeY = SliderSizeY;
+            _sliderPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding / 2f, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
+            _sliderPanel.SizeX = endPosition + HandlePadding;
+            _sliderPanel.SizeY = SliderSizeY;
 
-            handlePanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding + endPosition, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
+            _handlePanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding + endPosition, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
         }
 
-        private void OnUpdate_Interact()
+        public void Update()
         {
             if (!SliderInteractable) return;
 
-            if(backgroundListener.ClickHeld && AllowNonHandleValueUpdates)
+            if(_backgroundListener.ClickHeld && AllowNonHandleValueUpdates)
             {
                 Vector2 position = Input.GetOffsetMousePosition();
                 Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
             }
-            else if(handleListener.ClickHeld)
+            else if(_handleListener.ClickHeld)
             {
                 Vector2 position = Input.GetOffsetMousePosition();
                 Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
             }
         }
 
-        protected override void OnUiEvent(UiEvent _event)
+        protected override void OnUiEvent(UiEvent uiEvent)
         {
-            switch(_event)
+            switch(uiEvent)
             {
                 case UiEvent.Position:
                 case UiEvent.Anchor:
@@ -207,9 +220,9 @@ namespace Electron2D.UserInterface
                     UpdateDisplay();
                     break;
                 case UiEvent.Visibility:
-                    sliderPanel.Visible = Visible;
-                    backgroundPanel.Visible = Visible;
-                    handlePanel.Visible = Visible;
+                    _sliderPanel.Visible = Visible;
+                    _backgroundPanel.Visible = Visible;
+                    _handlePanel.Visible = Visible;
                     break;
             }
         }

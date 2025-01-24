@@ -2,8 +2,6 @@
 {
     public class AudioInstance : IDisposable
     {
-        private bool disposed;
-
         public AudioClip AudioClip { get; }
         public AudioStream Stream { get; set; }
         public PlaybackState PlaybackState { get; private set; }
@@ -24,20 +22,20 @@
             }
         }
 
-        private AudioSpatializer spatializer;
+        private AudioSpatializer _spatializer;
 
         ~AudioInstance()
         {
-            Disposep();
+            Dispose(false);
         }
 
-        public AudioInstance(AudioClip _clip, float _volume, float _pitch, bool _isLoop)
+        public AudioInstance(AudioClip clip, float volume, float pitch, bool isLoop)
         {
-            AudioClip = _clip;
-            Volume = _volume;
-            Pitch = _pitch;
-            Stream = _clip.GetNewStream(this, false);
-            IsLoop = _isLoop;
+            AudioClip = clip;
+            Volume = volume;
+            Pitch = pitch;
+            Stream = clip.GetNewStream(this, false);
+            IsLoop = isLoop;
 
             Stream.OnStreamEnd += Stop;
         }
@@ -46,14 +44,14 @@
         /// This should only be called by AudioSpatializer to register itself in each AudioInstance.
         /// </summary>
         /// <param name="_spatializer"></param>
-        public void SetSpatializerReference(AudioSpatializer _spatializer)
+        public void SetSpatializerReference(AudioSpatializer spatializer)
         {
-            spatializer = _spatializer;
+            _spatializer = spatializer;
         }
 
         public void Play()
         {
-            if (PlaybackState == PlaybackState.Playing) return;
+            Stop();
             PlaybackState = PlaybackState.Playing;
             AudioSystem.PlayAudioInstance(this);
         }
@@ -72,24 +70,23 @@
 
         public void Stop()
         {
-            if (PlaybackState == PlaybackState.Stopped) return;
+            Stream.Position = 0;
             PlaybackState = PlaybackState.Stopped;
         }
 
         public void Dispose()
         {
+            Dispose(true);
             GC.SuppressFinalize(this);
-            Disposep();
         }
 
-        private void Disposep()
+        private void Dispose(bool freeManaged)
         {
-            if(!disposed)
-            {
-                spatializer?.RemoveAudioInstance(this);
-                Stream.Dispose();
+            _spatializer?.RemoveAudioInstance(this);
 
-                disposed = true;
+            if (freeManaged)
+            {
+                Stream.Dispose();
             }
         }
     }

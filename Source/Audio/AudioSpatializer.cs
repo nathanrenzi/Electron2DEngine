@@ -2,7 +2,7 @@
 
 namespace Electron2D.Audio
 {
-    public class AudioSpatializer : GameClass
+    public class AudioSpatializer : IGameClass
     {
         public List<AudioInstance> AudioInstances { get; private set; } = new List<AudioInstance>();
         public float MinRange { get; set; } = 100f;
@@ -26,12 +26,21 @@ namespace Electron2D.Audio
             {
                 AddAudioInstance(audioInstances[i]);
             }
+
+            Program.Game.RegisterGameClass(this);
         }
 
         public AudioSpatializer(Transform transform, bool _is3D)
         {
             _transform = transform;
             Is3D = _is3D;
+
+            Program.Game.RegisterGameClass(this);
+        }
+
+        ~AudioSpatializer()
+        {
+            Dispose();
         }
 
         public void AddAudioInstance(AudioInstance _audioInstance)
@@ -56,7 +65,7 @@ namespace Electron2D.Audio
             }
         }
 
-        public override void Update()
+        public void Update()
         {
             CalculateDistanceMultiplier();
             CalculatePanning();
@@ -80,10 +89,12 @@ namespace Electron2D.Audio
             DirectionBasedPanning = ((_transform.Position.X - AudioSpatialListener.Instance.GetPosition().X) / (Display.REFERENCE_WINDOW_WIDTH * 0.5f)) * MathEx.Clamp(PanningSpatializationMultiplier, 0, 10);
         }
 
-        public override void FixedUpdate() { }
+        public void FixedUpdate() { }
 
-        public override void Dispose() { }
-
-        public override void Start() { }
+        public void Dispose()
+        {
+            Program.Game.UnregisterGameClass(this);
+            GC.SuppressFinalize(this);
+        }
     }
 }

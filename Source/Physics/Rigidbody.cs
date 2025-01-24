@@ -2,15 +2,14 @@
 using Box2D.NetStandard.Dynamics.Bodies;
 using Box2D.NetStandard.Dynamics.Fixtures;
 using Box2D.NetStandard.Dynamics.Joints;
-using Electron2D.ECS;
 using System.Numerics;
 
 namespace Electron2D.PhysicsBox2D
 {
-    public class RigidbodySystem : BaseSystem<Rigidbody> { }
-    public class Rigidbody : Component
+    public class Rigidbody : IGameClass
     {
         public static readonly float Epsilon = 1f;
+        public static List<Rigidbody> Rigidbodies = new List<Rigidbody>();
 
         public Action<Rigidbody> OnBeginContact { get; set; }
         public Action<Rigidbody> OnEndContact { get; set; }
@@ -45,7 +44,7 @@ namespace Electron2D.PhysicsBox2D
         {
             get
             {
-                return newPosition - oldPosition;
+                return _newPosition - _oldPosition;
             }
         }
 
@@ -86,90 +85,147 @@ namespace Electron2D.PhysicsBox2D
         public Vector2[] ConvexColliderPoints { get; private set; }
 
         // Starting Values
-        private Vector2 velocity;
-        private float angularVelocity;
-        private float linearDampening;
-        private float angularDampening;
-        private float density;
-        private float friction;
-        private float bounciness;
-        private MassData massData;
-        private bool fixedRotation;
+        private Vector2 _velocity;
+        private float _angularVelocity;
+        private float _linearDampening;
+        private float _angularDampening;
+        private float _density;
+        private float _friction;
+        private float _bounciness;
+        private MassData _massData;
+        private bool _fixedRotation;
         // ---------------
 
-        private Vector2 newPosition;
-        private float newAngle;
-        private Vector2 oldPosition;
-        private float oldAngle;
-        private float lerpDeltaTime;
-        private float lastLerpTime;
+        private Vector2 _newPosition;
+        private float _newAngle;
+        private Vector2 _oldPosition;
+        private float _oldAngle;
+        private float _lerpDeltaTime;
+        private float _lastLerpTime;
 
-        private Transform transform;
+        private Transform _transform;
 
-        private bool isValid = false;
-        private bool interpolationReady = false;
+        private bool _isValid = false;
+        private bool _interpolationReady = false;
 
-        public static Rigidbody CreateDynamic(RigidbodyDynamicDef _definition)
+        public static Rigidbody CreateDynamic(Transform transform, RigidbodyDynamicDef def)
         {
-            return new Rigidbody(false, _definition.Velocity, _definition.AngularVelocity, _definition.MassData, _definition.Friction, _definition.Bounciness,
-                _definition.Density, _definition.LinearDampening, _definition.AngularDampening, _definition.FixedRotation, _definition.Shape,
-                RigidbodyMode.Dynamic, _definition.Layer, _definition.HitMask, _definition.GroupIndex, _definition.ConvexColliderPoints);
+            return new Rigidbody(transform, false, def.Velocity, def.AngularVelocity, def.MassData, def.Friction, def.Bounciness,
+                def.Density, def.LinearDampening, def.AngularDampening, def.FixedRotation, def.Shape,
+                RigidbodyMode.Dynamic, def.Layer, def.HitMask, def.GroupIndex, def.ConvexColliderPoints);
         }
 
-        public static Rigidbody CreateKinematic(RigidbodyKinematicDef _definition)
+        public static Rigidbody CreateKinematic(Transform transform, RigidbodyKinematicDef def)
         {
-            return new Rigidbody(true, new Vector2(0, 0), 0, new MassData(), _definition.Friction, _definition.Bounciness, 1, 0.0f, 0.0f, false, _definition.Shape,
-                RigidbodyMode.Kinematic, _definition.Layer, _definition.HitMask, _definition.GroupIndex, _definition.ConvexColliderPoints);
+            return new Rigidbody(transform, true, new Vector2(0, 0), 0, new MassData(), def.Friction, def.Bounciness, 1, 0.0f, 0.0f, false, def.Shape,
+                RigidbodyMode.Kinematic, def.Layer, def.HitMask, def.GroupIndex, def.ConvexColliderPoints);
         }
 
-        private Rigidbody(bool _isStatic, Vector2 _startVelocity, float _startAngularVelocity, MassData _massData, float _friction, float _bounciness,
-            float _density, float _linearDampening, float _angularDampening, bool _fixedRotation, RigidbodyShape _rigidbodyShape,
-            RigidbodyMode _rigidbodyMode, ushort _layer, ushort _hitMask, short _groupIndex, Vector2[] _convexColliderPoints)
+        private Rigidbody(Transform transform, bool isStatic, Vector2 startVelocity, float startAngularVelocity,
+            MassData massData, float friction, float bounciness, float density, float linearDampening,
+            float angularDampening, bool fixedRotation, RigidbodyShape rigidbodyShape, RigidbodyMode rigidbodyMode,
+            ushort layer, ushort hitMask, short groupIndex, Vector2[] convexColliderPoints)
         {
-            IsStatic = _isStatic;
-            velocity = _startVelocity;
-            angularVelocity = _startAngularVelocity;
-            linearDampening = _linearDampening;
-            angularDampening = _angularDampening;
-            friction = _friction;
-            bounciness = _bounciness;
-            density = _density;
-            massData = _massData;
-            fixedRotation = _fixedRotation;
-            Mode = _rigidbodyMode;
-            Shape = _rigidbodyShape;
-            Layer = _layer;
-            HitMask = _hitMask;
-            GroupIndex = _groupIndex;
-            ConvexColliderPoints = _convexColliderPoints;
+            IsStatic = isStatic;
+            _transform = transform;
+            _velocity = startVelocity;
+            _angularVelocity = startAngularVelocity;
+            _linearDampening = linearDampening;
+            _angularDampening = angularDampening;
+            _friction = friction;
+            _bounciness = bounciness;
+            _density = density;
+            _massData = massData;
+            _fixedRotation = fixedRotation;
+            Mode = rigidbodyMode;
+            Shape = rigidbodyShape;
+            Layer = layer;
+            HitMask = hitMask;
+            GroupIndex = groupIndex;
+            ConvexColliderPoints = convexColliderPoints;
 
-            RigidbodySystem.Register(this);
+            if (_transform == null)
+            {
+                Debug.LogError("PHYSICS: A rigidbody is trying to be added to an entity without a Transform component, removing...");
+                _isValid = false;
+                Dispose();
+                return;
+            }
+            Rigidbodies.Add(this);
+            Program.Game.RegisterGameClass(this);
+
+            BodyDef bodyDef = new BodyDef()
+            {
+                position = _transform.Position / Physics.WorldScalar,
+                angle = _transform.Rotation,
+                linearVelocity = _velocity,
+                angularVelocity = _angularVelocity,
+                linearDamping = _linearDampening,
+                angularDamping = _angularDampening,
+                fixedRotation = _fixedRotation
+            };
+
+            FixtureDef fixtureDef = new FixtureDef()
+            {
+                density = _density,
+                friction = _friction,
+                restitution = _bounciness,
+                filter = new Filter()
+                {
+                    categoryBits = Layer,
+                    maskBits = HitMask,
+                    groupIndex = GroupIndex
+                }
+            };
+            switch (Shape)
+            {
+                case RigidbodyShape.Box:
+                    fixtureDef.shape = new PolygonShape((_transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar, (_transform.Scale.Y - Epsilon) / 2f / Physics.WorldScalar);
+                    break;
+                case RigidbodyShape.Circle:
+                    fixtureDef.shape = new CircleShape()
+                    {
+                        Radius = (_transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar
+                    };
+                    break;
+                case RigidbodyShape.ConvexMesh:
+                    fixtureDef.shape = new PolygonShape();
+                    break;
+            }
+
+            ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, _massData, Mode == RigidbodyMode.Kinematic);
+            _isValid = true;
         }
 
-        protected override void OnDispose()
+        ~Rigidbody()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
         {
             if (IsDestroyed) return;
-            RigidbodySystem.Unregister(this);
-            if(ID != uint.MaxValue) Physics.RemovePhysicsBody(ID);
+            Rigidbodies.Remove(this);
+            Program.Game.UnregisterGameClass(this);
+            if (ID != uint.MaxValue) Physics.RemovePhysicsBody(ID);
             IsDestroyed = true;
+            GC.SuppressFinalize(this);
         }
 
         public static void InvokeCollision(uint _id, uint _hitId, bool _beginContact)
         {
-            List<Rigidbody> rigidbodies = RigidbodySystem.GetComponents();
-
             Rigidbody body1 = null;
             Rigidbody body2 = null;
-            for (int i = 0; i < rigidbodies.Count; i++)
+            for (int i = 0; i < Rigidbodies.Count; i++)
             {
-                if (rigidbodies[i].ID == _id)
+                if (Rigidbodies[i].ID == _id)
                 {
-                    body1 = rigidbodies[i];
+                    body1 = Rigidbodies[i];
                 }
 
-                if (rigidbodies[i].ID == _hitId)
+                if (Rigidbodies[i].ID == _hitId)
                 {
-                    body2 = rigidbodies[i];
+                    body2 = Rigidbodies[i];
                 }
             }
             if (body1 == null) return;
@@ -189,90 +245,35 @@ namespace Electron2D.PhysicsBox2D
             }
         }
 
-        public override void OnAdded()
+        public void FixedUpdate()
         {
-            transform = GetComponent<Transform>();
-            if (transform == null)
-            {
-                Debug.LogError("PHYSICS: A rigidbody is trying to be added to an entity without a Transform component, removing...");
-                Entity.RemoveComponent(this);
-                isValid = false;
-                Dispose();
-                return;
-            }
-
-            BodyDef bodyDef = new BodyDef()
-            {
-                position = transform.Position / Physics.WorldScalar,
-                angle = transform.Rotation,
-                linearVelocity = velocity,
-                angularVelocity = angularVelocity,
-                linearDamping = linearDampening,
-                angularDamping = angularDampening,
-                fixedRotation = fixedRotation
-            };
-
-            FixtureDef fixtureDef = new FixtureDef()
-            {
-                density = density,
-                friction = friction,
-                restitution = bounciness,
-                filter = new Filter()
-                {
-                    categoryBits = Layer,
-                    maskBits = HitMask,
-                    groupIndex = GroupIndex
-                }
-            };
-            switch(this.Shape)
-            {
-                case RigidbodyShape.Box:
-                    fixtureDef.shape = new PolygonShape((transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar, (transform.Scale.Y - Epsilon) / 2f / Physics.WorldScalar);
-                    break;
-                case RigidbodyShape.Circle:
-                    fixtureDef.shape = new CircleShape()
-                    {
-                        Radius = (transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar
-                    };
-                    break;
-                case RigidbodyShape.ConvexMesh:
-                    fixtureDef.shape = new PolygonShape();
-                    break;
-            }
-
-            ID = Physics.CreatePhysicsBody(bodyDef, fixtureDef, massData, Mode == RigidbodyMode.Kinematic);
-            isValid = true;
-        }
-
-        public override void FixedUpdate()
-        {
-            if (!isValid || ID == uint.MaxValue || IsDestroyed) return;
+            if (!_isValid || ID == uint.MaxValue || IsDestroyed) return;
 
             // Setting values for interpolation
-            oldPosition = transform.Position;
-            oldAngle = transform.Rotation;
+            _oldPosition = _transform.Position;
+            _oldAngle = _transform.Rotation;
 
-            newPosition = Physics.GetBodyPosition(ID);
-            newAngle = Physics.GetBodyRotation(ID);
+            _newPosition = Physics.GetBodyPosition(ID);
+            _newAngle = Physics.GetBodyRotation(ID);
 
-            lerpDeltaTime = Time.FixedDeltaTime;
-            lastLerpTime = (float)GLFW.Glfw.Time;
+            _lerpDeltaTime = Time.FixedDeltaTime;
+            _lastLerpTime = (float)GLFW.Glfw.Time;
 
-            interpolationReady = true;
+            _interpolationReady = true;
         }
 
-        public override void Update()
+        public void Update()
         {
-            if (!isValid || ID == uint.MaxValue || !interpolationReady || IsDestroyed) return;
+            if (!_isValid || ID == uint.MaxValue || !_interpolationReady || IsDestroyed) return;
 
             // Interpolation
-            float t = MathEx.Clamp01((Time.GameTime - lastLerpTime) / lerpDeltaTime);
+            float t = MathEx.Clamp01((Time.GameTime - _lastLerpTime) / _lerpDeltaTime);
 
             //      Position
-            transform.Position = Vector2.Lerp(oldPosition, newPosition, t);
+            _transform.Position = Vector2.Lerp(_oldPosition, _newPosition, t);
 
             //      Rotation
-            transform.Rotation = (float)(oldAngle * (1.0 - t) + (newAngle * t));
+            _transform.Rotation = (float)(_oldAngle * (1.0 - t) + (_newAngle * t));
         }
 
         public uint CreateJoint(IRigidbodyJointDef _jointDef)

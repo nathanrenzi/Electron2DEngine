@@ -20,11 +20,6 @@ namespace Electron2D.Rendering
         private static Dictionary<string, IGlobalUniform> globalUniforms = new Dictionary<string, IGlobalUniform>();
         private static List<Shader> shaders = new List<Shader>();
 
-        public static void Initialize()
-        {
-            Game.UpdateEvent += UpdateShaders;
-        }
-
         public static void RegisterShader(Shader _shader)
         {
             shaders.Add(_shader);

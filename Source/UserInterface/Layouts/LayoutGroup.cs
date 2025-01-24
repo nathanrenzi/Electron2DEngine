@@ -1,51 +1,63 @@
 ﻿namespace Electron2D.UserInterface
 {
-    public abstract class LayoutGroup : UiListener
+    public abstract class LayoutGroup : UiListener, IGameClass
     {
-        public List<UiComponent> components = new List<UiComponent>();
-        private bool active = false;
-        private bool IsDirty = false;
-        private bool addedToUpdateLoop = false;
+        public List<UiComponent> Components = new List<UiComponent>();
+        private bool _active = false;
+        private bool _isDirty = false;
+        private bool _registeredToGameLoop = false;
+        protected UiComponent _parent;
 
-        protected UiComponent parent;
-
-        public void OnUiAction(object _sender, UiEvent _event)
+        ~LayoutGroup()
         {
-            if(_event == UiEvent.Resize)
+            Dispose();
+        }
+
+        public void FixedUpdate() { }
+
+        public void Dispose()
+        {
+            Program.Game.UnregisterGameClass(this);
+            GC.SuppressFinalize(this);
+        }
+
+        public void OnUiAction(object sender, UiEvent uiEvent)
+        {
+            if(uiEvent == UiEvent.Resize)
             {
-                IsDirty = true;
+                _isDirty = true;
             }
         }
 
-        public void SetUiParent(UiComponent _parent)
+        public void SetUiParent(UiComponent parent)
         {
-            if(parent != null)
+            if(_parent != null)
             {
-                parent.RemoveUiListener(this);
+                _parent.RemoveUiListener(this);
             }
 
-            if(!addedToUpdateLoop)
+            if(!_registeredToGameLoop)
             {
-                addedToUpdateLoop = true;
-                Game.UpdateEvent += Game_OnUpdateEvent;
+                Program.Game.RegisterGameClass(this);
+                _registeredToGameLoop = true;
             }
 
-            parent = _parent;
-            parent.AddUiListener(this);
-            active = true;
+            _parent = parent;
+            _parent.AddUiListener(this);
+            _active = true;
         }
 
-        private void Game_OnUpdateEvent()
+        public void Update()
         {
-            if(IsDirty)
+            if(_isDirty)
             {
-                IsDirty = false;
+                _isDirty = false;
                 RecalculateLayout();
-                for (int i = 0; i < components.Count; i++)
+                for (int i = 0; i < Components.Count; i++)
                 {
-                    if (components[i].ChildLayoutGroup != null)
+                    if (Components[i].ChildLayoutGroup != null)
                     {
-                        components[i].ChildLayoutGroup.IsDirty = true;
+                        Components[i].ChildLayoutGroup._isDirty = true;
                     }
                 }
             }
@@ -53,34 +65,34 @@
 
         public void AddToLayout(UiComponent _component)
         {
-            if(!active)
+            if(!_active)
             {
                 Debug.LogError("UI LAYOUT: Trying to add UI component to invalid layout object.");
                 return;
             }
 
-            if(components.Contains(_component))
+            if(Components.Contains(_component))
             {
                 Debug.LogError("UI LAYOUT: Trying to add UI component when it has already been added to this layout.");
                 return;
             }
 
-            components.Add(_component);
-            IsDirty = true;
+            Components.Add(_component);
+            _isDirty = true;
         }
 
         public bool RemoveFromLayout(UiComponent _component)
         {
-            if (!active)
+            if (!_active)
             {
                 Debug.LogError("UI LAYOUT: Trying to add UI component to invalid layout object.");
                 return false;
             }
 
-            if (components.Contains(_component))
+            if (Components.Contains(_component))
             {
-                components.Remove(_component);
-                IsDirty = true;
+                Components.Remove(_component);
+                _isDirty = true;
                 return true;
             }
             else

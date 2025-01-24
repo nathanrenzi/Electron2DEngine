@@ -56,7 +56,7 @@ namespace Electron2D.UserInterface
         /// <param name="_sizeY">The starting size on the Y axis.</param>
         public SlicedPanel(Material _material, int _sizeX, int _sizeY, SlicedPanelDef _def,
             int _uiRenderLayer = 0, bool _ignorePostProcessing = false)
-            : base(_ignorePostProcessing, _uiRenderLayer, _sizeX: _sizeX, _sizeY: _sizeY)
+            : base(_ignorePostProcessing, _uiRenderLayer, sizeX: _sizeX, sizeY: _sizeY)
         {
             left = _def.Left;
             right = _def.Right;
@@ -67,8 +67,8 @@ namespace Electron2D.UserInterface
             BuildVertexMesh();
             // Indices are pre-written, so they are not generated at runtime
 
-            meshRenderer.SetVertexArrays(vertices, indices);
-            meshRenderer.SetMaterial(_material);
+            Renderer.SetVertexArrays(vertices, indices);
+            Renderer.SetMaterial(_material);
         }
 
         /// <summary>
@@ -77,8 +77,8 @@ namespace Electron2D.UserInterface
         public void RebuildMesh()
         {
             BuildVertexMesh();
-            meshRenderer.SetVertexArrays(vertices, indices, false);
-            meshRenderer.IsVertexDirty = true;
+            Renderer.SetVertexArrays(vertices, indices, false);
+            Renderer.IsVertexDirty = true;
         }
 
         /// <summary>
@@ -170,13 +170,13 @@ namespace Electron2D.UserInterface
             switch (_event)
             {
                 case UiEvent.Resize:
-                    if(meshRenderer != null)
+                    if(Renderer != null)
                     {
                         RebuildMesh();
                     }
                     break;
                 case UiEvent.Anchor:
-                    if(meshRenderer != null)
+                    if(Renderer != null)
                     {
                         RebuildMesh();
                     }

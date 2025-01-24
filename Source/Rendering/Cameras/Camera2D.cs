@@ -1,21 +1,19 @@
-﻿using Electron2D.ECS;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Electron2D.Rendering
 {
-    public class Camera2D : Entity
+    public class Camera2D
     {
         public static Camera2D Main { get; private set; }
         public float Zoom { get; set; }
         public Transform Transform { get; set; }
 
-        public Camera2D(Vector2 _startPosition, float _zoom)
+        public Camera2D(Vector2 startPosition, float zoom)
         {
             Transform = new Transform();
-            Transform.Position = _startPosition;
-            AddComponent(Transform);
+            Transform.Position = startPosition;
 
-            Zoom = _zoom;
+            Zoom = zoom;
 
             if (Main == null) Main = this;
         }

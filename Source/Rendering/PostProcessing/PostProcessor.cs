@@ -73,7 +73,7 @@ namespace Electron2D.Rendering.PostProcessing
             if (!_initialized) return;
 
             _renderBuffer.Bind();
-            Color clearColor = Game.BackgroundColor;
+            Color clearColor = Program.Game.BackgroundColor;
             glClearColor(clearColor.R / 255f, clearColor.G / 255f, clearColor.B / 255f, clearColor.A / 255f);
             glClear(GL_COLOR_BUFFER_BIT);
         }

@@ -14,32 +14,44 @@ namespace Electron2D
 {
     public abstract class Game
     {
-        public static event Action StartEvent;
-        public static event Action UpdateEvent;
-        public static event Action FixedUpdateEvent;
         public static event Action LateUpdateEvent;
+
         public Settings Settings { get; private set; }
-        public static Color BackgroundColor { get; private set; } = Color.Black;
+        public Color BackgroundColor { get; private set; } = Color.Black;
 
         protected Thread PhysicsThread { get; private set; }
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
         protected Camera2D StartCamera { get; set; }
 
-        private BlendMode currentBlendMode = BlendMode.Interpolative;
+        private bool _doFixedUpdate = false;
+        private List<IGameClass> _classes = new List<IGameClass>();
+        private BlendMode _currentBlendMode = BlendMode.Interpolative;
+        private AudioSpatialListener _defaultSpatialListener;
 
-        public void SetBackgroundColor(Color _backgroundColor)
+        public void RegisterGameClass(IGameClass gameClass)
         {
-            BackgroundColor = _backgroundColor;
+            if (_classes.Contains(gameClass)) return;
+            _classes.Add(gameClass);
         }
 
-        public void SetBlendingMode(BlendMode _blendMode)
+        public void UnregisterGameClass(IGameClass gameClass)
         {
-            currentBlendMode = _blendMode;
+            _classes.Remove(gameClass);
+        }
+
+        public void SetBackgroundColor(Color backgroundColor)
+        {
+            BackgroundColor = backgroundColor;
+        }
+
+        public void SetBlendingMode(BlendMode blendMode)
+        {
+            _currentBlendMode = blendMode;
         }
 
         private void ApplyBlendingMode()
         {
-            switch (currentBlendMode)
+            switch (_currentBlendMode)
             {
                 case BlendMode.Interpolative:
                     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -72,7 +84,7 @@ namespace Electron2D
             Initialize();
 
             StartCamera = new Camera2D(Vector2.Zero, 1);
-            StartCamera.AddComponent(new AudioSpatialListener());
+            _defaultSpatialListener = new AudioSpatialListener(StartCamera.Transform);
 
             Display.CreateWindow(Settings.WindowWidth, Settings.WindowHeight, ProjectSettings.WindowTitle);
             if(Settings.Vsync)
@@ -106,7 +118,7 @@ namespace Electron2D
                 float bufferTime = 0.5f;
                 float currentTime = -bufferTime;
                 bool hasPlayedAudio = false;
-                AudioInstance splashscreenAudio = AudioSystem.CreateInstance("Resources/Built-In/Audio/Electron2DRiff.mp3", _volume: 0.3f);
+                AudioInstance splashscreenAudio = AudioSystem.CreateInstance("Resources/Built-In/Audio/Electron2DRiff.mp3", volume: 0.3f);
                 while (!Glfw.WindowShouldClose(Display.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
                 {
                     Input.ProcessInput(); // Letting the window know the program is responding
@@ -145,18 +157,9 @@ namespace Electron2D
             }
             #endregion
 
-            // Starting Game Classes
-            foreach (GameClass gameClass in GameClass.GameClasses)
-            {
-                gameClass.Start();
-            }
-            StartEvent?.Invoke();
-            GameClass.FlagHasStarted();
-
             // Initializing physics thread
             PhysicsThread.Start();
 
-            ShaderGlobalUniforms.Initialize();
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
 
@@ -185,8 +188,8 @@ namespace Electron2D
                 // Updating
                 double goST = Glfw.Time;
                 Update();
-                UpdateEvent?.Invoke();
-                foreach (GameClass gameClass in GameClass.GameClasses)
+                ShaderGlobalUniforms.UpdateShaders();
+                foreach (IGameClass gameClass in _classes)
                 {
                     gameClass.Update();
                 }
@@ -196,6 +199,14 @@ namespace Electron2D
 
                 // Physics
                 double phyST = Glfw.Time;
+                if(_doFixedUpdate)
+                {
+                    foreach (IGameClass gameClass in _classes)
+                    {
+                        gameClass.FixedUpdate();
+                    }
+                    _doFixedUpdate = false;
+                }
                 PerformanceTimings.PhysicsMilliseconds = (Glfw.Time - phyST) * 1000;
                 // -------------------------------
 
@@ -237,11 +248,7 @@ namespace Electron2D
 
                     // Do Physics Tick
                     Physics.Step((float)delta, _velocityIterations, _positionIterations);
-                    foreach (GameClass gameClass in GameClass.GameClasses)
-                    {
-                        gameClass.FixedUpdate();
-                    }
-                    FixedUpdateEvent?.Invoke();
+                    _doFixedUpdate = true;
                 }
             }
         }
@@ -284,7 +291,8 @@ namespace Electron2D
         {
             Display.DestroyWindow();
             OnGameClose();
-            foreach (GameClass gameClass in GameClass.GameClasses)
+            List<IGameClass> classesCopy = new List<IGameClass>(_classes);
+            foreach (IGameClass gameClass in classesCopy)
             {
                 gameClass.Dispose();
             }

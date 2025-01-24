@@ -1,26 +1,24 @@
-﻿using Electron2D.ECS;
-using static Electron2D.OpenGL.GL;
+﻿using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Rendering
 {
-    public class MeshRendererSystem : BaseSystem<MeshRenderer> { }
     /// <summary>
     /// A multi-purpose mesh renderer.
     /// </summary>
-    public class MeshRenderer : Component
+    public class MeshRenderer : IGameClass
     {
-        public float[] vertices { get; protected set; }
-        public uint[] indices { get; protected set; }
+        public float[] Vertices { get; protected set; }
+        public uint[] Indices { get; protected set; }
 
         public BufferLayout Layout { get; protected set; }
-        public VertexBuffer vertexBuffer { get; protected set; }
-        public VertexArray vertexArray { get; protected set; }
-        public IndexBuffer indexBuffer { get; protected set; }
+        public VertexBuffer VertexBuffer { get; protected set; }
+        public VertexArray VertexArray { get; protected set; }
+        public IndexBuffer IndexBuffer { get; protected set; }
         public Material Material { get; protected set; }
         public int RenderLayer { get; protected set; }
         public Action OnBeforeRender { get; set; }
 
-        private Transform transform;
+        private Transform _transform;
 
         /// <summary>
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
@@ -41,22 +39,31 @@ namespace Electron2D.Rendering
         public int StencilFunction { get; set; } = GL_ALWAYS;
         public int StencilReference { get; set; } = 1;
         public uint StencilFunctionMask { get; set; } = 0xFF;
+        public bool Enabled { get; set; } = true;
 
-        public MeshRenderer(Transform _transform, Material _material)
+        public MeshRenderer(Transform transform, Material material)
         {
-            transform = _transform;
-            Material = _material;
+            _transform = transform;
+            Material = material;
 
-            MeshRendererSystem.Register(this);
+            Program.Game.RegisterGameClass(this);
         }
 
-        protected override void OnDispose()
+        ~MeshRenderer()
         {
-            vertexBuffer.Dispose();
-            vertexArray.Dispose();
-            indexBuffer.Dispose();
+            Dispose();
+        }
 
-            MeshRendererSystem.Unregister(this);
+        public void Update() { }
+        public void FixedUpdate() { }
+
+        public void Dispose()
+        {
+            VertexBuffer.Dispose();
+            VertexArray.Dispose();
+            IndexBuffer.Dispose();
+            Program.Game.UnregisterGameClass(this);
+            GC.SuppressFinalize(this);
         }
 
         #region Materials
@@ -78,8 +85,8 @@ namespace Electron2D.Rendering
         /// <param name="_loadOnSetArrays">Should the renderer be loaded when the arrays have been set (Should usually be left as true).</param>
         public void SetVertexArrays(float[] _vertices, uint[] _indices, bool _loadOnSetArrays = true, bool _setDirty = false)
         {
-            vertices = _vertices;
-            indices = _indices;
+            Vertices = _vertices;
+            Indices = _indices;
 
             HasVertexData = true;
             if (_loadOnSetArrays) Load();
@@ -95,12 +102,12 @@ namespace Electron2D.Rendering
         public void SetVertexValueAll(int _type, float _value)
         {
             if (!HasVertexData) return;
-            int loops = vertices.Length / Layout.GetRawStride();
+            int loops = Vertices.Length / Layout.GetRawStride();
 
             // Setting the value for each vertex
             for (int i = 0; i < loops; i++)
             {
-                vertices[(i * Layout.GetRawStride()) + _type] = _value;
+                Vertices[(i * Layout.GetRawStride()) + _type] = _value;
             }
 
             IsVertexDirty = true;
@@ -113,7 +120,7 @@ namespace Electron2D.Rendering
         /// <returns></returns>
         public float GetVertexValue(int _type, int _vertex = 0)
         {
-            return vertices[(_vertex * Layout.GetRawStride()) + _type];
+            return Vertices[(_vertex * Layout.GetRawStride()) + _type];
         }
 
         #endregion
@@ -121,20 +128,20 @@ namespace Electron2D.Rendering
         /// <summary>
         /// Loads all resources necessary for the renderer, such as the shader and buffers.
         /// </summary>
-        public void Load(bool _createBufferLayoutOnLoad = true)
+        public void Load(bool createBufferLayoutOnLoad = true)
         {
             if (!HasVertexData) return;
 
-            vertexArray = new VertexArray();
-            vertexBuffer = new VertexBuffer(vertices);
-            indexBuffer = new IndexBuffer(indices);
+            VertexArray = new VertexArray();
+            VertexBuffer = new VertexBuffer(Vertices);
+            IndexBuffer = new IndexBuffer(Indices);
 
-            if(_createBufferLayoutOnLoad)
+            if(createBufferLayoutOnLoad)
             {
                 CreateBufferLayout();
             }          
 
-            vertexArray.AddBuffer(vertexBuffer, Layout);
+            VertexArray.AddBuffer(VertexBuffer, Layout);
 
             IsLoaded = true;
         }
@@ -147,28 +154,29 @@ namespace Electron2D.Rendering
             Layout.Add<float>(2); // UV
         }
 
-        public void SetBufferLayoutBeforeLoad(BufferLayout _layout)
+        public void SetBufferLayoutBeforeLoad(BufferLayout layout)
         {
             if (IsLoaded) return;
-            Layout = _layout;
+            Layout = layout;
         }
 
         public unsafe void Render()
         {
+            if (!Enabled) return;
             if (!HasVertexData) return;
             if (!IsLoaded || Material.Shader.Compiled == false) return;
 
             if (IsVertexDirty)
             {
                 // Updating the data inside of the vertex buffer
-                vertexBuffer.UpdateData(vertices);
+                VertexBuffer.UpdateData(Vertices);
                 IsVertexDirty = false;
             }
 
             if (IsIndexDirty)
             {
                 // Updating the data inside of the index buffer
-                indexBuffer.UpdateData(indices);
+                IndexBuffer.UpdateData(Indices);
                 IsIndexDirty = false;
             }
 
@@ -191,14 +199,14 @@ namespace Electron2D.Rendering
             }
 
             Material.Use();
-            Material.Shader.SetMatrix4x4("model", transform.GetScaleMatrix() * transform.GetRotationMatrix() * transform.GetPositionMatrix()); // MUST BE IN ORDER
-            vertexArray.Bind();
-            indexBuffer.Bind();
+            Material.Shader.SetMatrix4x4("model", _transform.GetScaleMatrix() * _transform.GetRotationMatrix() * _transform.GetPositionMatrix()); // MUST BE IN ORDER
+            VertexArray.Bind();
+            IndexBuffer.Bind();
 
             Material.Shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.Main.GetUnscaledProjectionMatrix() : Camera2D.Main.GetProjectionMatrix()); // MUST be set after Use is called
             BeforeRender();
             OnBeforeRender?.Invoke();
-            glDrawElements(GL_TRIANGLES, UseCustomIndexRenderCount ? CustomIndexRenderCount : indices.Length, GL_UNSIGNED_INT, (void*)0);
+            glDrawElements(GL_TRIANGLES, UseCustomIndexRenderCount ? CustomIndexRenderCount : Indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
 
         protected virtual void BeforeRender() { }
