@@ -19,7 +19,6 @@ namespace Electron2D.Audio
             }
         }
 
-        private static Dictionary<string, AudioClip> _cachedClips = new Dictionary<string, AudioClip>();
         private static IWavePlayer _outputDevice;
         private static MixingSampleProvider _mixer;
         private static VolumeSampleProvider _masterVolumeSampleProvider;
@@ -37,37 +36,13 @@ namespace Electron2D.Audio
 
         public static AudioInstance CreateInstance(string fileName, float volume = 1, float pitch = 1, bool isLoop = false)
         {
-            AudioClip clip;
-            if(_cachedClips.ContainsKey(fileName))
-            {
-                clip = _cachedClips[fileName];
-            }
-            else
-            {
-                clip = new AudioClip(fileName);
-                _cachedClips.Add(fileName, clip);
-            }
-
+            AudioClip clip = ResourceManager.Instance.LoadAudioClip(fileName);
             return new AudioInstance(clip, volume, pitch, isLoop);
         }
 
         public static AudioInstance CreateInstance(AudioClip clip, float volume = 1, float pitch = 1, bool isLoop = false)
         {
             return new AudioInstance(clip, volume, pitch, isLoop);
-        }
-
-        public static AudioClip LoadClip(string fileName)
-        {
-            if (_cachedClips.ContainsKey(fileName))
-            {
-                return _cachedClips[fileName];
-            }
-            else
-            {
-                AudioClip clip = new AudioClip(fileName);
-                _cachedClips.Add(fileName, clip);
-                return clip;
-            }
         }
 
         public static void PlayAudioInstance(AudioInstance audioInstance)
@@ -92,7 +67,6 @@ namespace Electron2D.Audio
         public static void Dispose()
         {
             _mixer.RemoveAllMixerInputs();
-            _cachedClips.Clear();
             _outputDevice.Stop();
             _outputDevice.Dispose();
         }
