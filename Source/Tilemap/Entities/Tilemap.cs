@@ -71,7 +71,7 @@ namespace Electron2D
             isDirty = true;
             isColliderDirty = true;
 
-            Game.OnUpdateEvent += RegenerateEntireMesh;
+            Game.UpdateEvent += RegenerateEntireMesh;
             RenderLayerManager.OrderRenderable(this);
         }
 
@@ -132,7 +132,7 @@ namespace Electron2D
 
         ~Tilemap()
         {
-            Game.OnUpdateEvent -= RegenerateEntireMesh;
+            Game.UpdateEvent -= RegenerateEntireMesh;
             RenderLayerManager.RemoveRenderable(this);
         }
 

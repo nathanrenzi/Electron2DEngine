@@ -22,7 +22,7 @@ namespace Electron2D.Rendering
 
         public static void Initialize()
         {
-            Game.OnUpdateEvent += UpdateShaders;
+            Game.UpdateEvent += UpdateShaders;
         }
 
         public static void RegisterShader(Shader _shader)

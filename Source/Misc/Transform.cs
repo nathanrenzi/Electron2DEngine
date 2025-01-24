@@ -1,10 +1,8 @@
-﻿using Electron2D.ECS;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Electron2D
 {
-    public class TransformSystem : BaseSystem<Transform> { }
-    public class Transform : Component
+    public class Transform
     {
         public Action OnPositionChanged { get; set; }
 
@@ -26,14 +24,7 @@ namespace Electron2D
         public Transform()
         {
             Scale = Vector2.One;
-            TransformSystem.Register(this);
         }
-
-        ~Transform() 
-        {
-            TransformSystem.Unregister(this);
-        }
-
         public Vector2 Up { get { return NormalizeVector(new Vector2(MathF.Cos(Rotation * MathF.PI / 180), MathF.Sin(Rotation * MathF.PI / 180))); } }
         public Vector2 Right { get { return NormalizeVector(new Vector2(MathF.Cos((Rotation - 90) * MathF.PI / 180), MathF.Sin((Rotation - 90) * MathF.PI / 180))); } }
 

@@ -1,10 +1,8 @@
-﻿using Electron2D.ECS;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Electron2D.Audio
 {
-    public class AudioSpatializerSystem : BaseSystem<Component> { }
-    public class AudioSpatializer : Component
+    public class AudioSpatializer : GameClass
     {
         public List<AudioInstance> AudioInstances { get; private set; } = new List<AudioInstance>();
         public float MinRange { get; set; } = 100f;
@@ -17,25 +15,23 @@ namespace Electron2D.Audio
         public float DirectionBasedPanning { get; private set; }
         public float DistanceBasedVolumeMultiplier01 { get; private set; }
 
-        private Transform transform;
+        private Transform _transform;
 
-        public AudioSpatializer(bool _is3D, AudioInstance[] _audioInstances)
+        public AudioSpatializer(Transform transform, bool is3D, AudioInstance[] audioInstances)
         {
-            Is3D = _is3D;
+            _transform = transform;
+            Is3D = is3D;
 
-            for (int i = 0; i < _audioInstances.Length; i++)
+            for (int i = 0; i < audioInstances.Length; i++)
             {
-                AddAudioInstance(_audioInstances[i]);
+                AddAudioInstance(audioInstances[i]);
             }
-
-            AudioSpatializerSystem.Register(this);
         }
 
-        public AudioSpatializer(bool _is3D)
+        public AudioSpatializer(Transform transform, bool _is3D)
         {
+            _transform = transform;
             Is3D = _is3D;
-
-            AudioSpatializerSystem.Register(this);
         }
 
         public void AddAudioInstance(AudioInstance _audioInstance)
@@ -75,23 +71,19 @@ namespace Electron2D.Audio
 
         private void CalculateDistanceMultiplier()
         {
-            float rawDistance = Vector2.Distance(AudioSpatialListener.Instance.GetPosition(), transform.Position);
+            float rawDistance = Vector2.Distance(AudioSpatialListener.Instance.GetPosition(), _transform.Position);
             DistanceBasedVolumeMultiplier01 = 1 - (MathEx.Clamp01((rawDistance / (MaxRange - MinRange)) + (MinRange / MaxRange)) * MathEx.Clamp(VolumeSpatializationMultiplier, 0, 1));
         }
 
         private void CalculatePanning()
         {
-            DirectionBasedPanning = ((transform.Position.X - AudioSpatialListener.Instance.GetPosition().X) / (Display.REFERENCE_WINDOW_WIDTH * 0.5f)) * MathEx.Clamp(PanningSpatializationMultiplier, 0, 10);
+            DirectionBasedPanning = ((_transform.Position.X - AudioSpatialListener.Instance.GetPosition().X) / (Display.REFERENCE_WINDOW_WIDTH * 0.5f)) * MathEx.Clamp(PanningSpatializationMultiplier, 0, 10);
         }
 
-        public override void OnAdded()
-        {
-            transform = GetComponent<Transform>();
-        }
+        public override void FixedUpdate() { }
 
-        protected override void OnDispose()
-        {
-            AudioSpatializerSystem.Unregister(this);
-        }
+        public override void Dispose() { }
+
+        public override void Start() { }
     }
 }

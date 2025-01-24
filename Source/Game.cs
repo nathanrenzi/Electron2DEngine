@@ -14,10 +14,10 @@ namespace Electron2D
 {
     public abstract class Game
     {
-        public static event Action OnStartEvent;
-        public static event Action OnUpdateEvent;
-        public static event Action OnFixedUpdateEvent;
-        public static event Action OnLateUpdateEvent;
+        public static event Action StartEvent;
+        public static event Action UpdateEvent;
+        public static event Action FixedUpdateEvent;
+        public static event Action LateUpdateEvent;
         public Settings Settings { get; private set; }
         public static Color BackgroundColor { get; private set; } = Color.Black;
 
@@ -145,15 +145,13 @@ namespace Electron2D
             }
             #endregion
 
-            // Starting Component Systems
-            RigidbodySystem.Start();
-            RigidbodySensorSystem.Start();
-            ParticleSystemBaseSystem.Start();
-            TransformSystem.Start();
-            MeshRendererSystem.Start();
-            AudioSpatializerSystem.Start();
-            // -------------------------------
-            OnStartEvent?.Invoke();
+            // Starting Game Classes
+            foreach (GameClass gameClass in GameClass.GameClasses)
+            {
+                gameClass.Start();
+            }
+            StartEvent?.Invoke();
+            GameClass.FlagHasStarted();
 
             // Initializing physics thread
             PhysicsThread.Start();
@@ -184,20 +182,16 @@ namespace Electron2D
                 Input.ProcessInput();
                 // -----------------------
 
-                // Updating -- This could all be parallelized
+                // Updating
                 double goST = Glfw.Time;
                 Update();
-                OnUpdateEvent?.Invoke();
-                OnLateUpdateEvent?.Invoke();
+                UpdateEvent?.Invoke();
+                foreach (GameClass gameClass in GameClass.GameClasses)
+                {
+                    gameClass.Update();
+                }
+                LateUpdateEvent?.Invoke();
                 PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
-
-                // Updating Component Systems
-                RigidbodySystem.Update();
-                RigidbodySensorSystem.Update();
-                ParticleSystemBaseSystem.Update();
-                TransformSystem.Update();
-                MeshRendererSystem.Update();
-                AudioSpatializerSystem.Update();
                 // --------------------------
 
                 // Physics
@@ -241,15 +235,13 @@ namespace Electron2D
                     Time.FixedDeltaTime = (float)delta;
                     lastTickTime = Glfw.Time;
 
-                    AudioSpatializerSystem.FixedUpdate();
-                    TransformSystem.FixedUpdate();
-                    MeshRendererSystem.FixedUpdate();
-
                     // Do Physics Tick
                     Physics.Step((float)delta, _velocityIterations, _positionIterations);
-                    RigidbodySystem.FixedUpdate();
-                    RigidbodySensorSystem.FixedUpdate();
-                    OnFixedUpdateEvent?.Invoke();
+                    foreach (GameClass gameClass in GameClass.GameClasses)
+                    {
+                        gameClass.FixedUpdate();
+                    }
+                    FixedUpdateEvent?.Invoke();
                 }
             }
         }
@@ -292,6 +284,10 @@ namespace Electron2D
         {
             Display.DestroyWindow();
             OnGameClose();
+            foreach (GameClass gameClass in GameClass.GameClasses)
+            {
+                gameClass.Dispose();
+            }
             PhysicsCancellationToken.Cancel();
             PhysicsThread.Join();
             PhysicsCancellationToken.Dispose();

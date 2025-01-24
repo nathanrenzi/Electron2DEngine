@@ -157,7 +157,7 @@ namespace Electron2D.UserInterface
             initialized = true;
 
             UpdateDisplay();
-            Game.OnUpdateEvent += OnUpdate_Interact;
+            Game.UpdateEvent += OnUpdate_Interact;
         }
 
         public override void UpdateMesh()

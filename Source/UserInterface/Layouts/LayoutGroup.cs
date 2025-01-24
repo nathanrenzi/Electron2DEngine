@@ -27,7 +27,7 @@
             if(!addedToUpdateLoop)
             {
                 addedToUpdateLoop = true;
-                Game.OnUpdateEvent += Game_OnUpdateEvent;
+                Game.UpdateEvent += Game_OnUpdateEvent;
             }
 
             parent = _parent;

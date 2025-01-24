@@ -26,7 +26,7 @@ namespace Electron2D.UserInterface
             if (initialized == true) return;
             initialized = true;
 
-            Game.OnLateUpdateEvent += CheckForInput;
+            Game.LateUpdateEvent += CheckForInput;
         }
 
         public void RegisterUiComponent(UiComponent _component)
