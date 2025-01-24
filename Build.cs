@@ -1,7 +1,4 @@
 ﻿using Electron2D;
-using Electron2D.Audio;
-using Electron2D.PhysicsBox2D;
-using Electron2D.Rendering;
 using System.Drawing;
 
 public class Build : Game
