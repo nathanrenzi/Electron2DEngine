@@ -6,14 +6,14 @@ namespace Electron2D.Audio
     public class AudioStream : WaveStream
     {
         public Action OnStreamEnd { get; set; }
-        public ISampleProvider SampleProvider { get; private set; }
+        public ISampleProvider SampleProvider { get; set; }
         public IPanStrategy PanStrategy { get; }
         public bool Is3D { get; }
 
         private AudioInstance audioInstance;
         private WaveStream sourceStream;
         private VolumeSampleProvider volumeSampleProvider;
-        private SmbPitchShiftingSampleProvider pitchShiftingSampleProvider;
+        private AudioPitchSampleProvider pitchShiftingSampleProvider;
         private PanningSampleProvider panningSampleProvider;
 
         public AudioStream(AudioInstance _audioInstance, WaveStream _sourceStream, bool _is3D, IPanStrategy _panStrategy)
@@ -24,7 +24,8 @@ namespace Electron2D.Audio
             Is3D = _is3D;
 
             volumeSampleProvider = new VolumeSampleProvider(this.ToSampleProvider());
-            //pitchShiftingSampleProvider = new SmbPitchShiftingSampleProvider(volumeSampleProvider, 1024, 8, 1);
+            pitchShiftingSampleProvider = new AudioPitchSampleProvider(volumeSampleProvider);
+            pitchShiftingSampleProvider.Pitch = audioInstance.Pitch;
             if (_panStrategy == null)
             {
                 PanStrategy = new SinPanStrategy();
@@ -68,7 +69,7 @@ namespace Electron2D.Audio
             if(audioInstance.PlaybackState == PlaybackState.Playing)
             {
                 volumeSampleProvider.Volume = audioInstance.Volume * audioInstance.VolumeMultiplier;
-                //pitchShiftingSampleProvider.PitchFactor = audioInstance.Pitch;
+                pitchShiftingSampleProvider.Pitch = audioInstance.Pitch;
                 if(Is3D) panningSampleProvider.Pan = MathEx.Clamp(audioInstance.Panning + audioInstance.PanningAdditive, -1, 1);
 
                 while (totalBytesRead < _count)

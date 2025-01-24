@@ -240,11 +240,12 @@ namespace Electron2D
             double lastTickTime = 0;
             while (!_token.IsCancellationRequested)
             {
-                if (lastTickTime + _physicsTimestep <= Glfw.Time)
+                double time = Glfw.Time;
+                if (lastTickTime + _physicsTimestep <= time)
                 {
-                    double delta = Glfw.Time - lastTickTime;
+                    double delta = time - lastTickTime;
                     Time.FixedDeltaTime = (float)delta;
-                    lastTickTime = Glfw.Time;
+                    lastTickTime = time;
 
                     // Do Physics Tick
                     Physics.Step((float)delta, _velocityIterations, _positionIterations);

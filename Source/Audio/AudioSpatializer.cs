@@ -10,8 +10,7 @@ namespace Electron2D.Audio
         public float PanningSpatializationMultiplier { get; set; } = 1.0f;
         public float VolumeSpatializationMultiplier { get; set; } = 1.0f;
         public bool Is3D { get; }
-        // add bezier curve for falloff
-
+        public Curve FalloffCurve { get; set;  }
         public float DirectionBasedPanning { get; private set; }
         public float DistanceBasedVolumeMultiplier01 { get; private set; }
 

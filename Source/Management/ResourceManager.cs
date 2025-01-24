@@ -1,4 +1,5 @@
-﻿using Electron2D.Management;
+﻿using Electron2D.Audio;
+using Electron2D.Management;
 using Electron2D.Rendering;
 using Electron2D.Rendering.Text;
 using System.Drawing;
@@ -10,10 +11,11 @@ namespace Electron2D
     {
         private static ResourceManager instance = null;
         private static readonly object loc = new();
-        private IDictionary<string, Texture2DArray> textureArrayCache = new Dictionary<string, Texture2DArray>();
-        private IDictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
-        private IDictionary<uint, Texture2D> textureHandleCache = new Dictionary<uint, Texture2D>();
-        private IDictionary<FontArguments, FontGlyphStore> fontCache = new Dictionary<FontArguments, FontGlyphStore>();
+        private Dictionary<string, AudioClip> audioClipCache = new Dictionary<string, AudioClip>();
+        private Dictionary<string, Texture2DArray> textureArrayCache = new Dictionary<string, Texture2DArray>();
+        private Dictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
+        private Dictionary<uint, Texture2D> textureHandleCache = new Dictionary<uint, Texture2D>();
+        private Dictionary<FontArguments, FontGlyphStore> fontCache = new Dictionary<FontArguments, FontGlyphStore>();
 
         public static ResourceManager Instance
         {
@@ -273,6 +275,26 @@ namespace Electron2D
             value = FontGlyphFactory.Load(_fontFile, _fontSize, _outlineSize);
             fontCache.Add(args, value);
             return value;
+        }
+        #endregion
+
+        #region AudioClips
+        public AudioClip LoadAudioClip(string _audioFileName)
+        {
+            audioClipCache.TryGetValue(_audioFileName, out var value);
+            if (value is not null)
+            {
+                return value;
+            }
+
+            value = new AudioClip(_audioFileName);
+            audioClipCache.Add(_audioFileName, value);
+            return value;
+        }
+
+        public void RemoveAudioClip(AudioClip _audioClip)
+        {
+            audioClipCache.Remove(_audioClip.FileName);
         }
         #endregion
     }
