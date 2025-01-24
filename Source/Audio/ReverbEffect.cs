@@ -27,9 +27,11 @@ namespace Electron2D.Audio
         private BiQuadFilter _allPassFilter1;
         private BiQuadFilter _allPassFilter2;
         private BiQuadFilter _allPassFilter3;
+        private BiQuadFilter _lowPassFilter;
+        private BiQuadFilter _highPassFilter;
         private Random _random = new Random(13371337);
-        private const float _offsetMin = 0.95f;
-        private const float _offsetMax = 1.05f;
+        private const float _offsetMin = 0.55f;
+        private const float _offsetMax = 1.45f;
         private bool _initialized = false;
 
         public ReverbEffect(ReverbFilterSettings settings, float dryWetMix, int quality = 40)
@@ -61,7 +63,7 @@ namespace Electron2D.Audio
         public void SetFilterSettings(ReverbFilterSettings settings)
         {
             Settings = settings;
-            if (_initialized )
+            if (_initialized)
             {
                 settings.Dampening = MathEx.Clamp01(settings.Dampening);
                 _allPassFilter1 = BiQuadFilter.AllPassFilter(WaveFormat.SampleRate,
@@ -70,6 +72,10 @@ namespace Electron2D.Audio
                     settings.AllPassFrequency2, settings.AllPassResonance2);
                 _allPassFilter3 = BiQuadFilter.AllPassFilter(WaveFormat.SampleRate,
                     settings.AllPassFrequency3, settings.AllPassResonance3);
+                _lowPassFilter = BiQuadFilter.LowPassFilter(WaveFormat.SampleRate,
+                    settings.LowPassCutoff, settings.LowPassResonance);
+                _highPassFilter = BiQuadFilter.HighPassFilter(WaveFormat.SampleRate,
+                    settings.HighPassCutoff, settings.HighPassResonance);
             }
         }
 
@@ -77,7 +83,7 @@ namespace Electron2D.Audio
         {
             for (int i = 0; i < _combFilters.Length; i++)
             {
-                float offset = 1 / Quality * GetRandomOffset();
+                float offset = 1 / _combFilters.Length * GetRandomOffset();
                 float decayTimeInSeconds = Settings.DecayTimeInSeconds - (offset * i * i);
                 _combFilters[i] = new CombFilter((int)(decayTimeInSeconds * Source.WaveFormat.SampleRate), Settings.Dampening);
             }
@@ -99,7 +105,10 @@ namespace Electron2D.Audio
                 float reverbSample = inputSample;
                 for(int x = 0; x < _combFilters.Length; x++)
                 {
-                    reverbSample += _combFilters[x].Transform(reverbSample) / Quality;
+                    float newSample = _combFilters[x].Transform(reverbSample);
+                    newSample = _lowPassFilter.Transform(newSample);
+                    newSample = _highPassFilter.Transform(newSample);
+                    reverbSample += newSample / _combFilters.Length;
                 }
                 reverbSample = _allPassFilter1.Transform(reverbSample);
                 reverbSample = _allPassFilter2.Transform(reverbSample);
