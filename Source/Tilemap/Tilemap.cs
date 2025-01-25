@@ -146,12 +146,12 @@ namespace Electron2D
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            throw new NotImplementedException();
         }
 
-        public static Tilemap FromJson(string filePath, Material material) // Temporary material assignment, will be done through JSON / specific material loading from disk system
+        public static Tilemap FromJson(string json)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         private void RegenerateEntireMesh()
