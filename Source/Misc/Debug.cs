@@ -19,7 +19,16 @@ namespace Electron2D
         /// Used to log formatted and togglable messages to the console and the latest log file.
         /// </summary>
         /// <param name="_message"></param>
-        public static void Log(object _message, ConsoleColor _messageColor = ConsoleColor.Gray)
+        public static void Log(object _message)
+        {
+            Log(_message, ConsoleColor.White);
+        }
+
+        /// <summary>
+        /// Used to log formatted and togglable messages to the console and the latest log file.
+        /// </summary>
+        /// <param name="_message"></param>
+        public static void Log(object _message, ConsoleColor _messageColor)
         {
             if (!DebuggingEnabled || !EnableLogMessages) return;
 

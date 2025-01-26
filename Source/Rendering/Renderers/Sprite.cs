@@ -26,6 +26,18 @@ namespace Electron2D
             RenderLayerManager.OrderRenderable(this);
         }
 
+        ~Sprite()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            RenderLayerManager.RemoveRenderable(this);
+            Renderer.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
         public void ForceTexture(Texture2DArray texture, bool mustFinishLoop)
         {
             Renderer.ClearAnimation(texture);
@@ -39,11 +51,6 @@ namespace Electron2D
         public void NextSprite() { Renderer.NextSprite(); }
         public void PreviousSprite() { Renderer.PreviousSprite(); }
         public void SetSpriteAnimationSpeed(float spritesPerSecond) { Renderer.SpriteAnimationSpeed = spritesPerSecond; }
-
-        ~Sprite()
-        {
-            RenderLayerManager.RemoveRenderable(this);
-        }
 
         public int GetRenderLayer() => RenderLayer;
 

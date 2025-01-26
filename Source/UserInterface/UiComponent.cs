@@ -145,8 +145,14 @@ namespace Electron2D.UserInterface
 
         ~UiComponent()
         {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
             if (_registerRenderable) RenderLayerManager.RemoveRenderable(this);
             GlobalUI.MainCanvas.UnregisterUiComponent(this);
+            GC.SuppressFinalize(this);
         }
 
         public void Initialize()
