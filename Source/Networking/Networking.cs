@@ -17,7 +17,7 @@ namespace Electron2D.Networking
             NetworkClassCreated = 60000,
             NetworkClassUpdated = 60001,
             NetworkClassDeleted = 60002,
-            NetworkClassSyncComplete = 60003 // TODO
+            NetworkClassSync = 60003 // TODO
         }
 
         private static Networking _instance;
@@ -33,19 +33,20 @@ namespace Electron2D.Networking
             }
         }
 
-        public Dictionary<ushort, NetworkGameClass> ClientNetworkGameClasses { get; private set; } = new();
-        private Dictionary<ushort, ushort> _serverNetworkGameClassOwnership = new();
+        public Dictionary<string, NetworkGameClass> ClientNetworkGameClasses { get; private set; } = new();
+        private Dictionary<string, ushort> _serverNetworkGameClassOwnership = new();
         private static List<CreateNetworkGameClass> _networkGameClassRegister = new();
         public Server Server { get; private set; }
         public long TimeServerStarted { get; private set; } = -1;
         public Client Client { get; private set; }
 
-        public ushort ServerNetworkGameClassIDCount { get; private set; } = 0;
+        public string LastUsedNetworkID { get; set; } = string.Empty;
         public bool IsHost => Server != null && IsServerRunning && Client.IsConnected;
         public bool IsServerRunning => Server.IsRunning;
         public bool IsClientConnected => Client.IsConnected;
         public bool IsClientConnecting => Client.IsConnecting;
 
+        public event Action NetworkGameClassesLoaded;
         public event Action<string> ConnectionFailed;
         public event Action ConnectionSuccess;
         private string _serverPassword;
@@ -97,12 +98,7 @@ namespace Electron2D.Networking
 
         public void Dispose()
         {
-            if(Server != null)
-            {
-                Server.Stop();
-            }
-
-            Client.Disconnect();
+            Disconnect();
 
             Program.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
@@ -114,22 +110,14 @@ namespace Electron2D.Networking
         {
             // add check to see if other clients are allowed to create network classes
             int registerID = message.GetInt();
+            string networkID = message.GetString();
             string json = message.GetString();
-            ushort networkID;
-            if(client == Instance.Client.Id)
-            {
-                // Value was already increased because of local client
-                networkID = (ushort)(Instance.ServerNetworkGameClassIDCount - 1);
-            }
-            else
-            {
-                networkID = Instance.GetNextNetworkID();
-            }
+            Instance.LastUsedNetworkID = networkID;
             Instance._serverNetworkGameClassOwnership.Add(networkID, client);
             Message returnMessage = Message.Create(MessageSendMode.Reliable,
                 (ushort)NetworkingMessageType.NetworkClassCreated);
             returnMessage.AddInt(registerID);
-            returnMessage.AddUShort(networkID);
+            returnMessage.AddString(networkID);
             returnMessage.AddUShort(client);
             returnMessage.AddString(json);
             Instance.Server.SendToAll(returnMessage);
@@ -138,7 +126,7 @@ namespace Electron2D.Networking
         [MessageHandler((ushort)NetworkingMessageType.NetworkClassUpdated)]
         private static void ServerReceiveNetworkClassUpdate(ushort client, Message message)
         {
-            ushort networkID = message.GetUShort();
+            string networkID = message.GetString();
             uint updateVersion = message.GetUInt();
             ushort type = message.GetUShort();
             string json = message.GetString();
@@ -151,16 +139,11 @@ namespace Electron2D.Networking
             }
 
             Message returnMessage = Message.Create(MessageSendMode.Reliable, (ushort)NetworkingMessageType.NetworkClassUpdated);
-            returnMessage.AddUShort(networkID);
+            returnMessage.AddString(networkID);
             returnMessage.AddUInt(updateVersion);
             returnMessage.AddUShort(type);
             returnMessage.AddString(json);
             Instance.Server.SendToAll(returnMessage, client);
-        }
-
-        public ushort GetNextNetworkID()
-        {
-            return ServerNetworkGameClassIDCount++;
         }
 
         private void ServerValidateConnection(Connection pendingConnection, Message connectMessage)
@@ -209,7 +192,7 @@ namespace Electron2D.Networking
                 NetworkGameClass gameClass = pair.Value;
                 Message message = Message.Create(MessageSendMode.Reliable, (ushort)NetworkingMessageType.NetworkClassCreated);
                 message.AddInt(gameClass.GetRegisterID());
-                message.AddUShort(gameClass.NetworkID);
+                message.AddString(gameClass.NetworkID);
                 message.AddUShort(gameClass.OwnerID);
                 message.AddString(gameClass.ToJson());
                 Server.Send(message, client);
@@ -222,7 +205,7 @@ namespace Electron2D.Networking
         private static void ClientReceiveNetworkClassCreation(Message message)
         {
             int registerID = message.GetInt();
-            ushort networkID = message.GetUShort();
+            string networkID = message.GetString();
             ushort clientID = message.GetUShort();
             string json = message.GetString();
 
@@ -242,13 +225,28 @@ namespace Electron2D.Networking
         [MessageHandler((ushort)NetworkingMessageType.NetworkClassUpdated)]
         private static void ClientReceiveNetworkClassUpdate(Message message)
         {
-            ushort networkID = message.GetUShort();
+            string networkID = message.GetString();
             uint updateVersion = message.GetUInt();
             ushort type = message.GetUShort();
             string json = message.GetString();
 
             NetworkGameClass networkGameClass = Instance.ClientNetworkGameClasses[networkID];
             if(networkGameClass.CheckUpdateVersion(type, updateVersion))
+            {
+                networkGameClass.ReceiveData(type, json);
+            }
+        }
+
+        [MessageHandler((ushort)NetworkingMessageType.NetworkClassSync)]
+        private static void ClientReceiveNetworkSyncRequest(Message message)
+        {
+            string networkID = message.GetString();
+            uint updateVersion = message.GetUInt();
+            ushort type = message.GetUShort();
+            string json = message.GetString();
+
+            NetworkGameClass networkGameClass = Instance.ClientNetworkGameClasses[networkID];
+            if (networkGameClass.CheckUpdateVersion(type, updateVersion))
             {
                 networkGameClass.ReceiveData(type, json);
             }
@@ -265,6 +263,15 @@ namespace Electron2D.Networking
             Message message = Message.Create();
             message.AddString(password);
             return Client.Connect($"{ip}:{port}", message: message);
+        }
+
+        public void Disconnect()
+        {
+            Client.Disconnect();
+            ClientNetworkGameClasses.Clear();
+            StopServer();
+            _serverNetworkGameClassOwnership.Clear();
+            _serverPassword = "";
         }
 
         private void ClientConnectionFailed(object? sender, ConnectionFailedEventArgs e)

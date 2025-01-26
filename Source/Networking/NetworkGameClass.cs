@@ -14,7 +14,7 @@ namespace Electron2D.Networking
     /// </summary>
     public abstract class NetworkGameClass : IGameClass
     {
-        public ushort NetworkID { get; private set; } = ushort.MaxValue;
+        public string NetworkID { get; private set; } = string.Empty;
         public ushort OwnerID { get; private set; } = ushort.MaxValue;
         public bool IsOwner { get; private set; } = false;
         public bool IsNetworkInitialized { get; private set; }
@@ -24,18 +24,25 @@ namespace Electron2D.Networking
         /// <summary>
         /// Sends a request to the server to spawn this object.
         /// </summary>
-        public void Spawn()
+        public void Spawn(string networkID)
         {
             if (IsNetworkInitialized) return;
             Message message = Message.Create(MessageSendMode.Reliable,
                 (ushort)Networking.NetworkingMessageType.NetworkClassCreated);
             message.AddInt(GetRegisterID());
+            message.AddString(networkID);
             message.AddString(ToJson());
             if(Networking.Instance.IsHost)
             {
                 OwnerID = Networking.Instance.Client.Id;
                 IsOwner = true;
-                NetworkID = Networking.Instance.GetNextNetworkID();
+                NetworkID = networkID;
+                Networking.Instance.LastUsedNetworkID = networkID;
+                if(Networking.Instance.ClientNetworkGameClasses.ContainsKey(NetworkID))
+                {
+                    Debug.LogError($"The NetworkID [{networkID}] already exists!");
+                    return;
+                }
                 Networking.Instance.ClientNetworkGameClasses.Add(NetworkID, this);
             }
             Networking.Instance.Client.Send(message);
@@ -47,7 +54,7 @@ namespace Electron2D.Networking
         /// <param name="networkID"></param>
         /// <param name="ownerID"></param>
         /// <param name="json"></param>
-        public void ServerSpawn(ushort networkID, ushort ownerID, string json)
+        public void ServerSpawn(string networkID, ushort ownerID, string json)
         {
             if(IsNetworkInitialized) return;
             if(!Networking.Instance.IsHost)
@@ -115,7 +122,7 @@ namespace Electron2D.Networking
                 return;
             }
             Message message = Message.Create(sendMode, (ushort)Networking.NetworkingMessageType.NetworkClassUpdated);
-            message.AddUShort(NetworkID);
+            message.AddString(NetworkID);
             message.AddUInt(_updateVersion);
             message.AddUShort(type);
             message.AddString(json);

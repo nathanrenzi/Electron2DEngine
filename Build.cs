@@ -27,7 +27,7 @@ public class Build : Game
         if (Networking.Instance.IsHost)
         {
             gameClass = new ExampleNetworkGameClass();
-            gameClass.Spawn();
+            gameClass.Spawn("test");
             gameClass.Value = 10;
         }
     }
