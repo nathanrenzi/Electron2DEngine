@@ -19,6 +19,8 @@ namespace Electron2D.Networking
         public bool IsOwner { get; private set; } = false;
         public bool IsNetworkInitialized { get; private set; }
 
+        protected uint _updateVersion = 0;
+
         /// <summary>
         /// Sends a request to the server to spawn this object.
         /// </summary>
@@ -86,7 +88,7 @@ namespace Electron2D.Networking
         /// so that players joining after object has been created are up to date.
         /// </summary>
         /// <param name="json">The json that is used to create the network class.</param>
-        public abstract void FromJson(string json);
+        protected abstract void FromJson(string json);
         /// <summary>
         /// Should get the current state of the network class in json format.
         /// </summary>
@@ -107,10 +109,18 @@ namespace Electron2D.Networking
         /// Leave default if only one update type is ever sent.</param>
         protected void SendData(MessageSendMode sendMode, string json, ushort type = 0)
         {
-            Message message = Message.Create(sendMode, Networking.NetworkingMessageType.NetworkClassUpdated);
+            if (!IsOwner)
+            {
+                Debug.LogError("Cannot send data using NetworkGameClass that does not belong to the client.");
+                return;
+            }
+            Message message = Message.Create(sendMode, (ushort)Networking.NetworkingMessageType.NetworkClassUpdated);
             message.AddUShort(NetworkID);
+            message.AddUInt(_updateVersion);
             message.AddUShort(type);
             message.AddString(json);
+            Networking.Instance.Client.Send(message);
+            _updateVersion++;
         }
         /// <summary>
         /// Returns the register ID of the class. The register ID must be set by passing the value returned
@@ -122,5 +132,13 @@ namespace Electron2D.Networking
         /// Called when the server initializes the network game class.
         /// </summary>
         public abstract void OnNetworkInitialized();
+        /// <summary>
+        /// Should check the received version against the stored one (<see cref="_updateVersion"/>), if applicable.
+        /// Can return true to ignore update versions.
+        /// </summary>
+        /// <param name="type">The type of update received.</param>
+        /// <param name="version">The version number for the update received.</param>
+        /// <returns></returns>
+        public abstract bool CheckUpdateVersion(ushort type, uint version);
     }
 }

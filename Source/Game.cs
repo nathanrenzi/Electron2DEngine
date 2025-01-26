@@ -25,17 +25,36 @@ namespace Electron2D
 
         private bool _doFixedUpdate = false;
         private List<IGameClass> _classes = new List<IGameClass>();
+        private List<IGameClass> _classesQueue = new List<IGameClass>();
+        private bool _useClassesQueue = false;
         private BlendMode _currentBlendMode = BlendMode.Interpolative;
         private AudioSpatialListener _defaultSpatialListener;
 
+        private void PopClassesQueue()
+        {
+            for(int i = 0; i < _classesQueue.Count; i++)
+            {
+                _classes.Add(_classesQueue[i]);
+            }
+            _classesQueue.Clear();
+        }
+
         public void RegisterGameClass(IGameClass gameClass)
         {
-            if (_classes.Contains(gameClass)) return;
-            _classes.Add(gameClass);
+            if (_classes.Contains(gameClass) || _classesQueue.Contains(gameClass)) return;
+            if(_useClassesQueue)
+            {
+                _classesQueue.Add(gameClass);
+            }
+            else
+            {
+                _classes.Add(gameClass);
+            }
         }
 
         public void UnregisterGameClass(IGameClass gameClass)
         {
+            _classesQueue.Remove(gameClass);
             _classes.Remove(gameClass);
         }
 
@@ -189,10 +208,13 @@ namespace Electron2D
                 double goST = Glfw.Time;
                 Update();
                 ShaderGlobalUniforms.UpdateShaders();
+                _useClassesQueue = true;
                 foreach (IGameClass gameClass in _classes)
                 {
                     gameClass.Update();
                 }
+                _useClassesQueue = false;
+                PopClassesQueue();
                 LateUpdateEvent?.Invoke();
                 PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
                 // --------------------------
@@ -201,12 +223,15 @@ namespace Electron2D
                 double phyST = Glfw.Time;
                 if(_doFixedUpdate)
                 {
+                    _useClassesQueue = true;
                     foreach (IGameClass gameClass in _classes)
                     {
                         gameClass.FixedUpdate();
                     }
                     _doFixedUpdate = false;
-                }
+                    _useClassesQueue = false;
+                    PopClassesQueue();
+                }               
                 PerformanceTimings.PhysicsMilliseconds = (Glfw.Time - phyST) * 1000;
                 // -------------------------------
 

@@ -21,6 +21,10 @@ namespace Electron2D.Networking.Examples
                 _value = value;
                 SendData(Riptide.MessageSendMode.Reliable, GetJson());
             }
+            get
+            {
+                return _value;
+            }
         }
         private float _value;
         private static int _registerID;
@@ -46,18 +50,17 @@ namespace Electron2D.Networking.Examples
             return JsonConvert.SerializeObject(new ExampleJsonDataUpdate(_value));
         }
 
-        public override void FromJson(string json)
+        protected override void FromJson(string json)
         {
-            // Json is used instead of state because json contains all data needed to initialize object,
-            // state would contain extra data that is applied once object is initialized.
-            // This doesn't matter in this example, but in more complicated objects having it separated might be useful.
             _value = JsonConvert.DeserializeObject<ExampleJsonDataUpdate>(json).NewValue;
+            Debug.Log($"Example network game class value initialized to {_value}");
         }
 
         public override void ReceiveData(ushort type, string json)
         {
-            // type is not used here, only one update type is used
+            // type is not used as only one update type is used
             _value = JsonConvert.DeserializeObject<ExampleJsonDataUpdate>(json).NewValue;
+            Debug.Log($"Example network game class value set to {_value}");
         }
 
         // Not used, inherited from IGameClass
@@ -66,7 +69,23 @@ namespace Electron2D.Networking.Examples
         public static void SetRegisterID(int registerID) => _registerID = registerID;
         public override int GetRegisterID() => _registerID;
 
-        // Not used, inherited from NetworkGameClass
-        public override void OnNetworkInitialized() { }
+        public override void OnNetworkInitialized()
+        {
+            Debug.Log("Example network game class initialized!");
+        }
+
+        public override bool CheckUpdateVersion(ushort type, uint version)
+        {
+            // type is not used as only one update type is used
+            if(version > _updateVersion)
+            {
+                _updateVersion = version;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
