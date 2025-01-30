@@ -20,56 +20,12 @@ namespace Electron2D.Networking
         public bool IsNetworkInitialized { get; private set; }
         public uint UpdateVersion { get; private set; } = 0;
 
-        /// <summary>
-        /// Sends a request to the server to spawn this object.
-        /// </summary>
-        public void Spawn(string networkID)
+        public NetworkGameClass(string networkID = "")
         {
-            if (IsNetworkInitialized) return;
-            if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(networkID))
+            if(networkID != string.Empty)
             {
-                Debug.LogError($"Network game class with id [{networkID}] already exists. Cannot spawn.");
-                return;
+                Spawn(networkID);
             }
-            Message message = Message.Create(MessageSendMode.Reliable,
-                (ushort)NetworkMessageType.NetworkClassCreated);
-            message.AddUInt(UpdateVersion);
-            message.AddInt(GetRegisterID());
-            message.AddString(networkID);
-            message.AddString(ToJson());
-            if(NetworkManager.Instance.Server.IsRunning && NetworkManager.Instance.Client.IsConnected)
-            {
-                OwnerID = NetworkManager.Instance.Client.ID;
-                IsOwner = true;
-                NetworkID = networkID;
-                if(NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(NetworkID))
-                {
-                    Debug.LogError($"The NetworkID [{networkID}] already exists!");
-                    return;
-                }
-                NetworkManager.Instance.Client.NetworkGameClasses.Add(NetworkID, this);
-            }
-            NetworkManager.Instance.Client.Send(message);
-        }
-
-        /// <summary>
-        /// Called by the server when spawning over the network. Should not be called elsewhere.
-        /// </summary>
-        /// <param name="networkID"></param>
-        /// <param name="ownerID"></param>
-        /// <param name="json"></param>
-        public void NetworkInitialize(string networkID, ushort ownerID)
-        {
-            if(IsNetworkInitialized) return;
-            if(!(NetworkManager.Instance.Server.IsRunning && NetworkManager.Instance.Client.IsConnected))
-            {
-                NetworkID = networkID;
-                OwnerID = ownerID;
-                IsOwner = NetworkManager.Instance.Client.ID == ownerID;
-            }
-            Program.Game.RegisterGameClass(this);
-            IsNetworkInitialized = true;
-            OnNetworkInitialized();
         }
 
         ~NetworkGameClass()
@@ -88,47 +44,73 @@ namespace Electron2D.Networking
                 GC.SuppressFinalize(this);
             }
         }
+        public abstract void FixedUpdate();
+        public abstract void Update();
+
 
         /// <summary>
-        /// Called by the server when this object should be disposed. Should not be called elsewhere.
+        /// Sends a request to the server to spawn this object.
         /// </summary>
-        public void NetworkDispose()
+        public void Spawn(string networkID)
         {
-            Program.Game.UnregisterGameClass(this);
-            GC.SuppressFinalize(this);
+            if (IsNetworkInitialized) return;
+            if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(networkID))
+            {
+                Debug.LogError($"Network game class with id [{networkID}] already exists. Cannot spawn.");
+                return;
+            }
+            Message message = Message.Create(MessageSendMode.Reliable,
+                (ushort)NetworkMessageType.NetworkClassCreated);
+            message.AddUInt(UpdateVersion);
+            message.AddInt(GetRegisterID());
+            message.AddString(networkID);
+            message.AddString(ToJson());
+            if (NetworkManager.Instance.Server.IsRunning && NetworkManager.Instance.Client.IsConnected)
+            {
+                OwnerID = NetworkManager.Instance.Client.ID;
+                IsOwner = true;
+                NetworkID = networkID;
+                if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(NetworkID))
+                {
+                    Debug.LogError($"The NetworkID [{networkID}] already exists!");
+                    return;
+                }
+                NetworkManager.Instance.Client.NetworkGameClasses.Add(NetworkID, this);
+            }
+            NetworkManager.Instance.Client.Send(message);
         }
-
+        /// <summary>
+        /// Called by the server when spawning over the network. Should not be called elsewhere.
+        /// </summary>
+        /// <param name="networkID"></param>
+        /// <param name="ownerID"></param>
+        /// <param name="json"></param>
+        public void NetworkInitialize(string networkID, ushort ownerID)
+        {
+            if (IsNetworkInitialized) return;
+            if (!(NetworkManager.Instance.Server.IsRunning && NetworkManager.Instance.Client.IsConnected))
+            {
+                NetworkID = networkID;
+                OwnerID = ownerID;
+                IsOwner = NetworkManager.Instance.Client.ID == ownerID;
+            }
+            Program.Game.RegisterGameClass(this);
+            IsNetworkInitialized = true;
+            OnNetworkInitialized();
+        }
+        /// <summary>
+        /// Sets the current update version.
+        /// </summary>
+        /// <param name="newVersion">Must be newer than the current update version.</param>
         public void SetUpdateVersion(uint newVersion)
         {
-            if(newVersion > UpdateVersion)
+            if (newVersion > UpdateVersion)
             {
                 UpdateVersion = newVersion;
             }
         }
-
-        public abstract void FixedUpdate();
-        public abstract void Update();
-
         /// <summary>
-        /// Should initialize the network object from json data. Json should contain
-        /// all data, including any data that has been changed since the object has been created
-        /// so that players joining after object has been created are up to date.
-        /// </summary>
-        /// <param name="json">The json that is used to create the network class.</param>
-        protected abstract void FromJson(string json);
-        /// <summary>
-        /// Should get the current state of the network class in json format.
-        /// </summary>
-        /// <returns>The current state of the object in json format.</returns>
-        public abstract string ToJson();
-        /// <summary>
-        /// Should interpret the json data received from the server.
-        /// </summary>
-        /// <param name="type">The type of data received.</param>
-        /// <param name="json">The update data in json format.</param>
-        public abstract void ReceiveData(ushort type, string json);
-        /// <summary>
-        /// Sends the update data to the server.
+        /// Sends data to the server registered under this objects NetworkID.
         /// </summary>
         /// <param name="sendMode"></param>
         /// <param name="json"></param>
@@ -149,6 +131,34 @@ namespace Electron2D.Networking
             message.AddString(json);
             NetworkManager.Instance.Client.Send(message);
         }
+        /// <summary>
+        /// Called by the server when this object should be disposed. Should not be called elsewhere.
+        /// </summary>
+        public void NetworkDispose()
+        {
+            Program.Game.UnregisterGameClass(this);
+            GC.SuppressFinalize(this);
+        }
+
+
+        /// <summary>
+        /// Should initialize the network object from json data. Json should contain
+        /// all data, including any data that has been changed since the object has been created
+        /// so that players joining after object has been created are up to date.
+        /// </summary>
+        /// <param name="json">The json that is used to create the network class.</param>
+        protected abstract void SetJson(string json);
+        /// <summary>
+        /// Should get the current state of the network class in json format.
+        /// </summary>
+        /// <returns>The current state of the object in json format.</returns>
+        public abstract string ToJson();
+        /// <summary>
+        /// Should interpret the json data received from the server.
+        /// </summary>
+        /// <param name="type">The type of data received.</param>
+        /// <param name="json">The update data in json format.</param>
+        public abstract void ReceiveData(ushort type, string json);
         /// <summary>
         /// Returns the register ID of the class. The register ID must be set by passing the value returned
         /// from <see cref="NetworkManager.RegisterNetworkGameClass"/> into a static method in each subclass.

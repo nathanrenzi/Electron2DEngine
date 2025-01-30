@@ -34,8 +34,7 @@ public class Build : Game
     {
         if (NetworkManager.Instance.Client.IsConnected && NetworkManager.Instance.Server.IsRunning)
         {
-            gameClass = new ExampleNetworkGameClass();
-            gameClass.Spawn("test");
+            gameClass = new ExampleNetworkGameClass("test");
             gameClass.Value = 10;
         }
     }

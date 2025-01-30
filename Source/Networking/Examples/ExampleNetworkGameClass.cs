@@ -33,9 +33,11 @@ namespace Electron2D.Networking.Examples
         public static ExampleNetworkGameClass FactoryMethod(string json)
         {
             ExampleNetworkGameClass exampleNetworkGameClass = new ExampleNetworkGameClass();
-            exampleNetworkGameClass.FromJson(json);
+            exampleNetworkGameClass.SetJson(json);
             return exampleNetworkGameClass;
         }
+
+        public ExampleNetworkGameClass(string networkID = "") : base(networkID) { }
 
         // Not used, inherited from IGameClass
         public override void FixedUpdate() { }
@@ -45,7 +47,7 @@ namespace Electron2D.Networking.Examples
             return JsonConvert.SerializeObject(new ExampleJsonDataUpdate(_value));
         }
 
-        protected override void FromJson(string json)
+        protected override void SetJson(string json)
         {
             ExampleJsonDataUpdate update = JsonConvert.DeserializeObject<ExampleJsonDataUpdate>(json);
             if(update != null)
@@ -58,7 +60,7 @@ namespace Electron2D.Networking.Examples
         public override void ReceiveData(ushort type, string json)
         {
             // type is not used as only one update type is used
-            FromJson(json); // In this example, receive data does the same thing as FromJson
+            SetJson(json); // In this example, receive data does the same thing as FromJson
         }
 
         // Not used, inherited from IGameClass
