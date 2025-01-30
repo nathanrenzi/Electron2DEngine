@@ -5,7 +5,7 @@ namespace Electron2D.Networking
     /// <summary>
     /// An abstract class that provides the boilerplate for networked game classes.
     /// Abstract method <see cref="ReceiveData(ushort, string)"/> receives update data
-    /// from the server and interprets it. <see cref="SendData(MessageSendMode, string, ushort)"/>
+    /// from the server and interprets it. <see cref="Send(MessageSendMode, string, ushort)"/>
     /// sends update data to the server, which is then received and interpreted by all other clients.
     /// <see cref="ToJson()"/> is called by a message from the server, requesting the current
     /// state of the game class so that a connecting client can properly initialize their object. Any
@@ -134,7 +134,7 @@ namespace Electron2D.Networking
         /// <param name="json"></param>
         /// <param name="type">The type of data being sent, in case of multiple update types.
         /// Leave default if only one update type is ever sent.</param>
-        protected void SendData(MessageSendMode sendMode, string json, ushort type = 0)
+        protected void Send(MessageSendMode sendMode, string json, ushort type = 0)
         {
             UpdateVersion++;
             if (!IsOwner)

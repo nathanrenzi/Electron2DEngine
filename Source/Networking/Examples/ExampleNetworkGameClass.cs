@@ -20,7 +20,7 @@ namespace Electron2D.Networking.Examples
             set
             {
                 _value = value;
-                SendData(Riptide.MessageSendMode.Reliable, ToJson());
+                Send(Riptide.MessageSendMode.Reliable, ToJson());
             }
             get
             {
