@@ -9,7 +9,7 @@ namespace Electron2D.Networking
     /// sends update data to the server, which is then received and interpreted by all other clients.
     /// <see cref="ToJson()"/> is called by a message from the server, requesting the current
     /// state of the game class so that a connecting client can properly initialize their object. Any
-    /// subclasses of <see cref="NetworkGameClass"/> must call <see cref="Networking.RegisterNetworkGameClass"/>
+    /// subclasses of <see cref="NetworkGameClass"/> must call <see cref="NetworkManager.RegisterNetworkGameClass"/>
     /// in the <see cref="Game.Initialize"/> method to be properly instantiated over the network.
     /// </summary>
     public abstract class NetworkGameClass : IGameClass
@@ -18,8 +18,7 @@ namespace Electron2D.Networking
         public ushort OwnerID { get; private set; } = ushort.MaxValue;
         public bool IsOwner { get; private set; } = false;
         public bool IsNetworkInitialized { get; private set; }
-
-        protected uint _updateVersion = 0;
+        public uint UpdateVersion { get; private set; } = 0;
 
         /// <summary>
         /// Sends a request to the server to spawn this object.
@@ -27,25 +26,30 @@ namespace Electron2D.Networking
         public void Spawn(string networkID)
         {
             if (IsNetworkInitialized) return;
+            if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(networkID))
+            {
+                Debug.LogError($"Network game class with id [{networkID}] already exists. Cannot spawn.");
+                return;
+            }
             Message message = Message.Create(MessageSendMode.Reliable,
-                (ushort)Networking.NetworkingMessageType.NetworkClassCreated);
+                (ushort)NetworkMessageType.NetworkClassCreated);
+            message.AddUInt(UpdateVersion);
             message.AddInt(GetRegisterID());
             message.AddString(networkID);
             message.AddString(ToJson());
-            if(Networking.Instance.IsHost)
+            if(NetworkManager.Instance.Server.IsRunning && NetworkManager.Instance.Client.IsConnected)
             {
-                OwnerID = Networking.Instance.Client.Id;
+                OwnerID = NetworkManager.Instance.Client.ID;
                 IsOwner = true;
                 NetworkID = networkID;
-                Networking.Instance.LastUsedNetworkID = networkID;
-                if(Networking.Instance.ClientNetworkGameClasses.ContainsKey(NetworkID))
+                if(NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(NetworkID))
                 {
                     Debug.LogError($"The NetworkID [{networkID}] already exists!");
                     return;
                 }
-                Networking.Instance.ClientNetworkGameClasses.Add(NetworkID, this);
+                NetworkManager.Instance.Client.NetworkGameClasses.Add(NetworkID, this);
             }
-            Networking.Instance.Client.Send(message);
+            NetworkManager.Instance.Client.Send(message);
         }
 
         /// <summary>
@@ -54,15 +58,14 @@ namespace Electron2D.Networking
         /// <param name="networkID"></param>
         /// <param name="ownerID"></param>
         /// <param name="json"></param>
-        public void ServerSpawn(string networkID, ushort ownerID, string json)
+        public void NetworkInitialize(string networkID, ushort ownerID)
         {
             if(IsNetworkInitialized) return;
-            if(!Networking.Instance.IsHost)
+            if(!(NetworkManager.Instance.Server.IsRunning && NetworkManager.Instance.Client.IsConnected))
             {
                 NetworkID = networkID;
                 OwnerID = ownerID;
-                IsOwner = Networking.Instance.Client.Id == ownerID;
-                FromJson(json);
+                IsOwner = NetworkManager.Instance.Client.ID == ownerID;
             }
             Program.Game.RegisterGameClass(this);
             IsNetworkInitialized = true;
@@ -79,11 +82,28 @@ namespace Electron2D.Networking
             if(IsOwner)
             {
                 Message message = Message.Create(MessageSendMode.Reliable,
-                    (ushort)Networking.NetworkingMessageType.NetworkClassDeleted);
-                Networking.Instance.Client.Send(message);
+                    (ushort)NetworkMessageType.NetworkClassDeleted);
+                NetworkManager.Instance.Client.Send(message);
+                Program.Game.UnregisterGameClass(this);
+                GC.SuppressFinalize(this);
             }
+        }
+
+        /// <summary>
+        /// Called by the server when this object should be disposed. Should not be called elsewhere.
+        /// </summary>
+        public void NetworkDispose()
+        {
             Program.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
+        }
+
+        public void SetUpdateVersion(uint newVersion)
+        {
+            if(newVersion > UpdateVersion)
+            {
+                UpdateVersion = newVersion;
+            }
         }
 
         public abstract void FixedUpdate();
@@ -116,22 +136,22 @@ namespace Electron2D.Networking
         /// Leave default if only one update type is ever sent.</param>
         protected void SendData(MessageSendMode sendMode, string json, ushort type = 0)
         {
+            UpdateVersion++;
             if (!IsOwner)
             {
                 Debug.LogError("Cannot send data using NetworkGameClass that does not belong to the client.");
                 return;
             }
-            Message message = Message.Create(sendMode, (ushort)Networking.NetworkingMessageType.NetworkClassUpdated);
+            Message message = Message.Create(sendMode, (ushort)NetworkMessageType.NetworkClassUpdated);
             message.AddString(NetworkID);
-            message.AddUInt(_updateVersion);
+            message.AddUInt(UpdateVersion);
             message.AddUShort(type);
             message.AddString(json);
-            Networking.Instance.Client.Send(message);
-            _updateVersion++;
+            NetworkManager.Instance.Client.Send(message);
         }
         /// <summary>
         /// Returns the register ID of the class. The register ID must be set by passing the value returned
-        /// from <see cref="Networking.RegisterNetworkGameClass"/> into a static method in each subclass.
+        /// from <see cref="NetworkManager.RegisterNetworkGameClass"/> into a static method in each subclass.
         /// </summary>
         /// <returns></returns>
         public abstract int GetRegisterID();
@@ -140,7 +160,7 @@ namespace Electron2D.Networking
         /// </summary>
         public abstract void OnNetworkInitialized();
         /// <summary>
-        /// Should check the received version against the stored one (<see cref="_updateVersion"/>), if applicable.
+        /// Should check the received version against the stored one (<see cref="UpdateVersion"/>), if applicable.
         /// Can return true to ignore update versions.
         /// </summary>
         /// <param name="type">The type of update received.</param>

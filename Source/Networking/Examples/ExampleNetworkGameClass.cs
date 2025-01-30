@@ -4,6 +4,7 @@ namespace Electron2D.Networking.Examples
 {
     public class ExampleNetworkGameClass : NetworkGameClass
     {
+        [Serializable]
         private class ExampleJsonDataUpdate
         {
             public float NewValue;
@@ -19,7 +20,7 @@ namespace Electron2D.Networking.Examples
             set
             {
                 _value = value;
-                SendData(Riptide.MessageSendMode.Reliable, GetJson());
+                SendData(Riptide.MessageSendMode.Reliable, ToJson());
             }
             get
             {
@@ -36,31 +37,28 @@ namespace Electron2D.Networking.Examples
             return exampleNetworkGameClass;
         }
 
-        private string GetJson()
-        {
-            return JsonConvert.SerializeObject(new ExampleJsonDataUpdate(_value));
-        }
-
         // Not used, inherited from IGameClass
         public override void FixedUpdate() { }
 
         public override string ToJson()
         {
-            // Not used in this example
             return JsonConvert.SerializeObject(new ExampleJsonDataUpdate(_value));
         }
 
         protected override void FromJson(string json)
         {
-            _value = JsonConvert.DeserializeObject<ExampleJsonDataUpdate>(json).NewValue;
-            Debug.Log($"Example network game class value initialized to {_value}");
+            ExampleJsonDataUpdate update = JsonConvert.DeserializeObject<ExampleJsonDataUpdate>(json);
+            if(update != null)
+            {
+                _value = update.NewValue;
+            }
+            Debug.Log($"Example network game class value set to {_value}");
         }
 
         public override void ReceiveData(ushort type, string json)
         {
             // type is not used as only one update type is used
-            _value = JsonConvert.DeserializeObject<ExampleJsonDataUpdate>(json).NewValue;
-            Debug.Log($"Example network game class value set to {_value}");
+            FromJson(json); // In this example, receive data does the same thing as FromJson
         }
 
         // Not used, inherited from IGameClass
@@ -77,15 +75,7 @@ namespace Electron2D.Networking.Examples
         public override bool CheckUpdateVersion(ushort type, uint version)
         {
             // type is not used as only one update type is used
-            if(version > _updateVersion)
-            {
-                _updateVersion = version;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return version > UpdateVersion;
         }
     }
 }
