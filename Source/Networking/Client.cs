@@ -27,8 +27,8 @@ namespace Electron2D.Networking.ClientServer
         {
             RiptideClient = new Riptide.Client();
             RiptideClient.ConnectionFailed += HandleConnectionFailed;
-            RiptideClient.Connected += HandleConnectionSuccess;
-            RiptideClient.ClientDisconnected += HandleDisconnect;
+            RiptideClient.Connected += HandleConnected;
+            RiptideClient.Disconnected += HandleDisconnect;
             RiptideClient.MessageReceived += HandleMessageReceived;
         }
 
@@ -59,16 +59,16 @@ namespace Electron2D.Networking.ClientServer
 
                     switch (message.Item1)
                     {
-                        case NetworkMessageType.NetworkClassCreated:
-                            HandleNetworkClassCreated(message.Item2);
+                        case NetworkMessageType.NetworkClassSpawned:
+                            HandleNetworkClassSpawned(message.Item2);
                             message.Item2.Release();
                             break;
                         case NetworkMessageType.NetworkClassUpdated:
                             HandleNetworkClassUpdated(message.Item2);
                             message.Item2.Release();
                             break;
-                        case NetworkMessageType.NetworkClassDeleted:
-                            HandleNetworkClassDeleted(message.Item2);
+                        case NetworkMessageType.NetworkClassDespawned:
+                            HandleNetworkClassDespawned(message.Item2);
                             message.Item2.Release();
                             break;
                         case NetworkMessageType.NetworkClassSync:
@@ -99,13 +99,12 @@ namespace Electron2D.Networking.ClientServer
         public void Disconnect()
         {
             RiptideClient.Disconnect();
-            NetworkGameClasses.Clear();
         }
 
         #region Handlers
         private void HandleMessageReceived(object? sender, MessageReceivedEventArgs e)
         {
-            if (e.MessageId < 60000 || e.MessageId > 60004)
+            if (e.MessageId < NetworkManager.MIN_NETWORK_MESSAGE_TYPE || e.MessageId > NetworkManager.MAX_NETWORK_MESSAGE_TYPE)
             {
                 MessageReceived?.Invoke(sender, e);
                 return;
@@ -143,11 +142,11 @@ namespace Electron2D.Networking.ClientServer
                 returnMessage.AddUShort(gameClass.OwnerID);
                 returnMessage.AddString(gameClass.ToJson());
             }
-            Debug.Log($"Client: Sending requested sync data to server, total count {initializedClasses}.");
+            Debug.Log($"(CLIENT): Sending requested sync data to server, total count {initializedClasses}.");
             Send(returnMessage);
             _isPaused = false;
         }
-        private void HandleNetworkClassCreated(Message message)
+        private void HandleNetworkClassSpawned(Message message)
         {
             uint version = message.GetUInt();
             int registerID = message.GetInt();
@@ -157,7 +156,7 @@ namespace Electron2D.Networking.ClientServer
 
             if (clientID == ID)
             {
-                // Network game class was created by local player
+                // Network game class was spawned by local player
                 NetworkGameClasses[networkID].SetUpdateVersion(version);
                 NetworkGameClasses[networkID].NetworkInitialize(networkID, clientID);
             }
@@ -186,15 +185,15 @@ namespace Electron2D.Networking.ClientServer
                 }
             }
         }
-        private void HandleNetworkClassDeleted(Message message)
+        private void HandleNetworkClassDespawned(Message message)
         {
             string networkID = message.GetString();
 
             NetworkGameClass networkGameClass = GetNetworkGameClass(networkID);
             if (networkGameClass != null)
             {
-                networkGameClass.NetworkDispose();
                 NetworkGameClasses.Remove(networkID);
+                networkGameClass.Despawn(false);
             }
         }
         private void HandleNetworkClassSync(Message message)
@@ -202,14 +201,14 @@ namespace Electron2D.Networking.ClientServer
             if(_isSyncing)
             {
                 // Receiving sync data
-                HandleNetworkClassCreated(message);
+                HandleNetworkClassSpawned(message);
                 _syncCount--;
-                Debug.Log($"Client: Received sync data from server, {_syncCount} left.");
+                Debug.Log($"(CLIENT): Received sync data from server, {_syncCount} left.");
                 if (_syncCount == 0)
                 {
                     _isSyncing = false;
                     NetworkGameClassesLoaded?.Invoke();
-                    Debug.Log("Client: Done syncing!");
+                    Debug.Log("(CLIENT): Done syncing!");
                 }
             }
             else
@@ -219,12 +218,12 @@ namespace Electron2D.Networking.ClientServer
                 if(syncCount == 0)
                 {
                     NetworkGameClassesLoaded?.Invoke();
-                    Debug.Log("Client: Received sync signal from server with no data to sync, done syncing!");
+                    Debug.Log("(CLIENT): Received sync signal from server with no data to sync, done syncing!");
                     return;
                 }
                 // Telling the server to start the sync
                 _isSyncing = true;
-                Debug.Log($"Client: Received sync signal from server, total count: {syncCount}. Asking server for data...");
+                Debug.Log($"(CLIENT): Received sync signal from server, total count: {syncCount}. Asking server for data...");
                 Send(Message.Create(MessageSendMode.Reliable, (ushort)NetworkMessageType.NetworkClassSync));
             }
         }
@@ -232,12 +231,16 @@ namespace Electron2D.Networking.ClientServer
         {
             ConnectionFailed?.Invoke(e.Message.GetString());
         }
-        private void HandleConnectionSuccess(object? sender, EventArgs e)
+        private void HandleConnected(object? sender, EventArgs e)
         {
             ConnectionSuccess?.Invoke();
         }
         private void HandleDisconnect(object? sender, EventArgs e)
         {
+            foreach (var pair in NetworkGameClasses)
+            {
+                pair.Value.Despawn(false);
+            }
             NetworkGameClasses.Clear();
             _messageQueue.Clear();
             _isPaused = false;

@@ -25,26 +25,32 @@ namespace Electron2D
 
         private bool _doFixedUpdate = false;
         private List<IGameClass> _classes = new List<IGameClass>();
-        private List<IGameClass> _classesQueue = new List<IGameClass>();
+        private List<IGameClass> _classesAddQueue = new List<IGameClass>();
+        private List<IGameClass> _classesRemoveQueue = new List<IGameClass>();
         private bool _useClassesQueue = false;
         private BlendMode _currentBlendMode = BlendMode.Interpolative;
         private AudioSpatialListener _defaultSpatialListener;
 
         private void PopClassesQueue()
         {
-            for(int i = 0; i < _classesQueue.Count; i++)
+            for (int i = 0; i < _classesRemoveQueue.Count; i++)
             {
-                _classes.Add(_classesQueue[i]);
+                _classesAddQueue.Remove(_classesRemoveQueue[i]);
             }
-            _classesQueue.Clear();
+            for (int i = 0; i < _classesAddQueue.Count; i++)
+            {
+                _classes.Add(_classesAddQueue[i]);
+            }
+            _classesAddQueue.Clear();
+            _classesRemoveQueue.Clear();
         }
 
         public void RegisterGameClass(IGameClass gameClass)
         {
-            if (_classes.Contains(gameClass) || _classesQueue.Contains(gameClass)) return;
+            if (_classes.Contains(gameClass) || _classesAddQueue.Contains(gameClass)) return;
             if(_useClassesQueue)
             {
-                _classesQueue.Add(gameClass);
+                _classesAddQueue.Add(gameClass);
             }
             else
             {
@@ -54,8 +60,15 @@ namespace Electron2D
 
         public void UnregisterGameClass(IGameClass gameClass)
         {
-            _classesQueue.Remove(gameClass);
-            _classes.Remove(gameClass);
+            if(_useClassesQueue)
+            {
+                _classesRemoveQueue.Add(gameClass);
+            }
+            else
+            {
+                _classesAddQueue.Remove(gameClass);
+                _classes.Remove(gameClass);
+            }
         }
 
         public void SetBackgroundColor(Color backgroundColor)

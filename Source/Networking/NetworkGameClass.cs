@@ -19,13 +19,16 @@ namespace Electron2D.Networking
         public bool IsOwner { get; private set; } = false;
         public bool IsNetworkInitialized { get; private set; }
         public uint UpdateVersion { get; private set; } = 0;
+        public bool RemoveLocallyOnDespawn { get; set; }
 
-        public NetworkGameClass(string networkID = "")
+        public NetworkGameClass(string networkID = "", bool removeLocallyOnDespawn = false)
         {
-            if(networkID != string.Empty)
+            if (networkID != string.Empty)
             {
                 Spawn(networkID);
             }
+            RemoveLocallyOnDespawn = removeLocallyOnDespawn;
+            Program.Game.RegisterGameClass(this);
         }
 
         ~NetworkGameClass()
@@ -33,16 +36,13 @@ namespace Electron2D.Networking
             Dispose();
         }
 
+        /// <summary>
+        /// Removes the object server-side and client-side. Calls <see cref="Despawn()"/>.
+        /// </summary>
         public void Dispose()
         {
-            if(IsOwner)
-            {
-                Message message = Message.Create(MessageSendMode.Reliable,
-                    (ushort)NetworkMessageType.NetworkClassDeleted);
-                NetworkManager.Instance.Client.Send(message);
-                Program.Game.UnregisterGameClass(this);
-                GC.SuppressFinalize(this);
-            }
+            RemoveLocallyOnDespawn = true;
+            Despawn();
         }
         public abstract void FixedUpdate();
         public abstract void Update();
@@ -54,60 +54,64 @@ namespace Electron2D.Networking
         public void Spawn(string networkID)
         {
             if (IsNetworkInitialized) return;
-            if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(networkID))
+            if (!NetworkManager.Instance.Client.IsConnected)
             {
-                Debug.LogError($"Network game class with id [{networkID}] already exists. Cannot spawn.");
+                Debug.LogError($"Trying to spawn network game class with id [{networkID}] before client is connected!");
                 return;
             }
+            if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(networkID))
+            {
+                Debug.LogError($"Network game class with id [{networkID}] already exists on the client. Cannot spawn.");
+                return;
+            }
+
+            OwnerID = NetworkManager.Instance.Client.ID;
+            IsOwner = true;
+            NetworkID = networkID;
+            if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(NetworkID))
+            {
+                Debug.LogError($"The NetworkID [{networkID}] already exists!");
+                return;
+            }
+            NetworkManager.Instance.Client.NetworkGameClasses.Add(NetworkID, this);
+
             Message message = Message.Create(MessageSendMode.Reliable,
-                (ushort)NetworkMessageType.NetworkClassCreated);
+                (ushort)NetworkMessageType.NetworkClassSpawned);
             message.AddUInt(UpdateVersion);
             message.AddInt(GetRegisterID());
             message.AddString(networkID);
             message.AddString(ToJson());
-            if (NetworkManager.Instance.Server.IsRunning && NetworkManager.Instance.Client.IsConnected)
-            {
-                OwnerID = NetworkManager.Instance.Client.ID;
-                IsOwner = true;
-                NetworkID = networkID;
-                if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(NetworkID))
-                {
-                    Debug.LogError($"The NetworkID [{networkID}] already exists!");
-                    return;
-                }
-                NetworkManager.Instance.Client.NetworkGameClasses.Add(NetworkID, this);
-            }
             NetworkManager.Instance.Client.Send(message);
         }
         /// <summary>
-        /// Called by the server when spawning over the network. Should not be called elsewhere.
+        /// Sends a request to the server to despawn this object (if owned by local player). It will still exist client-side.
         /// </summary>
-        /// <param name="networkID"></param>
-        /// <param name="ownerID"></param>
-        /// <param name="json"></param>
-        public void NetworkInitialize(string networkID, ushort ownerID)
+        public void Despawn(bool sendMessageToServer = true)
         {
-            if (IsNetworkInitialized) return;
-            if (!(NetworkManager.Instance.Server.IsRunning && NetworkManager.Instance.Client.IsConnected))
+            if (!IsNetworkInitialized) return;
+            IsNetworkInitialized = false;
+            if(IsOwner && sendMessageToServer)
             {
-                NetworkID = networkID;
-                OwnerID = ownerID;
-                IsOwner = NetworkManager.Instance.Client.ID == ownerID;
+                Message message = Message.Create(MessageSendMode.Reliable,
+                    (ushort)NetworkMessageType.NetworkClassDespawned);
+                message.AddString(NetworkID);
+                NetworkManager.Instance.Client.Send(message);
+                if (RemoveLocallyOnDespawn)
+                {
+                    Program.Game.UnregisterGameClass(this);
+                    GC.SuppressFinalize(this);
+                }
             }
-            Program.Game.RegisterGameClass(this);
-            IsNetworkInitialized = true;
-            OnNetworkInitialized();
-        }
-        /// <summary>
-        /// Sets the current update version.
-        /// </summary>
-        /// <param name="newVersion">Must be newer than the current update version.</param>
-        public void SetUpdateVersion(uint newVersion)
-        {
-            if (newVersion > UpdateVersion)
+            else if(RemoveLocallyOnDespawn)
             {
-                UpdateVersion = newVersion;
+                Program.Game.UnregisterGameClass(this);
+                GC.SuppressFinalize(this);
             }
+            IsOwner = false;
+            OwnerID = 0;
+            NetworkID = "";
+            UpdateVersion = 0;
+            OnDespawned();
         }
         /// <summary>
         /// Sends data to the server registered under this objects NetworkID.
@@ -132,12 +136,33 @@ namespace Electron2D.Networking
             NetworkManager.Instance.Client.Send(message);
         }
         /// <summary>
-        /// Called by the server when this object should be disposed. Should not be called elsewhere.
+        /// Called by the server when spawning over the network. Should not be called elsewhere.
         /// </summary>
-        public void NetworkDispose()
+        /// <param name="networkID"></param>
+        /// <param name="ownerID"></param>
+        /// <param name="json"></param>
+        public void NetworkInitialize(string networkID, ushort ownerID)
         {
-            Program.Game.UnregisterGameClass(this);
-            GC.SuppressFinalize(this);
+            if (IsNetworkInitialized) return;
+            if (!(NetworkManager.Instance.Server.IsRunning && NetworkManager.Instance.Client.IsConnected))
+            {
+                NetworkID = networkID;
+                OwnerID = ownerID;
+                IsOwner = NetworkManager.Instance.Client.ID == ownerID;
+            }
+            IsNetworkInitialized = true;
+            OnNetworkInitialized();
+        }
+        /// <summary>
+        /// Sets the current update version.
+        /// </summary>
+        /// <param name="newVersion">Must be newer than the current update version.</param>
+        public void SetUpdateVersion(uint newVersion)
+        {
+            if (newVersion > UpdateVersion)
+            {
+                UpdateVersion = newVersion;
+            }
         }
 
 
@@ -169,6 +194,10 @@ namespace Electron2D.Networking
         /// Called when the server initializes the network game class.
         /// </summary>
         public abstract void OnNetworkInitialized();
+        /// <summary>
+        /// Called when the server despawns the network game class.
+        /// </summary>
+        public abstract void OnDespawned();
         /// <summary>
         /// Should check the received version against the stored one (<see cref="UpdateVersion"/>), if applicable.
         /// Can return true to ignore update versions.

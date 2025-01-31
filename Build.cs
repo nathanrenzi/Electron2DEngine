@@ -17,7 +17,6 @@ public class Build : Game
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
         NetworkManager.Instance.Initialize();
-        NetworkManager.Instance.Server.SetAllowNonHostOwnership(true);
         try
         {
             NetworkManager.Instance.Server.Start(25565, 2);
@@ -32,10 +31,9 @@ public class Build : Game
 
     private void CreateObject()
     {
-        if (NetworkManager.Instance.Client.IsConnected && NetworkManager.Instance.Server.IsRunning)
+        if (NetworkManager.Instance.Client.IsConnected && !NetworkManager.Instance.Server.IsRunning)
         {
             gameClass = new ExampleNetworkGameClass("test");
-            gameClass.Value = 10;
         }
     }
 
@@ -47,6 +45,11 @@ public class Build : Game
             if(Input.GetKeyDown(GLFW.Keys.K))
             {
                 gameClass.Value += 1;
+            }
+
+            if(gameClass.IsOwner && Input.GetKeyDown(GLFW.Keys.W))
+            {
+                gameClass.Despawn();
             }
         }
     }

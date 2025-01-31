@@ -29,6 +29,9 @@ namespace Electron2D.Networking
         public ClientServer.Server Server { get; private set; }
         public ClientServer.Client Client { get; private set; }
 
+        public const ushort MIN_NETWORK_MESSAGE_TYPE = 60000;
+        public const ushort MAX_NETWORK_MESSAGE_TYPE = 60004;
+
         /// <summary>
         /// This must be called before the NetworkManager can be used.
         /// </summary>

@@ -20,12 +20,15 @@ namespace Electron2D.Networking.ClientServer
         public Riptide.Server RiptideServer { get; private set; }
         public long TimeStarted { get; private set; } = -1;
         public bool IsRunning => RiptideServer.IsRunning;
-        public bool AllowNonHostOwnership { get; private set; } = true;
+        public bool AllowNonHostOwnership { get; set; } = true;
 
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
 
         private Dictionary<uint, List<NetworkGameClassData>> _syncingClientSnapshots = new();
         private Dictionary<string, ushort> _networkGameClassOwners = new();
+        private List<string> _networkGameClassesToRemove = new();
+        private List<(string, ushort)> _networkGameClassesToAdd = new();
+        private bool _queueNetworkGameClasses = false;
         private bool _hostAssigned = false;
         private ushort _hostID = 1;
         private string _serverPassword = null;
@@ -37,15 +40,6 @@ namespace Electron2D.Networking.ClientServer
             RiptideServer.ClientConnected += HandleClientConnected;
             RiptideServer.ClientDisconnected += HandleClientDisconnected;
             RiptideServer.MessageReceived += HandleMessageReceived;
-        }
-
-        /// <summary>
-        /// Whether non-host clients can own and/or create network game classes.
-        /// </summary>
-        /// <param name="allowNonHostOwnership"></param>
-        public void SetAllowNonHostOwnership(bool allowNonHostOwnership)
-        {
-            AllowNonHostOwnership = allowNonHostOwnership;
         }
 
         /// <summary>
@@ -94,7 +88,7 @@ namespace Electron2D.Networking.ClientServer
         #region Handlers
         private void HandleMessageReceived(object? sender, MessageReceivedEventArgs e)
         {
-            if (e.MessageId < 60000 || e.MessageId > 60004)
+            if (e.MessageId < NetworkManager.MIN_NETWORK_MESSAGE_TYPE || e.MessageId > NetworkManager.MAX_NETWORK_MESSAGE_TYPE)
             {
                 MessageReceived?.Invoke(sender, e);
                 return;
@@ -103,14 +97,14 @@ namespace Electron2D.Networking.ClientServer
             ushort client = e.FromConnection.Id;
             switch((NetworkMessageType)e.MessageId)
             {
-                case NetworkMessageType.NetworkClassCreated:
-                    HandleNetworkClassCreated(client, e.Message);
+                case NetworkMessageType.NetworkClassSpawned:
+                    HandleNetworkClassSpawned(client, e.Message);
                     break;
                 case NetworkMessageType.NetworkClassUpdated:
                     HandleNetworkClassUpdated(client, e.Message);
                     break;
-                case NetworkMessageType.NetworkClassDeleted:
-                    HandleNetworkClassDeleted(client, e.Message);
+                case NetworkMessageType.NetworkClassDespawned:
+                    HandleNetworkClassDespawned(client, e.Message);
                     break;
                 case NetworkMessageType.NetworkClassSync:
                     HandleNetworkClassSync(client, e.Message);
@@ -124,11 +118,11 @@ namespace Electron2D.Networking.ClientServer
         {
             if(client != _hostID)
             {
-                Debug.LogError($"Non-host client [{client}] tried to send client sync data to the server.");
+                Debug.LogError($"(SERVER): Non-host client [{client}] tried to send client sync data to the server.");
                 return;
             }
 
-            Debug.Log("Server: Received requested sync data from host. Asking client to sync...");
+            Debug.Log("(SERVER): Received requested sync data from host. Asking client to sync...");
             ushort toClient = message.GetUShort();
             _syncingClientSnapshots.Add(toClient, new List<NetworkGameClassData>());
             int classCount = message.GetInt();
@@ -146,11 +140,11 @@ namespace Electron2D.Networking.ClientServer
             returnMessage.AddInt(classCount);
             Send(returnMessage, toClient);
         }
-        private void HandleNetworkClassCreated(ushort client, Message message)
+        private void HandleNetworkClassSpawned(ushort client, Message message)
         {
             if (!AllowNonHostOwnership && client != _hostID)
             {
-                Debug.LogWarning($"A non-host client [{client}] tried to create a network game class. Using the " +
+                Debug.LogWarning($"(SERVER): A non-host client [{client}] tried to spawn a network game class. Using the " +
                     $"current networking settings, this is not allowed.");
                 return;
             }
@@ -162,13 +156,21 @@ namespace Electron2D.Networking.ClientServer
 
             if (_networkGameClassOwners.ContainsKey(networkID))
             {
-                Debug.LogError($"Network game class with id [{networkID}] already exists on the server. Cannot spawn.");
+                Debug.LogError($"(SERVER): Network game class with id [{networkID}] already exists on the server. Cannot spawn.");
                 return;
             }
 
-            _networkGameClassOwners.Add(networkID, client);
+            if(_queueNetworkGameClasses)
+            {
+                _networkGameClassesToAdd.Add((networkID, client));
+            }
+            else
+            {
+                _networkGameClassOwners.Add(networkID, client);
+            }
+
             Message returnMessage = Message.Create(MessageSendMode.Reliable,
-                (ushort)NetworkMessageType.NetworkClassCreated);
+                (ushort)NetworkMessageType.NetworkClassSpawned);
             returnMessage.AddUInt(version);
             returnMessage.AddInt(registerID);
             returnMessage.AddString(networkID);
@@ -186,7 +188,7 @@ namespace Electron2D.Networking.ClientServer
             // Checking if client is owner of object
             if (_networkGameClassOwners[networkID] != client)
             {
-                Debug.LogWarning($"Client {client} is trying to update a network game class with " +
+                Debug.LogWarning($"(SERVER): Client {client} is trying to update a network game class with " +
                     $"id [{networkID}] that doesn't belong to them!");
                 return;
             }
@@ -202,11 +204,11 @@ namespace Electron2D.Networking.ClientServer
         {
             if (!_syncingClientSnapshots.ContainsKey(client))
             {
-                Debug.LogError($"Client [{client}] tried to get sync data from server without permission.");
+                Debug.LogError($"(SERVER): Client [{client}] tried to get sync data from server without permission.");
                 return;
             }
 
-            Debug.Log($"Server: Received sync confirmation from client {client}. Sending data...");
+            Debug.Log($"(SERVER): Received sync confirmation from client {client}. Sending data...");
             List<NetworkGameClassData> dataList = _syncingClientSnapshots[client];
             foreach (var data in dataList)
             {
@@ -220,27 +222,42 @@ namespace Electron2D.Networking.ClientServer
             }
             _syncingClientSnapshots.Remove(client);
         }
-        private void HandleNetworkClassDeleted(ushort client, Message message)
+        private void HandleNetworkClassDespawned(ushort client, Message message, bool exceptClient = false)
         {
             string networkID = message.GetString();
 
             if (_networkGameClassOwners[networkID] != client)
             {
-                Debug.LogWarning($"Client {client} tried to delete network game class id [{networkID}] which doesn't belong " +
+                Debug.LogWarning($"(SERVER): Client {client} tried to despawn network game class with id [{networkID}] which doesn't belong " +
                     "to them!");
                 return;
             }
-
-            _networkGameClassOwners.Remove(networkID);
-            Message returnMessage = Message.Create(MessageSendMode.Reliable, (ushort)NetworkMessageType.NetworkClassDeleted);
+            
+            if(_queueNetworkGameClasses)
+            {
+                _networkGameClassesToRemove.Add(networkID);
+            }
+            else
+            {
+                _networkGameClassOwners.Remove(networkID);
+            }
+            Message returnMessage = Message.Create(MessageSendMode.Reliable, (ushort)NetworkMessageType.NetworkClassDespawned);
             returnMessage.AddString(networkID);
-            SendToAll(returnMessage);
+            if(exceptClient)
+            {
+                // If this client just disconnected, excluding them from message
+                SendToAll(returnMessage, client);
+            }
+            else
+            {
+                SendToAll(returnMessage);
+            }
         }
         private void HandleClientConnected(object? sender, ServerConnectedEventArgs e)
         {
             if (e.Client.Id == _hostID) return;
 
-            Debug.Log("Server: Client joined, sending sync signal.");
+            Debug.Log("(SERVER): Client joined, sending sync signal.");
             Message toHostMessage = Message.Create(MessageSendMode.Reliable,
                 (ushort)NetworkMessageType.NetworkClassRequestSyncData);
             toHostMessage.AddUShort(e.Client.Id);
@@ -250,24 +267,42 @@ namespace Electron2D.Networking.ClientServer
         {
             if(e.Client.Id == _hostID)
             {
-                Debug.Log("Until host transferring is implemented, the server will stop when the host leaves.");
+                Debug.Log("(SERVER): Until host transferring is implemented, the server will stop when the host leaves.");
                 Stop();
                 return;
             }
 
+            _queueNetworkGameClasses = true;
             foreach (var pair in _networkGameClassOwners)
             {
                 if(pair.Value == e.Client.Id)
                 {
+                    // Delete objects
                     Message message = Message.Create();
                     message.AddString(pair.Key);
-                    HandleNetworkClassDeleted(e.Client.Id, message);
+                    HandleNetworkClassDespawned(e.Client.Id, message, true);
                     message.Release();
                 }
             }
+            _queueNetworkGameClasses = false;
+            PopQueues();
         }
         #endregion
 
+        private void PopQueues()
+        {
+            if (_queueNetworkGameClasses) return;
+            for (int i = 0; i < _networkGameClassesToAdd.Count; i++)
+            {
+                _networkGameClassOwners.Add(_networkGameClassesToAdd[i].Item1, _networkGameClassesToAdd[i].Item2);
+            }
+            _networkGameClassesToAdd.Clear();
+            for (int i = 0; i < _networkGameClassesToRemove.Count; i++)
+            {
+                _networkGameClassOwners.Remove(_networkGameClassesToRemove[i]);
+            }
+            _networkGameClassesToRemove.Clear();
+        }
         private void ValidateConnection(Connection pendingConnection, Message connectMessage)
         {
             string password = connectMessage.GetString();
