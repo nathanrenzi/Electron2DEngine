@@ -4,6 +4,10 @@ using System.Collections.Concurrent;
 
 namespace Electron2D.Networking.ClientServer
 {
+    /// <summary>
+    /// A simple host/client client implementation using <see cref="Riptide.Client"/>. Not recommended to use 
+    /// outside of <see cref="NetworkManager.Client"/>
+    /// </summary>
     public class Client
     {
         public Riptide.Client RiptideClient { get; private set; }
@@ -18,6 +22,7 @@ namespace Electron2D.Networking.ClientServer
         public event Action<string> ConnectionFailed;
         public event Action ConnectionSuccess;
 
+        private Server _server;
         private ConcurrentQueue<(NetworkMessageType, Message)> _messageQueue = new();
         private bool _isSyncing = false;
         private bool _isPaused = false;
@@ -30,6 +35,16 @@ namespace Electron2D.Networking.ClientServer
             RiptideClient.Connected += HandleConnected;
             RiptideClient.Disconnected += HandleDisconnect;
             RiptideClient.MessageReceived += HandleMessageReceived;
+        }
+
+        /// <summary>
+        /// Sets the server reference.
+        /// </summary>
+        /// <param name="server"></param>
+        public void SetServer(Server server)
+        {
+            if (_server != null) return;
+            _server = server;
         }
 
         /// <summary>
@@ -54,7 +69,7 @@ namespace Electron2D.Networking.ClientServer
                     if(_isSyncing && message.Item1 != NetworkMessageType.NetworkClassSync)
                     {
                         _messageQueue.Enqueue(message);
-                        continue;
+                        break;
                     }
 
                     switch (message.Item1)
@@ -158,14 +173,14 @@ namespace Electron2D.Networking.ClientServer
             {
                 // Network game class was spawned by local player
                 NetworkGameClasses[networkID].SetUpdateVersion(version);
-                NetworkGameClasses[networkID].NetworkInitialize(networkID, clientID);
+                NetworkGameClasses[networkID].NetworkInitialize(networkID, clientID, this, _server);
             }
             else
             {
                 NetworkGameClass networkGameClass = NetworkManager.NetworkGameClassRegister[registerID](json);
                 networkGameClass.SetUpdateVersion(version);
                 NetworkGameClasses.Add(networkID, networkGameClass);
-                networkGameClass.NetworkInitialize(networkID, clientID);
+                networkGameClass.NetworkInitialize(networkID, clientID, this, _server);
             }
         }
         private void HandleNetworkClassUpdated(Message message)

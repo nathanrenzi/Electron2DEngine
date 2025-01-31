@@ -7,26 +7,54 @@ namespace Electron2D.Networking.Examples
     public class ExampleNetworkGameClass : NetworkGameClass
     {
         [Serializable]
-        private class ExampleJsonDataUpdate
+        private class ExampleJsonDataInitialization
         {
-            public float NewValue;
+            public float Value;
+            public float X;
+            public float Y;
 
-            public ExampleJsonDataUpdate(float newValue)
+            public ExampleJsonDataInitialization(float value, float x, float y)
             {
-                NewValue = newValue;
+                Value = value;
+                X = x;
+                Y = y;
+            }
+        }
+
+        [Serializable]
+        private class ExampleJsonDataUpdate1
+        {
+            public float X;
+            public float Y;
+
+            public ExampleJsonDataUpdate1(float x, float y)
+            {
+                X = x;
+                Y = y;
+            }
+        }
+
+        [Serializable]
+        private class ExampleJsonDataUpdate2
+        {
+            public float Value;
+
+            public ExampleJsonDataUpdate2(float value)
+            {
+                Value = value;
             }
         }
 
         public float Value
         {
-            set
-            {
-                _value = value;
-                Send(Riptide.MessageSendMode.Reliable, ToJson());
-            }
             get
             {
                 return _value;
+            }
+            set
+            {
+                _value = value;
+                Send(Riptide.MessageSendMode.Reliable, JsonConvert.SerializeObject(new ExampleJsonDataUpdate2(_value)), 1);
             }
         }
         private float _value;
@@ -40,34 +68,72 @@ namespace Electron2D.Networking.Examples
             return exampleNetworkGameClass;
         }
 
-        public ExampleNetworkGameClass(string networkID = "") : base(networkID)
+        public ExampleNetworkGameClass()
         {
             _sprite = new Sprite(Material.CreateCircle(Color.Red));
         }
 
-        public override void FixedUpdate() { }
-        public override void Update() { }
+        public override void Update()
+        {
+            if (IsOwner && _sprite != null)
+            {
+                _sprite.Transform.Position = new System.Numerics.Vector2(MathF.Sin(Time.GameTime) * 500, MathF.Cos(Time.GameTime) * 500);
+            }
+        }
+        public override void FixedUpdate()
+        {
+            if (IsOwner && _sprite != null)
+            {
+                Send(Riptide.MessageSendMode.Unreliable, JsonConvert.SerializeObject(
+                    new ExampleJsonDataUpdate1(_sprite.Transform.Position.X, _sprite.Transform.Position.Y)), 0);
+            }
+        }
 
         public static void SetRegisterID(int registerID) => _registerID = registerID;
         public override int GetRegisterID() => _registerID;
 
         public override string ToJson()
         {
-            return JsonConvert.SerializeObject(new ExampleJsonDataUpdate(_value));
+            float x = _sprite != null ? _sprite.Transform.Position.X : 0;
+            float y = _sprite != null ? _sprite.Transform.Position.Y : 0;
+            return JsonConvert.SerializeObject(new ExampleJsonDataInitialization(_value, x, y));
         }
         protected override void SetJson(string json)
         {
-            ExampleJsonDataUpdate update = JsonConvert.DeserializeObject<ExampleJsonDataUpdate>(json);
+            ExampleJsonDataInitialization update = JsonConvert.DeserializeObject<ExampleJsonDataInitialization>(json);
             if(update != null)
             {
-                _value = update.NewValue;
+                _value = update.Value;
+                if(_sprite != null)
+                {
+                    _sprite.Transform.Position = new System.Numerics.Vector2(update.X, update.Y);
+                }
             }
-            Debug.Log($"Example network game class value set to {_value}");
         }
         public override void ReceiveData(ushort type, string json)
         {
-            // type is not used as only one update type is used
-            SetJson(json); // In this example, receive data does the same thing as FromJson
+            if(type == 0)
+            {
+                // Position update
+                ExampleJsonDataUpdate1 update = JsonConvert.DeserializeObject<ExampleJsonDataUpdate1>(json);
+                if(update != null)
+                {
+                    if (_sprite != null)
+                    {
+                        _sprite.Transform.Position = new System.Numerics.Vector2(update.X, update.Y);
+                    }
+                }
+            }
+            else if(type == 1)
+            {
+                // Value update
+                ExampleJsonDataUpdate2 update = JsonConvert.DeserializeObject<ExampleJsonDataUpdate2>(json);
+                if (update != null)
+                {
+                    _value = update.Value;
+                    Debug.Log($"Example network game class updated value to {_value}");
+                }
+            }
         }
         public override bool CheckUpdateVersion(ushort type, uint version)
         {
@@ -81,6 +147,10 @@ namespace Electron2D.Networking.Examples
         public override void OnDespawned()
         {
             Debug.Log("Example network game class despawned!");
+        }
+        public override void OnDisposed()
+        {
+            Debug.Log("Example network game class disposed!");
             _sprite.Dispose();
         }
     }

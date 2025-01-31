@@ -21,13 +21,11 @@ namespace Electron2D.Networking
         public uint UpdateVersion { get; private set; } = 0;
         public bool RemoveLocallyOnDespawn { get; set; }
 
-        public NetworkGameClass(string networkID = "", bool removeLocallyOnDespawn = false)
+        private ClientServer.Client _client;
+        private ClientServer.Server _server;
+
+        public NetworkGameClass()
         {
-            if (networkID != string.Empty)
-            {
-                Spawn(networkID);
-            }
-            RemoveLocallyOnDespawn = removeLocallyOnDespawn;
             Program.Game.RegisterGameClass(this);
         }
 
@@ -51,29 +49,50 @@ namespace Electron2D.Networking
         /// <summary>
         /// Sends a request to the server to spawn this object.
         /// </summary>
-        public void Spawn(string networkID)
+        public void Spawn(string networkID, bool _removeLocallyOnDespawn = false,
+            ClientServer.Client _customClient = null, ClientServer.Server _customServer = null)
         {
             if (IsNetworkInitialized) return;
-            if (!NetworkManager.Instance.Client.IsConnected)
+            if (_customClient != null)
+            {
+                _client = _customClient;
+            }
+            else
+            {
+                _client = NetworkManager.Instance.Client;
+            }
+
+            if (_customServer != null)
+            {
+                _server = _customServer;
+            }
+            else
+            {
+                _server = NetworkManager.Instance.Server;
+            }
+
+            RemoveLocallyOnDespawn = _removeLocallyOnDespawn;
+
+            if (!_client.IsConnected)
             {
                 Debug.LogError($"Trying to spawn network game class with id [{networkID}] before client is connected!");
                 return;
             }
-            if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(networkID))
+            if (_client.NetworkGameClasses.ContainsKey(networkID))
             {
                 Debug.LogError($"Network game class with id [{networkID}] already exists on the client. Cannot spawn.");
                 return;
             }
 
-            OwnerID = NetworkManager.Instance.Client.ID;
+            OwnerID = _client.ID;
             IsOwner = true;
             NetworkID = networkID;
-            if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(NetworkID))
+            if (_client.NetworkGameClasses.ContainsKey(NetworkID))
             {
                 Debug.LogError($"The NetworkID [{networkID}] already exists!");
                 return;
             }
-            NetworkManager.Instance.Client.NetworkGameClasses.Add(NetworkID, this);
+            _client.NetworkGameClasses.Add(NetworkID, this);
 
             Message message = Message.Create(MessageSendMode.Reliable,
                 (ushort)NetworkMessageType.NetworkClassSpawned);
@@ -81,7 +100,7 @@ namespace Electron2D.Networking
             message.AddInt(GetRegisterID());
             message.AddString(networkID);
             message.AddString(ToJson());
-            NetworkManager.Instance.Client.Send(message);
+            _client.Send(message);
         }
         /// <summary>
         /// Sends a request to the server to despawn this object (if owned by local player). It will still exist client-side.
@@ -95,18 +114,21 @@ namespace Electron2D.Networking
                 Message message = Message.Create(MessageSendMode.Reliable,
                     (ushort)NetworkMessageType.NetworkClassDespawned);
                 message.AddString(NetworkID);
-                NetworkManager.Instance.Client.Send(message);
+                _client.Send(message);
                 if (RemoveLocallyOnDespawn)
                 {
                     Program.Game.UnregisterGameClass(this);
                     GC.SuppressFinalize(this);
+                    OnDisposed();
                 }
             }
             else if(RemoveLocallyOnDespawn)
             {
                 Program.Game.UnregisterGameClass(this);
                 GC.SuppressFinalize(this);
+                OnDisposed();
             }
+            _client = null;
             IsOwner = false;
             OwnerID = 0;
             NetworkID = "";
@@ -133,7 +155,7 @@ namespace Electron2D.Networking
             message.AddUInt(UpdateVersion);
             message.AddUShort(type);
             message.AddString(json);
-            NetworkManager.Instance.Client.Send(message);
+            _client.Send(message);
         }
         /// <summary>
         /// Called by the server when spawning over the network. Should not be called elsewhere.
@@ -141,14 +163,17 @@ namespace Electron2D.Networking
         /// <param name="networkID"></param>
         /// <param name="ownerID"></param>
         /// <param name="json"></param>
-        public void NetworkInitialize(string networkID, ushort ownerID)
+        public void NetworkInitialize(string networkID, ushort ownerID, ClientServer.Client client, ClientServer.Server server)
         {
             if (IsNetworkInitialized) return;
-            if (!(NetworkManager.Instance.Server.IsRunning && NetworkManager.Instance.Client.IsConnected))
+
+            _client = client;
+            _server = server;
+            if (!(server.IsRunning && client.IsConnected))
             {
                 NetworkID = networkID;
                 OwnerID = ownerID;
-                IsOwner = NetworkManager.Instance.Client.ID == ownerID;
+                IsOwner = client.ID == ownerID;
             }
             IsNetworkInitialized = true;
             OnNetworkInitialized();
@@ -198,6 +223,10 @@ namespace Electron2D.Networking
         /// Called when the server despawns the network game class.
         /// </summary>
         public abstract void OnDespawned();
+        /// <summary>
+        /// Called when this object is disposed.
+        /// </summary>
+        public abstract void OnDisposed();
         /// <summary>
         /// Should check the received version against the stored one (<see cref="UpdateVersion"/>), if applicable.
         /// Can return true to ignore update versions.

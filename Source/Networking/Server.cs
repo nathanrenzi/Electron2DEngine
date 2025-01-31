@@ -4,7 +4,8 @@ using Riptide.Transports;
 namespace Electron2D.Networking.ClientServer
 {
     /// <summary>
-    /// A simple host/client implementation using <see cref="Riptide.Server"/>
+    /// A simple host/client server implementation using <see cref="Riptide.Server"/>. Not recommended to use 
+    /// outside of <see cref="NetworkManager.Server"/>
     /// </summary>
     public class Server
     {

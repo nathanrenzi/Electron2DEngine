@@ -43,6 +43,7 @@ namespace Electron2D.Networking
 
             Client = new ClientServer.Client();
             Server = new ClientServer.Server();
+            Client.SetServer(Server);
             Program.Game.RegisterGameClass(this);
         }
 

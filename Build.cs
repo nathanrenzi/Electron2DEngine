@@ -31,9 +31,10 @@ public class Build : Game
 
     private void CreateObject()
     {
-        if (NetworkManager.Instance.Client.IsConnected && !NetworkManager.Instance.Server.IsRunning)
+        if (NetworkManager.Instance.Client.IsConnected && NetworkManager.Instance.Server.IsRunning)
         {
-            gameClass = new ExampleNetworkGameClass("test");
+            gameClass = new ExampleNetworkGameClass();
+            gameClass.Spawn("test", true);
         }
     }
 
@@ -42,14 +43,13 @@ public class Build : Game
     {
         if(gameClass != null)
         {
-            if(Input.GetKeyDown(GLFW.Keys.K))
-            {
-                gameClass.Value += 1;
-            }
-
             if(gameClass.IsOwner && Input.GetKeyDown(GLFW.Keys.W))
             {
                 gameClass.Despawn();
+            }
+            if(gameClass.IsOwner && Input.GetKeyDown(GLFW.Keys.K))
+            {
+                gameClass.Value += 1;
             }
         }
     }
