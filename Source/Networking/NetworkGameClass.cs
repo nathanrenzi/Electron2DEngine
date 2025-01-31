@@ -122,12 +122,12 @@ namespace Electron2D.Networking
         /// Leave default if only one update type is ever sent.</param>
         protected void Send(MessageSendMode sendMode, string json, ushort type = 0)
         {
-            UpdateVersion++;
             if (!IsOwner)
             {
                 Debug.LogError("Cannot send data using NetworkGameClass that does not belong to the client.");
                 return;
             }
+            UpdateVersion++;
             Message message = Message.Create(sendMode, (ushort)NetworkMessageType.NetworkClassUpdated);
             message.AddString(NetworkID);
             message.AddUInt(UpdateVersion);
