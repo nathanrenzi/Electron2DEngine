@@ -1,5 +1,6 @@
 ﻿using Riptide;
 using Riptide.Transports;
+using Riptide.Transports.Steam;
 
 namespace Electron2D.Networking.ClientServer
 {
@@ -19,6 +20,8 @@ namespace Electron2D.Networking.ClientServer
         }
 
         public Riptide.Server RiptideServer { get; private set; }
+        public SteamServer SteamServer { get; private set; }
+
         public long TimeStarted { get; private set; } = -1;
         public bool IsRunning => RiptideServer.IsRunning;
         public bool AllowNonHostOwnership { get; set; } = true;
@@ -34,9 +37,17 @@ namespace Electron2D.Networking.ClientServer
         private ushort _hostID = 1;
         private string _serverPassword = null;
 
-        public Server()
+        public Server(NetworkMode networkMode)
         {
-            RiptideServer = new Riptide.Server();
+            if(networkMode == NetworkMode.SteamP2P)
+            {
+                SteamServer = new SteamServer();
+                RiptideServer = new Riptide.Server(SteamServer);
+            }
+            else
+            {
+                RiptideServer = new Riptide.Server();
+            }
             RiptideServer.HandleConnection = ValidateConnection;
             RiptideServer.ClientConnected += HandleClientConnected;
             RiptideServer.ClientDisconnected += HandleClientDisconnected;

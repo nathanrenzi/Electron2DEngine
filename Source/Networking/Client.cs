@@ -1,5 +1,6 @@
 ﻿using Riptide;
 using Riptide.Transports;
+using Riptide.Transports.Steam;
 using System.Collections.Concurrent;
 
 namespace Electron2D.Networking.ClientServer
@@ -11,6 +12,7 @@ namespace Electron2D.Networking.ClientServer
     public class Client
     {
         public Riptide.Client RiptideClient { get; private set; }
+        public SteamClient SteamClient { get; private set; }
 
         public Dictionary<string, NetworkGameClass> NetworkGameClasses { get; private set; } = new();
         public ushort ID => RiptideClient.Id;
@@ -28,9 +30,17 @@ namespace Electron2D.Networking.ClientServer
         private bool _isPaused = false;
         private int _syncCount = 0;
 
-        public Client()
+        public Client(NetworkMode networkMode)
         {
-            RiptideClient = new Riptide.Client();
+            if (networkMode == NetworkMode.SteamP2P)
+            {
+                SteamClient = new SteamClient();
+                RiptideClient = new Riptide.Client(SteamClient);
+            }
+            else
+            {
+                RiptideClient = new Riptide.Client();
+            }
             RiptideClient.ConnectionFailed += HandleConnectionFailed;
             RiptideClient.Connected += HandleConnected;
             RiptideClient.Disconnected += HandleDisconnect;
@@ -45,6 +55,7 @@ namespace Electron2D.Networking.ClientServer
         {
             if (_server != null) return;
             _server = server;
+            SteamClient.ChangeLocalServer(server.SteamServer);
         }
 
         /// <summary>
@@ -103,13 +114,20 @@ namespace Electron2D.Networking.ClientServer
         {
             RiptideClient.Send(message, shouldRelease);
         }
-        public bool Connect(string ip, ushort port, string password = "")
+        public bool Connect(string address, ushort port = 25565, string password = "")
         {
             if (IsConnected || IsConnecting) return false;
 
             Message message = Message.Create();
             message.AddString(password);
-            return RiptideClient.Connect($"{ip}:{port}", message: message, useMessageHandlers: false);
+            if(SteamClient != null)
+            {
+                return RiptideClient.Connect($"{address}", message: message, useMessageHandlers: false);
+            }
+            else
+            {
+                return RiptideClient.Connect($"{address}:{port}", message: message, useMessageHandlers: false);
+            }
         }
         public void Disconnect()
         {

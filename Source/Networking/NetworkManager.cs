@@ -1,6 +1,7 @@
 ﻿using Riptide;
 using Riptide.Utils;
 using Electron2D.Networking.ClientServer;
+using Steamworks;
 
 namespace Electron2D.Networking
 {
@@ -29,6 +30,8 @@ namespace Electron2D.Networking
         public ClientServer.Server Server { get; private set; }
         public ClientServer.Client Client { get; private set; }
 
+        public NetworkMode NetworkMode { get; private set; }
+
         public const ushort MIN_NETWORK_MESSAGE_TYPE = 60000;
         public const ushort MAX_NETWORK_MESSAGE_TYPE = 60004;
 
@@ -37,12 +40,41 @@ namespace Electron2D.Networking
         /// </summary>
         public void Initialize()
         {
+            Initialize(0);
+        }
+        public void Initialize(uint steamAppID)
+        {
             if (_instance != null && _instance != this) return;
 
+            NetworkMode = steamAppID == 0 ? NetworkMode.NetworkP2P : NetworkMode.SteamP2P;
+            if(NetworkMode == NetworkMode.SteamP2P)
+            {
+                Debug.Log("\n");
+                try
+                {
+                    if (SteamAPI.RestartAppIfNecessary((AppId_t)steamAppID))
+                    {
+                        Debug.Log("Game was not started through steam. Restarting...");
+                        Program.Game.Exit();
+                    }
+                }
+                catch(DllNotFoundException e)
+                {
+                    Debug.LogError("Could not load steam_api.dll. It is likely missing or not in the correct location. " +
+                        "Refer to README for more details.\n" + e.Message);
+                    Program.Game.Exit();
+                }
+                if(!SteamAPI.Init())
+                {
+                    Debug.LogError("Steam API could not be initialized. Please make sure steam is running. If you are receiving this error while developing, please " +
+                        "make sure that steam_appid.txt is in the output directory. DO NOT ship that file with the final game build, it should only be for testing purposes.");
+                    Program.Game.Exit();
+                }
+            }
             RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.Log, Debug.LogError, false);
 
-            Client = new ClientServer.Client();
-            Server = new ClientServer.Server();
+            Client = new ClientServer.Client(NetworkMode);
+            Server = new ClientServer.Server(NetworkMode);
             Client.SetServer(Server);
             Program.Game.RegisterGameClass(this);
         }
@@ -70,6 +102,7 @@ namespace Electron2D.Networking
 
         public void Update()
         {
+            SteamAPI.RunCallbacks();
             Client.ClientUpdate();
         }
 
@@ -87,6 +120,10 @@ namespace Electron2D.Networking
         {
             Client.Disconnect();
             Server.Stop();
+            if(NetworkMode == NetworkMode.SteamP2P)
+            {
+                SteamAPI.Shutdown();
+            }
 
             Program.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
