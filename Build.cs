@@ -9,10 +9,11 @@ public class Build : Game
     protected override void Initialize()
     {
         ExampleNetworkGameClass.SetRegisterID(NetworkManager.RegisterNetworkGameClass(ExampleNetworkGameClass.FactoryMethod));
+        ExampleNetworkGameClass2.SetRegisterID(NetworkManager.RegisterNetworkGameClass(ExampleNetworkGameClass2.FactoryMethod));
     }
 
     // This is ran when the game is ready to load content
-    ExampleNetworkGameClass gameClass;
+    ExampleNetworkGameClass2 gameClass;
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
@@ -31,9 +32,14 @@ public class Build : Game
 
     private void CreateObject()
     {
+        if(NetworkManager.Instance.Server.IsRunning)
+        {
+            Example2ServerMessageListener example2ServerObject = new Example2ServerMessageListener();
+        }
+
         if (NetworkManager.Instance.Client.IsConnected && NetworkManager.Instance.Server.IsRunning)
         {
-            gameClass = new ExampleNetworkGameClass();
+            gameClass = new ExampleNetworkGameClass2();
             gameClass.Spawn("test", true);
         }
     }
@@ -46,10 +52,6 @@ public class Build : Game
             if(gameClass.IsOwner && Input.GetKeyDown(GLFW.Keys.W))
             {
                 gameClass.Despawn();
-            }
-            if(gameClass.IsOwner && Input.GetKeyDown(GLFW.Keys.K))
-            {
-                gameClass.Value += 1;
             }
         }
     }

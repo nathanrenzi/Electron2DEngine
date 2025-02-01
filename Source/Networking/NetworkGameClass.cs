@@ -21,8 +21,8 @@ namespace Electron2D.Networking
         public uint UpdateVersion { get; private set; } = 0;
         public bool RemoveLocallyOnDespawn { get; set; }
 
-        private ClientServer.Client _client;
-        private ClientServer.Server _server;
+        protected ClientServer.Client _client;
+        protected ClientServer.Server _server;
 
         public NetworkGameClass()
         {
@@ -115,6 +115,8 @@ namespace Electron2D.Networking
                     (ushort)NetworkMessageType.NetworkClassDespawned);
                 message.AddString(NetworkID);
                 _client.Send(message);
+                Reset();
+                OnDespawned();
                 if (RemoveLocallyOnDespawn)
                 {
                     Program.Game.UnregisterGameClass(this);
@@ -124,16 +126,17 @@ namespace Electron2D.Networking
             }
             else if(RemoveLocallyOnDespawn)
             {
+                Reset();
+                OnDespawned();
                 Program.Game.UnregisterGameClass(this);
                 GC.SuppressFinalize(this);
                 OnDisposed();
             }
-            _client = null;
-            IsOwner = false;
-            OwnerID = 0;
-            NetworkID = "";
-            UpdateVersion = 0;
-            OnDespawned();
+            else
+            {
+                Reset();
+                OnDespawned();
+            }
         }
         /// <summary>
         /// Sends data to the server registered under this objects NetworkID.
@@ -235,5 +238,14 @@ namespace Electron2D.Networking
         /// <param name="version">The version number for the update received.</param>
         /// <returns></returns>
         public abstract bool CheckUpdateVersion(ushort type, uint version);
+
+        private void Reset()
+        {
+            _client = null;
+            IsOwner = false;
+            OwnerID = 0;
+            NetworkID = "";
+            UpdateVersion = 0;
+        }
     }
 }
