@@ -98,6 +98,7 @@ namespace Riptide.Transports.Steam
 
         public void Poll()
         {
+            if (connections == null) return;
             foreach (SteamConnection connection in connections.Values)
                 Receive(connection);
         }

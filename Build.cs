@@ -1,6 +1,5 @@
 ﻿using Electron2D;
 using Electron2D.Networking;
-using Electron2D.Networking.Examples;
 using System.Drawing;
 
 public class Build : Game
@@ -16,14 +15,7 @@ public class Build : Game
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
         NetworkManager.Instance.Initialize(480);
-        try
-        {
-            NetworkManager.Instance.Server.Start(25565, 2);
-        }
-        catch
-        {
-            
-        }
+        NetworkManager.Instance.Server.Start(25565, 2);
         NetworkManager.Instance.Client.Connect("127.0.0.1");
     }
 

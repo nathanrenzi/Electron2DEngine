@@ -128,7 +128,7 @@ namespace Riptide.Transports.Steam
             Task timeOutTask = Task.Delay(6000); // TODO: use Riptide Client's TimeoutTime
             await Task.WhenAny(timeOutTask);
 
-            if (!steamConnection.IsConnected)
+            if (steamConnection == null || !steamConnection.IsConnected)
                 OnConnectionFailed();
         }
 
