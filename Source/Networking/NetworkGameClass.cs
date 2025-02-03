@@ -88,11 +88,6 @@ namespace Electron2D.Networking
             OwnerID = _client.ID;
             IsOwner = true;
             NetworkID = networkID;
-            if (_client.NetworkGameClasses.ContainsKey(NetworkID))
-            {
-                Debug.LogError($"The NetworkID [{networkID}] already exists!");
-                return;
-            }
             _client.NetworkGameClasses.Add(NetworkID, this);
 
             Message message = Message.Create(MessageSendMode.Reliable,

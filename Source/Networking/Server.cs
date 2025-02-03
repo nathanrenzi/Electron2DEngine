@@ -154,11 +154,12 @@ namespace Electron2D.Networking.ClientServer
         }
         private void HandleNetworkClassSpawned(ushort client, Message message)
         {
+            bool despawn = false;
             if (!AllowNonHostOwnership && client != _hostID)
             {
                 Debug.LogWarning($"(SERVER): A non-host client [{client}] tried to spawn a network game class. Using the " +
                     $"current networking settings, this is not allowed.");
-                return;
+                despawn = true;
             }
 
             uint version = message.GetUInt();
@@ -166,9 +167,12 @@ namespace Electron2D.Networking.ClientServer
             string networkID = message.GetString();
             string json = message.GetString();
 
-            if (_networkGameClassOwners.ContainsKey(networkID))
+            if (_networkGameClassOwners.ContainsKey(networkID) || despawn)
             {
                 Debug.LogError($"(SERVER): Network game class with id [{networkID}] already exists on the server. Cannot spawn.");
+                Message despawnMessage = Message.Create(MessageSendMode.Reliable, (ushort)NetworkMessageType.NetworkClassDespawned);
+                despawnMessage.AddString(networkID);
+                Send(despawnMessage, client);
                 return;
             }
 
