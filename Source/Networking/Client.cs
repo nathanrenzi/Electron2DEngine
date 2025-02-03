@@ -23,6 +23,8 @@ namespace Electron2D.Networking.ClientServer
         public event Action NetworkGameClassesLoaded;
         public event Action<string> ConnectionFailed;
         public event Action ConnectionSuccess;
+        public event Action<ushort> ClientConnected;
+        public event Action<ushort> ClientDisconnected;
 
         private Server _server;
         private ConcurrentQueue<(NetworkMessageType, Message)> _messageQueue = new();
@@ -45,6 +47,8 @@ namespace Electron2D.Networking.ClientServer
             RiptideClient.Connected += HandleConnected;
             RiptideClient.Disconnected += HandleDisconnect;
             RiptideClient.MessageReceived += HandleMessageReceived;
+            RiptideClient.ClientConnected += (obj, e) => ClientConnected?.Invoke(e.Id);
+            RiptideClient.ClientDisconnected += (obj, e) => ClientDisconnected?.Invoke(e.Id);
         }
 
         /// <summary>
@@ -55,7 +59,7 @@ namespace Electron2D.Networking.ClientServer
         {
             if (_server != null) return;
             _server = server;
-            SteamClient.ChangeLocalServer(server.SteamServer);
+            SteamClient?.ChangeLocalServer(server.SteamServer);
         }
 
         /// <summary>
@@ -116,7 +120,11 @@ namespace Electron2D.Networking.ClientServer
         }
         public bool Connect(string address, ushort port = 25565, string password = "")
         {
-            if (IsConnected || IsConnecting) return false;
+            if (IsConnected || IsConnecting)
+            {
+                Debug.LogError("Client cannot connect, already connected to a server.");
+                return false;
+            }
 
             Message message = Message.Create();
             message.AddString(password);

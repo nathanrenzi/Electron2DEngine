@@ -35,7 +35,7 @@ namespace Electron2D.Networking
         }
 
         /// <summary>
-        /// Removes the object server-side and client-side. Calls <see cref="Despawn()"/>.
+        /// Removes the object server-side and client-side. Calls <see cref="Despawn"/>.
         /// </summary>
         public void Dispose()
         {
@@ -49,29 +49,29 @@ namespace Electron2D.Networking
         /// <summary>
         /// Sends a request to the server to spawn this object.
         /// </summary>
-        public void Spawn(string networkID, bool _removeLocallyOnDespawn = false,
-            ClientServer.Client _customClient = null, ClientServer.Server _customServer = null)
+        public void Spawn(string networkID, bool removeLocallyOnDespawn = false,
+            ClientServer.Client customClient = null, ClientServer.Server customServer = null)
         {
             if (IsNetworkInitialized) return;
-            if (_customClient != null)
+            if (customClient != null)
             {
-                _client = _customClient;
+                _client = customClient;
             }
             else
             {
                 _client = NetworkManager.Instance.Client;
             }
 
-            if (_customServer != null)
+            if (customServer != null)
             {
-                _server = _customServer;
+                _server = customServer;
             }
             else
             {
                 _server = NetworkManager.Instance.Server;
             }
 
-            RemoveLocallyOnDespawn = _removeLocallyOnDespawn;
+            RemoveLocallyOnDespawn = removeLocallyOnDespawn;
 
             if (!_client.IsConnected)
             {
@@ -81,6 +81,7 @@ namespace Electron2D.Networking
             if (_client.NetworkGameClasses.ContainsKey(networkID))
             {
                 Debug.LogError($"Network game class with id [{networkID}] already exists on the client. Cannot spawn.");
+                Despawn(false);
                 return;
             }
 

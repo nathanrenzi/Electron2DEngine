@@ -22,7 +22,6 @@ namespace Electron2D
         private static bool scrollCallbackFrame = false;
 
         private static MouseCallback mouseCallback;
-        private static bool mouseCallbackFrame = false;
 
         public static void Initialize()
         {
@@ -73,10 +72,6 @@ namespace Electron2D
                 // If the scroll delta was not updated this frame, set the delta to 0
                 ScrollDelta = 0;
             }
-            if(!mouseCallbackFrame)
-            {
-                MousePosition = Vector2.Zero;
-            }
 
             // Looping through every key to see if it is being pressed or released
             for (int i = 0; i < totalKeyCount; i++)
@@ -91,7 +86,6 @@ namespace Electron2D
             }
 
             scrollCallbackFrame = false;
-            mouseCallbackFrame = false;
         }
 
         public static bool GetMouseButtonDown(MouseButton _button)

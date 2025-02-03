@@ -50,23 +50,31 @@ namespace Electron2D.Networking
             if(NetworkMode == NetworkMode.SteamP2P)
             {
                 Debug.Log("\n");
+                if (!Packsize.Test())
+                {
+                    Debug.LogError("[Steamworks.NET] Packsize Test returned false, the wrong version of Steamworks.NET is being run in this platform.");
+                }
+                if (!DllCheck.Test())
+                {
+                    Debug.LogError("[Steamworks.NET] DllCheck Test returned false, One or more of the Steamworks binaries seems to be the wrong version.");
+                }
                 try
                 {
                     if (SteamAPI.RestartAppIfNecessary((AppId_t)steamAppID))
                     {
-                        Debug.Log("Game was not started through steam. Restarting...");
+                        Debug.Log("[Steamworks.NET] Game was not started through steam. Restarting...");
                         Program.Game.Exit();
                     }
                 }
                 catch(DllNotFoundException e)
                 {
-                    Debug.LogError("Could not load steam_api.dll. It is likely missing or not in the correct location. " +
+                    Debug.LogError("[Steamworks.NET] Could not load steam_api.dll. It is likely missing or not in the correct location. " +
                         "Refer to README for more details.\n" + e.Message);
                     Program.Game.Exit();
                 }
                 if(!SteamAPI.Init())
                 {
-                    Debug.LogError("Steam API could not be initialized. Please make sure steam is running. If you are receiving this error while developing, please " +
+                    Debug.LogError("[Steamworks.NET] Steam API could not be initialized. Please make sure steam is running. If you are receiving this error while developing, please " +
                         "make sure that steam_appid.txt is in the output directory. DO NOT ship that file with the final game build, it should only be for testing purposes.");
                     Program.Game.Exit();
                 }
@@ -102,7 +110,7 @@ namespace Electron2D.Networking
 
         public void Update()
         {
-            SteamAPI.RunCallbacks();
+            if(NetworkMode == NetworkMode.SteamP2P) SteamAPI.RunCallbacks();
             Client.ClientUpdate();
         }
 

@@ -136,9 +136,9 @@ namespace Electron2D.Networking.ClientServer
 
             Debug.Log("(SERVER): Received requested sync data from host. Asking client to sync...");
             ushort toClient = message.GetUShort();
-            _syncingClientSnapshots.Add(toClient, new List<NetworkGameClassData>());
             int classCount = message.GetInt();
-            for(int i = 0; i < classCount; i++)
+            if(classCount > 0) _syncingClientSnapshots.Add(toClient, new List<NetworkGameClassData>());
+            for (int i = 0; i < classCount; i++)
             {
                 NetworkGameClassData data = new NetworkGameClassData();
                 data.UpdateVersion = message.GetUInt();
@@ -267,7 +267,14 @@ namespace Electron2D.Networking.ClientServer
         }
         private void HandleClientConnected(object? sender, ServerConnectedEventArgs e)
         {
-            if (e.Client.Id == _hostID) return;
+            if(e.Client.Id == _hostID)
+            {
+                Message hostInitializeMessage = Message.Create(MessageSendMode.Reliable,
+                    (ushort)NetworkMessageType.NetworkClassSync);
+                hostInitializeMessage.AddInt(0);
+                Send(hostInitializeMessage, _hostID);
+                return;
+            }
 
             Debug.Log("(SERVER): Client joined, sending sync signal.");
             Message toHostMessage = Message.Create(MessageSendMode.Reliable,
