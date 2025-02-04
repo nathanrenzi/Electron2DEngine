@@ -10,77 +10,77 @@ namespace Electron2D
         public static bool EnableWarningMessages = true;
         public static bool EnableCollapsing = true;
 
-        private static string lastMessage = "";
-        private static int messageCount = 1;
-        private static bool hasLoggedMessage = false;
-        private static StreamWriter logFile = null;
+        private static string _lastMessage = "";
+        private static int _messageCount = 1;
+        private static bool _hasLoggedMessage = false;
+        private static StreamWriter _logFile = null;
 
         /// <summary>
         /// Used to log formatted and togglable messages to the console and the latest log file.
         /// </summary>
-        /// <param name="_message"></param>
-        public static void Log(object _message, ConsoleColor _messageColor = ConsoleColor.Gray)
+        /// <param name="message"></param>
+        public static void Log(object message, ConsoleColor messageColor = ConsoleColor.Gray)
         {
             if (!DebuggingEnabled || !EnableLogMessages) return;
 
-            Console.ForegroundColor = _messageColor;
-            Write($"{_message}");
+            Console.ForegroundColor = messageColor;
+            Write($"{message}");
             Console.ForegroundColor = ConsoleColor.White;
         }
 
         /// <summary>
         /// Used to log formatted and togglable error messages to the console and the latest log file.
         /// </summary>
-        /// <param name="_message"></param>
-        public static void LogError(object _message)
+        /// <param name="message"></param>
+        public static void LogError(object message)
         {
             if (!DebuggingEnabled || !EnableErrorMessages) return;
 
             Console.ForegroundColor = ConsoleColor.Red;
-            Write($"ERROR: {_message}");
+            Write($"ERROR: {message}");
             Console.ForegroundColor = ConsoleColor.White;
         }
 
         /// <summary>
         /// Used to log formatted and togglable warning messages to the console and the latest log file.
         /// </summary>
-        /// <param name="_message"></param>
-        public static void LogWarning(object _message)
+        /// <param name="message"></param>
+        public static void LogWarning(object message)
         {
             if (!DebuggingEnabled || !EnableWarningMessages) return;
 
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Write($"WARNING: {_message}");
+            Write($"WARNING: {message}");
             Console.ForegroundColor = ConsoleColor.White;
         }
 
-        private static void Write(string _message)
+        private static void Write(string message)
         {
-            if (lastMessage.Equals(_message) && EnableCollapsing)
+            if (_lastMessage.Equals(message) && EnableCollapsing)
             {
-                messageCount++;
+                _messageCount++;
 
-                string m = $"\r[{GetTimeString()}] {_message} (x{messageCount})";
+                string m = $"\r[{GetTimeString()}] {message} (x{_messageCount})";
                 Console.Write(m);
-                logFile?.Write(m);
+                _logFile?.Write(m);
             }
             else
             {
-                messageCount = 1;
+                _messageCount = 1;
 
-                if (hasLoggedMessage)
+                if (_hasLoggedMessage)
                 {
                     Console.WriteLine();
-                    logFile?.WriteLine();
+                    _logFile?.WriteLine();
                 }
 
-                string m = $"[{GetTimeString()}] {_message}";
+                string m = $"[{GetTimeString()}] {message}";
                 Console.Write(m);
-                logFile?.Write(m);
+                _logFile?.Write(m);
             }
 
-            lastMessage = _message;
-            hasLoggedMessage = true;
+            _lastMessage = message;
+            _hasLoggedMessage = true;
         }
 
         private static string GetTimeString()
@@ -94,13 +94,13 @@ namespace Electron2D
             {
                 Directory.CreateDirectory("Logs");
             }
-            logFile = new StreamWriter(File.Create("Logs/latest.txt")); 
+            _logFile = new StreamWriter(File.Create("Logs/latest.txt")); 
         }
 
         public static void CloseLogFile()
         {
-            logFile.Close();
-            logFile = null;
+            _logFile.Close();
+            _logFile = null;
         }
     }
 }

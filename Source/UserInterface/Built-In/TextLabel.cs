@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Electron2D.UserInterface
 {
-    public class TextLabel : UiComponent
+    public class TextLabel : UIComponent
     {
         public string Text
         {
@@ -114,6 +114,12 @@ namespace Electron2D.UserInterface
                     if(Renderer != null)
                     {
                         Renderer.Anchor = Anchor;
+                    }
+                    break;
+                case UiEvent.Position:
+                    if(Renderer != null)
+                    {
+                        Renderer.UpdateMesh();
                     }
                     break;
             }

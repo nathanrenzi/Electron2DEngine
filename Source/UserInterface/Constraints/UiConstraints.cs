@@ -1,14 +1,14 @@
 ﻿namespace Electron2D.UserInterface
 {
-    public class UiConstraints
+    public class UIConstraints
     {
-        private UiConstraint positionXConstraint;
-        private UiConstraint positionYConstraint;
-        private UiConstraint sizeXConstraint;
-        private UiConstraint sizeYConstraint;
-        private UiComponent component;
+        private UIConstraint positionXConstraint;
+        private UIConstraint positionYConstraint;
+        private UIConstraint sizeXConstraint;
+        private UIConstraint sizeYConstraint;
+        private UIComponent component;
 
-        public UiConstraints(UiComponent _component)
+        public UIConstraints(UIComponent _component)
         {
             component = _component;
         }
@@ -21,26 +21,26 @@
             if (positionYConstraint != null) positionYConstraint.ApplyConstraint(component);
         }
 
-        public void SetPosition(UiConstraint _constraint)
+        public void SetPosition(UIConstraint _constraint)
         {
-            if (_constraint.side == UiConstraintSide.Left || _constraint.side == UiConstraintSide.Right)
+            if (_constraint.side == UIConstraintSide.Left || _constraint.side == UIConstraintSide.Right)
             {
                 positionXConstraint = _constraint;
             }
-            else if (_constraint.side == UiConstraintSide.Top || _constraint.side == UiConstraintSide.Bottom)
+            else if (_constraint.side == UIConstraintSide.Top || _constraint.side == UIConstraintSide.Bottom)
             {
                 positionYConstraint = _constraint;
             }
             _constraint.ApplyConstraint(component);
         }
 
-        public void SetSize(UiConstraint _constraint)
+        public void SetSize(UIConstraint _constraint)
         {
-            if(_constraint.side == UiConstraintSide.Left || _constraint.side == UiConstraintSide.Right)
+            if(_constraint.side == UIConstraintSide.Left || _constraint.side == UIConstraintSide.Right)
             {
                 sizeXConstraint = _constraint;
             }
-            else if (_constraint.side == UiConstraintSide.Top || _constraint.side == UiConstraintSide.Bottom)
+            else if (_constraint.side == UIConstraintSide.Top || _constraint.side == UIConstraintSide.Bottom)
             {
                 sizeYConstraint = _constraint;
             }

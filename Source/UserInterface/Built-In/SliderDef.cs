@@ -25,6 +25,7 @@ namespace Electron2D.UserInterface
         public bool AllowNonHandleValueUpdates;
         public bool Interactable;
 
+        /// <summary>Creates a new definition for a slider.</summary>
         /// <param name="backgroundMaterial">The material of the background panel.</param>
         /// <param name="sliderMaterial">The material of the slider panel (when the handle is moved,
         /// this panel is displayed to indicate the current percentage/value).</param>

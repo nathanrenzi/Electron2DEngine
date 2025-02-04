@@ -5,7 +5,7 @@ namespace Electron2D.UserInterface
     /// <summary>
     /// A UI Component that can procedurally stretch a texture along it's borders, maintaining the same scale at any size.
     /// </summary>
-    public class SlicedPanel : UiComponent
+    public class SlicedPanel : UIComponent
     {
         private float[] vertices = new float[36 * 4];
 
@@ -55,8 +55,8 @@ namespace Electron2D.UserInterface
         /// <param name="_sizeX">The starting size on the X axis.</param>
         /// <param name="_sizeY">The starting size on the Y axis.</param>
         public SlicedPanel(Material _material, int _sizeX, int _sizeY, SlicedPanelDef _def,
-            int _uiRenderLayer = 0, bool _ignorePostProcessing = false)
-            : base(_ignorePostProcessing, _uiRenderLayer, sizeX: _sizeX, sizeY: _sizeY)
+            int _uiRenderLayer = 0, bool useScreenPosition = true, bool _ignorePostProcessing = false)
+            : base(_ignorePostProcessing, _uiRenderLayer, sizeX: _sizeX, sizeY: _sizeY, useScreenPosition: useScreenPosition)
         {
             left = _def.Left;
             right = _def.Right;

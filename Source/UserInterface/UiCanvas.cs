@@ -2,103 +2,115 @@
 
 namespace Electron2D.UserInterface
 {
-    public class UiCanvas
+    public class UICanvas
     {
-        public class UiFrameTickData
+        public class UIFrameTickData
         {
-            public bool isHovered;
-            public bool isLeftClicked;
-            public bool isMiddleClicked;
-            public bool isRightClicked;
-            public bool isClicked;
-            public bool isInteractable;
+            public bool IsHovered;
+            public bool IsLeftClicked;
+            public bool IsMiddleClicked;
+            public bool IsRightClicked;
+            public bool IsClicked;
+            public bool IsInteractable;
         }
 
-        private List<UiComponent> activeComponents = new List<UiComponent>();
+        private List<UIComponent> _activeComponents = new List<UIComponent>();
+        private UIComponent _focusedComponent = null;
 
         // Add an ActiveUiComponent class that also holds a reference to the constraints being used
         //  and use that for the above list instead
 
-        private bool initialized = false;
+        private bool _initialized = false;
 
         public void Initialize()
         {
-            if (initialized == true) return;
-            initialized = true;
+            if (_initialized == true) return;
+            _initialized = true;
 
             Game.LateUpdateEvent += CheckForInput;
         }
 
-        public void RegisterUiComponent(UiComponent _component)
+        public void RegisterUiComponent(UIComponent component)
         {
-            if (activeComponents.Contains(_component)) return;
+            if (_activeComponents.Contains(component)) return;
 
-            _component.SetParentCanvas(this);
-            activeComponents.Add(_component);
+            component.SetParentCanvas(this);
+            _activeComponents.Add(component);
         }
 
-        public void UnregisterUiComponent(UiComponent _component)
+        public void UnregisterUiComponent(UIComponent component)
         {
-            if (!activeComponents.Contains(_component)) return;
+            if (!_activeComponents.Contains(component)) return;
 
-            activeComponents.Remove(_component);
+            _activeComponents.Remove(component);
         }
 
         public void CheckForInput()
         {
             Vector2 mousePos = Input.GetMouseWorldPosition();
             Vector2 mousePosScreen = Input.GetOffsetMousePositionScaled(true);
-            for (int i = 0; i < activeComponents.Count; i++)
+            int hoveredCount = 0;
+            for (int i = 0; i < _activeComponents.Count; i++)
             {
-                UiComponent component = activeComponents[i];
-                UiFrameTickData lastFrame = activeComponents[i].LastFrameData;
-                UiFrameTickData thisFrame = activeComponents[i].ThisFrameData;
+                UIComponent component = _activeComponents[i];
+                UIFrameTickData lastFrame = component.LastFrameData;
+                UIFrameTickData thisFrame = component.ThisFrameData;
 
                 // Checking if UI Component has just disabled interactability
-                thisFrame.isInteractable = activeComponents[i].Interactable;
-                if (lastFrame.isInteractable == true && thisFrame.isInteractable == false)
+                thisFrame.IsInteractable = component.Interactable;
+                if (lastFrame.IsInteractable == true && thisFrame.IsInteractable == false)
                 {
-                    if (lastFrame.isHovered)
+                    if (lastFrame.IsHovered)
                     {
-                        thisFrame.isHovered = false;
+                        thisFrame.IsHovered = false;
                         component.InvokeUiAction(UiEvent.HoverEnd);
                     }
-
+                    if (_focusedComponent == component)
+                    {
+                        component.InvokeUiAction(UiEvent.LoseFocus);
+                        _focusedComponent = null;
+                    }
                     component.InvokeUiAction(UiEvent.InteractabilityEnd);
-                    Debug.Log("Interactability Ended...");
                 }
-                if (!activeComponents[i].Interactable)
+                if (!component.Interactable)
                 {
-                    thisFrame.isClicked = false;
-                    lastFrame.isHovered = false;
-                    lastFrame.isLeftClicked = false;
-                    lastFrame.isMiddleClicked = false;
-                    lastFrame.isRightClicked = false;
-                    lastFrame.isClicked = false;
-                    lastFrame.isInteractable = false;
+                    thisFrame.IsClicked = false;
+                    lastFrame.IsHovered = false;
+                    lastFrame.IsLeftClicked = false;
+                    lastFrame.IsMiddleClicked = false;
+                    lastFrame.IsRightClicked = false;
+                    lastFrame.IsClicked = false;
+                    lastFrame.IsInteractable = false;
                     continue;
                 }
 
-                thisFrame.isHovered = activeComponents[i].CheckBounds(activeComponents[i].UseScreenPosition ? mousePosScreen : mousePos);
-                if (thisFrame.isHovered)
+                thisFrame.IsHovered = component.CheckBounds(component.UseScreenPosition ? mousePosScreen : mousePos);
+                if (thisFrame.IsHovered)
                 {
+                    hoveredCount++;
                     // Mouse is hovering over UI component
                     component.InvokeUiAction(UiEvent.Hover);
 
-                    if (thisFrame.isHovered == true && lastFrame.isHovered == false)
+                    if (thisFrame.IsHovered == true && lastFrame.IsHovered == false)
                     {
                         component.InvokeUiAction(UiEvent.HoverStart);
                     }
 
                     // Left click
-                    if (Input.GetMouseButtonDown(GLFW.MouseButton.Left))
+                    if (Input.GetMouseButtonDown(MouseButton.Left))
                     {
-                        thisFrame.isLeftClicked = true;
+                        thisFrame.IsLeftClicked = true;
                         component.InvokeUiAction(UiEvent.LeftClickDown);
                         component.InvokeUiAction(UiEvent.ClickDown);
+                        if(_focusedComponent != component)
+                        {
+                            _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
+                            _focusedComponent = component;
+                            component.InvokeUiAction(UiEvent.Focus);
+                        }
                     }
 
-                    if (Input.GetMouseButton(GLFW.MouseButton.Left))
+                    if (Input.GetMouseButton(MouseButton.Left))
                     {
                         component.InvokeUiAction(UiEvent.LeftClick);
                         component.InvokeUiAction(UiEvent.Click);
@@ -106,14 +118,20 @@ namespace Electron2D.UserInterface
                     // ----------------------
 
                     // Middle click
-                    if (Input.GetMouseButtonDown(GLFW.MouseButton.Middle))
+                    if (Input.GetMouseButtonDown(MouseButton.Middle))
                     {
-                        thisFrame.isMiddleClicked = true;
+                        thisFrame.IsMiddleClicked = true;
                         component.InvokeUiAction(UiEvent.MiddleClickDown);
                         component.InvokeUiAction(UiEvent.ClickDown);
+                        if (_focusedComponent != component)
+                        {
+                            _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
+                            _focusedComponent = component;
+                            component.InvokeUiAction(UiEvent.Focus);
+                        }
                     }
 
-                    if (Input.GetMouseButton(GLFW.MouseButton.Middle))
+                    if (Input.GetMouseButton(MouseButton.Middle))
                     {
                         component.InvokeUiAction(UiEvent.MiddleClick);
                         component.InvokeUiAction(UiEvent.Click);
@@ -121,60 +139,91 @@ namespace Electron2D.UserInterface
                     // ----------------------
 
                     // Right click
-                    if (Input.GetMouseButtonDown(GLFW.MouseButton.Right))
+                    if (Input.GetMouseButtonDown(MouseButton.Right))
                     {
-                        thisFrame.isRightClicked = true;
+                        thisFrame.IsRightClicked = true;
                         component.InvokeUiAction(UiEvent.RightClickDown);
                         component.InvokeUiAction(UiEvent.ClickDown);
+                        if (_focusedComponent != component)
+                        {
+                            _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
+                            _focusedComponent = component;
+                            component.InvokeUiAction(UiEvent.Focus);
+                        }
                     }
 
-                    if (Input.GetMouseButton(GLFW.MouseButton.Right))
+                    if (Input.GetMouseButton(MouseButton.Right))
                     {
                         component.InvokeUiAction(UiEvent.RightClick);
                         component.InvokeUiAction(UiEvent.Click);
                     }
                     // ----------------------
                 }
-                else if (lastFrame.isHovered == true)
+                else if (lastFrame.IsHovered == true)
                 {
                     component.InvokeUiAction(UiEvent.HoverEnd);
                 }
 
                 // Mouse button up
-                if (Input.GetMouseButtonUp(GLFW.MouseButton.Left) && thisFrame.isLeftClicked)
+                if (Input.GetMouseButtonUp(MouseButton.Left) && thisFrame.IsLeftClicked)
                 {
                     // This is set to false here because it should be true until the mouse button is released
-                    thisFrame.isLeftClicked = false;
+                    thisFrame.IsLeftClicked = false;
                     component.InvokeUiAction(UiEvent.LeftClickUp);
                     component.InvokeUiAction(UiEvent.ClickUp);
                 }
 
-                if (Input.GetMouseButtonUp(GLFW.MouseButton.Middle) && thisFrame.isMiddleClicked)
+                if (Input.GetMouseButtonUp(MouseButton.Middle) && thisFrame.IsMiddleClicked)
                 {
                     // This is set to false here because it should be true until the mouse button is released
-                    thisFrame.isMiddleClicked = false;
+                    thisFrame.IsMiddleClicked = false;
                     component.InvokeUiAction(UiEvent.MiddleClickUp);
                     component.InvokeUiAction(UiEvent.ClickUp);
                 }
 
-                if (Input.GetMouseButtonUp(GLFW.MouseButton.Right) && thisFrame.isRightClicked)
+                if (Input.GetMouseButtonUp(MouseButton.Right) && thisFrame.IsRightClicked)
                 {
                     // This is set to false here because it should be true until the mouse button is released
-                    thisFrame.isRightClicked = false;
+                    thisFrame.IsRightClicked = false;
                     component.InvokeUiAction(UiEvent.RightClickUp);
                     component.InvokeUiAction(UiEvent.ClickUp);
                 }
                 // ----------------------
 
                 // Resetting the UiFrameTickData objects instead of destroying them
-                thisFrame.isClicked = thisFrame.isLeftClicked || thisFrame.isMiddleClicked || thisFrame.isRightClicked;
-                lastFrame.isHovered = thisFrame.isHovered;
-                lastFrame.isLeftClicked = thisFrame.isLeftClicked;
-                lastFrame.isMiddleClicked = thisFrame.isMiddleClicked;
-                lastFrame.isRightClicked = thisFrame.isRightClicked;
-                lastFrame.isClicked = thisFrame.isClicked;
-                lastFrame.isInteractable = thisFrame.isInteractable;
+                thisFrame.IsClicked = thisFrame.IsLeftClicked || thisFrame.IsMiddleClicked || thisFrame.IsRightClicked;
+                lastFrame.IsHovered = thisFrame.IsHovered;
+                lastFrame.IsLeftClicked = thisFrame.IsLeftClicked;
+                lastFrame.IsMiddleClicked = thisFrame.IsMiddleClicked;
+                lastFrame.IsRightClicked = thisFrame.IsRightClicked;
+                lastFrame.IsClicked = thisFrame.IsClicked;
+                lastFrame.IsInteractable = thisFrame.IsInteractable;
             }
+            if(hoveredCount == 0)
+            {
+                if(Input.GetMouseButtonDown(MouseButton.Left)
+                    || Input.GetMouseButtonDown(MouseButton.Middle)
+                    || Input.GetMouseButtonDown(MouseButton.Right))
+                {
+                    _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
+                    _focusedComponent = null;
+                }
+            }
+        }
+
+        public void Focus(UIComponent component)
+        {
+            if (_focusedComponent == component) return;
+            _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
+            _focusedComponent = component;
+            component.InvokeUiAction(UiEvent.Focus);
+        }
+
+        public void Unfocus(UIComponent component)
+        {
+            if (component != _focusedComponent) return;
+            component.InvokeUiAction(UiEvent.LoseFocus);
+            _focusedComponent = null;
         }
     }
 }

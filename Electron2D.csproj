@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Built-In\Fonts\Roboto-Regular.ttf" />
+    <None Remove="Resources\Built-In\Shaders\UserInterface\CaretBlink.glsl" />
     <None Remove="Resources\Built-In\Textures\BlankNormal.png" />
     <None Remove="Resources\Built-In\Textures\BlankTexture.png" />
     <None Remove="Resources\Built-In\Textures\Electron2DSplashscreen.png" />
@@ -26,6 +28,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Built-In\Audio\TestAudio2.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Built-In\Fonts\Roboto-Regular.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\ChromaticAberration.glsl">
@@ -50,6 +55,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="DefaultSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Built-In\Shaders\UserInterface\CaretBlink.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Built-In\Textures\BlankNormal.png">

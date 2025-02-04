@@ -5,7 +5,7 @@ namespace Electron2D.UserInterface
     /// <summary>
     /// A simple color-only slider component. Will be updated with a textured one.
     /// </summary>
-    public class Slider : UiComponent, IGameClass
+    public class Slider : UIComponent, IGameClass
     {
         /// <summary>
         /// Listens to UI events. Replace with a non-private listener class for all UI in the future.
@@ -91,9 +91,9 @@ namespace Electron2D.UserInterface
         public bool AllowNonHandleValueUpdates = true;
         public bool SliderInteractable;
 
-        private UiComponent _backgroundPanel;
-        private UiComponent _sliderPanel;
-        private UiComponent _handlePanel;
+        private UIComponent _backgroundPanel;
+        private UIComponent _sliderPanel;
+        private UIComponent _handlePanel;
         private SliderListener _handleListener = new SliderListener();
         private SliderListener _backgroundListener = new SliderListener();
 
@@ -118,7 +118,7 @@ namespace Electron2D.UserInterface
             if(def.BackgroundPanelDef != null)
             {
                 _backgroundPanel = new SlicedPanel(def.BackgroundMaterial, def.SizeX, BackgroundSizeY,
-                    def.BackgroundPanelDef, uiRenderLayer, ignorePostProcessing);
+                    def.BackgroundPanelDef, uiRenderLayer, useScreenPosition, ignorePostProcessing);
                 _backgroundPanel.AddUiListener(_backgroundListener);
             }
             else
@@ -131,7 +131,7 @@ namespace Electron2D.UserInterface
             if (def.SliderPanelDef != null)
             {
                 _sliderPanel = new SlicedPanel(def.SliderMaterial, def.SizeX - HandlePadding, SliderSizeY,
-                    def.SliderPanelDef, uiRenderLayer + 1, ignorePostProcessing);
+                    def.SliderPanelDef, uiRenderLayer + 1, useScreenPosition, ignorePostProcessing);
                 _sliderPanel.Anchor = new Vector2(-1, 0);
             }
             else
@@ -144,7 +144,7 @@ namespace Electron2D.UserInterface
             if (def.HandlePanelDef != null)
             {
                 _handlePanel = new SlicedPanel(def.HandleMaterial, HandleSizeXY, HandleSizeXY,
-                    def.HandlePanelDef, uiRenderLayer + 2, ignorePostProcessing);
+                    def.HandlePanelDef, uiRenderLayer + 2, useScreenPosition, ignorePostProcessing);
                 _handlePanel.AddUiListener(_handleListener);
             }
             else

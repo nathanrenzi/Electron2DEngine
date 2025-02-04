@@ -1,5 +1,6 @@
 ﻿using Electron2D.Rendering.Shaders;
 using FreeTypeSharp.Native;
+using System;
 using System.Drawing;
 using System.Numerics;
 using System.Text;
@@ -38,7 +39,7 @@ namespace Electron2D.Rendering.Text
             }
         }
         public Color OutlineColor;
-        private Transform transform;
+        public Transform transform;
         public Vector2 Anchor
         {
             get => anchor;
@@ -98,10 +99,99 @@ namespace Electron2D.Rendering.Text
             Load();
         }
 
+        public int GetCaretIndexFromWorldPosition(Vector2 worldPosition)
+        {
+            if (formattedText.Length == 0) return 0;
+            Vector2 localpos = worldPosition - position;
+            int offset = -1;
+            if (formattedText[0] == '\n') offset++;
+            int xpos = GetXOffset(0);
+            int ypos = -GetYOffset();
+            int newlineCount = 0;
+            if(localpos.X <= xpos)
+            {
+                return 0;
+            }
+            for (int i = 1; i < formattedText.Length; i++)
+            {
+                Character ch = FontGlyphStore.Characters[formattedText[i + offset]];
+
+                if (formattedText[i + offset] == '\n')
+                {
+                    newlineCount++;
+                    xpos = GetXOffset(newlineCount);
+                    ypos -= (int)(FontGlyphStore.Arguments.FontSize * (i == 0 ? 1 : LineHeightMultiplier));
+                }
+                else
+                {
+                    xpos += (int)(ch.Advance * transform.Scale.X);
+                }
+
+                if(localpos.X <= xpos)
+                {
+                    if(localpos.X < xpos - ((ch.Advance * transform.Scale.X) / 2f))
+                    {
+                        return (int)MathF.Max(i - 1, 0);
+                    }
+                    else
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return formattedText.Length;
+        }
+
+        public Vector2 GetCaretWorldPostion(int index)
+        {
+            if(formattedText.Length == 0)
+            {
+                return new Vector2(GetXOffset(0), -GetYOffset()) + position;
+            }
+            if(index <= formattedText.Length && index >= 0)
+            {
+                int offset = -1;
+                if (formattedText[0] == '\n') offset++;
+                int xpos = GetXOffset(0);
+                int ypos = -GetYOffset();
+                int newlineCount = 0;
+                for(int i = 1; i <= index; i++)
+                {
+                    Character ch = FontGlyphStore.Characters[formattedText[i + offset]];
+
+                    if (formattedText[i + offset] == '\n')
+                    {
+                        newlineCount++;
+                        xpos = GetXOffset(newlineCount);
+                        ypos -= (int)(FontGlyphStore.Arguments.FontSize * (i == 0 ? 1 : LineHeightMultiplier));
+                    }
+                    else
+                    {
+                        xpos += (int)(ch.Advance * transform.Scale.X);
+                    }
+                }
+
+                return new Vector2(xpos, ypos) + position;
+            }
+            else
+            {
+                return Vector2.Zero;
+            }
+        }
+
         #region Text Formatting
         private unsafe void UpdateTextFormatting(string _inputText)
         {
-            if (_inputText == null || _inputText == "") return;
+            if (_inputText == null || _inputText == "")
+            {
+                Enabled = false;
+                return;
+            }
+            else
+            {
+                Enabled = true;
+            }
             lineOffsets.Clear();
 
             // Split input text into substrings
@@ -311,7 +401,7 @@ namespace Electron2D.Rendering.Text
             Layout.Add<float>(2); // UV
         }
 
-        private unsafe void UpdateMesh()
+        public unsafe void UpdateMesh()
         {
             List<float[]> tempVertexArrays = new List<float[]>();
             List<uint> tempIndices = new List<uint>();

@@ -2,8 +2,8 @@
 {
     // Remove this class in favor of creating a reference to a canvas in the build
 
-    public static class GlobalUI
+    public static class UI
     {
-        public static UiCanvas MainCanvas { get; private set; } = new UiCanvas();
+        public static UICanvas MainCanvas { get; private set; } = new UICanvas();
     }
 }

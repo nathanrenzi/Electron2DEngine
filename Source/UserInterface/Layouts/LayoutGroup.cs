@@ -2,11 +2,11 @@
 {
     public abstract class LayoutGroup : UiListener, IGameClass
     {
-        public List<UiComponent> Components = new List<UiComponent>();
+        public List<UIComponent> Components = new List<UIComponent>();
         private bool _active = false;
         private bool _isDirty = false;
         private bool _registeredToGameLoop = false;
-        protected UiComponent _parent;
+        protected UIComponent _parent;
 
         ~LayoutGroup()
         {
@@ -29,7 +29,7 @@
             }
         }
 
-        public void SetUiParent(UiComponent parent)
+        public void SetUiParent(UIComponent parent)
         {
             if(_parent != null)
             {
@@ -63,7 +63,7 @@
             }
         }
 
-        public void AddToLayout(UiComponent _component)
+        public void AddToLayout(UIComponent _component)
         {
             if(!_active)
             {
@@ -81,7 +81,7 @@
             _isDirty = true;
         }
 
-        public bool RemoveFromLayout(UiComponent _component)
+        public bool RemoveFromLayout(UIComponent _component)
         {
             if (!_active)
             {

@@ -5,7 +5,7 @@ using Electron2D.Rendering.Shaders;
 
 namespace Electron2D.UserInterface
 {
-    public abstract class UiComponent : IRenderable
+    public abstract class UIComponent : IRenderable
     {
         public bool Visible
         {
@@ -71,12 +71,12 @@ namespace Electron2D.UserInterface
         public float ExtraInteractionPixels { get; set; }
         public List<UiListener> Listeners { get; private set; } = new List<UiListener>();
         public LayoutGroup ChildLayoutGroup { get; private set; }
-        public UiCanvas.UiFrameTickData ThisFrameData = new UiCanvas.UiFrameTickData();
-        public UiCanvas.UiFrameTickData LastFrameData = new UiCanvas.UiFrameTickData();
-        public UiConstraints Constraints;
+        public UICanvas.UIFrameTickData ThisFrameData = new UICanvas.UIFrameTickData();
+        public UICanvas.UIFrameTickData LastFrameData = new UICanvas.UIFrameTickData();
+        public UIConstraints Constraints;
 
         protected bool _isLoaded = false;
-        private UiCanvas _parentCanvas;
+        private UICanvas _parentCanvas;
         public float RightXBound
         {
             get
@@ -106,7 +106,7 @@ namespace Electron2D.UserInterface
             }
         }
 
-        public UiComponent(bool ignorePostProcessing, int uiRenderLayer = 0, int sizeX = 100, int sizeY = 100, int extraInteractionSize = 0,
+        public UIComponent(bool ignorePostProcessing, int uiRenderLayer = 0, int sizeX = 100, int sizeY = 100, int extraInteractionSize = 0,
             bool initialize = true, bool useScreenPosition = true, bool useMeshRenderer = true, bool autoRender = true)
         {
             Transform = new Transform();
@@ -114,7 +114,7 @@ namespace Electron2D.UserInterface
 
             SizeX = sizeX;
             SizeY = sizeY;
-            Constraints = new UiConstraints(this);
+            Constraints = new UIConstraints(this);
             UiRenderLayer = uiRenderLayer;
             UseScreenPosition = useScreenPosition;
             UsingMeshRenderer = useMeshRenderer;
@@ -135,7 +135,7 @@ namespace Electron2D.UserInterface
             {
                 RenderLayerManager.OrderRenderable(this);
             }
-            GlobalUI.MainCanvas.RegisterUiComponent(this);
+            UI.MainCanvas.RegisterUiComponent(this);
         }
 
         public bool ShouldIgnorePostProcessing()
@@ -143,10 +143,10 @@ namespace Electron2D.UserInterface
             return _ignorePostProcessing;
         }
 
-        ~UiComponent()
+        ~UIComponent()
         {
             if (_registerRenderable) RenderLayerManager.RemoveRenderable(this);
-            GlobalUI.MainCanvas.UnregisterUiComponent(this);
+            UI.MainCanvas.UnregisterUiComponent(this);
         }
 
         public void Initialize()
@@ -157,6 +157,16 @@ namespace Electron2D.UserInterface
                 Load();
                 _isLoaded = true;
             }
+        }
+
+        public void Focus()
+        {
+            _parentCanvas.Focus(this);
+        }
+
+        public void Unfocus()
+        {
+            _parentCanvas.Unfocus(this);
         }
 
         protected virtual void Load()
@@ -222,12 +232,12 @@ namespace Electron2D.UserInterface
             OnUiEvent(uiEvent);
         }
 
-        public void SetParentCanvas(UiCanvas canvas)
+        public void SetParentCanvas(UICanvas canvas)
         {
             _parentCanvas = canvas;
         }
 
-        public UiCanvas GetParentCanvas()
+        public UICanvas GetParentCanvas()
         {
             return _parentCanvas;
         }
@@ -272,6 +282,8 @@ namespace Electron2D.UserInterface
         Resize,
         Anchor,
         Visibility,
-        InteractabilityEnd
+        InteractabilityEnd,
+        Focus,
+        LoseFocus
     }
 }

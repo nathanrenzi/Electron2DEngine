@@ -1,6 +1,6 @@
 ﻿namespace Electron2D.UserInterface
 {
-    public enum UiConstraintSide
+    public enum UIConstraintSide
     {
         None,
         Left,
