@@ -100,23 +100,23 @@ namespace Electron2D.UserInterface
                 _horizontalAlignment, _verticalAlignment, _alignmentMode, _overflowMode);
         }
 
-        protected override void OnUiEvent(UiEvent _event)
+        protected override void OnUIEvent(UIEvent _event)
         {
             switch(_event)
             {
-                case UiEvent.Resize:
+                case UIEvent.Resize:
                     if (Renderer != null)
                     {
                         Renderer.Bounds = new Rectangle(0, 0, (int)SizeX, (int)SizeY);
                     }
                     break;
-                case UiEvent.Anchor:
+                case UIEvent.Anchor:
                     if(Renderer != null)
                     {
                         Renderer.Anchor = Anchor;
                     }
                     break;
-                case UiEvent.Position:
+                case UIEvent.Position:
                     if(Renderer != null)
                     {
                         Renderer.UpdateMesh();

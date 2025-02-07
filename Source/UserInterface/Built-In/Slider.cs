@@ -10,17 +10,17 @@ namespace Electron2D.UserInterface
         /// <summary>
         /// Listens to UI events. Replace with a non-private listener class for all UI in the future.
         /// </summary>
-        private class SliderListener : UiListener
+        private class SliderListener : UIListener
         {
             public bool ClickHeld;
 
-            public void OnUiAction(object _sender, UiEvent _event)
+            public void OnUiAction(object _sender, UIEvent _event)
             {
-                if(_event == UiEvent.LeftClickDown)
+                if(_event == UIEvent.LeftClickDown)
                 {
                     ClickHeld = true;
                 }
-                else if(_event == UiEvent.LeftClickUp)
+                else if(_event == UIEvent.LeftClickUp)
                 {
                     ClickHeld = false;
                 }
@@ -210,16 +210,16 @@ namespace Electron2D.UserInterface
             }
         }
 
-        protected override void OnUiEvent(UiEvent uiEvent)
+        protected override void OnUIEvent(UIEvent uiEvent)
         {
             switch(uiEvent)
             {
-                case UiEvent.Position:
-                case UiEvent.Anchor:
-                case UiEvent.Resize:
+                case UIEvent.Position:
+                case UIEvent.Anchor:
+                case UIEvent.Resize:
                     UpdateDisplay();
                     break;
-                case UiEvent.Visibility:
+                case UIEvent.Visibility:
                     _sliderPanel.Visible = Visible;
                     _backgroundPanel.Visible = Visible;
                     _handlePanel.Visible = Visible;

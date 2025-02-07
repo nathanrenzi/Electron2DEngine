@@ -63,14 +63,14 @@ namespace Electron2D.UserInterface
                     if (lastFrame.IsHovered)
                     {
                         thisFrame.IsHovered = false;
-                        component.InvokeUiAction(UiEvent.HoverEnd);
+                        component.InvokeUIEvent(UIEvent.HoverEnd);
                     }
                     if (_focusedComponent == component)
                     {
-                        component.InvokeUiAction(UiEvent.LoseFocus);
+                        component.InvokeUIEvent(UIEvent.LoseFocus);
                         _focusedComponent = null;
                     }
-                    component.InvokeUiAction(UiEvent.InteractabilityEnd);
+                    component.InvokeUIEvent(UIEvent.InteractabilityEnd);
                 }
                 if (!component.Interactable)
                 {
@@ -89,31 +89,31 @@ namespace Electron2D.UserInterface
                 {
                     hoveredCount++;
                     // Mouse is hovering over UI component
-                    component.InvokeUiAction(UiEvent.Hover);
+                    component.InvokeUIEvent(UIEvent.Hover);
 
                     if (thisFrame.IsHovered == true && lastFrame.IsHovered == false)
                     {
-                        component.InvokeUiAction(UiEvent.HoverStart);
+                        component.InvokeUIEvent(UIEvent.HoverStart);
                     }
 
                     // Left click
                     if (Input.GetMouseButtonDown(MouseButton.Left))
                     {
                         thisFrame.IsLeftClicked = true;
-                        component.InvokeUiAction(UiEvent.LeftClickDown);
-                        component.InvokeUiAction(UiEvent.ClickDown);
+                        component.InvokeUIEvent(UIEvent.LeftClickDown);
+                        component.InvokeUIEvent(UIEvent.ClickDown);
                         if(_focusedComponent != component)
                         {
-                            _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
+                            _focusedComponent?.InvokeUIEvent(UIEvent.LoseFocus);
                             _focusedComponent = component;
-                            component.InvokeUiAction(UiEvent.Focus);
+                            component.InvokeUIEvent(UIEvent.Focus);
                         }
                     }
 
                     if (Input.GetMouseButton(MouseButton.Left))
                     {
-                        component.InvokeUiAction(UiEvent.LeftClick);
-                        component.InvokeUiAction(UiEvent.Click);
+                        component.InvokeUIEvent(UIEvent.LeftClick);
+                        component.InvokeUIEvent(UIEvent.Click);
                     }
                     // ----------------------
 
@@ -121,20 +121,20 @@ namespace Electron2D.UserInterface
                     if (Input.GetMouseButtonDown(MouseButton.Middle))
                     {
                         thisFrame.IsMiddleClicked = true;
-                        component.InvokeUiAction(UiEvent.MiddleClickDown);
-                        component.InvokeUiAction(UiEvent.ClickDown);
+                        component.InvokeUIEvent(UIEvent.MiddleClickDown);
+                        component.InvokeUIEvent(UIEvent.ClickDown);
                         if (_focusedComponent != component)
                         {
-                            _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
+                            _focusedComponent?.InvokeUIEvent(UIEvent.LoseFocus);
                             _focusedComponent = component;
-                            component.InvokeUiAction(UiEvent.Focus);
+                            component.InvokeUIEvent(UIEvent.Focus);
                         }
                     }
 
                     if (Input.GetMouseButton(MouseButton.Middle))
                     {
-                        component.InvokeUiAction(UiEvent.MiddleClick);
-                        component.InvokeUiAction(UiEvent.Click);
+                        component.InvokeUIEvent(UIEvent.MiddleClick);
+                        component.InvokeUIEvent(UIEvent.Click);
                     }
                     // ----------------------
 
@@ -142,26 +142,26 @@ namespace Electron2D.UserInterface
                     if (Input.GetMouseButtonDown(MouseButton.Right))
                     {
                         thisFrame.IsRightClicked = true;
-                        component.InvokeUiAction(UiEvent.RightClickDown);
-                        component.InvokeUiAction(UiEvent.ClickDown);
+                        component.InvokeUIEvent(UIEvent.RightClickDown);
+                        component.InvokeUIEvent(UIEvent.ClickDown);
                         if (_focusedComponent != component)
                         {
-                            _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
+                            _focusedComponent?.InvokeUIEvent(UIEvent.LoseFocus);
                             _focusedComponent = component;
-                            component.InvokeUiAction(UiEvent.Focus);
+                            component.InvokeUIEvent(UIEvent.Focus);
                         }
                     }
 
                     if (Input.GetMouseButton(MouseButton.Right))
                     {
-                        component.InvokeUiAction(UiEvent.RightClick);
-                        component.InvokeUiAction(UiEvent.Click);
+                        component.InvokeUIEvent(UIEvent.RightClick);
+                        component.InvokeUIEvent(UIEvent.Click);
                     }
                     // ----------------------
                 }
                 else if (lastFrame.IsHovered == true)
                 {
-                    component.InvokeUiAction(UiEvent.HoverEnd);
+                    component.InvokeUIEvent(UIEvent.HoverEnd);
                 }
 
                 // Mouse button up
@@ -169,24 +169,24 @@ namespace Electron2D.UserInterface
                 {
                     // This is set to false here because it should be true until the mouse button is released
                     thisFrame.IsLeftClicked = false;
-                    component.InvokeUiAction(UiEvent.LeftClickUp);
-                    component.InvokeUiAction(UiEvent.ClickUp);
+                    component.InvokeUIEvent(UIEvent.LeftClickUp);
+                    component.InvokeUIEvent(UIEvent.ClickUp);
                 }
 
                 if (Input.GetMouseButtonUp(MouseButton.Middle) && thisFrame.IsMiddleClicked)
                 {
                     // This is set to false here because it should be true until the mouse button is released
                     thisFrame.IsMiddleClicked = false;
-                    component.InvokeUiAction(UiEvent.MiddleClickUp);
-                    component.InvokeUiAction(UiEvent.ClickUp);
+                    component.InvokeUIEvent(UIEvent.MiddleClickUp);
+                    component.InvokeUIEvent(UIEvent.ClickUp);
                 }
 
                 if (Input.GetMouseButtonUp(MouseButton.Right) && thisFrame.IsRightClicked)
                 {
                     // This is set to false here because it should be true until the mouse button is released
                     thisFrame.IsRightClicked = false;
-                    component.InvokeUiAction(UiEvent.RightClickUp);
-                    component.InvokeUiAction(UiEvent.ClickUp);
+                    component.InvokeUIEvent(UIEvent.RightClickUp);
+                    component.InvokeUIEvent(UIEvent.ClickUp);
                 }
                 // ----------------------
 
@@ -205,7 +205,7 @@ namespace Electron2D.UserInterface
                     || Input.GetMouseButtonDown(MouseButton.Middle)
                     || Input.GetMouseButtonDown(MouseButton.Right))
                 {
-                    _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
+                    _focusedComponent?.InvokeUIEvent(UIEvent.LoseFocus);
                     _focusedComponent = null;
                 }
             }
@@ -214,16 +214,16 @@ namespace Electron2D.UserInterface
         public void Focus(UIComponent component)
         {
             if (_focusedComponent == component) return;
-            _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
+            _focusedComponent?.InvokeUIEvent(UIEvent.LoseFocus);
             _focusedComponent = component;
-            component.InvokeUiAction(UiEvent.Focus);
+            component.InvokeUIEvent(UIEvent.Focus);
             component.Focus(false);
         }
 
         public void Unfocus(UIComponent component)
         {
             if (component != _focusedComponent) return;
-            component.InvokeUiAction(UiEvent.LoseFocus);
+            component.InvokeUIEvent(UIEvent.LoseFocus);
             component.Unfocus(false);
             _focusedComponent = null;
         }

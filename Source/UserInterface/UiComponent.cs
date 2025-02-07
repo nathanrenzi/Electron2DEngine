@@ -13,7 +13,7 @@ namespace Electron2D.UserInterface
             set
             {
                 _visible = value;
-                InvokeUiAction(UiEvent.Visibility);
+                InvokeUIEvent(UIEvent.Visibility);
             }
         }
         private bool _visible = true;
@@ -36,7 +36,7 @@ namespace Electron2D.UserInterface
             set
             {
                 _sizeX = value;
-                InvokeUiAction(UiEvent.Resize);
+                InvokeUIEvent(UIEvent.Resize);
                 UpdateMesh();
             }
         }
@@ -47,7 +47,7 @@ namespace Electron2D.UserInterface
             set
             {
                 _sizeY = value;
-                InvokeUiAction(UiEvent.Resize);
+                InvokeUIEvent(UIEvent.Resize);
                 UpdateMesh();
             }
         }
@@ -58,7 +58,7 @@ namespace Electron2D.UserInterface
             set
             {
                 _anchor = value;
-                InvokeUiAction(UiEvent.Anchor);
+                InvokeUIEvent(UIEvent.Anchor);
                 UpdateMesh();
             }
         }
@@ -68,10 +68,10 @@ namespace Electron2D.UserInterface
 
         public MeshRenderer Renderer { get; private set; }
         public Transform Transform { get; private set; }
-        public int UiRenderLayer { get; private set; }
+        public int UIRenderLayer { get; private set; }
         public bool Interactable { get; set; } = true;
         public float ExtraInteractionPixels { get; set; }
-        public List<UiListener> Listeners { get; private set; } = new List<UiListener>();
+        public List<UIListener> Listeners { get; private set; } = new List<UIListener>();
         public LayoutGroup ChildLayoutGroup { get; private set; }
         public UICanvas.UIFrameTickData ThisFrameData = new UICanvas.UIFrameTickData();
         public UICanvas.UIFrameTickData LastFrameData = new UICanvas.UIFrameTickData();
@@ -112,12 +112,12 @@ namespace Electron2D.UserInterface
             bool initialize = true, bool useScreenPosition = true, bool useMeshRenderer = true, bool autoRender = true)
         {
             Transform = new Transform();
-            Transform.OnPositionChanged += () => InvokeUiAction(UiEvent.Position);
+            Transform.OnPositionChanged += () => InvokeUIEvent(UIEvent.Position);
 
             SizeX = sizeX;
             SizeY = sizeY;
             Constraints = new UIConstraints(this);
-            UiRenderLayer = uiRenderLayer;
+            UIRenderLayer = uiRenderLayer;
             UseScreenPosition = useScreenPosition;
             UsingMeshRenderer = useMeshRenderer;
             _registerRenderable = autoRender;
@@ -176,7 +176,7 @@ namespace Electron2D.UserInterface
         protected virtual void Load()
         {
             if (UsingMeshRenderer) Renderer.Load();
-            InvokeUiAction(UiEvent.Load);
+            InvokeUIEvent(UIEvent.Load);
         }
 
         public virtual void UpdateMesh() { }
@@ -199,9 +199,9 @@ namespace Electron2D.UserInterface
 
         public void SetRenderLayer(int uiRenderLayer)
         {
-            if (uiRenderLayer == UiRenderLayer) return;
-            RenderLayerManager.OrderRenderable(this, true, UiRenderLayer + (int)RenderLayer.Interface, uiRenderLayer + (int)RenderLayer.Interface);
-            UiRenderLayer = uiRenderLayer;
+            if (uiRenderLayer == UIRenderLayer) return;
+            RenderLayerManager.OrderRenderable(this, true, UIRenderLayer + (int)RenderLayer.Interface, uiRenderLayer + (int)RenderLayer.Interface);
+            UIRenderLayer = uiRenderLayer;
         }
 
         public virtual bool CheckBounds(Vector2 position)
@@ -212,7 +212,7 @@ namespace Electron2D.UserInterface
                 && pos.Y >= BottomYBound + Transform.Position.Y - ExtraInteractionPixels && pos.Y <= TopYBound + Transform.Position.Y + ExtraInteractionPixels;
         }
 
-        public void AddUiListener(UiListener listener)
+        public void AddUiListener(UIListener listener)
         {
             if (Listeners.Contains(listener))
             {
@@ -222,18 +222,18 @@ namespace Electron2D.UserInterface
             Listeners.Add(listener);
         }
 
-        public void RemoveUiListener(UiListener listener)
+        public void RemoveUiListener(UIListener listener)
         {
             Listeners.Remove(listener);
         }
 
-        public void InvokeUiAction(UiEvent uiEvent)
+        public void InvokeUIEvent(UIEvent uiEvent)
         {
             for (int i = 0; i < Listeners.Count; i++)
             {
                 Listeners[i].OnUiAction(this, uiEvent);
             }
-            OnUiEvent(uiEvent);
+            OnUIEvent(uiEvent);
         }
 
         public void SetParentCanvas(UICanvas canvas)
@@ -246,7 +246,7 @@ namespace Electron2D.UserInterface
             return _parentCanvas;
         }
 
-        protected virtual void OnUiEvent(UiEvent uiEvent) { }
+        protected virtual void OnUIEvent(UIEvent uiEvent) { }
 
         public virtual void Render()
         {
@@ -256,15 +256,15 @@ namespace Electron2D.UserInterface
             }
         }
 
-        public int GetRenderLayer() => UiRenderLayer + (int)RenderLayer.Interface;
+        public int GetRenderLayer() => UIRenderLayer + (int)RenderLayer.Interface;
     }
 
-    public interface UiListener
+    public interface UIListener
     {
-        public void OnUiAction(object sender, UiEvent uiEvent);
+        public void OnUiAction(object sender, UIEvent uiEvent);
     }
 
-    public enum UiEvent
+    public enum UIEvent
     {
         Load,
         Click,

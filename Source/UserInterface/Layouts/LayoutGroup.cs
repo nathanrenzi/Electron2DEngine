@@ -1,6 +1,6 @@
 ﻿namespace Electron2D.UserInterface
 {
-    public abstract class LayoutGroup : UiListener, IGameClass
+    public abstract class LayoutGroup : UIListener, IGameClass
     {
         public List<UIComponent> Components = new List<UIComponent>();
         private bool _active = false;
@@ -21,9 +21,9 @@
             GC.SuppressFinalize(this);
         }
 
-        public void OnUiAction(object sender, UiEvent uiEvent)
+        public void OnUiAction(object sender, UIEvent uiEvent)
         {
-            if(uiEvent == UiEvent.Resize)
+            if(uiEvent == UIEvent.Resize)
             {
                 _isDirty = true;
             }

@@ -189,7 +189,7 @@ namespace Electron2D
                     {
                         for (int x = 0; x < _keyListeners.Count; x++)
                         {
-                            _keyListeners[x].KeyNonASCIIReleased((char)_keyValues[i]);
+                            _keyListeners[x].KeyNonAlphaReleased((char)_keyValues[i]);
                         }
                     }
                 }

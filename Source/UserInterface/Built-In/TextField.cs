@@ -11,6 +11,9 @@ namespace Electron2D.UserInterface
 {
     public class TextField : UIComponent, IKeyListener
     {
+        /// <summary>
+        /// The color of the text.
+        /// </summary>
         public Color TextColor
         {
             get
@@ -28,6 +31,9 @@ namespace Electron2D.UserInterface
         }
         private Color _textColor;
 
+        /// <summary>
+        /// The color of the prompt text.
+        /// </summary>
         public Color PromptTextColor
         {
             get
@@ -45,6 +51,9 @@ namespace Electron2D.UserInterface
         }
         private Color _promptTextColor;
 
+        /// <summary>
+        /// The text in the text field.
+        /// </summary>
         public string Text
         {
             get
@@ -58,12 +67,14 @@ namespace Electron2D.UserInterface
                 {
                     _textLabel.Text = value.Length > 0 ? value : _promptText;
                     UpdateCaretDisplay();
-                    if (!WaitForEnterToUpdate) OnTextEntered?.Invoke(value);
                 }
             }
         }
         private string _text;
 
+        /// <summary>
+        /// The text displayed when the text field is empty.
+        /// </summary>
         public string PromptText
         {
             get
@@ -77,6 +88,9 @@ namespace Electron2D.UserInterface
         }
         private string _promptText;
 
+        /// <summary>
+        /// The padding of the text area in relation to the background.
+        /// </summary>
         public Vector4 TextAreaPadding
         {
             get
@@ -91,6 +105,9 @@ namespace Electron2D.UserInterface
         }
         private Vector4 _textAreaPadding;
 
+        /// <summary>
+        /// The maximum amount of characters in the text field.
+        /// </summary>
         public uint MaxCharacterCount
         {
             get
@@ -108,6 +125,9 @@ namespace Electron2D.UserInterface
         }
         private uint _maxCharacterCount;
 
+        /// <summary>
+        /// The width of the caret in pixels.
+        /// </summary>
         public int CaretWidth
         {
             get
@@ -122,11 +142,30 @@ namespace Electron2D.UserInterface
         }
         private int _caretWidth;
 
-        public new TextRenderer Renderer => _textLabel.Renderer;
+        /// <summary>
+        /// The text renderer being used.
+        /// </summary>
+        public TextRenderer TextRenderer => _textLabel.Renderer;
 
-        public bool WaitForEnterToUpdate { get; set; }
+        /// <summary>
+        /// The renderer being used for the background.
+        /// </summary>
+        public new MeshRenderer Renderer => _backgroundPanel.Renderer;
 
+        /// <summary>
+        /// Should the <see cref="OnTextEntered"/> event be called when the enter key is pressed, or when the text is updated?
+        /// </summary>
+        public bool WaitForEnterKey { get; set; }
+
+        /// <summary>
+        /// Called when the user enters text (either when text updates or enter key is pressed, see <see cref="WaitForEnterKey"/>).
+        /// </summary>
         public event Action<string> OnTextEntered;
+
+        /// <summary>
+        /// Called when the text is updated.
+        /// </summary>
+        public event Action OnTextUpdated;
 
         private Panel _caretPanel;
         private UIComponent _backgroundPanel;
@@ -143,6 +182,13 @@ namespace Electron2D.UserInterface
         private const float HOLDING_ACTION_TIME = 0.5f;
         private const float HOLDING_REPEAT_INTERVAL = 1/30f;
 
+        /// <summary>
+        /// Creates a new text field.
+        /// </summary>
+        /// <param name="def">The definition of the text field.</param>
+        /// <param name="useScreenPosition">Whether the position of this object represents the screen position or world position.</param>
+        /// <param name="uiRenderLayer">The UI render layer of this object. Added onto <see cref="RenderLayer.Interface"/> so that UI components are rendered on top.</param>
+        /// <param name="ignorePostProcessing">Should this object ignore post processing effects?</param>
         public TextField(TextFieldDef def, bool useScreenPosition = true, int uiRenderLayer = 0,
             bool ignorePostProcessing = false)
             : base(ignorePostProcessing, uiRenderLayer, def.SizeX, def.SizeY,
@@ -150,7 +196,7 @@ namespace Electron2D.UserInterface
         {
             Text = def.Text;
             PromptText = def.PromptText;
-            WaitForEnterToUpdate = def.WaitForEnterToUpdate;
+            WaitForEnterKey = def.WaitForEnterKey;
             TextAreaPadding = def.TextAreaPadding;
             _caretWidth = def.CaretWidth;
             _maxCharacterCount = def.MaxCharacterCount;
@@ -253,27 +299,31 @@ namespace Electron2D.UserInterface
             _caretPanel.Visible = false;
             Input.UnlockKeyInput(this);
             Input.RemoveListener(this);
+            _holdingChar = (char)0;
+            _holdingCharTime = 0;
+            _holdingRepeatTime = 0;
+            _holdingLeftControl = false;
         }
 
-        protected override void OnUiEvent(UiEvent uiEvent)
+        protected override void OnUIEvent(UIEvent uiEvent)
         {
             switch (uiEvent)
             {
-                case UiEvent.ClickDown:
+                case UIEvent.ClickDown:
                     OnClick();
                     break;
-                case UiEvent.LoseFocus:
+                case UIEvent.LoseFocus:
                     OnLoseFocus();
                     break;
-                case UiEvent.Focus:
+                case UIEvent.Focus:
                     OnFocus();
                     break;
-                case UiEvent.Position:
-                case UiEvent.Anchor:
-                case UiEvent.Resize:
+                case UIEvent.Position:
+                case UIEvent.Anchor:
+                case UIEvent.Resize:
                     UpdateDisplay();
                     break;
-                case UiEvent.Visibility:
+                case UIEvent.Visibility:
                     _backgroundPanel.Visible = Visible;
                     _textLabel.Visible = Visible;
                     break;
@@ -282,7 +332,15 @@ namespace Electron2D.UserInterface
 
         public void KeyPressed(char code)
         {
+            if(code == (char)Keys.Enter)
+            {
+                OnTextEntered?.Invoke(Text);
+                Unfocus();
+                return;
+            }
+
             _flagUpdateCaret = true;
+            bool textUpdated = false;
             if (code == (char)Keys.LeftControl)
             {
                 _holdingLeftControl = true;
@@ -305,12 +363,13 @@ namespace Electron2D.UserInterface
                     _builder.Remove(_caretIndex - 1, 1);
                     _caretIndex--;
                 } while (_caretIndex - 1 >= toIndex && _caretIndex - 1 >= 0);
+                textUpdated = true;
                 if (_caretIndex < 0) _caretIndex = 0;
-                if (!WaitForEnterToUpdate) OnTextEntered?.Invoke(_builder.ToString());
             }
             else if(code == 262)
             {
-                int toIndex = _holdingLeftControl ? _builder.ToString().IndexOf(" ", _caretIndex) : _caretIndex;
+                int toIndex = _holdingLeftControl ? _builder.ToString().IndexOf(" ", _caretIndex + 1 > _builder.Length ? 
+                    _builder.Length : _caretIndex + 1) : _caretIndex;
                 toIndex = toIndex == -1 ? _builder.Length : toIndex;
                 do
                 {
@@ -320,7 +379,7 @@ namespace Electron2D.UserInterface
             }
             else if(code == 263)
             {
-                int toIndex = _holdingLeftControl ? _builder.ToString().LastIndexOf(" ", _caretIndex) : _caretIndex;
+                int toIndex = _holdingLeftControl ? _builder.ToString().LastIndexOf(" ", _caretIndex - 1 < 0 ? 0 : _caretIndex - 1) : _caretIndex;
                 toIndex = toIndex == -1 ? 0 : toIndex;
                 do
                 {
@@ -331,28 +390,36 @@ namespace Electron2D.UserInterface
             else
             {
                 if(_builder.Length >= _maxCharacterCount) return;
-                if (char.IsAscii(code))
+                if (char.IsAscii(code) && !char.IsControl(code))
                 {
                     if (_builder.Length == 0) _caretIndex = 0;
                     _builder.Insert(_caretIndex, code);
                     _caretIndex++;
+                    textUpdated = true;
                 }
             }
 
             if(_builder.Length == 0)
             {
-                Text = _promptText;
+                _text = "";
+                _textLabel.Text = _promptText;
                 _textLabel.TextColor = _promptTextColor;
-                _caretIndex = Renderer.HorizontalAlignment == TextAlignment.Right ? _promptText.Length : 0;
+                _caretIndex = TextRenderer.HorizontalAlignment == TextAlignment.Right ? _promptText.Length : 0;
             }
             else
             {
                 Text = _builder.ToString();
                 _textLabel.TextColor = _textColor;
             }
+
+            if(textUpdated)
+            {
+                OnTextUpdated?.Invoke();
+                if (!WaitForEnterKey) OnTextEntered?.Invoke(_text);
+            }
         }
 
-        public void KeyNonASCIIReleased(char code)
+        public void KeyNonAlphaReleased(char code)
         {
             if(code == (char)Keys.LeftControl)
             {

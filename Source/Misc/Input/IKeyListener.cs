@@ -3,6 +3,6 @@
     public interface IKeyListener
     {
         public void KeyPressed(char code);
-        public void KeyNonASCIIReleased(char code);
+        public void KeyNonAlphaReleased(char code);
     }
 }
