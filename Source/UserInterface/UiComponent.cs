@@ -64,6 +64,8 @@ namespace Electron2D.UserInterface
         }
         private Vector2 _anchor;
 
+        public bool Focused { get; private set; }
+
         public MeshRenderer Renderer { get; private set; }
         public Transform Transform { get; private set; }
         public int UiRenderLayer { get; private set; }
@@ -159,14 +161,16 @@ namespace Electron2D.UserInterface
             }
         }
 
-        public void Focus()
+        public void Focus(bool triggerFocusEvent = true)
         {
-            _parentCanvas.Focus(this);
+            if(triggerFocusEvent) _parentCanvas.Focus(this);
+            Focused = true;
         }
 
-        public void Unfocus()
+        public void Unfocus(bool triggerFocusEvent = true)
         {
-            _parentCanvas.Unfocus(this);
+            if (triggerFocusEvent) _parentCanvas.Unfocus(this);
+            Focused = false;
         }
 
         protected virtual void Load()

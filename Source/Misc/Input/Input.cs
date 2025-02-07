@@ -176,11 +176,21 @@ namespace Electron2D
             {
                 if ((int)_keyValues[i] == -1) continue; // Passing Unknown (-1) into the GetKey function causes an error
                 KEYS[i] = Glfw.GetKey(Display.Window, (Keys)_keyValues[i]) == InputState.Press;
-                if (!char.IsAscii((char)_keyValues[i]) && KEYS[i] && !KEYS_LAST[i])
+                if (!char.IsAscii((char)_keyValues[i]))
                 {
-                    for(int x = 0; x < _keyListeners.Count; x++)
+                    if (KEYS[i] && !KEYS_LAST[i])
                     {
-                        _keyListeners[x].KeyPressed((char)_keyValues[i]);
+                        for (int x = 0; x < _keyListeners.Count; x++)
+                        {
+                            _keyListeners[x].KeyPressed((char)_keyValues[i]);
+                        }
+                    }
+                    else if(!KEYS[i] && KEYS_LAST[i])
+                    {
+                        for (int x = 0; x < _keyListeners.Count; x++)
+                        {
+                            _keyListeners[x].KeyNonASCIIReleased((char)_keyValues[i]);
+                        }
                     }
                 }
             }

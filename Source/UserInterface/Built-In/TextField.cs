@@ -2,6 +2,7 @@
 using Electron2D.Rendering;
 using Electron2D.Rendering.Shaders;
 using Electron2D.Rendering.Text;
+using GLFW;
 using System.Drawing;
 using System.Numerics;
 using System.Text;
@@ -132,11 +133,15 @@ namespace Electron2D.UserInterface
         private TextLabel _textLabel;
         private bool _initialized = false;
         private int _caretIndex;
-        private bool _focused;
         private StringBuilder _builder;
         private Material _caretMaterial;
-        private Material _textMaterial;
         private bool _flagUpdateCaret = false;
+        private char _holdingChar;
+        private float _holdingCharTime = 0;
+        private float _holdingRepeatTime = 0;
+        private bool _holdingLeftControl = false;
+        private const float HOLDING_ACTION_TIME = 0.5f;
+        private const float HOLDING_REPEAT_INTERVAL = 1/30f;
 
         public TextField(TextFieldDef def, bool useScreenPosition = true, int uiRenderLayer = 0,
             bool ignorePostProcessing = false)
@@ -171,7 +176,6 @@ namespace Electron2D.UserInterface
             _caretPanel = new Panel(_caretMaterial, uiRenderLayer + 2, _caretWidth, def.TextFont.Arguments.FontSize, useScreenPosition, ignorePostProcessing);
             _caretPanel.Visible = false;
             _caretPanel.Interactable = false;
-            _textMaterial = def.TextMaterial;
             _textColor = def.TextColor;
             _promptTextColor = def.PromptTextColor;
             UpdateCaretDisplay();
@@ -182,8 +186,22 @@ namespace Electron2D.UserInterface
 
         public void LateUpdate()
         {
+            if (_holdingChar != (char)0)
+            {
+                if (_holdingCharTime >= HOLDING_ACTION_TIME)
+                {
+                    if (_holdingRepeatTime >= HOLDING_REPEAT_INTERVAL)
+                    {
+                        _holdingRepeatTime -= HOLDING_REPEAT_INTERVAL;
+                        KeyPressed(_holdingChar);
+                    }
+                    _holdingRepeatTime += Time.DeltaTime;
+                }
+                _holdingCharTime += Time.DeltaTime;
+            }
+
             // Workaround since updates to caret shader in input callback were not working
-            if(_flagUpdateCaret)
+            if (_flagUpdateCaret)
             {
                 UpdateCaretDisplay();
                 _flagUpdateCaret = false;
@@ -227,7 +245,6 @@ namespace Electron2D.UserInterface
             _caretPanel.Visible = true;
             Input.LockKeyInput(this);
             Input.AddListener(this);
-            _focused = true;
         }
 
         private void OnLoseFocus()
@@ -236,7 +253,6 @@ namespace Electron2D.UserInterface
             _caretPanel.Visible = false;
             Input.UnlockKeyInput(this);
             Input.RemoveListener(this);
-            _focused = false;
         }
 
         protected override void OnUiEvent(UiEvent uiEvent)
@@ -264,35 +280,61 @@ namespace Electron2D.UserInterface
             }
         }
 
-        public void KeyPressed(char unicode)
+        public void KeyPressed(char code)
         {
             _flagUpdateCaret = true;
-            if (unicode == (char)259)
+            if (code == (char)Keys.LeftControl)
+            {
+                _holdingLeftControl = true;
+            }
+            else if (!char.IsAscii(code) && _holdingChar != code)
+            {
+                _holdingChar = code;
+                _holdingCharTime = 0;
+                _holdingRepeatTime = 0;
+            }
+
+            if (code == (char)259)
             {
                 if (_caretIndex == 0) return;
                 if (_builder.Length == 0) return;
-                _builder.Remove(_caretIndex - 1, 1);
-                _caretIndex--;
+                int toIndex = _holdingLeftControl ? _builder.ToString().LastIndexOf(" ", _caretIndex - 1) : _caretIndex - 1;
+                toIndex = toIndex == -1 ? 0 : toIndex;
+                do
+                {
+                    _builder.Remove(_caretIndex - 1, 1);
+                    _caretIndex--;
+                } while (_caretIndex - 1 >= toIndex && _caretIndex - 1 >= 0);
                 if (_caretIndex < 0) _caretIndex = 0;
                 if (!WaitForEnterToUpdate) OnTextEntered?.Invoke(_builder.ToString());
             }
-            else if(unicode == 262)
+            else if(code == 262)
             {
-                _caretIndex++;
+                int toIndex = _holdingLeftControl ? _builder.ToString().IndexOf(" ", _caretIndex) : _caretIndex;
+                toIndex = toIndex == -1 ? _builder.Length : toIndex;
+                do
+                {
+                    _caretIndex++;
+                } while (_caretIndex < toIndex);
                 if(_caretIndex > _builder.Length) _caretIndex = _builder.Length;
             }
-            else if(unicode == 263)
+            else if(code == 263)
             {
-                _caretIndex--;
+                int toIndex = _holdingLeftControl ? _builder.ToString().LastIndexOf(" ", _caretIndex) : _caretIndex;
+                toIndex = toIndex == -1 ? 0 : toIndex;
+                do
+                {
+                    _caretIndex--;
+                } while (_caretIndex > toIndex);
                 if (_caretIndex < 0) _caretIndex = 0;
             }
             else
             {
                 if(_builder.Length >= _maxCharacterCount) return;
-                if (char.IsAscii(unicode))
+                if (char.IsAscii(code))
                 {
                     if (_builder.Length == 0) _caretIndex = 0;
-                    _builder.Insert(_caretIndex, unicode);
+                    _builder.Insert(_caretIndex, code);
                     _caretIndex++;
                 }
             }
@@ -307,6 +349,20 @@ namespace Electron2D.UserInterface
             {
                 Text = _builder.ToString();
                 _textLabel.TextColor = _textColor;
+            }
+        }
+
+        public void KeyNonASCIIReleased(char code)
+        {
+            if(code == (char)Keys.LeftControl)
+            {
+                _holdingLeftControl = false;
+            }
+            else if(_holdingChar == code)
+            {
+                _holdingChar = (char)0;
+                _holdingCharTime = 0;
+                _holdingRepeatTime = 0;
             }
         }
     }

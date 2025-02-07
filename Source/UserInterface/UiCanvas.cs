@@ -217,12 +217,14 @@ namespace Electron2D.UserInterface
             _focusedComponent?.InvokeUiAction(UiEvent.LoseFocus);
             _focusedComponent = component;
             component.InvokeUiAction(UiEvent.Focus);
+            component.Focus(false);
         }
 
         public void Unfocus(UIComponent component)
         {
             if (component != _focusedComponent) return;
             component.InvokeUiAction(UiEvent.LoseFocus);
+            component.Unfocus(false);
             _focusedComponent = null;
         }
     }
