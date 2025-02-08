@@ -399,37 +399,32 @@ namespace Electron2D.UserInterface
                 {
                     if (_caretIndex == 0) return;
                     if (_builder.Length == 0) return;
-                    int toIndex = _holdingLeftControl ? _builder.ToString().LastIndexOf(" ", _caretIndex - 1) : _caretIndex - 1;
-                    toIndex = toIndex == -1 ? 0 : toIndex;
                     do
                     {
                         _builder.Remove(_caretIndex - 1, 1);
                         _caretIndex--;
-                    } while (_caretIndex - 1 >= toIndex && _caretIndex - 1 >= 0);
+                    } while (_caretIndex - 1 >= 0 && _builder[_caretIndex - 1] != ' ');
                     textUpdated = true;
                     if (_caretIndex < 0) _caretIndex = 0;
                     _flagUpdateCaret = true;
                 }
                 else if (code == 262)
                 {
-                    int toIndex = _holdingLeftControl ? _builder.ToString().IndexOf(" ", _caretIndex + 1 > _builder.Length ?
-                        _builder.Length : _caretIndex + 1) : _caretIndex;
-                    toIndex = toIndex == -1 ? _builder.Length : toIndex;
+                    // Right
                     do
                     {
                         _caretIndex++;
-                    } while (_caretIndex < toIndex);
+                    } while (_holdingLeftControl && _caretIndex < _builder.Length && (_caretIndex == 0 || (_caretIndex != 0 && _builder[_caretIndex - 1] != ' ')));
                     if (_caretIndex > _builder.Length) _caretIndex = _builder.Length;
                     _flagUpdateCaret = true;
                 }
                 else if (code == 263)
                 {
-                    int toIndex = _holdingLeftControl ? _builder.ToString().LastIndexOf(" ", _caretIndex - 1 < 0 ? 0 : _caretIndex - 1) : _caretIndex;
-                    toIndex = toIndex == -1 ? 0 : toIndex;
+                    // Left
                     do
                     {
                         _caretIndex--;
-                    } while (_caretIndex > toIndex);
+                    } while (_holdingLeftControl && _caretIndex > 0 && (_caretIndex == _builder.Length || (_caretIndex < _builder.Length && _builder[_caretIndex - 1] != ' ')));
                     if (_caretIndex < 0) _caretIndex = 0;
                     _flagUpdateCaret = true;
                 }
