@@ -24,7 +24,8 @@ namespace Electron2D.UserInterface
         public string Text;
         public string PromptText;
         public bool WaitForEnterKey;
-        public uint MaxCharacterCount;
+        public int MaxCharacterCount;
+        public int MaxLineCount;
 
         /// <summary>
         /// Creates a new definition for a text field.
@@ -40,8 +41,8 @@ namespace Electron2D.UserInterface
         /// <param name="promptText">The prompt text displayed behind the user's text when the text field is empty.</param>
         /// <param name="waitForEnterKey">Should the <see cref="TextField.OnTextEntered"/> event be called when the enter key is pressed, or when the text is updated?</param>
         public TextFieldDef(int caretWidth, int sizeX, int sizeY, Vector4 textAreaPadding, FontGlyphStore textFont, Material textMaterial, 
-            Color textColor, Color promptTextColor, Material backgroundPanelMaterial, string startText, string promptText, uint maxCharacterCount,
-            TextAlignment textHorizontalAlignment = TextAlignment.Left, TextAlignment textVerticalAlignment = TextAlignment.Center,
+            Color textColor, Color promptTextColor, Material backgroundPanelMaterial, string startText, string promptText, int maxCharacterCount,
+            int maxLineCount = 1, TextAlignment textHorizontalAlignment = TextAlignment.Left, TextAlignment textVerticalAlignment = TextAlignment.Center,
             TextAlignmentMode textAlignmentMode = TextAlignmentMode.Baseline, TextOverflowMode textOverflowMode = TextOverflowMode.Word,
             SlicedPanelDef backgroundPanelDef = null, bool waitForEnterKey = false)
         {
@@ -63,6 +64,7 @@ namespace Electron2D.UserInterface
             PromptText = promptText;
             WaitForEnterKey = waitForEnterKey;
             MaxCharacterCount = maxCharacterCount;
+            MaxLineCount = maxLineCount;
         }
     }
 }

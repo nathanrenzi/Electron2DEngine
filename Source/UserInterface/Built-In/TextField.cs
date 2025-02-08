@@ -108,7 +108,7 @@ namespace Electron2D.UserInterface
         /// <summary>
         /// The maximum amount of characters in the text field.
         /// </summary>
-        public uint MaxCharacterCount
+        public int MaxCharacterCount
         {
             get
             {
@@ -123,7 +123,23 @@ namespace Electron2D.UserInterface
                 }
             }
         }
-        private uint _maxCharacterCount;
+        private int _maxCharacterCount;
+
+        /// <summary>
+        /// The maximum amount of lines in the text field.
+        /// </summary>
+        public int MaxLineCount
+        {
+            get
+            {
+                return _maxLineCount;
+            }
+            set
+            {
+                _maxLineCount = value;
+            }
+        }
+        private int _maxLineCount;
 
         /// <summary>
         /// The width of the caret in pixels.
@@ -167,6 +183,19 @@ namespace Electron2D.UserInterface
         /// </summary>
         public event Action OnTextUpdated;
 
+        private float _currentLineCount
+        {
+            get
+            {
+                int count = 0;
+                if (_text.Length > 0) count++;
+                for(int i = 0; i < _text.Length; i++)
+                {
+                    if (_text[i] == '\n') count++;
+                }
+                return count;
+            }
+        }
         private Panel _caretPanel;
         private UIComponent _backgroundPanel;
         private TextLabel _textLabel;
@@ -200,6 +229,7 @@ namespace Electron2D.UserInterface
             TextAreaPadding = def.TextAreaPadding;
             _caretWidth = def.CaretWidth;
             _maxCharacterCount = def.MaxCharacterCount;
+            _maxLineCount = def.MaxLineCount;
             if(def.BackgroundPanelDef != null)
             {
                 _backgroundPanel = new SlicedPanel(def.BackgroundPanelMaterial, def.SizeX, def.SizeY, def.BackgroundPanelDef,
@@ -332,70 +362,88 @@ namespace Electron2D.UserInterface
 
         public void KeyPressed(char code)
         {
-            if(code == (char)Keys.Enter)
-            {
-                OnTextEntered?.Invoke(Text);
-                Unfocus();
-                return;
-            }
-
-            _flagUpdateCaret = true;
             bool textUpdated = false;
-            if (code == (char)Keys.LeftControl)
+            if (code == (char)Keys.Enter)
             {
-                _holdingLeftControl = true;
-            }
-            else if (!char.IsAscii(code) && _holdingChar != code)
-            {
-                _holdingChar = code;
-                _holdingCharTime = 0;
-                _holdingRepeatTime = 0;
-            }
-
-            if (code == (char)259)
-            {
-                if (_caretIndex == 0) return;
-                if (_builder.Length == 0) return;
-                int toIndex = _holdingLeftControl ? _builder.ToString().LastIndexOf(" ", _caretIndex - 1) : _caretIndex - 1;
-                toIndex = toIndex == -1 ? 0 : toIndex;
-                do
+                if(_holdingChar == (char)Keys.LeftShift || _holdingChar == (char)Keys.RightShift)
                 {
-                    _builder.Remove(_caretIndex - 1, 1);
-                    _caretIndex--;
-                } while (_caretIndex - 1 >= toIndex && _caretIndex - 1 >= 0);
-                textUpdated = true;
-                if (_caretIndex < 0) _caretIndex = 0;
-            }
-            else if(code == 262)
-            {
-                int toIndex = _holdingLeftControl ? _builder.ToString().IndexOf(" ", _caretIndex + 1 > _builder.Length ? 
-                    _builder.Length : _caretIndex + 1) : _caretIndex;
-                toIndex = toIndex == -1 ? _builder.Length : toIndex;
-                do
-                {
+                    if (_builder.Length >= _maxCharacterCount) return;
+                    if (_builder.Length == 0) _caretIndex = 0;
+                    if (_currentLineCount >= _maxLineCount) return;
+                    _builder.Insert(_caretIndex, '\n');
                     _caretIndex++;
-                } while (_caretIndex < toIndex);
-                if(_caretIndex > _builder.Length) _caretIndex = _builder.Length;
-            }
-            else if(code == 263)
-            {
-                int toIndex = _holdingLeftControl ? _builder.ToString().LastIndexOf(" ", _caretIndex - 1 < 0 ? 0 : _caretIndex - 1) : _caretIndex;
-                toIndex = toIndex == -1 ? 0 : toIndex;
-                do
+                    textUpdated = true;
+                    _flagUpdateCaret = true;
+                }
+                else
                 {
-                    _caretIndex--;
-                } while (_caretIndex > toIndex);
-                if (_caretIndex < 0) _caretIndex = 0;
+                    OnTextEntered?.Invoke(Text);
+                    Unfocus();
+                    return;
+                }
             }
             else
             {
-                if(_builder.Length >= _maxCharacterCount) return;
-                if (char.IsAscii(code) && !char.IsControl(code))
+                if (code == (char)Keys.LeftControl)
                 {
-                    if (_builder.Length == 0) _caretIndex = 0;
-                    _builder.Insert(_caretIndex, code);
-                    _caretIndex++;
+                    _holdingLeftControl = true;
+                }
+                else if (!char.IsAscii(code) && _holdingChar != code)
+                {
+                    _holdingChar = code;
+                    _holdingCharTime = 0;
+                    _holdingRepeatTime = 0;
+                }
+
+                if (code == (char)259)
+                {
+                    if (_caretIndex == 0) return;
+                    if (_builder.Length == 0) return;
+                    int toIndex = _holdingLeftControl ? _builder.ToString().LastIndexOf(" ", _caretIndex - 1) : _caretIndex - 1;
+                    toIndex = toIndex == -1 ? 0 : toIndex;
+                    do
+                    {
+                        _builder.Remove(_caretIndex - 1, 1);
+                        _caretIndex--;
+                    } while (_caretIndex - 1 >= toIndex && _caretIndex - 1 >= 0);
                     textUpdated = true;
+                    if (_caretIndex < 0) _caretIndex = 0;
+                    _flagUpdateCaret = true;
+                }
+                else if (code == 262)
+                {
+                    int toIndex = _holdingLeftControl ? _builder.ToString().IndexOf(" ", _caretIndex + 1 > _builder.Length ?
+                        _builder.Length : _caretIndex + 1) : _caretIndex;
+                    toIndex = toIndex == -1 ? _builder.Length : toIndex;
+                    do
+                    {
+                        _caretIndex++;
+                    } while (_caretIndex < toIndex);
+                    if (_caretIndex > _builder.Length) _caretIndex = _builder.Length;
+                    _flagUpdateCaret = true;
+                }
+                else if (code == 263)
+                {
+                    int toIndex = _holdingLeftControl ? _builder.ToString().LastIndexOf(" ", _caretIndex - 1 < 0 ? 0 : _caretIndex - 1) : _caretIndex;
+                    toIndex = toIndex == -1 ? 0 : toIndex;
+                    do
+                    {
+                        _caretIndex--;
+                    } while (_caretIndex > toIndex);
+                    if (_caretIndex < 0) _caretIndex = 0;
+                    _flagUpdateCaret = true;
+                }
+                else
+                {
+                    if (_builder.Length >= _maxCharacterCount) return;
+                    if (char.IsAscii(code) && !char.IsControl(code))
+                    {
+                        if (_builder.Length == 0) _caretIndex = 0;
+                        _builder.Insert(_caretIndex, code);
+                        _caretIndex++;
+                        textUpdated = true;
+                        _flagUpdateCaret = true;
+                    }
                 }
             }
 

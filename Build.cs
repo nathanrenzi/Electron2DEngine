@@ -25,8 +25,8 @@ public class Build : Game
         Material backgroundMaterial = Material.Create(new Shader(Shader.ParseShader("Resources/Built-In/Shaders/DefaultInterface.glsl")), Color.Gray);
         TextFieldDef def = new TextFieldDef(2, 300, 50, new Vector4(10, 10, 0, 15),
             ResourceManager.Instance.LoadFont("Resources/Built-In/Fonts/Roboto-Regular.ttf", 30, 0),
-            textMaterial, Color.White, Color.FromArgb(80, 255, 255, 255), backgroundMaterial, "Test!", "Test!", 24, textAlignmentMode: TextAlignmentMode.Baseline,
-            textHorizontalAlignment: TextAlignment.Left, textVerticalAlignment: TextAlignment.Bottom, textOverflowMode: TextOverflowMode.Disabled, waitForEnterKey: true);
+            textMaterial, Color.White, Color.FromArgb(80, 255, 255, 255), backgroundMaterial, "Test!", "Enter text here...", 100, 2, textAlignmentMode: TextAlignmentMode.Baseline,
+            textHorizontalAlignment: TextAlignment.Left, textVerticalAlignment: TextAlignment.Bottom, textOverflowMode: TextOverflowMode.Word, waitForEnterKey: true);
         field = new TextField(def);
         instance = AudioSystem.CreateInstance(ResourceManager.Instance.LoadAudioClip("Resources/Built-In/Audio/Electron2DRiff.mp3"));
         field.OnTextEntered += (s) => instance.Play();
