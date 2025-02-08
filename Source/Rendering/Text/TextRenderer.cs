@@ -104,7 +104,6 @@ namespace Electron2D.Rendering.Text
             if (formattedText.Length == 0) return 0;
             Vector2 localpos = worldPosition - position;
             int offset = -1;
-            if (formattedText[0] == '\n') offset++;
             int xpos = GetXOffset(0);
             int ypos = -GetYOffset();
             int newlineCount = 0;
@@ -112,6 +111,19 @@ namespace Electron2D.Rendering.Text
             {
                 return 0;
             }
+
+            if (AlignmentMode == TextAlignmentMode.Baseline)
+            {
+                if (VerticalAlignment == TextAlignment.Top)
+                {
+                    ypos -= FontGlyphStore.Arguments.FontSize;
+                }
+                else if (VerticalAlignment == TextAlignment.Center)
+                {
+                    ypos -= FontGlyphStore.Ascent / 2;
+                }
+            }
+
             for (int i = 1; i < formattedText.Length; i++)
             {
                 Character ch = FontGlyphStore.Characters[formattedText[i + offset]];
@@ -120,22 +132,25 @@ namespace Electron2D.Rendering.Text
                 {
                     newlineCount++;
                     xpos = GetXOffset(newlineCount);
-                    ypos -= (int)(FontGlyphStore.Arguments.FontSize * (i == 0 ? 1 : LineHeightMultiplier));
+                    ypos -= (int)(FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
                 }
                 else
                 {
                     xpos += (int)(ch.Advance * transform.Scale.X);
                 }
 
-                if(localpos.X <= xpos)
+                if (localpos.Y >= ypos - FontGlyphStore.Descent)
                 {
-                    if(localpos.X < xpos - ((ch.Advance * transform.Scale.X) / 2f))
+                    if (localpos.X <= xpos)
                     {
-                        return (int)MathF.Max(i - 1, 0);
-                    }
-                    else
-                    {
-                        return i;
+                        if (localpos.X < xpos - ((ch.Advance * transform.Scale.X) / 2f))
+                        {
+                            return (int)MathF.Max(i - 1, 0);
+                        }
+                        else
+                        {
+                            return i;
+                        }
                     }
                 }
             }
@@ -152,11 +167,23 @@ namespace Electron2D.Rendering.Text
             if(index <= formattedText.Length && index >= 0)
             {
                 int offset = -1;
-                if (formattedText[0] == '\n') offset++;
                 int xpos = GetXOffset(0);
                 int ypos = -GetYOffset();
                 int newlineCount = 0;
-                for(int i = 1; i <= index; i++)
+
+                if (AlignmentMode == TextAlignmentMode.Baseline)
+                {
+                    if (VerticalAlignment == TextAlignment.Top)
+                    {
+                        ypos -= FontGlyphStore.Arguments.FontSize;
+                    }
+                    else if (VerticalAlignment == TextAlignment.Center)
+                    {
+                        ypos -= FontGlyphStore.Ascent / 2;
+                    }
+                }
+
+                for (int i = 1; i <= index; i++)
                 {
                     Character ch = FontGlyphStore.Characters[formattedText[i + offset]];
 
@@ -164,7 +191,7 @@ namespace Electron2D.Rendering.Text
                     {
                         newlineCount++;
                         xpos = GetXOffset(newlineCount);
-                        ypos -= (int)(FontGlyphStore.Arguments.FontSize * (i == 0 ? 1 : LineHeightMultiplier));
+                        ypos -= (int)(FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
                     }
                     else
                     {
@@ -256,11 +283,6 @@ namespace Electron2D.Rendering.Text
             float minHeight = 0;
             int newlineCount = 0;
             float wordLength = 0;
-
-            if (VerticalAlignment == TextAlignment.Top && AlignmentMode == TextAlignmentMode.Baseline)
-            {
-                builder.Append('\n');
-            }
 
             for (int w = 0; w < words.Length; w++)
             {
@@ -412,6 +434,19 @@ namespace Electron2D.Rendering.Text
             uint previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
             uint glyphIndex = 0;
             int newlineCount = 0;
+
+            if (AlignmentMode == TextAlignmentMode.Baseline)
+            {
+                if(VerticalAlignment == TextAlignment.Top)
+                {
+                    _y -= FontGlyphStore.Arguments.FontSize;
+                }
+                else if(VerticalAlignment == TextAlignment.Center)
+                {
+                    _y -= FontGlyphStore.Ascent / 2f;
+                }
+            }
+
             for (int i = 0; i < formattedText.Length; i++)
             {
                 Character ch = FontGlyphStore.Characters[formattedText[i]];
@@ -423,7 +458,7 @@ namespace Electron2D.Rendering.Text
                     newlineCount++;
                     _x = GetXOffset(newlineCount) + position.X;
                     // If the newline is the first character, it is meant to offset the first line, so use one as the multiplier
-                    _y -= FontGlyphStore.Arguments.FontSize * (i == 0 ? 1 : LineHeightMultiplier);
+                    _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                     previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
                     continue;
                 }
