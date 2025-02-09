@@ -39,17 +39,10 @@ namespace Electron2D.Networking
 
         /// <summary>
         /// The NetworkManager must be initialized before it can be used. See <see cref="InitializeSteam(uint)"/> also.
+        /// P2P mode uses IP addresses and can use any user-specified port. Much less secure, as Steam Datagram Relay is not
+        /// used to pass messages, so IP addresses are visible.
         /// </summary>
-        public void InitializeP2P()
-        {
-            InitializeSteam(0);
-        }
-
-        /// <summary>
-        /// The NetworkManager must be initialized before it can be used. See <see cref="InitializeP2P"/> also.
-        /// </summary>
-        /// <param name="steamAppID"></param>
-        public void InitializeSteam(uint steamAppID)
+        public void InitializeForNetwork()
         {
             if (_initialized)
             {
@@ -57,38 +50,70 @@ namespace Electron2D.Networking
             }
             if (_instance != null && _instance != this) return;
 
-            NetworkMode = steamAppID == 0 ? NetworkMode.NetworkP2P : NetworkMode.SteamP2P;
-            if(NetworkMode == NetworkMode.SteamP2P)
+            NetworkMode = NetworkMode.NetworkP2P;
+            RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.Log, Debug.LogError, false);
+            Client = new ClientServer.Client(NetworkMode);
+            Server = new ClientServer.Server(NetworkMode);
+            Client.SetServer(Server);
+            Program.Game.RegisterGameClass(this);
+        }
+
+        /// <summary>
+        /// The NetworkManager must be initialized before it can be used. See <see cref="InitializeForNetwork"/> also.
+        /// Steam mode uses Steam Datagram Relay to send messages to the server and client, and can be faster than normal
+        /// P2P in some cases. Much more secure than P2P mode as IP addresses are hidden and users must be authenticated
+        /// through steam before connecting.
+        /// </summary>
+        public void InitializeForSteam()
+        {
+            if (_initialized)
             {
-                Debug.Log("\n");
-                if (!Packsize.Test())
+                Debug.LogError("NetworkManager is already initialized, cannot initialize again without resetting!");
+            }
+            if (_instance != null && _instance != this) return;
+
+            NetworkMode = NetworkMode.SteamP2P;
+            uint steamAppID;
+            if(File.Exists("steamappid.txt"))
+            {
+                steamAppID = uint.Parse(File.ReadAllText("steamappid.txt"));
+            }
+            else
+            {
+                Debug.LogError("[Steamworks.NET] App ID text file cannot be found. This is required to open the game through steam. " +
+                    "If you are a developer, create a text file in the build directory and have it contain the number 480, and " +
+                    "make sure this file does not get included in the release, steam auto-generates this file.");
+                return;
+            }
+
+            Debug.Log("\n");
+            if (!Packsize.Test())
+            {
+                Debug.LogError("[Steamworks.NET] Packsize Test returned false, the wrong version of Steamworks.NET is being run in this platform.");
+            }
+            if (!DllCheck.Test())
+            {
+                Debug.LogError("[Steamworks.NET] DllCheck Test returned false, One or more of the Steamworks binaries seems to be the wrong version.");
+            }
+            try
+            {
+                if (SteamAPI.RestartAppIfNecessary((AppId_t)steamAppID))
                 {
-                    Debug.LogError("[Steamworks.NET] Packsize Test returned false, the wrong version of Steamworks.NET is being run in this platform.");
-                }
-                if (!DllCheck.Test())
-                {
-                    Debug.LogError("[Steamworks.NET] DllCheck Test returned false, One or more of the Steamworks binaries seems to be the wrong version.");
-                }
-                try
-                {
-                    if (SteamAPI.RestartAppIfNecessary((AppId_t)steamAppID))
-                    {
-                        Debug.Log("[Steamworks.NET] Game was not started through steam. Restarting...");
-                        Program.Game.Exit();
-                    }
-                }
-                catch(DllNotFoundException e)
-                {
-                    Debug.LogError("[Steamworks.NET] Could not load steam_api.dll. It is likely missing or not in the correct location. " +
-                        "Refer to README for more details.\n" + e.Message);
+                    Debug.Log("[Steamworks.NET] Game was not started through steam. Restarting...");
                     Program.Game.Exit();
                 }
-                if(!SteamAPI.Init())
-                {
-                    Debug.LogError("[Steamworks.NET] Steam API could not be initialized. Please make sure steam is running. If you are receiving this error while developing, please " +
-                        "make sure that steam_appid.txt is in the output directory. DO NOT ship that file with the final game build, it should only be for testing purposes.");
-                    Program.Game.Exit();
-                }
+            }
+            catch (DllNotFoundException e)
+            {
+                Debug.LogError("[Steamworks.NET] Could not load steam_api.dll. It is likely missing or not in the correct location. " +
+                    "Refer to README for more details.\n" + e.Message);
+                Program.Game.Exit();
+            }
+            if (!SteamAPI.Init())
+            {
+                Debug.LogError("[Steamworks.NET] Steam API could not be initialized. Please make sure steam is running. If you are receiving this error while developing, please " +
+                    "make sure that steam_appid.txt is in the output directory. DO NOT ship that file with the final game build, it should only be for testing purposes.");
+                Program.Game.Exit();
             }
             RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.Log, Debug.LogError, false);
 
