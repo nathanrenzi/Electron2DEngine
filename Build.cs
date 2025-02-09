@@ -16,15 +16,15 @@ public class Build : Game
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
         NetworkManager.Instance.InitializeSteam(480);
-        NetworkManager.Instance.Server.Start(25565, 2);
-        NetworkManager.Instance.Client.Connect("127.0.0.1");
+        NetworkManager.Instance.Server.Start(2, 25565, "test!");
+        NetworkManager.Instance.Client.Connect("127.0.0.1", 25565, "test!");
         NetworkManager.Instance.Client.NetworkGameClassesLoaded += () => new ExampleNetworkGameClassPosition().Spawn("test2");
     }
 
     // This is ran every frame
     protected override void Update()
     {
-        
+
     }
 
     // This is ran every frame right before rendering

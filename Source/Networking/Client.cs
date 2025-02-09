@@ -1,5 +1,4 @@
 ﻿using Riptide;
-using Riptide.Transports;
 using Riptide.Transports.Steam;
 using System.Collections.Concurrent;
 
@@ -31,9 +30,11 @@ namespace Electron2D.Networking.ClientServer
         private bool _isSyncing = false;
         private bool _isPaused = false;
         private int _syncCount = 0;
+        private NetworkMode _networkMode;
 
         public Client(NetworkMode networkMode)
         {
+            _networkMode = networkMode;
             if (networkMode == NetworkMode.SteamP2P)
             {
                 SteamClient = new SteamClient();
@@ -114,10 +115,25 @@ namespace Electron2D.Networking.ClientServer
             }
         }
 
+        /// <summary>
+        /// Sends a message to the host server.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        /// <param name="shouldRelease">Should the message be automatically released to the message pool after being sent?
+        /// If you intend to use the message after it is sent, set this to false and use <see cref="Message.Release()"/> when done.</param>
         public void Send(Message message, bool shouldRelease = true)
         {
             RiptideClient.Send(message, shouldRelease);
         }
+
+        /// <summary>
+        /// Connects to a host using the given address and port. Note: Port is only used when the client is set to <see cref="NetworkMode.NetworkP2P"/>
+        /// when created, <see cref="ProjectSettings.SteamPort"/> is used for <see cref="NetworkMode.SteamP2P"/>.
+        /// </summary>
+        /// <param name="address">The IP/SteamID of the host (depending on which NetworkMode is used).</param>
+        /// <param name="port">The port to be used. Note: Only used for <see cref="NetworkMode.NetworkP2P"/>.</param>
+        /// <param name="password">The password to be given to the host for validation.</param>
+        /// <returns></returns>
         public bool Connect(string address, ushort port = 25565, string password = "")
         {
             if (IsConnected || IsConnecting)
@@ -128,19 +144,64 @@ namespace Electron2D.Networking.ClientServer
 
             Message message = Message.Create();
             message.AddString(password);
-            if(address == "localhost" || address == "127.0.0.1")
-            {
-                return RiptideClient.Connect($"{address}", message: message, useMessageHandlers: false);
-            }
-            else
+            if(_networkMode == NetworkMode.NetworkP2P)
             {
                 return RiptideClient.Connect($"{address}:{port}", message: message, useMessageHandlers: false);
             }
+            else
+            {
+                SteamClient.SetLastUsedPassword(password);
+                if(address == "localhost" || address == "127.0.0.1")
+                {
+                    return RiptideClient.Connect($"{address}", message: message, useMessageHandlers: false);
+                }
+                else
+                {
+                    return RiptideClient.Connect($"{address}:{ProjectSettings.SteamPort}", message: message, useMessageHandlers: false);
+                }
+            }
         }
+
+        /// <summary>
+        /// Disconnects from the server that the client is currently connected to.
+        /// </summary>
         public void Disconnect()
         {
             RiptideClient.Disconnect();
+            if(_networkMode == NetworkMode.SteamP2P)
+            {
+                SteamClient.SetLastUsedPassword("");
+            }
         }
+
+        #region Steam Methods
+        /// <summary>
+        /// If steam networking is being used, opens the steam invite menu.
+        /// </summary>
+        public void SteamOpenInviteMenu()
+        {
+            if(_networkMode != NetworkMode.SteamP2P)
+            {
+                Debug.LogError("Cannot open steam invite menu when steam networking is not currently being used!");
+                return;
+            }
+            SteamClient.OpenInviteMenu();
+        }
+
+        /// <summary>
+        /// If steam networking is being used, invites a friend.
+        /// </summary>
+        /// <param name="steamIDFriend">The steam ID of the friend to invite.</param>
+        public void SteamInviteFriend(Steamworks.CSteamID steamIDFriend)
+        {
+            if (_networkMode != NetworkMode.SteamP2P)
+            {
+                Debug.LogError("Cannot invite steam friend when steam networking is not currently being used!");
+                return;
+            }
+            SteamClient.InviteFriend(steamIDFriend);
+        }
+        #endregion
 
         #region Handlers
         private void HandleMessageReceived(object? sender, MessageReceivedEventArgs e)

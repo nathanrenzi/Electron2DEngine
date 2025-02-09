@@ -4,6 +4,7 @@
 // https://github.com/tom-weiland/RiptideSteamTransport/blob/main/LICENSE.md
 
 using Electron2D;
+using Electron2D.Networking;
 using Steamworks;
 
 namespace Riptide.Transports.Steam
@@ -18,13 +19,58 @@ namespace Riptide.Transports.Steam
         private const string LocalHostName = "localhost";
         private const string LocalHostIP = "127.0.0.1";
 
+        public CSteamID HostID => localServer != null ? SteamUser.GetSteamID() : steamConnection.SteamId;
+        public string ConnectionString => $"{HostID.m_SteamID}:{_lastUsedPassword}";
         private SteamConnection steamConnection;
         private SteamServer localServer;
         private Callback<SteamNetConnectionStatusChangedCallback_t> connectionStatusChanged;
+        private Callback<GameRichPresenceJoinRequested_t> gameRichPresenceJoinRequested;
+        private string _lastUsedPassword;
 
         public SteamClient(SteamServer localServer = null)
         {
             this.localServer = localServer;
+            gameRichPresenceJoinRequested = Callback<GameRichPresenceJoinRequested_t>.Create(HandleRichPresenceJoinRequested);
+
+            Connected += (sender, e) =>
+            {
+                SteamFriends.SetRichPresence("connect", ConnectionString);
+            };
+            Disconnected += (sender, e) =>
+            {
+                if(!SteamAPI.IsSteamRunning())
+                {
+                    Debug.LogError("Cannot update rich presence connection string, steam is no longer running.");
+                    return;
+                }
+                SteamFriends.SetRichPresence("connect", "");
+            };
+        }
+
+        public void SetLastUsedPassword(string password)
+        {
+            _lastUsedPassword = password;
+        }
+
+        public void OpenInviteMenu()
+        {
+            SteamFriends.ActivateGameOverlayInviteDialogConnectString(ConnectionString);
+        }
+
+        public void InviteFriend(CSteamID steamIDFriend)
+        {
+            SteamFriends.InviteUserToGame(steamIDFriend, ConnectionString);
+        }
+
+        private void HandleRichPresenceJoinRequested(GameRichPresenceJoinRequested_t param)
+        {
+            string[] parts = param.m_rgchConnect.Split(':');
+            if (parts.Length != 2)
+            {
+                Debug.LogError("Could not accept invite, connection string is invalid!");
+                return;
+            }
+            NetworkManager.Instance.Client.Connect(parts[0], ProjectSettings.SteamPort, parts[1]);
         }
 
         public void ChangeLocalServer(SteamServer newLocalServer)

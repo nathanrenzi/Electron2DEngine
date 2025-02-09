@@ -1,5 +1,4 @@
 ﻿using Riptide;
-using Riptide.Transports;
 using Riptide.Transports.Steam;
 
 namespace Electron2D.Networking.ClientServer
@@ -36,9 +35,11 @@ namespace Electron2D.Networking.ClientServer
         private bool _hostAssigned = false;
         private ushort _hostID = 1;
         private string _serverPassword = null;
+        private NetworkMode _networkMode;
 
         public Server(NetworkMode networkMode)
         {
+            _networkMode = networkMode;
             if(networkMode == NetworkMode.SteamP2P)
             {
                 SteamServer = new SteamServer();
@@ -62,30 +63,77 @@ namespace Electron2D.Networking.ClientServer
             RiptideServer.Update();
         }
 
+        /// <summary>
+        /// Sends a message to a specific client.
+        /// </summary>
+        /// <param name="message">The message to be sent.</param>
+        /// <param name="client">The ID of the client this message should be sent to.</param>
+        /// <param name="shouldRelease">Should the message be automatically released to the message pool after being sent?
+        /// If you intend to use the message after it is sent, set this to false and use <see cref="Message.Release()"/> when done.</param>
         public void Send(Message message, ushort client, bool shouldRelease = true)
         {
             RiptideServer.Send(message, client, shouldRelease);
         }
+
+        /// <summary>
+        /// Sends a message to a specific connection.
+        /// </summary>
+        /// <param name="message">The message to be sent.</param>
+        /// <param name="toClient">The connection this message should be sent to.</param>
+        /// <param name="shouldRelease">Should the message be automatically released to the message pool after being sent?
+        /// If you intend to use the message after it is sent, set this to false and use <see cref="Message.Release()"/> when done.</param>
         public void Send(Message message, Connection toClient, bool shouldRelease = true)
         {
             RiptideServer.Send(message, toClient, shouldRelease);
         }
+
+        /// <summary>
+        /// Sends a message to all clients.
+        /// </summary>
+        /// <param name="message">The message to be sent.</param>
+        /// <param name="shouldRelease">Should the message be automatically released to the message pool after being sent?
+        /// If you intend to use the message after it is sent, set this to false and use <see cref="Message.Release()"/> when done.</param>
         public void SendToAll(Message message, bool shouldRelease = true)
         {
             RiptideServer.SendToAll(message, shouldRelease);
         }
+
+        /// <summary>
+        /// Sends a message to all clients, except a specific one.
+        /// </summary>
+        /// <param name="message">The message to be sent.</param>
+        /// <param name="exceptToClient">The client this message should not be sent to.</param>
+        /// <param name="shouldRelease">Should the message be automatically released to the message pool after being sent?
+        /// If you intend to use the message after it is sent, set this to false and use <see cref="Message.Release()"/> when done.</param>
         public void SendToAll(Message message, ushort exceptToClient, bool shouldRelease = true)
         {
             RiptideServer.SendToAll(message, exceptToClient, shouldRelease);
         }
 
-        public void Start(ushort port, ushort maxClientCount, string password = "")
+        /// <summary>
+        /// Starts the server. Note: Port is only used when the server is set to <see cref="NetworkMode.NetworkP2P"/> when created.
+        /// </summary>
+        /// <param name="maxClientCount">The maximum amount of clients that can be connected at a certain time.</param>
+        /// <param name="port">The port that the server should use. Note: This is only used when the server is set to <see cref="NetworkMode.NetworkP2P"/>.</param>
+        /// <param name="password">The (optional) password to use for the server.</param>
+        public void Start(ushort maxClientCount, ushort port = 25565, string password = "")
         {
             if (IsRunning) return;
             _serverPassword = password;
-            RiptideServer.Start(port, maxClientCount, useMessageHandlers: false);
+            if(_networkMode == NetworkMode.NetworkP2P)
+            {
+                RiptideServer.Start(port, maxClientCount, useMessageHandlers: false);
+            }
+            else
+            {
+                RiptideServer.Start(ProjectSettings.SteamPort, maxClientCount, useMessageHandlers: false);
+            }
             TimeStarted = DateTime.UtcNow.Ticks;
         }
+
+        /// <summary>
+        /// Stops the server.
+        /// </summary>
         public void Stop()
         {
             if (!IsRunning) return;
