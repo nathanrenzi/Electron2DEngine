@@ -35,15 +35,26 @@ namespace Electron2D.Networking
         public const ushort MIN_NETWORK_MESSAGE_TYPE = 60000;
         public const ushort MAX_NETWORK_MESSAGE_TYPE = 60004;
 
+        private bool _initialized = false;
+
         /// <summary>
-        /// This must be called before the NetworkManager can be used.
+        /// The NetworkManager must be initialized before it can be used. See <see cref="InitializeSteam(uint)"/> also.
         /// </summary>
-        public void Initialize()
+        public void InitializeP2P()
         {
-            Initialize(0);
+            InitializeSteam(0);
         }
-        public void Initialize(uint steamAppID)
+
+        /// <summary>
+        /// The NetworkManager must be initialized before it can be used. See <see cref="InitializeP2P"/> also.
+        /// </summary>
+        /// <param name="steamAppID"></param>
+        public void InitializeSteam(uint steamAppID)
         {
+            if (_initialized)
+            {
+                Debug.LogError("NetworkManager is already initialized, cannot initialize again without resetting!");
+            }
             if (_instance != null && _instance != this) return;
 
             NetworkMode = steamAppID == 0 ? NetworkMode.NetworkP2P : NetworkMode.SteamP2P;
@@ -126,15 +137,26 @@ namespace Electron2D.Networking
 
         public void Dispose()
         {
-            Client.Disconnect();
-            Server.Stop();
-            if(NetworkMode == NetworkMode.SteamP2P)
-            {
-                SteamAPI.Shutdown();
-            }
-
+            Reset();
+            SteamAPI.Shutdown();
             Program.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Resets the NetworkManager so that it can be reinitialized;
+        /// </summary>
+        public void Reset()
+        {
+            Client.Disconnect();
+            Server.Stop();
+            if (NetworkMode == NetworkMode.SteamP2P)
+            {
+                Server.SteamServer.Shutdown();
+            }
+            Client = null;
+            Server = null;
+            _initialized = false;
         }
     }
 }

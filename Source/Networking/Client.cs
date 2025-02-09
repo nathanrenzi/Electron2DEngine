@@ -128,7 +128,7 @@ namespace Electron2D.Networking.ClientServer
 
             Message message = Message.Create();
             message.AddString(password);
-            if(SteamClient != null)
+            if(address == "localhost" || address == "127.0.0.1")
             {
                 return RiptideClient.Connect($"{address}", message: message, useMessageHandlers: false);
             }

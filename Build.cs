@@ -15,7 +15,7 @@ public class Build : Game
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
-        NetworkManager.Instance.Initialize();
+        NetworkManager.Instance.InitializeSteam(480);
         NetworkManager.Instance.Server.Start(25565, 2);
         NetworkManager.Instance.Client.Connect("127.0.0.1");
         NetworkManager.Instance.Client.NetworkGameClassesLoaded += () => new ExampleNetworkGameClassPosition().Spawn("test2");
