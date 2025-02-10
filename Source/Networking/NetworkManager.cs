@@ -74,9 +74,9 @@ namespace Electron2D.Networking
 
             NetworkMode = NetworkMode.SteamP2P;
             uint steamAppID;
-            if(File.Exists("steamappid.txt"))
+            if(File.Exists("steam_appid.txt"))
             {
-                steamAppID = uint.Parse(File.ReadAllText("steamappid.txt"));
+                steamAppID = uint.Parse(File.ReadAllText("steam_appid.txt"));
             }
             else
             {
@@ -163,7 +163,7 @@ namespace Electron2D.Networking
         public void Dispose()
         {
             Reset();
-            SteamAPI.Shutdown();
+            if(NetworkMode == NetworkMode.SteamP2P) SteamAPI.Shutdown();
             Program.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
         }
