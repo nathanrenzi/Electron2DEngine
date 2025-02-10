@@ -38,7 +38,7 @@ namespace Electron2D.Networking
         private bool _initialized = false;
 
         /// <summary>
-        /// The NetworkManager must be initialized before it can be used. See <see cref="InitializeSteam(uint)"/> also.
+        /// The NetworkManager must be initialized before it can be used. See <see cref="InitializeForSteam"/> also.
         /// P2P mode uses IP addresses and can use any user-specified port. Much less secure, as Steam Datagram Relay is not
         /// used to pass messages, so IP addresses are visible.
         /// </summary>
