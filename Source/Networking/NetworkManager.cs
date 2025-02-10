@@ -80,7 +80,7 @@ namespace Electron2D.Networking
             }
             else
             {
-                Debug.LogError("[Steamworks.NET] App ID text file cannot be found. This is required to open the game through steam. " +
+                Debug.LogError("[Steamworks.NET] steam_appid.txt cannot be found. This is required to open the game through steam. " +
                     "If you are a developer, create a text file in the build directory and have it contain the number 480, and " +
                     "make sure this file does not get included in the release, steam auto-generates this file.");
                 return;
