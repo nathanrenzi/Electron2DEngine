@@ -1,6 +1,6 @@
 ﻿namespace Electron2D.Networking
 {
-    public enum NetworkMessageType
+    public enum BuiltInMessageType
     {
         NetworkClassSpawned = 60000,
         NetworkClassUpdated = 60001,

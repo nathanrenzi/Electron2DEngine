@@ -26,7 +26,7 @@ namespace Electron2D.Networking.ClientServer
         public event Action<ushort> ClientDisconnected;
 
         private Server _server;
-        private ConcurrentQueue<(NetworkMessageType, Message)> _messageQueue = new();
+        private ConcurrentQueue<(BuiltInMessageType, Message)> _messageQueue = new();
         private bool _isSyncing = false;
         private bool _isPaused = false;
         private int _syncCount = 0;
@@ -80,9 +80,9 @@ namespace Electron2D.Networking.ClientServer
             {
                 while(_messageQueue.Count > 0)
                 {
-                    (NetworkMessageType, Message) message;
+                    (BuiltInMessageType, Message) message;
                     if (!_messageQueue.TryDequeue(out message)) break;
-                    if(_isSyncing && message.Item1 != NetworkMessageType.NetworkClassSync)
+                    if(_isSyncing && message.Item1 != BuiltInMessageType.NetworkClassSync)
                     {
                         _messageQueue.Enqueue(message);
                         break;
@@ -90,23 +90,23 @@ namespace Electron2D.Networking.ClientServer
 
                     switch (message.Item1)
                     {
-                        case NetworkMessageType.NetworkClassSpawned:
+                        case BuiltInMessageType.NetworkClassSpawned:
                             HandleNetworkClassSpawned(message.Item2);
                             message.Item2.Release();
                             break;
-                        case NetworkMessageType.NetworkClassUpdated:
+                        case BuiltInMessageType.NetworkClassUpdated:
                             HandleNetworkClassUpdated(message.Item2);
                             message.Item2.Release();
                             break;
-                        case NetworkMessageType.NetworkClassDespawned:
+                        case BuiltInMessageType.NetworkClassDespawned:
                             HandleNetworkClassDespawned(message.Item2);
                             message.Item2.Release();
                             break;
-                        case NetworkMessageType.NetworkClassSync:
+                        case BuiltInMessageType.NetworkClassSync:
                             HandleNetworkClassSync(message.Item2);
                             message.Item2.Release();
                             break;
-                        case NetworkMessageType.NetworkClassRequestSyncData:
+                        case BuiltInMessageType.NetworkClassRequestSyncData:
                             HandleNetworkClassRequestSyncData(message.Item2);
                             message.Item2.Release();
                             break;
@@ -174,6 +174,17 @@ namespace Electron2D.Networking.ClientServer
             }
         }
 
+        /// <summary>
+        /// Returns a NetworkGameClass with the given NetworkID.
+        /// </summary>
+        /// <param name="networkID"></param>
+        /// <returns></returns>
+        public NetworkGameClass GetNetworkGameClass(string networkID)
+        {
+            NetworkGameClasses.TryGetValue(networkID, out var gameClass);
+            return gameClass;
+        }
+
         #region Steam Methods
         /// <summary>
         /// If steam networking is being used, opens the steam invite menu.
@@ -206,7 +217,7 @@ namespace Electron2D.Networking.ClientServer
         #region Handlers
         private void HandleMessageReceived(object? sender, MessageReceivedEventArgs e)
         {
-            if (e.MessageId < NetworkManager.MIN_NETWORK_MESSAGE_TYPE || e.MessageId > NetworkManager.MAX_NETWORK_MESSAGE_TYPE)
+            if (e.MessageId < NetworkManager.MIN_MESSAGE_TYPE_INTERCEPT || e.MessageId > NetworkManager.MAX_MESSAGE_TYPE_INTERCEPT)
             {
                 MessageReceived?.Invoke(sender, e);
                 return;
@@ -214,7 +225,7 @@ namespace Electron2D.Networking.ClientServer
 
             Message message = Message.Create();
             message.AddMessage(e.Message);
-            _messageQueue.Enqueue(((NetworkMessageType)e.MessageId, message));
+            _messageQueue.Enqueue(((BuiltInMessageType)e.MessageId, message));
         }
         private void HandleNetworkClassRequestSyncData(Message message)
         {
@@ -223,7 +234,7 @@ namespace Electron2D.Networking.ClientServer
             ushort syncClient = message.GetUShort();
             if (syncClient == ID) return;
             Message returnMessage = Message.Create(MessageSendMode.Reliable,
-                (ushort)NetworkMessageType.NetworkClassRequestSyncData);
+                (ushort)BuiltInMessageType.NetworkClassRequestSyncData);
             returnMessage.AddUShort(syncClient);
             int initializedClasses = 0;
             foreach (var gameClass in NetworkGameClasses.Values)
@@ -280,9 +291,8 @@ namespace Electron2D.Networking.ClientServer
             NetworkGameClass networkGameClass = GetNetworkGameClass(networkID);
             if (networkGameClass != null)
             {
-                if (networkGameClass.CheckUpdateVersion(type, updateVersion))
+                if (networkGameClass.CheckAndHandleUpdateVersion(type, updateVersion))
                 {
-                    networkGameClass.SetUpdateVersion(updateVersion);
                     networkGameClass.ReceiveData(type, json);
                 }
             }
@@ -326,7 +336,7 @@ namespace Electron2D.Networking.ClientServer
                 // Telling the server to start the sync
                 _isSyncing = true;
                 Debug.Log($"(CLIENT): Received sync signal from server, total count: {syncCount}. Asking server for data...");
-                Send(Message.Create(MessageSendMode.Reliable, (ushort)NetworkMessageType.NetworkClassSync));
+                Send(Message.Create(MessageSendMode.Reliable, (ushort)BuiltInMessageType.NetworkClassSync));
             }
         }
         private void HandleConnectionFailed(object? sender, ConnectionFailedEventArgs e)
@@ -350,11 +360,5 @@ namespace Electron2D.Networking.ClientServer
             _syncCount = 0;
         }
         #endregion
-
-        private NetworkGameClass GetNetworkGameClass(string networkID)
-        {
-            NetworkGameClasses.TryGetValue(networkID, out var gameClass);
-            return gameClass;
-        }
     }
 }

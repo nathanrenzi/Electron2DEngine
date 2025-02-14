@@ -21,6 +21,9 @@ namespace Electron2D.Networking
         public uint UpdateVersion { get; private set; } = 0;
         public bool RemoveLocallyOnDespawn { get; set; }
 
+        public event Action OnNetworkInitializedEvent;
+        public event Action OnNetworkDespawnedEvent;
+
         protected ClientServer.Client _client;
         protected ClientServer.Server _server;
 
@@ -91,7 +94,7 @@ namespace Electron2D.Networking
             _client.NetworkGameClasses.Add(NetworkID, this);
 
             Message message = Message.Create(MessageSendMode.Reliable,
-                (ushort)NetworkMessageType.NetworkClassSpawned);
+                (ushort)BuiltInMessageType.NetworkClassSpawned);
             message.AddUInt(UpdateVersion);
             message.AddInt(GetRegisterID());
             message.AddString(networkID);
@@ -108,11 +111,12 @@ namespace Electron2D.Networking
             if(IsOwner && sendMessageToServer)
             {
                 Message message = Message.Create(MessageSendMode.Reliable,
-                    (ushort)NetworkMessageType.NetworkClassDespawned);
+                    (ushort)BuiltInMessageType.NetworkClassDespawned);
                 message.AddString(NetworkID);
                 _client.Send(message);
-                Reset();
+                OnNetworkDespawnedEvent?.Invoke();
                 OnDespawned();
+                Reset();
                 if (RemoveLocallyOnDespawn)
                 {
                     Program.Game.UnregisterGameClass(this);
@@ -122,20 +126,22 @@ namespace Electron2D.Networking
             }
             else if(RemoveLocallyOnDespawn)
             {
-                Reset();
+                OnNetworkDespawnedEvent?.Invoke();
                 OnDespawned();
+                Reset();
                 Program.Game.UnregisterGameClass(this);
                 GC.SuppressFinalize(this);
                 OnDisposed();
             }
             else
             {
-                Reset();
+                OnNetworkDespawnedEvent?.Invoke();
                 OnDespawned();
+                Reset();
             }
         }
         /// <summary>
-        /// Sends data to the server registered under this objects NetworkID.
+        /// Sends data to the server registered under this object's NetworkID.
         /// </summary>
         /// <param name="sendMode"></param>
         /// <param name="json"></param>
@@ -149,7 +155,7 @@ namespace Electron2D.Networking
                 return;
             }
             UpdateVersion++;
-            Message message = Message.Create(sendMode, (ushort)NetworkMessageType.NetworkClassUpdated);
+            Message message = Message.Create(sendMode, (ushort)BuiltInMessageType.NetworkClassUpdated);
             message.AddString(NetworkID);
             message.AddUInt(UpdateVersion);
             message.AddUShort(type);
@@ -175,10 +181,11 @@ namespace Electron2D.Networking
                 IsOwner = client.ID == ownerID;
             }
             IsNetworkInitialized = true;
+            OnNetworkInitializedEvent?.Invoke();
             OnNetworkInitialized();
         }
         /// <summary>
-        /// Sets the current update version.
+        /// Sets the global update version for this object.
         /// </summary>
         /// <param name="newVersion">Must be newer than the current update version.</param>
         public void SetUpdateVersion(uint newVersion)
@@ -227,13 +234,14 @@ namespace Electron2D.Networking
         /// </summary>
         public abstract void OnDisposed();
         /// <summary>
-        /// Should check the received version against the stored one (<see cref="UpdateVersion"/>), if applicable.
+        /// Should check the received version against the stored one, either in <see cref="UpdateVersion"/> or in a custom version variable,
+        /// optionally using the type parameter.
         /// Can return true to ignore update versions.
         /// </summary>
         /// <param name="type">The type of update received.</param>
         /// <param name="version">The version number for the update received.</param>
         /// <returns></returns>
-        public abstract bool CheckUpdateVersion(ushort type, uint version);
+        public abstract bool CheckAndHandleUpdateVersion(ushort type, uint version);
 
         private void Reset()
         {

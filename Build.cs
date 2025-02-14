@@ -1,30 +1,64 @@
 ﻿using Electron2D;
 using Electron2D.Networking;
-using Electron2D.Networking.Examples;
+using Electron2D.Rendering;
 using System.Drawing;
+using System.Numerics;
 
 public class Build : Game
 {
     // This is ran when the game is first initialized
     protected override void Initialize()
     {
-        ExampleNetworkGameClassPosition.SetRegisterID(NetworkManager.RegisterNetworkGameClass(ExampleNetworkGameClassPosition.FactoryMethod));
+        
     }
 
     // This is ran when the game is ready to load content
+    NetworkTransform networkTransform;
     protected override void Load()
     {
-        SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
-        NetworkManager.Instance.InitializeForSteam();
-        NetworkManager.Instance.Server.Start(2, 25565, "test!");
-        NetworkManager.Instance.Client.Connect("127.0.0.1", 25565, "test!");
-        NetworkManager.Instance.Client.NetworkGameClassesLoaded += () => new ExampleNetworkGameClassPosition().Spawn("test2");
+        bool isServer = false;
+        SetBackgroundColor(isServer? Color.FromArgb(255, 80, 80, 80) : Color.FromArgb(255, 80, 80, 255));
+        NetworkManager.Instance.InitializeForNetwork();
+        if(isServer) NetworkManager.Instance.Server.Start(2, 25565, "test!");
+        if(NetworkManager.Instance.NetworkMode == NetworkMode.SteamP2P)
+        {
+            NetworkManager.Instance.Client.Connect(isServer ? "127.0.0.1" : "76561198184083363", 25565, "test!");
+        }
+        else
+        {
+            NetworkManager.Instance.Client.Connect("127.0.0.1", 25565, "test!");
+        }
+        if(isServer)
+        {
+            networkTransform = new NetworkTransform(new Transform(), 0.05f);
+            NetworkManager.Instance.Client.NetworkGameClassesLoaded += () => networkTransform.Spawn("test");
+            networkTransform.OnNetworkInitializedEvent += () => new Sprite(Material.Create(Color.Red), transform: networkTransform.Transform);
+        }
     }
 
     // This is ran every frame
+    bool found = false;
     protected override void Update()
     {
-
+        if (networkTransform != null)
+        {
+            networkTransform.Position = Input.GetOffsetMousePosition();
+            networkTransform.Scale += Vector2.One * Input.ScrollDelta * 50;
+            if(Input.GetKey(GLFW.Keys.Right))
+            {
+                networkTransform.Rotation += Time.DeltaTime * 10;
+            }
+        }
+        else
+        {
+            if (found) return;
+            NetworkTransform transform = (NetworkTransform)NetworkManager.Instance.Client.GetNetworkGameClass("test");
+            if(transform != null)
+            {
+                Sprite s = new Sprite(Material.Create(Color.Red), transform: transform.Transform);
+                found = true;
+            }
+        }
     }
 
     // This is ran every frame right before rendering

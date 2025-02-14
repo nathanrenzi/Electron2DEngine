@@ -32,14 +32,14 @@ namespace Electron2D.Networking
 
         public NetworkMode NetworkMode { get; private set; }
 
-        public const ushort MIN_NETWORK_MESSAGE_TYPE = 60000;
-        public const ushort MAX_NETWORK_MESSAGE_TYPE = 60004;
+        public const ushort MIN_MESSAGE_TYPE_INTERCEPT = 60000;
+        public const ushort MAX_MESSAGE_TYPE_INTERCEPT = 60004;
 
         private bool _initialized = false;
 
         /// <summary>
         /// The NetworkManager must be initialized before it can be used. See <see cref="InitializeForSteam"/> also.
-        /// P2P mode uses IP addresses and can use any user-specified port. Much less secure, as Steam Datagram Relay is not
+        /// Network mode uses IP addresses and can use any user-specified port. Much less secure, as Steam Datagram Relay is not
         /// used to pass messages, so IP addresses are visible.
         /// </summary>
         public void InitializeForNetwork()

@@ -9,6 +9,7 @@ using Electron2D.PhysicsBox2D;
 using Electron2D.Audio;
 using Electron2D.Management;
 using Electron2D.Rendering.PostProcessing;
+using Electron2D.Networking;
 
 namespace Electron2D
 {
@@ -191,6 +192,9 @@ namespace Electron2D
 
             // Initializing physics thread
             PhysicsThread.Start();
+
+            // Initializing built-in network game classes
+            NetworkTransform.SetRegisterID(NetworkManager.RegisterNetworkGameClass(NetworkTransform.FactoryMethod));
 
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
