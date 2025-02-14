@@ -14,15 +14,16 @@ public class Build : Game
 
     // This is ran when the game is ready to load content
     NetworkTransform networkTransform;
+    Sprite s;
     protected override void Load()
     {
         bool isServer = false;
-        SetBackgroundColor(isServer? Color.FromArgb(255, 80, 80, 80) : Color.FromArgb(255, 80, 80, 255));
+        SetBackgroundColor(isServer ? Color.FromArgb(255, 80, 80, 80) : Color.FromArgb(255, 80, 80, 255));
         NetworkManager.Instance.InitializeForNetwork();
         if(isServer) NetworkManager.Instance.Server.Start(2, 25565, "test!");
         if(NetworkManager.Instance.NetworkMode == NetworkMode.SteamP2P)
         {
-            NetworkManager.Instance.Client.Connect(isServer ? "127.0.0.1" : "76561198184083363", 25565, "test!");
+            NetworkManager.Instance.Client.Connect(isServer ? "127.0.0.1" : "steamid", 25565, "test!");
         }
         else
         {
@@ -30,9 +31,9 @@ public class Build : Game
         }
         if(isServer)
         {
-            networkTransform = new NetworkTransform(new Transform(), 0.05f);
+            networkTransform = new NetworkTransform(new Transform(), 0.05f, true, false);
             NetworkManager.Instance.Client.NetworkGameClassesLoaded += () => networkTransform.Spawn("test");
-            networkTransform.OnNetworkInitializedEvent += () => new Sprite(Material.Create(Color.Red), transform: networkTransform.Transform);
+            networkTransform.OnNetworkInitializedEvent += () => s = new Sprite(Material.Create(Color.Red), transform: networkTransform.Transform);
         }
     }
 
@@ -55,7 +56,7 @@ public class Build : Game
             NetworkTransform transform = (NetworkTransform)NetworkManager.Instance.Client.GetNetworkGameClass("test");
             if(transform != null)
             {
-                Sprite s = new Sprite(Material.Create(Color.Red), transform: transform.Transform);
+                Sprite s = new Sprite(Material.Create(Color.Red), transform: transform.Transform, useCustomTransformScale: true);
                 found = true;
             }
         }

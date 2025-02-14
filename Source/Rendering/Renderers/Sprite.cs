@@ -13,8 +13,8 @@ namespace Electron2D
         /// <param name="sizeX"></param>
         /// <param name="sizeY"></param>
         /// <param name="renderLayer"></param>
-        /// <param name="transform">Sets a custom Transform object for the Sprite to use. SizeX and SizeY parameters are ignored, instead transform.Scale is used.</param> 
-        public Sprite(Material material, int sizeX = 100, int sizeY = 100, float spritesPerSecond = 0, int renderLayer = 1, Transform transform = null)
+        /// <param name="transform">Sets a custom Transform object for the Sprite to use.</param> 
+        public Sprite(Material material, int sizeX = 100, int sizeY = 100, float spritesPerSecond = 0, int renderLayer = 1, Transform transform = null, bool useCustomTransformScale = false)
         {
             RenderLayer = renderLayer;
 
@@ -26,6 +26,7 @@ namespace Electron2D
             else
             {
                 Transform = transform;
+                if(!useCustomTransformScale) Transform.Scale = new System.Numerics.Vector2(sizeX, sizeY);
             }
 
             Renderer = new SpriteRenderer(Transform, material, renderLayer);
