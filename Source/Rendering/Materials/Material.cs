@@ -22,40 +22,38 @@ namespace Electron2D.Rendering
             public bool UsingLinearFiltering;
         }
 
-        private static Texture2D blankTexture = null;
-        private static Texture2D blankNormal = null;
+        private static Texture2D _blankTexture = null;
+        private static Texture2D _blankNormal = null;
 
         public Shader Shader;
-
         public ITexture MainTexture;
-
         public ITexture NormalTexture;
         public float NormalScale;
-
         public Color MainColor;
+        public Color AmbientColor;
         public bool UsingLinearFiltering { get; }
 
-        private Material(Shader _shader, ITexture _mainTexture, ITexture _normalTexture, Color _mainColor, bool _useLinearFiltering, float _normalScale)
+        private Material(Shader shader, ITexture mainTexture, ITexture normalTexture, Color mainColor, bool useLinearFiltering, float normalScale)
         {
-            Shader = _shader;
-            MainTexture = _mainTexture;
-            NormalTexture = _normalTexture;
-            MainColor = _mainColor;
-            UsingLinearFiltering = _useLinearFiltering;
-            NormalScale = _normalScale;
+            Shader = shader;
+            MainTexture = mainTexture;
+            NormalTexture = normalTexture;
+            MainColor = mainColor;
+            UsingLinearFiltering = useLinearFiltering;
+            NormalScale = normalScale;
 
             // Compiling and setting up the shader if not done already.
-            if (!_shader.Compiled)
+            if (!shader.Compiled)
             {
-                if(!_shader.Compile())
+                if(!shader.Compile())
                 {
                     Debug.LogError("MATERIAL: Failed to compile shader.");
                     return;
                 }
 
-                _shader.Use();
-                _shader.SetInt("mainTextureSampler", 0);
-                _shader.SetInt("normalTextureSampler", 1);
+                shader.Use();
+                shader.SetInt("mainTextureSampler", 0);
+                shader.SetInt("normalTextureSampler", 1);
             }
 
             MainTexture.SetFilteringMode(UsingLinearFiltering);
@@ -63,37 +61,55 @@ namespace Electron2D.Rendering
         }
 
         #region Static Methods
-        public static Material Create(Shader _shader, ITexture _mainTexture = null, ITexture _normalTexture = null, bool _useLinearFiltering = false, float _normalScale = 1)
-            => Create(_shader, Color.White, _mainTexture, _normalTexture, _useLinearFiltering, _normalScale);
-        public static Material Create(Shader _shader, Color _mainColor, ITexture _mainTexture = null, ITexture _normalTexture = null, bool _useLinearFiltering = false, float _normalScale = 1)
+        public static Material Create(Shader shader, ITexture mainTexture = null, ITexture normalTexture = null, bool useLinearFiltering = false, float normalScale = 1)
+            => Create(shader, Color.White, mainTexture, normalTexture, useLinearFiltering, normalScale);
+        public static Material Create(Shader shader, Color mainColor, ITexture mainTexture = null, ITexture normalTexture = null, bool useLinearFiltering = false, float normalScale = 1)
         {
-            if (blankTexture == null)
-                blankTexture = ResourceManager.Instance.LoadTexture("Resources/Built-In/Textures/BlankTexture.png");
+            if (_blankTexture == null)
+                _blankTexture = ResourceManager.Instance.LoadTexture("Resources/Built-In/Textures/BlankTexture.png");
 
-            if (blankNormal == null)
-                blankNormal = ResourceManager.Instance.LoadTexture("Resources/Built-In/Textures/BlankNormal.png", true);
+            if (_blankNormal == null)
+                _blankNormal = ResourceManager.Instance.LoadTexture("Resources/Built-In/Textures/BlankNormal.png", true);
 
-            return new Material(_shader, (_mainTexture == null ? blankTexture : _mainTexture), (_normalTexture == null ? blankNormal : _normalTexture), _mainColor, _useLinearFiltering, _normalScale);
+            return new Material(shader, (mainTexture == null ? _blankTexture : mainTexture), (normalTexture == null ? _blankNormal : normalTexture), mainColor, useLinearFiltering, normalScale);
         }
-        public static Material Create(Material _materialToCopy)
+        public static Material Create(Material materialToCopy)
         {
-            return new Material(_materialToCopy.Shader, _materialToCopy.MainTexture, _materialToCopy.NormalTexture,
-                _materialToCopy.MainColor, _materialToCopy.UsingLinearFiltering, _materialToCopy.NormalScale);
+            return new Material(materialToCopy.Shader, materialToCopy.MainTexture, materialToCopy.NormalTexture,
+                materialToCopy.MainColor, materialToCopy.UsingLinearFiltering, materialToCopy.NormalScale);
         }
-
-        public static Material Create(Color _color)
+        public static Material Create(Color color)
         {
-            return Create(GlobalShaders.DefaultTexture, _color);
+            return Create(GlobalShaders.DefaultTexture, color);
         }
-
-        public static Material CreateCircle(Shader _shader, Color _color)
+        public static Material CreateCircle(Shader shader, Color color)
         {
-            return Create(_shader, _color, ResourceManager.Instance.LoadTexture("Resources/Built-In/Textures/Circle.png"));
+            return Create(shader, color, ResourceManager.Instance.LoadTexture("Resources/Built-In/Textures/Circle.png"));
         }
-
-        public static Material CreateCircle(Color _color)
+        public static Material CreateCircle(Color color)
         {
-            return CreateCircle(GlobalShaders.DefaultTexture, _color);
+            return CreateCircle(GlobalShaders.DefaultTexture, color);
+        }
+        public static Material CreateLit(Shader shader, Color mainColor, Color ambientColor, ITexture mainTexture = null, ITexture normalTexture = null,
+            bool useLinearFiltering = false, float normalScale = 1)
+        {
+            Material material = Create(shader, mainColor, mainTexture, normalTexture, useLinearFiltering, normalScale);
+            material.AmbientColor = ambientColor;
+            return material;
+        }
+        public static Material CreateLit(Color mainColor, Color ambientColor, ITexture mainTexture = null, ITexture normalTexture = null,
+            bool useLinearFiltering = false, float normalScale = 1)
+        {
+            Shader shader = new Shader(Shader.ParseShader("Resources/Built-In/Shaders/DefaultLit.glsl"));
+            Material material = Create(shader, mainColor, mainTexture, normalTexture, useLinearFiltering, normalScale);
+            material.AmbientColor = ambientColor;
+            return material;
+        }
+        public static Material CreateLit(ITexture mainTexture, ITexture normalTexture = null, bool useLinearFiltering = false, float normalScale = 1)
+        {
+            Shader shader = new Shader(Shader.ParseShader("Resources/Built-In/Shaders/DefaultLit.glsl"));
+            Material material = Create(shader, Color.White, mainTexture, normalTexture, useLinearFiltering, normalScale);
+            return material;
         }
 
         public static Material LoadFromJSON(string json)
@@ -136,6 +152,7 @@ namespace Electron2D.Rendering
             Shader.Use();
             Shader.SetFloat("totalLayers", MainTexture.GetTextureLayers());
             Shader.SetColor("mainColor", MainColor);
+            Shader.SetColor("ambientColor", AmbientColor);
             Shader.SetFloat("normalScale", NormalScale);
         }
 
