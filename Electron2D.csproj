@@ -21,6 +21,9 @@
     <None Remove="Resources\Built-In\Shaders\PostProcessing\Vignette.glsl" />
     <None Remove="Resources\spaceshipcolor.png" />
     <None Remove="Resources\spaceshipnormal.png" />
+    <None Remove="Resources\WorkerShipColor.png" />
+    <None Remove="Resources\WorkerShipLighting.png" />
+    <None Remove="Resources\WorkerShipNormal.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -93,10 +96,13 @@
     <EmbeddedResource Include="Resources\Built-In\Textures\Circle.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\spaceshipcolor.png">
+    <EmbeddedResource Include="Resources\WorkerShipColor.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\spaceshipnormal.png">
+    <EmbeddedResource Include="Resources\WorkerShipLighting.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\WorkerShipNormal.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

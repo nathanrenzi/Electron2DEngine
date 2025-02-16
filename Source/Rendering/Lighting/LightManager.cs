@@ -102,8 +102,7 @@ namespace Electron2D
                     _shader.SetFloat($"pointLights[{i}].initialized", 1);
                     _shader.SetVector2($"pointLights[{i}].position", l.Transform.Position);
                     _shader.SetFloat($"pointLights[{i}].height", l.Height);
-                    _shader.SetFloat($"pointLights[{i}].linear", l.Linear);
-                    _shader.SetFloat($"pointLights[{i}].quadratic", l.Quadratic);
+                    _shader.SetFloat($"pointLights[{i}].quadratic", l.QuadraticFalloff);
                     _shader.SetFloat($"pointLights[{i}].constant", l.Constant);
                     _shader.SetFloat($"pointLights[{i}].intensity", l.Intensity);
                     _shader.SetVector3($"pointLights[{i}].color",

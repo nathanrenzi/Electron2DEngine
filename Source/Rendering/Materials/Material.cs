@@ -141,6 +141,8 @@ namespace Electron2D.Rendering
             NormalTexture.Use(GL_TEXTURE1);
 
             Shader.Use();
+            Shader.SetInt("mainTextureSampler", 0);
+            Shader.SetInt("normalTextureSampler", 1);
             Shader.SetFloat("totalLayers", MainTexture.GetTextureLayers());
             Shader.SetColor("mainColor", MainColor);
             Shader.SetFloat("normalScale", NormalScale);

@@ -43,7 +43,6 @@ struct PointLight {
     float initialized;
     vec2 position;
     float height;
-    float linear;
     float quadratic;
     float constant;
     float intensity;
@@ -57,7 +56,7 @@ uniform PointLight pointLights[MAX_POINT_LIGHTS];
 vec3 calcPointLight(PointLight light, vec2 fragPos, vec3 normal)
 {
     if (isinf(light.initialized)) return vec3(0);
-    vec3 lightPos = vec3(light.position, -light.height);
+    vec3 lightPos = vec3(light.position, light.height);
     vec3 pos = vec3(fragPos, 0);
     vec3 lightDir = normalize(lightPos - pos);
     float diff = max(dot(normal, lightDir), 0.0);
@@ -82,7 +81,7 @@ void main()
     normal = normalize((normal * 2.0) - 1.0);
 
     // Transposing normal using model matrix
-    normal = normalize(vec3(normal.x, normal.y, normal.z * normalScale));
+    normal = normalize(vec3(normal.x * normalScale, normal.y * normalScale, normal.z));
     vec3 normalTransposed = normalize(mat3(transpose(inverse(nModel))) * normal);
 
     // Setting result to ambient color

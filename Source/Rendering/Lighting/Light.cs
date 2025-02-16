@@ -32,27 +32,16 @@ namespace Electron2D
         }
         private float _constant;
 
-        public float Linear
+        public float QuadraticFalloff
         {
-            get => _linear;
+            get => _quadraticFalloff;
             set
             {
-                _linear = value;
+                _quadraticFalloff = value;
                 IsDirty = true;
             }
         }
-        private float _linear;
-
-        public float Quadratic
-        {
-            get => _quadratic;
-            set
-            {
-                _quadratic = value;
-                IsDirty = true;
-            }
-        }
-        private float _quadratic;
+        private float _quadraticFalloff;
 
         public float Height
         {
@@ -80,12 +69,11 @@ namespace Electron2D
 
         public bool IsDirty { get; set; }
 
-        public Light(Color color, float height, float linear, float quadratic, float constant = 1, float intensity = 1, LightType type = LightType.Point)
+        public Light(Color color, float height, float quadratic, float constant = 1, float intensity = 1, LightType type = LightType.Point)
         {
             Type = type;
             Color = color;
-            Linear = linear;
-            Quadratic = quadratic;
+            QuadraticFalloff = quadratic;
             Constant = constant;
             Height = height;
             Intensity = intensity;
