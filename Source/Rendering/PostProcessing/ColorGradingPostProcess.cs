@@ -41,7 +41,7 @@ namespace Electron2D.Rendering.PostProcessing
         public ColorGradingPostProcess(Color colorFilter, float hueShift = 0, float saturation = 0,
             float brightness = 0, float contrast = 0, float temperature = 0)
         {
-            _shader = new Shader(Shader.ParseShader("Resources/Built-In/Shaders/PostProcessing/ColorGrading.glsl"), true);
+            _shader = new Shader(Shader.ParseShader(ProjectSettings.GetEngineResourcePath("Shaders/PostProcessing/ColorGrading.glsl")), true);
             ColorFilter = colorFilter;
             HueShift = hueShift;
             Saturation = saturation;

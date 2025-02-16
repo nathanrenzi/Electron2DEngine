@@ -53,7 +53,7 @@ namespace Electron2D.Rendering.PostProcessing
             if (_initialized) return;
             _initialized = true;
 
-            _shader = new Shader(Shader.ParseShader("Resources/Built-In/Shaders/PostProcessing/DefaultPostProcessing.glsl"), true);
+            _shader = new Shader(Shader.ParseShader(ProjectSettings.GetEngineResourcePath("Shaders/PostProcessing/DefaultPostProcessing.glsl")), true);
 
             _renderBuffer = new FrameBuffer(4, GL_RGB, GL_COLOR_ATTACHMENT0, false, true);
             _frameBuffer1 = new FrameBuffer(0, 0, 0, true, false);
