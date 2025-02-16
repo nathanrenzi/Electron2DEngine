@@ -7,26 +7,23 @@ namespace Electron2D
 {
     public static class Input
     {
-        public static float ScrollDelta;
-        public static Vector2 MousePosition;
+        public static float ScrollDelta { get; private set; }
+        public static Vector2 MousePosition { get; private set; }
+        public static Vector2 MouseDelta { get; private set; }
 
         private static bool[] KEYS;
         private static bool[] KEYS_LAST;
         private static InputState[] MOUSE = new InputState[8];
         private static InputState[] MOUSE_LAST = new InputState[8];
-
         private static int _totalKeyCount;
         private static KeyCode[] _keyValues;
-
         private static MouseCallback _scrollCallback;
         private static bool _scrollCallbackFrame = false;
-
+        private static bool _mouseCallbackFrame = false;
         private static MouseCallback _mouseCallback;
         private static CharCallback _charCallback;
-
         private static List<IKeyListener> _keyListeners = new List<IKeyListener>();
         private static bool _lockKeyInput = false;
-
         private static Dictionary<uint, Dictionary<object, bool>> _lockPriorityDictionary = new();
 
         public static void AddListener(IKeyListener listener)
@@ -149,7 +146,10 @@ namespace Electron2D
 
         private static void MouseCallback(Window window, double x, double y)
         {
-            MousePosition = new Vector2((float)x, (float)y);
+            _mouseCallbackFrame = true;
+            Vector2 pos = new Vector2((float)x, (float)y);
+            MouseDelta = pos - MousePosition;
+            MousePosition = pos;
         }
 
         public static void ProcessInput()
@@ -169,6 +169,10 @@ namespace Electron2D
             {
                 // If the scroll delta was not updated this frame, set the delta to 0
                 ScrollDelta = 0;
+            }
+            if(!_mouseCallbackFrame)
+            {
+                MouseDelta = Vector2.Zero;
             }
 
             // Looping through every key to see if it is being pressed or released
@@ -201,6 +205,7 @@ namespace Electron2D
             }
 
             _scrollCallbackFrame = false;
+            _mouseCallbackFrame = false;
         }
 
         public static bool GetMouseButtonDown(MouseButton button)
@@ -259,32 +264,20 @@ namespace Electron2D
         /// Gets the mouse position, offset to the middle of the window.
         /// </summary>
         /// <returns></returns>
-        public static Vector2 GetOffsetMousePosition()
+        public static Vector2 GetMouseScreenPosition()
         {
             Vector2 offset = Display.WindowSize / 2f;
             return new Vector2((float)MousePosition.X - offset.X,
-                Display.WindowSize.Y - (float)MousePosition.Y - offset.Y);
+                Display.WindowSize.Y - (float)MousePosition.Y - offset.Y) / Display.WindowScale;
         }
 
         /// <summary>
-        /// Gets the mouse position, offset to the middle of the window and scaled to match the WindowScale
+        /// Gets the mouse position, offset to match the current camera position and zoom.
         /// </summary>
-        /// <param name="offsetToMiddle"></param>
         /// <returns></returns>
-        public static Vector2 GetOffsetMousePositionScaled(bool offsetToMiddle = false) => GetOffsetMousePosition() / Display.WindowScale;
-
         public static Vector2 GetMouseWorldPosition()
         {
-            Vector2 worldPosition = GetOffsetMousePosition();
-
-            // Centering the position
-            worldPosition.Y -= Display.WindowSize.Y / 2;
-            worldPosition.X -= Display.WindowSize.X / 2;
-            // ----------------------
-
-            // Scaling the cursor
-            worldPosition /= Display.WindowScale;
-            // ----------------------
+            Vector2 worldPosition = GetMouseScreenPosition();
 
             // Offsetting and scaling the position based on the current camera
             worldPosition /= Camera2D.Main.Zoom;

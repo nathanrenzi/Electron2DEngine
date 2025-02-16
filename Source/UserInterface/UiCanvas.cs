@@ -48,7 +48,7 @@ namespace Electron2D.UserInterface
         public void CheckForInput()
         {
             Vector2 mousePos = Input.GetMouseWorldPosition();
-            Vector2 mousePosScreen = Input.GetOffsetMousePositionScaled(true);
+            Vector2 mousePosScreen = Input.GetMouseScreenPosition();
             int hoveredCount = 0;
             for (int i = 0; i < _activeComponents.Count; i++)
             {
