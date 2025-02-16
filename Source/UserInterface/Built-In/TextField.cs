@@ -310,7 +310,7 @@ namespace Electron2D.UserInterface
 
         private void OnClick()
         {
-            _caretIndex = _builder.Length == 0 ? 0 : _textLabel.Renderer.GetCaretIndexFromWorldPosition(Input.GetOffsetMousePosition());
+            _caretIndex = _builder.Length == 0 ? 0 : _textLabel.Renderer.GetCaretIndexFromWorldPosition(Input.GetMouseScreenPosition());
             UpdateCaretDisplay();
         }
 
@@ -403,7 +403,7 @@ namespace Electron2D.UserInterface
                     {
                         _builder.Remove(_caretIndex - 1, 1);
                         _caretIndex--;
-                    } while (_caretIndex - 1 >= 0 && _builder[_caretIndex - 1] != ' ');
+                    } while (_holdingLeftControl && _caretIndex - 1 >= 0 && _builder[_caretIndex - 1] != ' ');
                     textUpdated = true;
                     if (_caretIndex < 0) _caretIndex = 0;
                     _flagUpdateCaret = true;

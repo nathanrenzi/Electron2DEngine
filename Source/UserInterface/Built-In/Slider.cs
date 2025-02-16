@@ -200,12 +200,12 @@ namespace Electron2D.UserInterface
 
             if(_backgroundListener.ClickHeld && AllowNonHandleValueUpdates)
             {
-                Vector2 position = Input.GetOffsetMousePosition();
+                Vector2 position = Input.GetMouseScreenPosition();
                 Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
             }
             else if(_handleListener.ClickHeld)
             {
-                Vector2 position = Input.GetOffsetMousePosition();
+                Vector2 position = Input.GetMouseScreenPosition();
                 Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
             }
         }

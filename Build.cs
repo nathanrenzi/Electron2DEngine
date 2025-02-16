@@ -35,7 +35,7 @@ public class Build : Game
     // This is ran every frame
     protected override void Update()
     {
-
+        
     }
 
     // This is ran every frame right before rendering
