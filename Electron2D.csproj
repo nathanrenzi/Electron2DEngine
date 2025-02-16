@@ -19,6 +19,8 @@
     <None Remove="Resources\Built-In\Shaders\PostProcessing\Inverted.glsl" />
     <None Remove="Resources\Built-In\Shaders\PostProcessing\LensDistortion.glsl" />
     <None Remove="Resources\Built-In\Shaders\PostProcessing\Vignette.glsl" />
+    <None Remove="Resources\spaceshipcolor.png" />
+    <None Remove="Resources\spaceshipnormal.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -89,6 +91,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Built-In\Textures\Circle.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\spaceshipcolor.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\spaceshipnormal.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

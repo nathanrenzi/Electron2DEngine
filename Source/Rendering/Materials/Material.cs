@@ -30,7 +30,6 @@ namespace Electron2D.Rendering
         public ITexture NormalTexture;
         public float NormalScale;
         public Color MainColor;
-        public Color AmbientColor;
         public bool UsingLinearFiltering { get; }
 
         private Material(Shader shader, ITexture mainTexture, ITexture normalTexture, Color mainColor, bool useLinearFiltering, float normalScale)
@@ -90,24 +89,16 @@ namespace Electron2D.Rendering
         {
             return CreateCircle(GlobalShaders.DefaultTexture, color);
         }
-        public static Material CreateLit(Shader shader, Color mainColor, Color ambientColor, ITexture mainTexture = null, ITexture normalTexture = null,
+        public static Material CreateLit(Color mainColor, ITexture mainTexture = null, ITexture normalTexture = null,
             bool useLinearFiltering = false, float normalScale = 1)
         {
+            Shader shader = GlobalShaders.DefaultLit;
             Material material = Create(shader, mainColor, mainTexture, normalTexture, useLinearFiltering, normalScale);
-            material.AmbientColor = ambientColor;
-            return material;
-        }
-        public static Material CreateLit(Color mainColor, Color ambientColor, ITexture mainTexture = null, ITexture normalTexture = null,
-            bool useLinearFiltering = false, float normalScale = 1)
-        {
-            Shader shader = new Shader(Shader.ParseShader("Resources/Built-In/Shaders/DefaultLit.glsl"));
-            Material material = Create(shader, mainColor, mainTexture, normalTexture, useLinearFiltering, normalScale);
-            material.AmbientColor = ambientColor;
             return material;
         }
         public static Material CreateLit(ITexture mainTexture, ITexture normalTexture = null, bool useLinearFiltering = false, float normalScale = 1)
         {
-            Shader shader = new Shader(Shader.ParseShader("Resources/Built-In/Shaders/DefaultLit.glsl"));
+            Shader shader = GlobalShaders.DefaultLit;
             Material material = Create(shader, Color.White, mainTexture, normalTexture, useLinearFiltering, normalScale);
             return material;
         }
@@ -152,7 +143,6 @@ namespace Electron2D.Rendering
             Shader.Use();
             Shader.SetFloat("totalLayers", MainTexture.GetTextureLayers());
             Shader.SetColor("mainColor", MainColor);
-            Shader.SetColor("ambientColor", AmbientColor);
             Shader.SetFloat("normalScale", NormalScale);
         }
 
