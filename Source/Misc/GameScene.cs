@@ -20,7 +20,7 @@
         }
 
         /// <summary>
-        /// Creates game classes that should be added to the scene. Make sure to call <see cref="Register(IGameClass)"/>
+        /// Should create any game classes that should be added to the scene. Make sure to call <see cref="Register(IGameClass)"/>
         /// on every game class created.
         /// </summary>
         protected virtual void CreateGameClasses() { }
