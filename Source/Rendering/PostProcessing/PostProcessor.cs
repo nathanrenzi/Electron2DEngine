@@ -55,9 +55,13 @@ namespace Electron2D.Rendering.PostProcessing
 
             _shader = new Shader(Shader.ParseShader("Resources/Built-In/Shaders/PostProcessing/DefaultPostProcessing.glsl"), true);
 
-            _renderBuffer = new FrameBuffer(4, GL_RGB, GL_COLOR_ATTACHMENT0, false, true);
-            _frameBuffer1 = new FrameBuffer(0, 0, 0, true, false);
-            _frameBuffer2 = new FrameBuffer(0, 0, 0, true, false);
+            bool useHDR = ProjectSettings.UseHDRFrameBuffers;
+            _renderBuffer = new FrameBuffer();
+            _renderBuffer.AttachRenderBuffer(4, useHDR ? GL_RGBA16F : GL_RGBA, GL_COLOR_ATTACHMENT0);
+            _frameBuffer1 = new FrameBuffer();
+            _frameBuffer1.AttachTexture2D(useHDR ? GL_RGBA16F : GL_RGBA, GL_NEAREST, GL_CLAMP_TO_EDGE);
+            _frameBuffer2 = new FrameBuffer();
+            _frameBuffer2.AttachTexture2D(useHDR ? GL_RGBA16F : GL_RGBA, GL_NEAREST, GL_CLAMP_TO_EDGE);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             _vertexArray = new VertexArray();

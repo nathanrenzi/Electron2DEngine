@@ -11,57 +11,54 @@ namespace Electron2D.Rendering
 
         private bool _isDisposed = false;
 
-        public FrameBuffer(int glRenderBufferSamples, int glRenderBufferFormatSetting, int glRenderBufferAttachmentSetting, bool attachTexture2D, bool attachRenderBuffer)
+        public FrameBuffer()
         {
+            AttachedTexture = null;
             BufferID = glGenFramebuffer();
+        }
+
+        public void AttachTexture2D(int glInternalColorFormat, int glTextureFilterSetting, int glTextureWrapSetting)
+        {
             Bind();
-
-            if(attachTexture2D)
-            {
-                AttachedTexture = TextureFactory.Create((int)Display.WindowSize.X, (int)Display.WindowSize.Y,
-                    GL_RGB, GL_NEAREST, GL_CLAMP_TO_EDGE);
-                AttachedTexture.Use(GL_TEXTURE0);
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, AttachedTexture.Handle, 0);
-            }
-
-            if(attachRenderBuffer)
-            {
-                RenderBufferID = glGenRenderbuffer();
-                glBindRenderbuffer(RenderBufferID);
-                // Handling multisampled vs nonmultisampled renderbuffers
-                if(glRenderBufferSamples <= 1)
-                {
-                    glRenderbufferStorage(GL_RENDERBUFFER, glRenderBufferFormatSetting, (int)Display.WindowSize.X,
-                        (int)Display.WindowSize.Y);
-                }
-                else
-                {
-                    glRenderbufferStorageMultisample(GL_RENDERBUFFER, glRenderBufferSamples, glRenderBufferFormatSetting,
-                        (int)Display.WindowSize.X, (int)Display.WindowSize.Y);
-                }
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, glRenderBufferAttachmentSetting, GL_RENDERBUFFER, RenderBufferID);
-                glBindRenderbuffer(0);
-            }
-
+            AttachedTexture = TextureFactory.Create((int)Display.WindowSize.X, (int)Display.WindowSize.Y,
+                glInternalColorFormat, GL_RGBA, glTextureFilterSetting, glTextureWrapSetting);
+            AttachedTexture.Use(GL_TEXTURE0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, AttachedTexture.Handle, 0);
             if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             {
-                Debug.LogError($"FrameBuffer object was not successfully created. FrameBuffer status: [{glCheckFramebufferStatus(GL_FRAMEBUFFER)}]");
+                Debug.LogError($"Texture2D could not be attached to FrameBuffer. FrameBuffer status: [{glCheckFramebufferStatus(GL_FRAMEBUFFER)}]");
             }
+            Unbind();
+        }
 
+        public void AttachRenderBuffer(int glRenderBufferSamples, int glRenderBufferFormatSetting, int glRenderBufferAttachmentSetting)
+        {
+            Bind();
+            RenderBufferID = glGenRenderbuffer();
+            glBindRenderbuffer(RenderBufferID);
+            // Handling multisampled vs nonmultisampled renderbuffers
+            if (glRenderBufferSamples <= 1)
+            {
+                glRenderbufferStorage(GL_RENDERBUFFER, glRenderBufferFormatSetting, (int)Display.WindowSize.X,
+                    (int)Display.WindowSize.Y);
+            }
+            else
+            {
+                glRenderbufferStorageMultisample(GL_RENDERBUFFER, glRenderBufferSamples, glRenderBufferFormatSetting,
+                    (int)Display.WindowSize.X, (int)Display.WindowSize.Y);
+            }
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, glRenderBufferAttachmentSetting, GL_RENDERBUFFER, RenderBufferID);
+            glBindRenderbuffer(0);
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            {
+                Debug.LogError($"RenderBuffer could not be attached to FrameBuffer. FrameBuffer status: [{glCheckFramebufferStatus(GL_FRAMEBUFFER)}]");
+            }
             Unbind();
         }
 
         ~FrameBuffer()
         {
             Dispose();
-        }
-
-        public void Save(string _filePath)
-        {
-            throw new NotImplementedException();
-
-            BindRead();
-            glReadBuffer(GL_COLOR_ATTACHMENT0);
         }
 
         public void Bind()
