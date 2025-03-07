@@ -1,6 +1,4 @@
 ﻿using Electron2D;
-using Electron2D.Rendering;
-using Electron2D.Rendering.PostProcessing;
 using System.Drawing;
 
 public class Build : Game
@@ -15,10 +13,6 @@ public class Build : Game
     protected override void Load()
     {
         SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
-        Sprite s = new Sprite(Material.Create(Color.Red));
-        PostProcessingStack postProcessingStack = new PostProcessingStack(0);
-        postProcessingStack.Add(new InvertedPostProcess());
-        PostProcessor.Instance.Register(postProcessingStack);
     }
 
     // This is ran every frame
