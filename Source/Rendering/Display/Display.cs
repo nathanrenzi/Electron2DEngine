@@ -1,6 +1,8 @@
-﻿using Electron2D.Rendering;
+﻿using Box2D.NetStandard.Dynamics.Fixtures;
+using Electron2D.Rendering;
 using GLFW;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
@@ -65,6 +67,18 @@ namespace Electron2D
             Glfw.MakeContextCurrent(Window);
             Import(Glfw.GetProcAddress);
 
+            if (File.Exists("Resources/Built-In/icon.ico"))
+            {
+                Texture2D texture = ResourceManager.Instance.LoadTexture("Resources/Built-In/icon.ico");
+                Bitmap bitmap = texture.GetData(GL_RGBA);
+                bitmap.RotateFlip(RotateFlipType.Rotate180FlipX);
+                var data = bitmap.LockBits(
+                new Rectangle(0, 0, texture.Width, texture.Height),
+                        ImageLockMode.ReadOnly,
+                        PixelFormat.Format32bppArgb);
+                GLFW.Image image = new GLFW.Image(texture.Width, texture.Height, data.Scan0);
+                Glfw.SetWindowIcon(Window, 1, new GLFW.Image[] { image });
+            }
             Settings settings = Program.Game.Settings;
             SetWindowMode(settings.WindowMode);
         }
