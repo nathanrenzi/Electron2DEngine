@@ -5,7 +5,8 @@ A 2D game engine written in C#. This project is a self-study meant to give me mo
 ## Setup
 
 In order to download and use this respository, a [GLFW pre-compiled binary](https://www.glfw.org/download) must be placed in the build directory (ex. Electron2DEngine/bin/Debug/net6.0).
-In addition to this, Steamworks (if Steam networking is going to be used) requires a **steam_api64.dll** located within the standalone zip of this Steamworks.NET release in the Windows-x64 folder [Steamworks.NET Release](https://github.com/rlabrecque/Steamworks.NET/releases/tag/2024.8.0), and this must be placed in the build directory of the project.
+
+To use Steam networking, a SteamAPI dll, **steam_api64.dll**, must be located in the build directory of the project. To download this file, go to [this release](https://github.com/rlabrecque/Steamworks.NET/releases/tag/2024.8.0) of Steamworks.NET and download the standalone version. Once downloaded, find the **steam_api64.dll** file in the Windows-x64 folder and place it in the build directory. A **steam_appid.txt** file containing the number **480** must also be created/placed in the build directory, but MUST BE REMOVED before releasing on any platforms.
 
 ## Author
 
