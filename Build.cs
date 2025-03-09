@@ -1,5 +1,4 @@
 ﻿using Electron2D;
-using System.Drawing;
 
 public class Build : Game
 {
@@ -12,7 +11,7 @@ public class Build : Game
     // This is ran when the game is ready to load content
     protected override void Load()
     {
-        SetBackgroundColor(Color.FromArgb(255, 80, 80, 80));
+
     }
 
     // This is ran every frame
