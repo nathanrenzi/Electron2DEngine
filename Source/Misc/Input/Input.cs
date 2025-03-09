@@ -10,11 +10,15 @@ namespace Electron2D
         public static float ScrollDelta { get; private set; }
         public static Vector2 MousePosition { get; private set; }
         public static Vector2 MouseDelta { get; private set; }
+        public static float JoystickDeadzone { get; private set; }
+        public static event Action<int, GamepadConnectionStatus> OnGamepadConnectionStatusChange;
 
         private static bool[] KEYS;
         private static bool[] KEYS_LAST;
         private static InputState[] MOUSE = new InputState[8];
         private static InputState[] MOUSE_LAST = new InputState[8];
+        private static GamePadState[] GAMEPADSTATES = new GamePadState[16];
+        private static GamePadState[] GAMEPADSTATES_LAST = new GamePadState[16];
         private static int _totalKeyCount;
         private static KeyCode[] _keyValues;
         private static MouseCallback _scrollCallback;
@@ -22,9 +26,11 @@ namespace Electron2D
         private static bool _mouseCallbackFrame = false;
         private static MouseCallback _mouseCallback;
         private static CharCallback _charCallback;
+        private static JoystickCallback _joystickCallback;
         private static List<IKeyListener> _keyListeners = new List<IKeyListener>();
         private static bool _lockKeyInput = false;
         private static Dictionary<uint, Dictionary<object, bool>> _lockPriorityDictionary = new();
+        private static List<int> _connectedGamepads = new List<int>();
 
         public static void AddListener(IKeyListener listener)
         {
@@ -128,6 +134,18 @@ namespace Electron2D
 
             _charCallback = new CharCallback(CharCallback);
             Glfw.SetCharCallback(Display.Window, _charCallback);
+
+            _joystickCallback = new JoystickCallback(JoystickCallback);
+            Glfw.SetJoystickCallback(_joystickCallback);
+
+            for(int i = 0; i < 16; i++)
+            {
+                if(Glfw.JoystickIsGamepad(i))
+                {
+                    _connectedGamepads.Add(i);
+                    OnGamepadConnectionStatusChange?.Invoke(i, GamepadConnectionStatus.Connected);
+                }
+            }
         }
 
         private static void CharCallback(Window window, uint charCode)
@@ -136,6 +154,28 @@ namespace Electron2D
             {
                 _keyListeners[i].KeyPressed((char)charCode);
             }
+        }
+
+        private static void JoystickCallback(Joystick joystick, ConnectionStatus status)
+        {
+            GamepadConnectionStatus gamepadStatus = GamepadConnectionStatus.Unknown;
+            switch (status)
+            { 
+                case ConnectionStatus.Connected:
+                    gamepadStatus = GamepadConnectionStatus.Connected;
+                    _connectedGamepads.Add((int)joystick);
+                    break;
+                case ConnectionStatus.Disconnected:
+                    gamepadStatus = GamepadConnectionStatus.Disconnected;
+                    _connectedGamepads.Remove((int)joystick);
+                    break;
+                case ConnectionStatus.Unknown:
+                    gamepadStatus = GamepadConnectionStatus.Unknown;
+                    _connectedGamepads.Remove((int)joystick);
+                    break;
+            }
+            GAMEPADSTATES[(int)joystick] = new GamePadState();
+            OnGamepadConnectionStatusChange?.Invoke((int)joystick, gamepadStatus);
         }
 
         private static void ScrollCallback(Window window, double xOffset, double yOffset)
@@ -173,6 +213,13 @@ namespace Electron2D
             if(!_mouseCallbackFrame)
             {
                 MouseDelta = Vector2.Zero;
+            }
+
+            for (int i = 0; i < _connectedGamepads.Count; i++)
+            {
+                int gamepad = _connectedGamepads[i];
+                GAMEPADSTATES_LAST[gamepad] = GAMEPADSTATES[gamepad];
+                Glfw.GetGamepadState(gamepad, out GAMEPADSTATES[gamepad]);
             }
 
             // Looping through every key to see if it is being pressed or released
@@ -258,6 +305,80 @@ namespace Electron2D
             }
 
             return -1;
+        }
+
+        public static void SetJoystickDeadzone(float deadzone)
+        {
+            JoystickDeadzone = MathF.Max(MathF.Min(deadzone, 1), 0.001f);
+        }
+
+        public static bool IsGamepadConnected(int gamepadIndex)
+        {
+            return _connectedGamepads.Contains(gamepadIndex);
+        }
+
+        public static bool GetGamepadButton(int gamepadIndex, GamepadButton button)
+        {
+            if (_connectedGamepads.Contains(gamepadIndex))
+            {
+                GamePadState thisFrame = GAMEPADSTATES[gamepadIndex];
+                return thisFrame.GetButtonState((GamePadButton)button) == InputState.Press;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool GetGamepadButtonDown(int gamepadIndex, GamepadButton button)
+        {
+            if (_connectedGamepads.Contains(gamepadIndex))
+            {
+                GamePadState thisFrame = GAMEPADSTATES[gamepadIndex];
+                GamePadState lastFrame = GAMEPADSTATES_LAST[gamepadIndex];
+                return thisFrame.GetButtonState((GamePadButton)button) == InputState.Press
+                    && lastFrame.GetButtonState((GamePadButton)button) == InputState.Release;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool GetGamepadButtonUp(int gamepadIndex, GamepadButton button)
+        {
+            if (_connectedGamepads.Contains(gamepadIndex))
+            {
+                GamePadState thisFrame = GAMEPADSTATES[gamepadIndex];
+                GamePadState lastFrame = GAMEPADSTATES_LAST[gamepadIndex];
+                return thisFrame.GetButtonState((GamePadButton)button) == InputState.Release
+                    && lastFrame.GetButtonState((GamePadButton)button) == InputState.Press;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static float GetGamepadAxis(int gamepadIndex, GamepadAxis axis)
+        {
+            if (_connectedGamepads.Contains(gamepadIndex))
+            {
+                GamePadState thisFrame = GAMEPADSTATES[gamepadIndex];
+                float value = thisFrame.GetAxis((GamePadAxis)axis);
+                if(axis <= GamepadAxis.RightY)
+                {
+                    return MathF.Abs(value) <= JoystickDeadzone ? 0 : MathF.Sign(value) * ((MathF.Abs(value) - JoystickDeadzone) / (1 - JoystickDeadzone));
+                }
+                else
+                {
+                    return value;
+                }
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         /// <summary>
