@@ -148,11 +148,11 @@ namespace Electron2D.UserInterface
         {
             get
             {
-                return _caretIndex;
+                return _caretWidth;
             }
             set
             {
-                _caretIndex = value;
+                _caretWidth = value;
                 if(_caretPanel != null) _caretPanel.SizeX = value;
             }
         }
@@ -200,7 +200,7 @@ namespace Electron2D.UserInterface
         private UIComponent _backgroundPanel;
         private TextLabel _textLabel;
         private bool _initialized = false;
-        private int _caretIndex;
+        private TextRenderer.Iterator _iterator;
         private StringBuilder _builder;
         private Material _caretMaterial;
         private bool _flagUpdateCaret = false;
@@ -248,12 +248,15 @@ namespace Electron2D.UserInterface
                 def.TextMaterial.Shader, useScreenPosition, ignorePostProcessing);
             _textLabel.Interactable = false;
             _builder = new StringBuilder(Text);
-            _caretMaterial = Material.Create(new Shader(Shader.ParseShader("Resources/Built-In/Shaders/UserInterface/CaretBlink.glsl"), true, new string[] { "time" }));
+            _caretMaterial = def.CaretMaterial == null ? 
+                Material.Create(new Shader(Shader.ParseShader("Resources/Built-In/Shaders/UserInterface/CaretBlink.glsl"), true, new string[] { "time" }))
+                : def.CaretMaterial;
             _caretPanel = new Panel(_caretMaterial, uiRenderLayer + 2, _caretWidth, def.TextFont.Arguments.FontSize, useScreenPosition, ignorePostProcessing);
             _caretPanel.Visible = false;
             _caretPanel.Interactable = false;
             _textColor = def.TextColor;
             _promptTextColor = def.PromptTextColor;
+            _iterator = _textLabel.Renderer.GetIterator();
             UpdateCaretDisplay();
             _initialized = true;
             UpdateDisplay();
@@ -304,13 +307,13 @@ namespace Electron2D.UserInterface
         private void UpdateCaretDisplay()
         {
             if(!_initialized) return;
-            _caretPanel.Transform.Position = _textLabel.Renderer.GetCaretWorldPostion(_caretIndex) + new Vector2(_caretPanel.SizeX / 2f, _caretPanel.SizeY / 3f);
+            _caretPanel.Transform.Position = _textLabel.Renderer.GetCaretWorldPostion(_iterator.Index) + new Vector2(_caretPanel.SizeX / 2f, _caretPanel.SizeY / 3f);
             _caretMaterial.Shader.SetFloat("startTime", Time.GameTime);
         }
 
         private void OnClick()
         {
-            _caretIndex = _builder.Length == 0 ? 0 : _textLabel.Renderer.GetCaretIndexFromWorldPosition(Input.GetMouseScreenPosition());
+            _iterator.SetIndex(_builder.Length == 0 ? 0 : _textLabel.Renderer.GetCaretIndexFromWorldPosition(Input.GetMouseScreenPosition()));
             UpdateCaretDisplay();
         }
 
@@ -368,10 +371,10 @@ namespace Electron2D.UserInterface
                 if(_holdingChar == (char)Keys.LeftShift || _holdingChar == (char)Keys.RightShift)
                 {
                     if (_builder.Length >= _maxCharacterCount) return;
-                    if (_builder.Length == 0) _caretIndex = 0;
+                    if (_builder.Length == 0) _iterator.SetIndex(0);
                     if (_currentLineCount >= _maxLineCount) return;
-                    _builder.Insert(_caretIndex, '\n');
-                    _caretIndex++;
+                    _builder.Insert(_iterator.Index, '\n');
+                    _iterator.Increment();
                     textUpdated = true;
                     _flagUpdateCaret = true;
                 }
@@ -397,15 +400,14 @@ namespace Electron2D.UserInterface
 
                 if (code == (char)259)
                 {
-                    if (_caretIndex == 0) return;
+                    if (_iterator.Index == 0) return;
                     if (_builder.Length == 0) return;
                     do
                     {
-                        _builder.Remove(_caretIndex - 1, 1);
-                        _caretIndex--;
-                    } while (_holdingLeftControl && _caretIndex - 1 >= 0 && _builder[_caretIndex - 1] != ' ');
+                        _builder.Remove(_iterator.Index - 1, 1);
+                        _iterator.Decrement();
+                    } while (_holdingLeftControl && _iterator.Index - 1 >= 0 && _builder[_iterator.Index - 1] != ' ');
                     textUpdated = true;
-                    if (_caretIndex < 0) _caretIndex = 0;
                     _flagUpdateCaret = true;
                 }
                 else if (code == 262)
@@ -413,9 +415,8 @@ namespace Electron2D.UserInterface
                     // Right
                     do
                     {
-                        _caretIndex++;
-                    } while (_holdingLeftControl && _caretIndex < _builder.Length && (_caretIndex == 0 || (_caretIndex != 0 && _builder[_caretIndex - 1] != ' ')));
-                    if (_caretIndex > _builder.Length) _caretIndex = _builder.Length;
+                        _iterator.Increment();
+                    } while (_holdingLeftControl && _iterator.Index < _builder.Length && (_iterator.Index == 0 || (_iterator.Index != 0 && _builder[_iterator.Index - 1] != ' ')));
                     _flagUpdateCaret = true;
                 }
                 else if (code == 263)
@@ -423,9 +424,8 @@ namespace Electron2D.UserInterface
                     // Left
                     do
                     {
-                        _caretIndex--;
-                    } while (_holdingLeftControl && _caretIndex > 0 && (_caretIndex == _builder.Length || (_caretIndex < _builder.Length && _builder[_caretIndex - 1] != ' ')));
-                    if (_caretIndex < 0) _caretIndex = 0;
+                        _iterator.Decrement();
+                    } while (_holdingLeftControl && _iterator.Index > 0 && (_iterator.Index == _builder.Length || (_iterator.Index < _builder.Length && _builder[_iterator.Index - 1] != ' ')));
                     _flagUpdateCaret = true;
                 }
                 else
@@ -433,9 +433,9 @@ namespace Electron2D.UserInterface
                     if (_builder.Length >= _maxCharacterCount) return;
                     if (char.IsAscii(code) && !char.IsControl(code))
                     {
-                        if (_builder.Length == 0) _caretIndex = 0;
-                        _builder.Insert(_caretIndex, code);
-                        _caretIndex++;
+                        if (_builder.Length == 0) _iterator.SetIndex(0);
+                        _builder.Insert(_iterator.Index, code);
+                        _iterator.Increment();
                         textUpdated = true;
                         _flagUpdateCaret = true;
                     }
@@ -447,7 +447,7 @@ namespace Electron2D.UserInterface
                 _text = "";
                 _textLabel.Text = _promptText;
                 _textLabel.TextColor = _promptTextColor;
-                _caretIndex = TextRenderer.HorizontalAlignment == TextAlignment.Right ? _promptText.Length : 0;
+                _iterator.SetIndex(TextRenderer.HorizontalAlignment == TextAlignment.Right ? _promptText.Length : 0);
             }
             else
             {
@@ -460,6 +460,7 @@ namespace Electron2D.UserInterface
                 OnTextUpdated?.Invoke();
                 if (!WaitForEnterKey) OnTextEntered?.Invoke(_text);
             }
+            _iterator.Validate();
         }
 
         public void KeyNonAlphaReleased(char code)

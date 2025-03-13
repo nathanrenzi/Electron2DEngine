@@ -11,6 +11,51 @@ namespace Electron2D.Rendering.Text
 {
     public class TextRenderer : MeshRenderer
     {
+        public class Iterator : IDisposable
+        {
+            public int Index { get; private set; }
+            internal int _extraIncrement = 0;
+            private TextRenderer _renderer;
+
+            internal Iterator(TextRenderer renderer)
+            {
+                _renderer = renderer;
+                _renderer._iterators.Add(this);
+            }
+            
+            ~Iterator()
+            {
+                Dispose();
+            }
+
+            public void SetIndex(int index)
+            {
+                Index = index;
+            }
+
+            public void Increment()
+            {
+                Index += 1 + _extraIncrement;
+            }
+
+            public void Decrement()
+            {
+                Index--;
+            }
+
+            public void Validate()
+            {
+                if (Index >= _renderer.text.Length) Index = _renderer.text.Length;
+                if (Index < 0) Index = 0;
+            }
+
+            public void Dispose()
+            {
+                GC.SuppressFinalize(this);
+                _renderer._iterators.Remove(this);
+            }
+        }
+
         public FontGlyphStore FontGlyphStore;
         public string Text
         {
@@ -68,6 +113,7 @@ namespace Electron2D.Rendering.Text
         }
         private Rectangle bounds;
 
+        private List<Iterator> _iterators = new List<Iterator>();
         private List<int> lineOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
         private string formattedText;
         private float totalYHeight;
@@ -97,6 +143,11 @@ namespace Electron2D.Rendering.Text
             // This must be the last thing initialized, as it will reformat the text
             Text = _text;
             Load();
+        }
+
+        public Iterator GetIterator()
+        {
+            return new Iterator(this);
         }
 
         public int GetCaretIndexFromWorldPosition(Vector2 worldPosition)
@@ -303,11 +354,8 @@ namespace Electron2D.Rendering.Text
                     if (ch.Size.Y - ch.Bearing.Y > minHeight) minHeight = ch.Size.Y - ch.Bearing.Y;
 
                     // If word is a newline character, handle it separately
-                    // DOES NOT WORK CURRENLY, NEWLINES ARE NOT SEPARATE WORDS
                     if (words[w] == "\n")
                     {
-                        continue;
-
                         _x = Bounds.X;
                         _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                         newlineCount++;
@@ -353,7 +401,6 @@ namespace Electron2D.Rendering.Text
                 {
                     newlineCount++;
                     lineOffsets.Add(Bounds.Width - (int)(_x - wordLength));
-
                     _x = wordLength;
                     _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                     minHeight = 0;

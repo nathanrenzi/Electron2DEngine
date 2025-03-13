@@ -20,6 +20,7 @@ namespace Electron2D.UserInterface
         public FontGlyphStore TextFont;
         public Material TextMaterial;
         public Material BackgroundPanelMaterial;
+        public Material CaretMaterial;
         public SlicedPanelDef BackgroundPanelDef;
         public string Text;
         public string PromptText;
@@ -44,7 +45,7 @@ namespace Electron2D.UserInterface
             Color textColor, Color promptTextColor, Material backgroundPanelMaterial, string startText, string promptText, int maxCharacterCount,
             int maxLineCount = 1, TextAlignment textHorizontalAlignment = TextAlignment.Left, TextAlignment textVerticalAlignment = TextAlignment.Center,
             TextAlignmentMode textAlignmentMode = TextAlignmentMode.Baseline, TextOverflowMode textOverflowMode = TextOverflowMode.Word,
-            SlicedPanelDef backgroundPanelDef = null, bool waitForEnterKey = false)
+            SlicedPanelDef backgroundPanelDef = null, bool waitForEnterKey = false, Material caretMaterial = null)
         {
             CaretWidth = caretWidth;
             SizeX = sizeX;
@@ -65,6 +66,7 @@ namespace Electron2D.UserInterface
             WaitForEnterKey = waitForEnterKey;
             MaxCharacterCount = maxCharacterCount;
             MaxLineCount = maxLineCount;
+            CaretMaterial = caretMaterial;
         }
     }
 }
