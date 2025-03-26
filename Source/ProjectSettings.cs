@@ -19,10 +19,5 @@
         public static string WindowTitle { get; } = "Electron2D Development Build";
         public static string EngineResourcePath { get; } = "Resources/Built-In/";
         // -------------------
-
-        public static string GetEngineResourcePath(string filePath)
-        {
-            return Path.Combine(EngineResourcePath, filePath);
-        }
     }
 }

@@ -18,7 +18,7 @@ namespace Electron2D.Rendering.PostProcessing
             BlurRadius = blurRadius;
             Sigma = sigma;
             KernelSize = kernelSize;
-            _shader = new Shader(Shader.ParseShader(ProjectSettings.GetEngineResourcePath("Shaders/PostProcessing/GaussianBlur.glsl")), true);
+            _shader = new Shader(Shader.ParseShader(ResourceManager.GetResourcePath("Shaders/PostProcessing/GaussianBlur.glsl")), true);
         }
 
         public int PostProcess(int signal, FrameBuffer readBuffer)
