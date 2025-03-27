@@ -8,7 +8,7 @@ namespace Electron2D.Networking.ClientServer
     /// A simple host/client client implementation using <see cref="Riptide.Client"/>. Not recommended to use 
     /// outside of <see cref="NetworkManager.Client"/>
     /// </summary>
-    public class Client
+    public class Client : IDisposable
     {
         public Riptide.Client RiptideClient { get; private set; }
         public SteamClient SteamClient { get; private set; }
@@ -25,6 +25,8 @@ namespace Electron2D.Networking.ClientServer
         public event Action<ushort> ClientConnected;
         public event Action<ushort> ClientDisconnected;
 
+        private Thread _clientThread;
+        private CancellationTokenSource _clientCancellationTokenSource;
         private Server _server;
         private ConcurrentQueue<(BuiltInMessageType, Message)> _messageQueue = new();
         private bool _isSyncing = false;
@@ -50,6 +52,24 @@ namespace Electron2D.Networking.ClientServer
             RiptideClient.MessageReceived += HandleMessageReceived;
             RiptideClient.ClientConnected += (obj, e) => ClientConnected?.Invoke(e.Id);
             RiptideClient.ClientDisconnected += (obj, e) => ClientDisconnected?.Invoke(e.Id);
+
+            _clientCancellationTokenSource = new CancellationTokenSource();
+            _clientThread = new Thread(() => ClientThreadUpdateLoop(_clientCancellationTokenSource.Token));
+            _clientThread.Start();
+        }
+
+        ~Client()
+        {
+            Dispose();
+        }
+
+        private void ClientThreadUpdateLoop(CancellationToken cancellationToken)
+        {
+            while(!cancellationToken.IsCancellationRequested)
+            {
+                RiptideClient.Update();
+                Thread.Sleep(50);
+            }
         }
 
         /// <summary>
@@ -63,13 +83,13 @@ namespace Electron2D.Networking.ClientServer
             SteamClient?.ChangeLocalServer(server.SteamServer);
         }
 
-        /// <summary>
-        /// Should be called at a fixed timestep.
-        /// </summary>
-        public void ClientFixedUpdate()
-        {
-            RiptideClient.Update();
-        }
+        ///// <summary>
+        ///// Should be called at a fixed timestep.
+        ///// </summary>
+        //public void ClientFixedUpdate()
+        //{
+        //    RiptideClient.Update();
+        //}
 
         /// <summary>
         /// Should be called as often as possible.
@@ -358,6 +378,13 @@ namespace Electron2D.Networking.ClientServer
             _isPaused = false;
             _isSyncing = false;
             _syncCount = 0;
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            _clientCancellationTokenSource.Cancel();
+            Disconnect();
         }
         #endregion
     }

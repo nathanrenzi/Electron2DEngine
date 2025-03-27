@@ -156,13 +156,11 @@ namespace Electron2D.Networking
             {
                 Server.ServerFixedUpdate();
             }
-
-            Client.ClientFixedUpdate();
         }
 
         public void Dispose()
         {
-            Reset();
+            Client.Dispose();
             if(NetworkMode == NetworkMode.SteamP2P) SteamAPI.Shutdown();
             Program.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
@@ -173,13 +171,12 @@ namespace Electron2D.Networking
         /// </summary>
         public void Reset()
         {
-            Client.Disconnect();
+            Client.Dispose();
             Server.Stop();
             if (NetworkMode == NetworkMode.SteamP2P)
             {
                 Server.SteamServer.Shutdown();
             }
-            Client = null;
             Server = null;
             _initialized = false;
         }
