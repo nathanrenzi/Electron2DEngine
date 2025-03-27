@@ -8,7 +8,7 @@ namespace Electron2D.Rendering.PostProcessing
 
         public InvertedPostProcess()
         {
-            _shader = new Shader(Shader.ParseShader(ResourceManager.GetResourcePath("Shaders/PostProcessing/Inverted.glsl")), true);
+            _shader = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/PostProcessing/Inverted.glsl")), true);
         }
 
         public int PostProcess(int signal, FrameBuffer readBuffer)

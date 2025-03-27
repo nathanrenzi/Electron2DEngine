@@ -144,14 +144,14 @@ namespace Electron2D
                 // Displaying splashscreen
                 Debug.Log("Displaying splashscreen...");
                 Splashscreen.Initialize();
-                Texture2D splashscreenTexture = TextureFactory.Load(ResourceManager.GetResourcePath("Textures/Electron2DSplashscreen.png"), true);
+                Texture2D splashscreenTexture = TextureFactory.Load(ResourceManager.GetEngineResourcePath("Textures/Electron2DSplashscreen.png"), true);
                 float splashscreenStartTime = (float)Glfw.Time;
                 float splashscreenDisplayTime = 4f;
                 float fadeTimePercentage = 0.3f;
                 float bufferTime = 0.5f;
                 float currentTime = -bufferTime;
                 bool hasPlayedAudio = false;
-                AudioInstance splashscreenAudio = AudioSystem.CreateInstance(ResourceManager.GetResourcePath("Audio/Electron2DRiff.mp3"), volume: 0.3f);
+                AudioInstance splashscreenAudio = AudioSystem.CreateInstance(ResourceManager.GetEngineResourcePath("Audio/Electron2DRiff.mp3"), volume: 0.3f);
                 while (!Glfw.WindowShouldClose(Display.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
                 {
                     Input.ProcessInput(); // Letting the window know the program is responding

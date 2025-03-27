@@ -9,86 +9,86 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Built-In\Textures\BlankNormal.png" />
-    <None Remove="Resources\Built-In\Textures\BlankTexture.png" />
-    <None Remove="Resources\Built-In\Textures\Electron2DSplashscreen.png" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\ChromaticAberration.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\ColorGrading.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\DefaultPostProcessing.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\GaussianBlur.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\Inverted.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\LensDistortion.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\Vignette.glsl" />
+    <None Remove="Resources\Electron2D\Textures\BlankNormal.png" />
+    <None Remove="Resources\Electron2D\Textures\BlankTexture.png" />
+    <None Remove="Resources\Electron2D\Textures\Electron2DSplashscreen.png" />
+    <None Remove="Resources\Electron2D\Shaders\PostProcessing\ChromaticAberration.glsl" />
+    <None Remove="Resources\Electron2D\Shaders\PostProcessing\ColorGrading.glsl" />
+    <None Remove="Resources\Electron2D\Shaders\PostProcessing\DefaultPostProcessing.glsl" />
+    <None Remove="Resources\Electron2D\Shaders\PostProcessing\GaussianBlur.glsl" />
+    <None Remove="Resources\Electron2D\Shaders\PostProcessing\Inverted.glsl" />
+    <None Remove="Resources\Electron2D\Shaders\PostProcessing\LensDistortion.glsl" />
+    <None Remove="Resources\Electron2D\Shaders\PostProcessing\Vignette.glsl" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Built-In\Audio\TestAudio1.mp3">
+    <EmbeddedResource Include="Resources\Electron2D\Audio\TestAudio1.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Audio\TestAudio2.wav">
+    <EmbeddedResource Include="Resources\Electron2D\Audio\TestAudio2.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\ChromaticAberration.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\ChromaticAberration.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\ColorGrading.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\ColorGrading.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\DefaultPostProcessing.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\DefaultPostProcessing.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\GaussianBlur.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\GaussianBlur.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\Inverted.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\Inverted.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Built-In\Audio\Electron2DRiff.mp3">
+    <EmbeddedResource Include="Resources\Electron2D\Audio\Electron2DRiff.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="DefaultSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Textures\BlankNormal.png">
+    <EmbeddedResource Include="Resources\Electron2D\Textures\BlankNormal.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Textures\BlankTexture.png">
+    <EmbeddedResource Include="Resources\Electron2D\Textures\BlankTexture.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Textures\Electron2DSplashscreen.png">
+    <EmbeddedResource Include="Resources\Electron2D\Textures\Electron2DSplashscreen.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultLit.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultLit.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultText.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultText.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultInterface.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultInterface.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultTextureArray.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultTextureArray.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultTexturedVertex.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultTexturedVertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultVertex.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultVertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\DefaultTexture.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultTexture.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\LensDistortion.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\LensDistortion.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\Vignette.glsl">
+    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\Vignette.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Textures\Circle.png">
+    <EmbeddedResource Include="Resources\Electron2D\Textures\Circle.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

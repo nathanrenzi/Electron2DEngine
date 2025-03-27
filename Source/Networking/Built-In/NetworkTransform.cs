@@ -79,11 +79,11 @@ namespace Electron2D.Networking
         private uint _rotationUpdateVersion = 0;
         private Queue<Vector2> _interpolateToPositionQueue = new Queue<Vector2>();
         private Vector2 _interpolateToPosition;
-        private float _interpolationToRotation;
-        private Vector2 _interpolationToScale;
+        private float _interpolateToRotation;
+        private Vector2 _interpolateToScale;
         private Vector2 _interpolateFromPosition;
-        private float _interpolationFromRotation;
-        private Vector2 _interpolationFromScale;
+        private float _interpolateFromRotation;
+        private Vector2 _interpolateFromScale;
         private float _interpolatePositionTime;
         private float _rotationTimeReceived;
         private float _scaleTimeReceived;
@@ -117,9 +117,9 @@ namespace Electron2D.Networking
         public NetworkTransform(Transform transform)
         {
             Transform = transform;
-            PositionNetworkSettings = new NetworkValueSettings() { SendAutomatically = false };
-            RotationNetworkSettings = new NetworkValueSettings() { SendAutomatically = false };
-            ScaleNetworkSettings = new NetworkValueSettings() { SendAutomatically = false };
+            PositionNetworkSettings = new NetworkValueSettings() { SendAutomatically = false, MessageSendMode = MessageSendMode.Unreliable };
+            RotationNetworkSettings = new NetworkValueSettings() { SendAutomatically = false, MessageSendMode = MessageSendMode.Unreliable };
+            ScaleNetworkSettings = new NetworkValueSettings() { SendAutomatically = false, MessageSendMode = MessageSendMode.Unreliable };
         }
 
         public override void Update()
@@ -129,19 +129,19 @@ namespace Electron2D.Networking
                 if (_currentPositionSendIntervalTime >= PositionNetworkSettings.SendInterval)
                 {
                     if (PositionNetworkSettings.SendAutomatically)
-                        SendPositionUpdate();
+                        SendPositionUpdate(PositionNetworkSettings.MessageSendMode);
                     _currentPositionSendIntervalTime -= PositionNetworkSettings.SendInterval;
                 }
                 if (_currentRotationSendIntervalTime >= RotationNetworkSettings.SendInterval)
                 {
                     if (RotationNetworkSettings.SendAutomatically)
-                        SendRotationUpdate();
+                        SendRotationUpdate(RotationNetworkSettings.MessageSendMode);
                     _currentRotationSendIntervalTime -= RotationNetworkSettings.SendInterval;
                 }
                 if (_currentScaleSendIntervalTime >= ScaleNetworkSettings.SendInterval)
                 {
                     if (ScaleNetworkSettings.SendAutomatically)
-                        SendScaleUpdate();
+                        SendScaleUpdate(ScaleNetworkSettings.MessageSendMode);
                     _currentScaleSendIntervalTime -= ScaleNetworkSettings.SendInterval;
                 }
 
@@ -171,7 +171,7 @@ namespace Electron2D.Networking
 
             float pt = _interpolatePositionTime / PositionNetworkSettings.SendInterval;
             Transform.Position = Vector2.Lerp(_interpolateFromPosition, _interpolateToPosition, MathF.Min(pt, 1));
-            _interpolatePositionTime += Time.DeltaTime + Time.DeltaTime * _interpolateToPositionQueue.Count * _interpolateToPositionQueue.Count;
+            _interpolatePositionTime += Time.DeltaTime * _interpolateToPositionQueue.Count;
         }
 
         private void InterpolateRotation()
@@ -179,11 +179,11 @@ namespace Electron2D.Networking
             float rt = (Time.GameTime - _rotationTimeReceived) / RotationNetworkSettings.SendInterval;
             if (rt <= 1)
             {
-                Transform.Rotation = (_interpolationFromRotation * (1f - rt)) + (_interpolationToRotation * rt);
+                Transform.Rotation = (_interpolateFromRotation * (1f - rt)) + (_interpolateToRotation * rt);
             }
             else
             {
-                Transform.Rotation = _interpolationToRotation;
+                Transform.Rotation = _interpolateToRotation;
             }
         }
 
@@ -192,11 +192,11 @@ namespace Electron2D.Networking
             float st = (Time.GameTime - _scaleTimeReceived) / ScaleNetworkSettings.SendInterval;
             if (st <= 1)
             {
-                Transform.Scale = Vector2.Lerp(_interpolationFromScale, _interpolationToScale, st);
+                Transform.Scale = Vector2.Lerp(_interpolateFromScale, _interpolateToScale, st);
             }
             else
             {
-                Transform.Scale = _interpolationToScale;
+                Transform.Scale = _interpolateToScale;
             }
         }
 
@@ -208,31 +208,31 @@ namespace Electron2D.Networking
         /// <summary>
         /// Manually sends a position update.
         /// </summary>
-        public void SendPositionUpdate()
+        public void SendPositionUpdate(MessageSendMode messageSendMode)
         {
             _lastSentPosition = Position;
             string json = JsonConvert.SerializeObject(Position);
-            Send(PositionNetworkSettings.MessageSendMode, json, 1);
+            Send(messageSendMode, json, 1);
         }
 
         /// <summary>
         /// Manually sends a rotation update.
         /// </summary>
-        public void SendRotationUpdate()
+        public void SendRotationUpdate(MessageSendMode messageSendMode)
         {
             _lastRotation = Rotation;
             string json = JsonConvert.SerializeObject(Rotation);
-            Send(RotationNetworkSettings.MessageSendMode, json, 2);
+            Send(messageSendMode, json, 2);
         }
 
         /// <summary>
         /// Manually sends a scale update;
         /// </summary>
-        public void SendScaleUpdate()
+        public void SendScaleUpdate(MessageSendMode messageSendMode)
         {
             _lastSentScale = Scale;
             string json = JsonConvert.SerializeObject(Scale);
-            Send(ScaleNetworkSettings.MessageSendMode, json, 3);
+            Send(messageSendMode, json, 3);
         }
 
         public override bool CheckAndHandleUpdateVersion(ushort type, uint version)
@@ -293,17 +293,17 @@ namespace Electron2D.Networking
             }
             else if(type == 2)
             {
-                _interpolationToRotation = JsonConvert.DeserializeObject<float>(json);
-                _interpolationFromRotation = Transform.Rotation;
+                _interpolateToRotation = JsonConvert.DeserializeObject<float>(json);
+                _interpolateFromRotation = Transform.Rotation;
                 _rotationTimeReceived = Time.GameTime;
-                if (!RotationNetworkSettings.Interpolate) Transform.Rotation = _interpolationToRotation;
+                if (!RotationNetworkSettings.Interpolate) Transform.Rotation = _interpolateToRotation;
             }
             else if(type == 3)
             {
-                _interpolationToScale = JsonConvert.DeserializeObject<Vector2>(json);
-                _interpolationFromScale = Transform.Scale;
+                _interpolateToScale = JsonConvert.DeserializeObject<Vector2>(json);
+                _interpolateFromScale = Transform.Scale;
                 _scaleTimeReceived = Time.GameTime;
-                if (!ScaleNetworkSettings.Interpolate) Transform.Scale = _interpolationToScale;
+                if (!ScaleNetworkSettings.Interpolate) Transform.Scale = _interpolateToScale;
             }
         }
 
@@ -325,9 +325,9 @@ namespace Electron2D.Networking
             PositionNetworkSettings = initJson.PositionNetworkSettings;
             RotationNetworkSettings = initJson.RotationNetworkSettings;
             ScaleNetworkSettings = initJson.ScaleNetworkSettings;
-            _interpolateToPosition = _interpolateFromPosition = Transform.Position;
-            _interpolationToRotation = _interpolationFromRotation = Transform.Rotation;
-            _interpolationToScale = _interpolationFromScale = Transform.Scale;
+            _interpolateToPosition = _interpolateFromPosition = Transform.Position = initJson.Position;
+            _interpolateToRotation = _interpolateFromRotation = Transform.Rotation = initJson.Rotation;
+            _interpolateToScale = _interpolateFromScale = Transform.Scale = initJson.Scale;
             _rotationTimeReceived = Time.GameTime;
             _scaleTimeReceived = Time.GameTime;
             _interpolatePositionTime = 0;

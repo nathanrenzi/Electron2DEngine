@@ -31,7 +31,8 @@ public class Build : Game
         }
         if(isServer)
         {
-            networkTransform = new NetworkTransform(new Transform(), 0.05f, true, false);
+            NetworkValueSettings networkValueSettings = new NetworkValueSettings(true, 0.05f, Riptide.MessageSendMode.Unreliable, true);
+            networkTransform = new NetworkTransform(new Transform(), networkValueSettings, networkValueSettings, networkValueSettings);
             NetworkManager.Instance.Client.NetworkGameClassesLoaded += () => networkTransform.Spawn("test");
             networkTransform.OnNetworkInitializedEvent += () => s = new Sprite(Material.Create(Color.Red), transform: networkTransform.Transform);
         }

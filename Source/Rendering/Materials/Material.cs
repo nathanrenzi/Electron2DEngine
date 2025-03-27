@@ -68,10 +68,10 @@ namespace Electron2D.Rendering
         public static Material Create(Shader _shader, Color _mainColor, ITexture _mainTexture = null, ITexture _normalTexture = null, bool _useLinearFiltering = false, float _normalScale = 1)
         {
             if (blankTexture == null)
-                blankTexture = ResourceManager.Instance.LoadTexture(ResourceManager.GetResourcePath("Textures/BlankTexture.png"));
+                blankTexture = ResourceManager.Instance.LoadTexture(ResourceManager.GetEngineResourcePath("Textures/BlankTexture.png"));
 
             if (blankNormal == null)
-                blankNormal = ResourceManager.Instance.LoadTexture(ResourceManager.GetResourcePath("Textures/BlankNormal.png"), true);
+                blankNormal = ResourceManager.Instance.LoadTexture(ResourceManager.GetEngineResourcePath("Textures/BlankNormal.png"), true);
 
             return new Material(_shader, (_mainTexture == null ? blankTexture : _mainTexture), (_normalTexture == null ? blankNormal : _normalTexture), _mainColor, _useLinearFiltering, _normalScale);
         }
@@ -88,7 +88,7 @@ namespace Electron2D.Rendering
 
         public static Material CreateCircle(Shader _shader, Color _color)
         {
-            return Create(_shader, _color, ResourceManager.Instance.LoadTexture(ResourceManager.GetResourcePath("Textures/Circle.png")));
+            return Create(_shader, _color, ResourceManager.Instance.LoadTexture(ResourceManager.GetEngineResourcePath("Textures/Circle.png")));
         }
 
         public static Material CreateCircle(Color _color)

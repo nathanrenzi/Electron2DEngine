@@ -15,7 +15,7 @@ namespace Electron2D.Rendering.PostProcessing
         /// <param name="clearColor">The color that is drawn to the screen if the UV goes out of bounds.</param>
         public LensDistortionPostProcess(float intensity, Color clearColor)
         {
-            _shader = new Shader(Shader.ParseShader(ResourceManager.GetResourcePath("Shaders/PostProcessing/LensDistortion.glsl")), true);
+            _shader = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/PostProcessing/LensDistortion.glsl")), true);
             Intensity = intensity;
             ClearColor = clearColor;
         }
@@ -23,7 +23,7 @@ namespace Electron2D.Rendering.PostProcessing
         /// <param name="intensity">The intensity of the warping.</param>
         public LensDistortionPostProcess(float intensity)
         {
-            _shader = new Shader(Shader.ParseShader(ResourceManager.GetResourcePath("Shaders/PostProcessing/LensDistortion.glsl")), true);
+            _shader = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/PostProcessing/LensDistortion.glsl")), true);
             Intensity = intensity;
             ClearColor = Color.Black;
         }
