@@ -83,14 +83,6 @@ namespace Electron2D.Networking.ClientServer
             SteamClient?.ChangeLocalServer(server.SteamServer);
         }
 
-        ///// <summary>
-        ///// Should be called at a fixed timestep.
-        ///// </summary>
-        //public void ClientFixedUpdate()
-        //{
-        //    RiptideClient.Update();
-        //}
-
         /// <summary>
         /// Should be called as often as possible.
         /// </summary>
@@ -188,6 +180,7 @@ namespace Electron2D.Networking.ClientServer
         public void Disconnect()
         {
             RiptideClient.Disconnect();
+            _messageQueue.Clear();
             if(_networkMode == NetworkMode.SteamP2P)
             {
                 SteamClient.SetLastUsedPassword("");
