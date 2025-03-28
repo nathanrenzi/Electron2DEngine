@@ -55,6 +55,7 @@ namespace Electron2D.Networking.ClientServer
 
             _clientCancellationTokenSource = new CancellationTokenSource();
             _clientThread = new Thread(() => ClientThreadUpdateLoop(_clientCancellationTokenSource.Token));
+            _clientThread.Priority = ThreadPriority.Highest;
             _clientThread.Start();
         }
 
@@ -372,13 +373,14 @@ namespace Electron2D.Networking.ClientServer
             _isSyncing = false;
             _syncCount = 0;
         }
+        #endregion
 
         public void Dispose()
         {
             GC.SuppressFinalize(this);
             _clientCancellationTokenSource.Cancel();
+            _clientThread.Join();
             Disconnect();
         }
-        #endregion
     }
 }
