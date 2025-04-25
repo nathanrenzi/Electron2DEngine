@@ -1,6 +1,8 @@
-﻿using Electron2D.Rendering;
+﻿using Box2D.NetStandard.Dynamics.Fixtures;
+using Electron2D.Rendering;
 using GLFW;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
@@ -65,8 +67,31 @@ namespace Electron2D
             Glfw.MakeContextCurrent(Window);
             Import(Glfw.GetProcAddress);
 
+            if (File.Exists("Resources/icon.ico"))
+            {
+                Texture2D texture = ResourceManager.Instance.LoadTexture("Resources/icon.ico");
+                SetIcon(texture);
+            }
             Settings settings = Program.Game.Settings;
             SetWindowMode(settings.WindowMode);
+        }
+
+        /// <summary>
+        /// Can be used to set the icon of the window during runtime. Note: To change the icon of the .exe file and window at startup,
+        /// be sure to place a default icon file at 'Resources/icon.ico'
+        /// </summary>
+        /// <param name="iconTexture">The texture of the icon to use. Note: Must be 16x16, 32x32, 48x48, 64x64, 128x128, or 256x256. GLFW will automatically
+        /// resize if needed, so use a larger resolution.</param>
+        public static void SetIcon(Texture2D iconTexture)
+        {
+            Bitmap bitmap = iconTexture.GetData(GL_RGBA);
+            bitmap.RotateFlip(RotateFlipType.Rotate180FlipX);
+            var data = bitmap.LockBits(
+            new Rectangle(0, 0, iconTexture.Width, iconTexture.Height),
+                    ImageLockMode.ReadOnly,
+                    PixelFormat.Format32bppArgb);
+            GLFW.Image image = new GLFW.Image(iconTexture.Width, iconTexture.Height, data.Scan0);
+            Glfw.SetWindowIcon(Window, 1, new GLFW.Image[] { image });
         }
 
         public static void SetWindowMode(WindowMode mode)

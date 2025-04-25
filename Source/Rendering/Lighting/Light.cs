@@ -21,16 +21,27 @@ namespace Electron2D
         }
         private Color _color;
 
-        public float Radius
+        public float Constant
         {
-            get => _radius;
+            get => _constant;
             set
             {
-                _radius = value;
+                _constant = value;
                 IsDirty = true;
             }
         }
-        public float _radius;
+        private float _constant;
+
+        public float QuadraticFalloff
+        {
+            get => _quadraticFalloff;
+            set
+            {
+                _quadraticFalloff = value;
+                IsDirty = true;
+            }
+        }
+        private float _quadraticFalloff;
 
         public float Height
         {
@@ -41,7 +52,7 @@ namespace Electron2D
                 IsDirty = true;
             }
         }
-        public float _height;
+        private float _height;
 
         public float Intensity
         {
@@ -52,17 +63,18 @@ namespace Electron2D
                 IsDirty = true;
             }
         }
-        public float _intensity;
+        private float _intensity;
 
         public Transform Transform { get; private set; }
 
         public bool IsDirty { get; set; }
 
-        public Light(Color color, float radius, float height, LightType type = LightType.Point, float intensity = 1)
+        public Light(Color color, float height, float quadratic, float constant = 1, float intensity = 1, LightType type = LightType.Point)
         {
             Type = type;
             Color = color;
-            Radius = radius;
+            QuadraticFalloff = quadratic;
+            Constant = constant;
             Height = height;
             Intensity = intensity;
 

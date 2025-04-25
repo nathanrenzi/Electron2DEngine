@@ -99,9 +99,11 @@ namespace Electron2D
                 Light l = PointLightsInScene[i];
                 if (i < MAX_POINT_LIGHTS)
                 {
+                    _shader.SetFloat($"pointLights[{i}].initialized", 1);
                     _shader.SetVector2($"pointLights[{i}].position", l.Transform.Position);
                     _shader.SetFloat($"pointLights[{i}].height", l.Height);
-                    _shader.SetFloat($"pointLights[{i}].radius", l.Radius);
+                    _shader.SetFloat($"pointLights[{i}].quadratic", l.QuadraticFalloff);
+                    _shader.SetFloat($"pointLights[{i}].constant", l.Constant);
                     _shader.SetFloat($"pointLights[{i}].intensity", l.Intensity);
                     _shader.SetVector3($"pointLights[{i}].color",
                         new Vector3(l.Color.R / 255f, l.Color.G / 255f, l.Color.B / 255f));
