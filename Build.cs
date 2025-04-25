@@ -17,7 +17,7 @@ public class Build : Game
     Sprite s;
     protected override void Load()
     {
-        bool isServer = false;
+        bool isServer = true;
         SetBackgroundColor(isServer ? Color.FromArgb(255, 80, 80, 80) : Color.FromArgb(255, 80, 80, 255));
         NetworkManager.Instance.InitializeForNetwork();
         if(isServer) NetworkManager.Instance.Server.Start(2, 25565, "test!");

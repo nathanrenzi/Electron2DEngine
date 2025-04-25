@@ -11,39 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Built-In\icon.ico" />
-    <None Remove="Resources\Built-In\Textures\BlankNormal.png" />
-    <None Remove="Resources\Built-In\Textures\BlankTexture.png" />
-    <None Remove="Resources\Built-In\Textures\Electron2DSplashscreen.png" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\ChromaticAberration.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\ColorGrading.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\DefaultPostProcessing.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\GaussianBlur.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\Inverted.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\LensDistortion.glsl" />
-    <None Remove="Resources\Built-In\Shaders\PostProcessing\Vignette.glsl" />
-    <None Remove="Resources\spaceshipcolor.png" />
-    <None Remove="Resources\spaceshipnormal.png" />
-    <None Remove="Resources\WorkerShipColor.png" />
-    <None Remove="Resources\WorkerShipLighting.png" />
-    <None Remove="Resources\WorkerShipNormal.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Resources\icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Built-In\Audio\TestAudio1.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Electron2D\Audio\TestAudio2.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\icon.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\ChromaticAberration.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\ColorGrading.glsl">
