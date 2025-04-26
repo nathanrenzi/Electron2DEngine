@@ -171,7 +171,7 @@ namespace Electron2D.Networking
 
             float pt = _interpolatePositionTime / PositionNetworkSettings.SendInterval;
             Transform.Position = Vector2.Lerp(_interpolateFromPosition, _interpolateToPosition, MathF.Min(pt, 1));
-            _interpolatePositionTime += Time.DeltaTime * _interpolateToPositionQueue.Count;
+            _interpolatePositionTime += Time.DeltaTime * (1 + _interpolateToPositionQueue.Count * 0.005f);
         }
 
         private void InterpolateRotation()
