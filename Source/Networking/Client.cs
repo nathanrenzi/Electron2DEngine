@@ -24,6 +24,7 @@ namespace Electron2D.Networking.ClientServer
         public event Action ConnectionSuccess;
         public event Action<ushort> ClientConnected;
         public event Action<ushort> ClientDisconnected;
+        public event Action<string> NetworkGameClassSpawned;
 
         private Thread _clientThread;
         private CancellationTokenSource _clientCancellationTokenSource;
@@ -189,14 +190,32 @@ namespace Electron2D.Networking.ClientServer
         }
 
         /// <summary>
-        /// Returns a NetworkGameClass with the given NetworkID.
+        /// Retrieves the <see cref="NetworkGameClass"> with the given NetworkID.
         /// </summary>
         /// <param name="networkID"></param>
         /// <returns></returns>
         public NetworkGameClass GetNetworkGameClass(string networkID)
         {
-            NetworkGameClasses.TryGetValue(networkID, out var gameClass);
-            return gameClass;
+            if(NetworkGameClasses.ContainsKey(networkID))
+            {
+                return NetworkGameClasses[networkID];
+            }
+            else
+            {
+                Debug.LogError($"NetworkGameClass with ID: [{networkID}] does not exist!");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the <see cref="NetworkGameClass"> with the given NetworkID.
+        /// </summary>
+        /// <param name="networkID"></param>
+        /// <param name="networkGameClass"></param>
+        /// <returns></returns>
+        public bool TryGetNetworkGameClass(string networkID, out NetworkGameClass networkGameClass)
+        {
+            return NetworkGameClasses.TryGetValue(networkID, out networkGameClass);
         }
 
         #region Steam Methods
@@ -294,6 +313,8 @@ namespace Electron2D.Networking.ClientServer
                 NetworkGameClasses.Add(networkID, networkGameClass);
                 networkGameClass.NetworkInitialize(networkID, clientID, this, _server);
             }
+
+            NetworkGameClassSpawned?.Invoke(networkID);
         }
         private void HandleNetworkClassUpdated(Message message)
         {

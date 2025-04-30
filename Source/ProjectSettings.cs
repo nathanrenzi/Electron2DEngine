@@ -11,6 +11,7 @@
 
         // Networking --------
         public static ushort SteamPort { get; } = 42420;
+        public static int ServerHeartbeatIntervalMilliseconds { get; } = 5000;
         // -------------------
 
         // Misc --------------

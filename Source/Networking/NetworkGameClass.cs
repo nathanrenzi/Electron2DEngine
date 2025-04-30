@@ -48,11 +48,10 @@ namespace Electron2D.Networking
         public abstract void FixedUpdate();
         public abstract void Update();
 
-
         /// <summary>
         /// Sends a request to the server to spawn this object.
         /// </summary>
-        public void Spawn(string networkID, bool removeLocallyOnDespawn = false,
+        public void Spawn(string networkID = null, bool removeLocallyOnDespawn = false,
             ClientServer.Client customClient = null, ClientServer.Server customServer = null)
         {
             if (IsNetworkInitialized) return;
@@ -72,6 +71,11 @@ namespace Electron2D.Networking
             else
             {
                 _server = NetworkManager.Instance.Server;
+            }
+
+            if(string.IsNullOrEmpty(networkID))
+            {
+                networkID = Guid.NewGuid().ToString("N");
             }
 
             RemoveLocallyOnDespawn = removeLocallyOnDespawn;

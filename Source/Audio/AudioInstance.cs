@@ -8,10 +8,9 @@ namespace Electron2D.Audio
         public AudioStream Stream { get; set; }
         public PlaybackState PlaybackState { get; private set; }
         public float Volume { get; set; }
-        public float VolumeMultiplier { get; set; } = 1.0f;
         public float Panning { get; set; }
-        public float PanningAdditive { get; set; } = 0.0f;
         public float Pitch { get; set; }
+        public List<IAudioEffect> Effects { get; } = new List<IAudioEffect>();
 
         public bool IsLoop
         {
@@ -32,7 +31,7 @@ namespace Electron2D.Audio
             Dispose(false);
         }
 
-        public AudioInstance(AudioClip clip, float volume, float pitch, bool isLoop)
+        public AudioInstance(AudioClip clip, float volume, float pitch, bool isLoop, float startStopVolumeFadeTime = 0.001f)
         {
             AudioClip = clip;
             Volume = volume;
@@ -41,16 +40,23 @@ namespace Electron2D.Audio
             IsLoop = isLoop;
 
             Stream.OnStreamEnd += Stop;
+            Stream.SetFadeTime(startStopVolumeFadeTime);
         }
 
         /// <summary>
-        /// This should only be called by AudioSpatializer to register itself in each AudioInstance.
+        /// This should only be called by <see cref="AudioSpatializer"/> to register itself in each <see cref="AudioInstance"/>.
         /// </summary>
-        /// <param name="_spatializer"></param>
-        public void SetSpatializerReference(AudioSpatializer spatializer)
+        /// <param name="spatializer"></param>
+        public void SetSpatializer(AudioSpatializer spatializer)
         {
             _spatializer = spatializer;
         }
+
+        /// <summary>
+        /// Retrieves the <see cref="AudioSpatializer"/> this <see cref="AudioInstance"/> is using.
+        /// </summary>
+        /// <returns>An <see cref="AudioSpatializer"/> object, or null if none is assigned.</returns>
+        public AudioSpatializer GetSpatializer() => _spatializer;
 
         /// <summary>
         /// Adds an audio effect to this audio instance. Must be added before the audio instance is played.
@@ -60,11 +66,21 @@ namespace Electron2D.Audio
         {
             effect.Initialize(Stream.SampleProvider);
             Stream.SampleProvider = effect;
+            Effects.Add(effect);
         }
 
         public void Play()
         {
-            Stop();
+            Stream.SetFadeDirection(1);
+            Stream.Position = 0;
+            PlaybackState = PlaybackState.Playing;
+            AudioSystem.PlayAudioInstance(this);
+        }
+
+        public void Play(long position)
+        {
+            Stream.SetFadeDirection(1);
+            Stream.Position = IsLoop ? position % Stream.Length : Math.Min(position, Stream.Length);
             PlaybackState = PlaybackState.Playing;
             AudioSystem.PlayAudioInstance(this);
         }
@@ -72,18 +88,21 @@ namespace Electron2D.Audio
         public void Pause()
         {
             if (PlaybackState == PlaybackState.Stopped) return;
+            Stream.SetFadeDirection(-1);
             PlaybackState = PlaybackState.Paused;
         }
 
         public void Unpause()
         {
-            if (PlaybackState == PlaybackState.Stopped) return;
+            if (PlaybackState == PlaybackState.Stopped || PlaybackState == PlaybackState.Playing) return;
+            Stream.SetFadeDirection(1);
             PlaybackState = PlaybackState.Playing;
+            AudioSystem.PlayAudioInstance(this);
         }
 
         public void Stop()
         {
-            Stream.Position = 0;
+            Stream.SetFadeDirection(-1);
             PlaybackState = PlaybackState.Stopped;
         }
 

@@ -147,6 +147,10 @@ namespace Electron2D.Networking
         public void Update()
         {
             if(NetworkMode == NetworkMode.SteamP2P) SteamAPI.RunCallbacks();
+            if (Server != null)
+            {
+                Server.ServerUpdate();
+            }
             Client.ClientUpdate();
         }
 

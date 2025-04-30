@@ -11,11 +11,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Electron2D\Audio\TestAudio1.mp3" />
+    <None Remove="Resources\Electron2D\Audio\TestAudio3.mp3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Resources\icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\Electron2D\Audio\TestAudio1.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Electron2D\Audio\TestAudio2.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Electron2D\Audio\TestAudio3.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\icon.ico">

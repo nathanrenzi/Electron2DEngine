@@ -1,5 +1,7 @@
 ﻿using Riptide;
+using Riptide.Transports;
 using Riptide.Transports.Steam;
+using System.Collections.Concurrent;
 
 namespace Electron2D.Networking.ClientServer
 {
@@ -27,6 +29,7 @@ namespace Electron2D.Networking.ClientServer
 
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
 
+        private ConcurrentQueue<(BuiltInMessageType, Message, ushort)> _messageQueue = new();
         private Dictionary<uint, List<NetworkGameClassData>> _syncingClientSnapshots = new();
         private Dictionary<string, ushort> _networkGameClassOwners = new();
         private List<string> _networkGameClassesToRemove = new();
@@ -49,6 +52,7 @@ namespace Electron2D.Networking.ClientServer
             {
                 RiptideServer = new Riptide.Server();
             }
+            RiptideServer.HeartbeatInterval = ProjectSettings.ServerHeartbeatIntervalMilliseconds;
             RiptideServer.HandleConnection = ValidateConnection;
             RiptideServer.ClientConnected += HandleClientConnected;
             RiptideServer.ClientDisconnected += HandleClientDisconnected;
@@ -61,6 +65,38 @@ namespace Electron2D.Networking.ClientServer
         public void ServerFixedUpdate()
         {
             RiptideServer.Update();
+        }
+
+        /// <summary>
+        /// Should be called as often as possible.
+        /// </summary>
+        public void ServerUpdate()
+        {
+            while(_messageQueue.Count > 0)
+            {
+                (BuiltInMessageType, Message, ushort) message;
+                if(_messageQueue.TryDequeue(out message))
+                {
+                    switch (message.Item1)
+                    {
+                        case BuiltInMessageType.NetworkClassSpawned:
+                            HandleNetworkClassSpawned(message.Item3, message.Item2);
+                            break;
+                        case BuiltInMessageType.NetworkClassUpdated:
+                            HandleNetworkClassUpdated(message.Item3, message.Item2);
+                            break;
+                        case BuiltInMessageType.NetworkClassDespawned:
+                            HandleNetworkClassDespawned(message.Item3, message.Item2);
+                            break;
+                        case BuiltInMessageType.NetworkClassSync:
+                            HandleNetworkClassSync(message.Item3, message.Item2);
+                            break;
+                        case BuiltInMessageType.NetworkClassRequestSyncData:
+                            HandleNetworkClassRequestSyncData(message.Item3, message.Item2);
+                            break;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -154,26 +190,11 @@ namespace Electron2D.Networking.ClientServer
                 return;
             }
 
-            ushort client = e.FromConnection.Id;
-            switch((BuiltInMessageType)e.MessageId)
-            {
-                case BuiltInMessageType.NetworkClassSpawned:
-                    HandleNetworkClassSpawned(client, e.Message);
-                    break;
-                case BuiltInMessageType.NetworkClassUpdated:
-                    HandleNetworkClassUpdated(client, e.Message);
-                    break;
-                case BuiltInMessageType.NetworkClassDespawned:
-                    HandleNetworkClassDespawned(client, e.Message);
-                    break;
-                case BuiltInMessageType.NetworkClassSync:
-                    HandleNetworkClassSync(client, e.Message);
-                    break;
-                case BuiltInMessageType.NetworkClassRequestSyncData:
-                    HandleNetworkClassRequestSyncData(client, e.Message);
-                    break;
-            }
+            Message message = Message.Create();
+            message.AddMessage(e.Message);
+            _messageQueue.Enqueue(((BuiltInMessageType)e.MessageId, message, e.FromConnection.Id));
         }
+
         private void HandleNetworkClassRequestSyncData(ushort client, Message message)
         {
             if(client != _hostID)
