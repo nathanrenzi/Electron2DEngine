@@ -14,6 +14,12 @@ namespace Electron2D.Networking
     /// </summary>
     public abstract class NetworkGameClass : IGameClass
     {
+        private struct DependencyCallback
+        {
+            public Type ExpectedType;
+            public Action<NetworkGameClass> Callback;
+        }
+
         public string NetworkID { get; private set; } = string.Empty;
         public ushort OwnerID { get; private set; } = ushort.MaxValue;
         public bool IsOwner { get; private set; } = false;
@@ -26,6 +32,9 @@ namespace Electron2D.Networking
 
         protected ClientServer.Client _client;
         protected ClientServer.Server _server;
+
+        private Dictionary<string, DependencyCallback> _dependencies = new Dictionary<string, DependencyCallback>();
+        private bool _hasAddedDependencies = false;
 
         public NetworkGameClass()
         {
@@ -199,8 +208,45 @@ namespace Electron2D.Networking
                 UpdateVersion = newVersion;
             }
         }
-
-
+        /// <summary>
+        /// Adds a <see cref="NetworkGameClass"/> dependency, and runs a method once the specified NetworkGameClass is initialized.
+        /// </summary>
+        /// <param name="networkID">The networkID of the dependency.</param>
+        /// <param name="onNetworkIDInitialized">The method that will run when the dependency is met.</param>
+        protected void AddDependency<T>(string networkID, Action<T> onNetworkIDInitialized) where T : NetworkGameClass
+        {
+            if (!_hasAddedDependencies)
+            {
+                NetworkManager.Instance.Client.NetworkGameClassSpawned += CheckDependency;
+                _hasAddedDependencies = true;
+            }
+            _dependencies.Add(networkID, new DependencyCallback
+            {
+                ExpectedType = typeof(T),
+                Callback = obj => onNetworkIDInitialized((T)obj)
+            });
+            if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(networkID))
+            {
+                CheckDependency(networkID);
+            }
+        }
+        private void CheckDependency(string networkID)
+        {
+            if (_dependencies.ContainsKey(networkID))
+            {
+                NetworkGameClass networkGameClass = NetworkManager.Instance.Client.GetNetworkGameClass(networkID);
+                DependencyCallback callback = _dependencies[networkID];
+                if(callback.ExpectedType.IsInstanceOfType(networkGameClass))
+                {
+                    callback.Callback(networkGameClass);
+                }
+                else
+                {
+                    Debug.LogError($"Dependency with ID: [{networkID}] expected type {callback.ExpectedType}, got type {networkGameClass.GetType()} in NetworkGameClass with ID: [{NetworkID}]");
+                }
+                _dependencies.Remove(networkID);
+            }
+        }
         /// <summary>
         /// Should initialize the network object from json data. Json should contain
         /// all data, including any data that has been changed since the object has been created

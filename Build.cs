@@ -18,7 +18,7 @@ public class Build : Game
     // This is ran when the game is ready to load content
     protected override void Load()
     {
-        bool isServer = false;
+        bool isServer = true;
         SetBackgroundColor(isServer ? Color.FromArgb(255, 80, 80, 80) : Color.FromArgb(255, 80, 80, 255));
         NetworkManager.Instance.InitializeForNetwork();
         if(isServer) NetworkManager.Instance.Server.Start(10, 25565, "test!");
@@ -34,26 +34,26 @@ public class Build : Game
             NetworkManager.Instance.Client.Connect("127.0.0.1", 25565, "test!");
         }
         if(isServer) NetworkManager.Instance.Client.NetworkGameClassesLoaded += () => InitializeNetworkTest();
+        if (!isServer) NetworkManager.Instance.Client.NetworkGameClassSpawned += (id) => Debug.Log($"NetworkGameClass spawned: [{id}]");
     }
 
     private NetworkAudioInstance instance;
     private void InitializeNetworkTest()
     {
-        instance = new NetworkAudioInstance(ResourceManager.Instance.LoadAudioClip("Resources/Electron2D/Audio/TestAudio3.mp3"), 1f, 1, true, true);
+        instance = new NetworkAudioInstance(ResourceManager.Instance.LoadAudioClip("Resources/Electron2D/Audio/TestAudio3.mp3"), 1f, 1, true);
         instance.Spawn();
-        //instance.OnNetworkInitializedEvent += () =>
-        //{
-        //    Transform transform = new Transform();
-        //    transform.Position = new Vector2(-500, 0);
-        //    NetworkTransform networkTransform = new NetworkTransform(transform);
-        //    networkTransform.Spawn("Transform");
-        //    networkTransform.OnNetworkInitializedEvent += () =>
-        //    {
-        //        instance.Spatialize(networkTransform, true);
-        //        instance.Play();
-        //    };
-        //};
-        instance.Play();
+        instance.OnNetworkInitializedEvent += () =>
+        {
+            Transform transform = new Transform();
+            transform.Position = new Vector2(-500, 0);
+            NetworkTransform networkTransform = new NetworkTransform(transform);
+            networkTransform.Spawn("Transform");
+            networkTransform.OnNetworkInitializedEvent += () =>
+            {
+                instance.Spatialize(networkTransform, true);
+                instance.Play();
+            };
+        };
     }
 
     // This is ran every frame

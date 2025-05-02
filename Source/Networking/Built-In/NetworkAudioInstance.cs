@@ -12,7 +12,6 @@ namespace Electron2D.Networking
             public float Volume;
             public float Pitch;
             public bool IsLoop;
-            public bool IsSynchronized;
             public PlaybackState PlaybackState;
             public long Position;
             public long TimeSent;
@@ -34,7 +33,6 @@ namespace Electron2D.Networking
         public AudioStream Stream => _audioInstance.Stream;
         public PlaybackState PlaybackState => _audioInstance.PlaybackState;
         public bool IsLoop { get; private set; }
-        public bool IsSynchronized { get; private set; }
         public float Volume
         {
             get
@@ -85,10 +83,10 @@ namespace Electron2D.Networking
         private AudioSpatializer _audioSpatializer;
         private AudioInstance _audioInstance;
         private float _startStopVolumeFadeTime;
+        private PlaybackState _cachedPlaybackState;
 
-        public NetworkAudioInstance(AudioClip clip, float volume, float pitch, bool isLoop, bool isSynchronized, float startStopVolumeFadeTime = 0.001f)
+        public NetworkAudioInstance(AudioClip clip, float volume, float pitch, bool isLoop, float startStopVolumeFadeTime = 0.001f)
         {
-            IsSynchronized = isSynchronized;
             IsLoop = isLoop;
             _startStopVolumeFadeTime = startStopVolumeFadeTime;
             _audioInstance = new AudioInstance(clip, volume, pitch, isLoop, startStopVolumeFadeTime);
@@ -114,11 +112,13 @@ namespace Electron2D.Networking
 
         public override void OnDespawned()
         {
+            _audioInstance.Stop();
             _audioInstance.Dispose();
         }
 
         public override void OnDisposed()
         {
+            _audioInstance.Stop();
             _audioInstance.Dispose();
         }
 
@@ -212,17 +212,21 @@ namespace Electron2D.Networking
             switch (type)
             {
                 case 0:
+                    _cachedPlaybackState = PlaybackState.Playing;
                     _audioInstance.Stream.Position = JsonConvert.DeserializeObject<long>(json);
                     _audioInstance.Play();
                     break;
                 case 1:
+                    _cachedPlaybackState = PlaybackState.Paused;
                     _audioInstance.Pause();
                     break;
                 case 2:
+                    _cachedPlaybackState = PlaybackState.Playing;
                     _audioInstance.Stream.Position = JsonConvert.DeserializeObject<long>(json);
                     _audioInstance.Unpause();
                     break;
                 case 3:
+                    _cachedPlaybackState = PlaybackState.Stopped;
                     _audioInstance.Stop();
                     break;
                 case 4:
@@ -259,7 +263,6 @@ namespace Electron2D.Networking
                 IsLoop = _audioInstance.IsLoop,
                 PlaybackState = _audioInstance.PlaybackState,
                 Position = _audioInstance.Stream.Position,
-                IsSynchronized = IsSynchronized,
                 SpatializerTransformNetworkID = _audioInstance != null ? _audioSpatializerTransformNetworkID : "",
                 SpatializerIs3D = _audioSpatializer != null ? _audioSpatializer.Is3D : false,
                 StartStopVolumeFadeTime = _startStopVolumeFadeTime,
@@ -278,29 +281,24 @@ namespace Electron2D.Networking
             NetworkAudioInstanceInitializationJson data = JsonConvert.DeserializeObject<NetworkAudioInstanceInitializationJson>(json);
             _audioInstance = new AudioInstance(ResourceManager.Instance.LoadAudioClip(data.AudioClipFilePath), data.Volume, data.Pitch, data.IsLoop, data.StartStopVolumeFadeTime);
             IsLoop = data.IsLoop;
-            IsSynchronized = data.IsSynchronized;
+            _cachedPlaybackState = data.PlaybackState;
             if (!string.IsNullOrEmpty(data.SpatializerTransformNetworkID))
             {
-                if (NetworkManager.Instance.Client.TryGetNetworkGameClass(data.SpatializerTransformNetworkID, out var networkTransform))
+                AddDependency<NetworkTransform>(data.SpatializerTransformNetworkID, (networkGameClass) =>
                 {
-                    SetSpatializer((NetworkTransform)networkTransform, data.SpatializerIs3D);
-                }
-                else
-                {
-                    Debug.LogError($"Cannot find NetworkTransform with ID: [{data.SpatializerTransformNetworkID}], cannot create AudioSpatializer.");
-                }
-            }
-            switch (data.PlaybackState)
-            {
-                case PlaybackState.Playing:
-                    _audioInstance.Play(data.IsSynchronized ? (data.Position + (long)((DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - data.TimeSent)
-                        / 1000f * _audioInstance.AudioClip.WaveFormat.SampleRate)) % _audioInstance.Stream.Length : data.Position);
-                    break;
-                case PlaybackState.Stopped:
-                case PlaybackState.Paused:
-                    _audioInstance.Stream.Position = data.Position;
-                    _audioInstance.Pause();
-                    break;
+                    SetSpatializer(networkGameClass, data.SpatializerIs3D);
+                    switch (_cachedPlaybackState)
+                    {
+                        case PlaybackState.Playing:
+                            _audioInstance.Play(data.Position);
+                            break;
+                        case PlaybackState.Stopped:
+                        case PlaybackState.Paused:
+                            _audioInstance.Stream.Position = data.Position;
+                            _audioInstance.Pause();
+                            break;
+                    }
+                });
             }
             //for(int i = 0; i < data.Effects.Count; i++)
             //{

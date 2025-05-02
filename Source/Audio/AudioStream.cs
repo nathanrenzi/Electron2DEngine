@@ -59,12 +59,12 @@ namespace Electron2D.Audio
             }
 
             volumeFadeSampleProvider = new AudioVolumeFadeSampleProvider(SampleProvider);
-            volumeFadeSampleProvider.VolumeFadeTime = 0.05f;
             SampleProvider = volumeFadeSampleProvider;
         }
 
         public void SetFadeDirection(int direction) => volumeFadeSampleProvider.SetFadeDirection(direction);
         public void SetFadeTime(float fade) => volumeFadeSampleProvider.VolumeFadeTime = fade;
+        public float GetFadeTime() => volumeFadeSampleProvider.VolumeFadeTime;
 
         public override int Read(byte[] _buffer, int _offset, int _count)
         {
