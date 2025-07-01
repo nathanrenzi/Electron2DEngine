@@ -171,6 +171,7 @@ namespace Electron2D.Rendering.Shaders
         public void SetMatrix4x4(string _uniformName, Matrix4x4 _mat)
         {
             // Finding where location is in memory
+            Use();
             int location;
             if (!localUniforms.TryGetValue(_uniformName, out location))
             {
@@ -183,6 +184,7 @@ namespace Electron2D.Rendering.Shaders
 
         public void SetInt(string _uniformName, int _value)
         {
+            Use();
             int location;
             if (!localUniforms.TryGetValue(_uniformName, out location))
             {
@@ -195,6 +197,7 @@ namespace Electron2D.Rendering.Shaders
 
         public void SetFloat(string _uniformName, float _value)
         {
+            Use();
             int location;
             if (!localUniforms.TryGetValue(_uniformName, out location))
             {
@@ -207,6 +210,7 @@ namespace Electron2D.Rendering.Shaders
 
         public void SetVector2(string _uniformName, Vector2 _value)
         {
+            Use();
             int location;
             if (!localUniforms.TryGetValue(_uniformName, out location))
             {
@@ -219,6 +223,7 @@ namespace Electron2D.Rendering.Shaders
 
         public void SetVector3(string _uniformName, Vector3 _value)
         {
+            Use();
             int location;
             if (!localUniforms.TryGetValue(_uniformName, out location))
             {
@@ -231,6 +236,7 @@ namespace Electron2D.Rendering.Shaders
 
         public void SetVector4(string _uniformName, Vector4 _value)
         {
+            Use();
             int location;
             if (!localUniforms.TryGetValue(_uniformName, out location))
             {
@@ -248,6 +254,7 @@ namespace Electron2D.Rendering.Shaders
         /// <param name="_value"></param>
         public void SetColor(string _uniformName, Color _value)
         {
+            Use();
             int location;
             if (!localUniforms.TryGetValue(_uniformName, out location))
             {

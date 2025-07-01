@@ -203,7 +203,6 @@ namespace Electron2D.UserInterface
         private TextRenderer.Iterator _iterator;
         private StringBuilder _builder;
         private Material _caretMaterial;
-        private bool _flagUpdateCaret = false;
         private char _holdingChar;
         private float _holdingCharTime = 0;
         private float _holdingRepeatTime = 0;
@@ -278,13 +277,6 @@ namespace Electron2D.UserInterface
                 }
                 _holdingCharTime += Time.DeltaTime;
             }
-
-            // Workaround since updates to caret shader in input callback were not working
-            if (_flagUpdateCaret)
-            {
-                UpdateCaretDisplay();
-                _flagUpdateCaret = false;
-            }
         }
 
         public override void UpdateMesh()
@@ -295,9 +287,11 @@ namespace Electron2D.UserInterface
         private void UpdateDisplay()
         {
             if (!_initialized) return;
+            _backgroundPanel.Anchor = Anchor;
             _backgroundPanel.SizeX = SizeX;
             _backgroundPanel.SizeY = SizeY;
             _backgroundPanel.Transform.Position = Transform.Position;
+            _textLabel.Anchor = Anchor;
             _textLabel.SizeX = SizeX - (TextAreaPadding.X + TextAreaPadding.Y);
             _textLabel.SizeY = SizeY - (TextAreaPadding.Z + TextAreaPadding.W);
             _textLabel.Transform.Position = Transform.Position + (new Vector2(TextAreaPadding.X, TextAreaPadding.W) * 0.5f) - (new Vector2(TextAreaPadding.Y, TextAreaPadding.Z) * 0.5f);
@@ -376,7 +370,7 @@ namespace Electron2D.UserInterface
                     _builder.Insert(_iterator.Index, '\n');
                     _iterator.Increment();
                     textUpdated = true;
-                    _flagUpdateCaret = true;
+                    UpdateCaretDisplay();
                 }
                 else
                 {
@@ -408,7 +402,7 @@ namespace Electron2D.UserInterface
                         _iterator.Decrement();
                     } while (_holdingLeftControl && _iterator.Index - 1 >= 0 && _builder[_iterator.Index - 1] != ' ');
                     textUpdated = true;
-                    _flagUpdateCaret = true;
+                    UpdateCaretDisplay();
                 }
                 else if (code == 262)
                 {
@@ -417,7 +411,7 @@ namespace Electron2D.UserInterface
                     {
                         _iterator.Increment();
                     } while (_holdingLeftControl && _iterator.Index < _builder.Length && (_iterator.Index == 0 || (_iterator.Index != 0 && _builder[_iterator.Index - 1] != ' ')));
-                    _flagUpdateCaret = true;
+                    UpdateCaretDisplay();
                 }
                 else if (code == 263)
                 {
@@ -426,7 +420,7 @@ namespace Electron2D.UserInterface
                     {
                         _iterator.Decrement();
                     } while (_holdingLeftControl && _iterator.Index > 0 && (_iterator.Index == _builder.Length || (_iterator.Index < _builder.Length && _builder[_iterator.Index - 1] != ' ')));
-                    _flagUpdateCaret = true;
+                    UpdateCaretDisplay();
                 }
                 else
                 {
@@ -437,7 +431,7 @@ namespace Electron2D.UserInterface
                         _builder.Insert(_iterator.Index, code);
                         _iterator.Increment();
                         textUpdated = true;
-                        _flagUpdateCaret = true;
+                        UpdateCaretDisplay();
                     }
                 }
             }
@@ -448,6 +442,7 @@ namespace Electron2D.UserInterface
                 _textLabel.Text = _promptText;
                 _textLabel.TextColor = _promptTextColor;
                 _iterator.SetIndex(TextRenderer.HorizontalAlignment == TextAlignment.Right ? _promptText.Length : 0);
+                UpdateCaretDisplay();
             }
             else
             {

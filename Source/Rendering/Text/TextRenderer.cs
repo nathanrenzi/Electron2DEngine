@@ -261,15 +261,7 @@ namespace Electron2D.Rendering.Text
         #region Text Formatting
         private unsafe void UpdateTextFormatting(string _inputText)
         {
-            if (_inputText == null || _inputText == "")
-            {
-                Enabled = false;
-                return;
-            }
-            else
-            {
-                Enabled = true;
-            }
+            string unformattedText = _inputText == null ? "" : _inputText;
             lineOffsets.Clear();
 
             // Split input text into substrings
@@ -277,27 +269,27 @@ namespace Electron2D.Rendering.Text
             string[] words = null;
             if (OverflowMode == TextOverflowMode.Word)
             {
-                words = Regex.Split(_inputText, @"(\s)");
+                words = Regex.Split(unformattedText, @"(\s)");
             }
             else if (OverflowMode == TextOverflowMode.Character)
             {
-                words = _inputText.ToCharArray().Select(c => c.ToString()).ToArray();
+                words = unformattedText.ToCharArray().Select(c => c.ToString()).ToArray();
             }
             else if (OverflowMode == TextOverflowMode.Disabled)
             {
-                words = Regex.Split(_inputText, @"(\s)");
+                words = Regex.Split(unformattedText, @"(\s)");
                 float stringSize = 0;
                 uint g = 0;
                 uint p = 0;
 
                 // Measuring the input string
-                for (int i = 0; i < _inputText.Length; i++)
+                for (int i = 0; i < unformattedText.Length; i++)
                 {
                     // Skipping newline characters, rich text is not supported
-                    if (_inputText[i] == '\n') continue;
+                    if (unformattedText[i] == '\n') continue;
 
-                    Character ch = FontGlyphStore.Characters[_inputText[i]];
-                    g = FT_Get_Char_Index(FontGlyphStore.Face, _inputText[i]);
+                    Character ch = FontGlyphStore.Characters[unformattedText[i]];
+                    g = FT_Get_Char_Index(FontGlyphStore.Face, unformattedText[i]);
 
                     // Kerning
                     if (FontGlyphStore.UseKerning)
@@ -319,7 +311,7 @@ namespace Electron2D.Rendering.Text
                     p = g;
                 }
 
-                formattedText = _inputText;
+                formattedText = unformattedText;
                 lineOffsets.Add(Bounds.Width - (int)stringSize);
                 skipNewlines = true;
             }
@@ -494,67 +486,79 @@ namespace Electron2D.Rendering.Text
                 }
             }
 
-            for (int i = 0; i < formattedText.Length; i++)
+            if (formattedText.Length > 0)
             {
-                Character ch = FontGlyphStore.Characters[formattedText[i]];
-                glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, formattedText[i]);
-
-                // If word is a newline character, handle it separately
-                if (formattedText[i] == '\n')
+                for (int i = 0; i < formattedText.Length; i++)
                 {
-                    newlineCount++;
-                    _x = GetXOffset(newlineCount) + position.X;
-                    // If the newline is the first character, it is meant to offset the first line, so use one as the multiplier
-                    _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
-                    previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
-                    continue;
-                }
+                    Character ch = FontGlyphStore.Characters[formattedText[i]];
+                    glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, formattedText[i]);
 
-                // Kerning
-                if (FontGlyphStore.UseKerning)
-                {
-                    if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                    // If word is a newline character, handle it separately
+                    if (formattedText[i] == '\n')
                     {
-                        long* temp = (long*)delta.x;
-                        long res = *temp;
-                        _x += res;
+                        newlineCount++;
+                        _x = GetXOffset(newlineCount) + position.X;
+                        // If the newline is the first character, it is meant to offset the first line, so use one as the multiplier
+                        _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+                        previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
+                        continue;
                     }
-                    else
+
+                    // Kerning
+                    if (FontGlyphStore.UseKerning)
                     {
-                        Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontName}");
+                        if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                        {
+                            long* temp = (long*)delta.x;
+                            long res = *temp;
+                            _x += res;
+                        }
+                        else
+                        {
+                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontName}");
+                        }
                     }
+
+                    int xpos = (int)(_x + ch.Bearing.X * transform.Scale.X);
+                    int ypos = (int)(_y - (ch.Size.Y - ch.Bearing.Y) * transform.Scale.X); // Causes text to be slightly vertically offset by 1 pixel
+
+                    float w = ch.Size.X * transform.Scale.X;
+                    float h = ch.Size.Y * transform.Scale.X;
+
+                    float L = ch.UVX.X;
+                    float R = ch.UVX.Y;
+                    float T = ch.UVY.X;
+                    float B = ch.UVY.Y;
+
+                    uint count = (uint)tempVertexArrays.Count;
+                    tempVertexArrays.Add(new float[] { xpos, ypos + h, L, T });     // Top Left
+                    tempVertexArrays.Add(new float[] { xpos + w, ypos + h, R, T }); // Top Right
+                    tempVertexArrays.Add(new float[] { xpos + w, ypos, R, B });     // Bottom Right
+                    tempVertexArrays.Add(new float[] { xpos, ypos, L, B });         // Bottom Left
+                    tempIndices.Add(count + 0);
+                    tempIndices.Add(count + 1);
+                    tempIndices.Add(count + 2);
+                    tempIndices.Add(count + 0);
+                    tempIndices.Add(count + 2);
+                    tempIndices.Add(count + 3);
+
+                    _x += ch.Advance * transform.Scale.X;
+
+                    previousIndex = glyphIndex;
                 }
-
-                int xpos = (int)(_x + ch.Bearing.X * transform.Scale.X);
-                int ypos = (int)(_y - (ch.Size.Y - ch.Bearing.Y) * transform.Scale.X); // Causes text to be slightly vertically offset by 1 pixel
-
-                float w = ch.Size.X * transform.Scale.X;
-                float h = ch.Size.Y * transform.Scale.X;
-
-                float L = ch.UVX.X;
-                float R = ch.UVX.Y;
-                float T = ch.UVY.X;
-                float B = ch.UVY.Y;
-
-                uint count = (uint)tempVertexArrays.Count;
-                tempVertexArrays.Add(new float[] { xpos, ypos + h, L, T });     // Top Left
-                tempVertexArrays.Add(new float[] { xpos + w, ypos + h, R, T }); // Top Right
-                tempVertexArrays.Add(new float[] { xpos + w, ypos, R, B });     // Bottom Right
-                tempVertexArrays.Add(new float[] { xpos, ypos, L, B });         // Bottom Left
-                tempIndices.Add(count + 0);
-                tempIndices.Add(count + 1);
-                tempIndices.Add(count + 2);
-                tempIndices.Add(count + 0);
-                tempIndices.Add(count + 2);
-                tempIndices.Add(count + 3);
-
-                _x += ch.Advance * transform.Scale.X;
-
-                previousIndex = glyphIndex;
+            }
+            else
+            {
+                // Send fake data for a point offscreen instead of sending no vertex data (causes crash)
+                tempVertexArrays.Add(new float[] { -10000, -10000, 0, 0 });
+                tempVertexArrays.Add(new float[] { -10000, -10000, 0, 0 });
+                tempVertexArrays.Add(new float[] { -10000, -10000, 0, 0 });
+                tempIndices.Add(0);
+                tempIndices.Add(1);
+                tempIndices.Add(2);
             }
 
             List<float> tempVertices = new List<float>();
-
             for (int i = 0; i < tempVertexArrays.Count; i++)
             {
                 for (int z = 0; z < tempVertexArrays[i].Length; z++)
