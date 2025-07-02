@@ -117,8 +117,8 @@ namespace Electron2D.UserInterface
 
             if(def.BackgroundPanelDef != null)
             {
-                _backgroundPanel = new SlicedPanel(def.BackgroundMaterial, def.SizeX, BackgroundSizeY,
-                    def.BackgroundPanelDef, uiRenderLayer, useScreenPosition, ignorePostProcessing);
+                _backgroundPanel = new SlicedPanel(def.BackgroundPanelDef, def.BackgroundMaterial, def.SizeX, BackgroundSizeY,
+                    uiRenderLayer, useScreenPosition, ignorePostProcessing);
                 _backgroundPanel.AddUIListener(_backgroundListener);
             }
             else
@@ -130,8 +130,8 @@ namespace Electron2D.UserInterface
 
             if (def.SliderPanelDef != null)
             {
-                _sliderPanel = new SlicedPanel(def.SliderMaterial, def.SizeX - HandlePadding, SliderSizeY,
-                    def.SliderPanelDef, uiRenderLayer + 1, useScreenPosition, ignorePostProcessing);
+                _sliderPanel = new SlicedPanel(def.SliderPanelDef, def.SliderMaterial, def.SizeX - HandlePadding, SliderSizeY,
+                    uiRenderLayer + 1, useScreenPosition, ignorePostProcessing);
                 _sliderPanel.Anchor = new Vector2(-1, 0);
             }
             else
@@ -143,8 +143,8 @@ namespace Electron2D.UserInterface
 
             if (def.HandlePanelDef != null)
             {
-                _handlePanel = new SlicedPanel(def.HandleMaterial, HandleSizeXY, HandleSizeXY,
-                    def.HandlePanelDef, uiRenderLayer + 2, useScreenPosition, ignorePostProcessing);
+                _handlePanel = new SlicedPanel(def.HandlePanelDef, def.HandleMaterial, HandleSizeXY, HandleSizeXY,
+                    uiRenderLayer + 2, useScreenPosition, ignorePostProcessing);
                 _handlePanel.AddUIListener(_handleListener);
             }
             else

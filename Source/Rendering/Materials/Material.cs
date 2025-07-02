@@ -91,9 +91,9 @@ namespace Electron2D.Rendering
             return Create(_shader, _color, ResourceManager.Instance.LoadTexture("Resources/Built-In/Textures/Circle.png"));
         }
 
-        public static Material CreateCircle(Color _color)
+        public static Material CreateCircle(Color _color, bool _forInterface = false)
         {
-            return CreateCircle(GlobalShaders.DefaultTexture, _color);
+            return CreateCircle(_forInterface ? GlobalShaders.DefaultInterface : GlobalShaders.DefaultTexture, _color);
         }
 
         public static Material LoadFromJSON(string json)

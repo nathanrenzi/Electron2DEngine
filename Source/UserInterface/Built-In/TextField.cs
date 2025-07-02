@@ -231,7 +231,7 @@ namespace Electron2D.UserInterface
             _maxLineCount = def.MaxLineCount;
             if(def.BackgroundPanelDef != null)
             {
-                _backgroundPanel = new SlicedPanel(def.BackgroundPanelMaterial, def.SizeX, def.SizeY, def.BackgroundPanelDef,
+                _backgroundPanel = new SlicedPanel(def.BackgroundPanelDef, def.BackgroundPanelMaterial, def.SizeX, def.SizeY,
                     uiRenderLayer - 1, useScreenPosition, ignorePostProcessing);
             }
             else
@@ -240,10 +240,22 @@ namespace Electron2D.UserInterface
                     useScreenPosition, ignorePostProcessing);
             }
             _backgroundPanel.Interactable = false;
-            _textLabel = new TextLabel(def.Text, def.TextFont.Arguments.FontName, def.TextFont.Arguments.FontSize, Color.White, Color.White,
-                new Vector2(def.SizeX - (def.TextAreaPadding.X + def.TextAreaPadding.Y),
-                def.SizeY - (def.TextAreaPadding.Z + def.TextAreaPadding.W)), def.TextHorizontalAlignment, def.TextVerticalAlignment, def.TextAlignmentMode, def.TextOverflowMode, 0, uiRenderLayer,
-                def.TextMaterial.Shader, useScreenPosition, ignorePostProcessing);
+            _textLabel = new TextLabel(new TextLabelDef(
+                def.Text,
+                def.SizeX - (def.TextAreaPadding.X + def.TextAreaPadding.Y),
+                def.SizeY - (def.TextAreaPadding.Z + def.TextAreaPadding.W),
+                def.TextFont,
+                def.TextMaterial,
+                def.TextColor,
+                def.TextHorizontalAlignment,
+                def.TextVerticalAlignment,
+                def.TextAlignmentMode,
+                def.TextOverflowMode
+            ));
+            //_textLabel = new TextLabel(new def.Text, def.TextFont.Arguments.FontName, def.TextFont.Arguments.FontSize, Color.White, Color.White,
+            //    new Vector2(def.SizeX - (def.TextAreaPadding.X + def.TextAreaPadding.Y),
+            //    def.SizeY - (def.TextAreaPadding.Z + def.TextAreaPadding.W)), def.TextHorizontalAlignment, def.TextVerticalAlignment, def.TextAlignmentMode, def.TextOverflowMode, 0, uiRenderLayer,
+            //    def.TextMaterial.Shader, useScreenPosition, ignorePostProcessing);
             _textLabel.Interactable = false;
             _builder = new StringBuilder(Text);
             _caretMaterial = def.CaretMaterial == null ? 
@@ -258,6 +270,10 @@ namespace Electron2D.UserInterface
             UpdateCaretDisplay();
             _initialized = true;
             UpdateDisplay();
+            if(def.UseHoverCursor)
+            {
+                SetHoverCursorType(def.HoverCursorType);
+            }
             Game.LateUpdateEvent += LateUpdate;
         }
 

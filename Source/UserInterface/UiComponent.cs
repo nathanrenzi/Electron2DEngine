@@ -2,6 +2,7 @@
 using Electron2D.Rendering;
 using System.Drawing;
 using Electron2D.Rendering.Shaders;
+using GLFW;
 
 namespace Electron2D.UserInterface
 {
@@ -99,6 +100,7 @@ namespace Electron2D.UserInterface
         public UICanvas.UIFrameTickData ThisFrameData = new UICanvas.UIFrameTickData();
         public UICanvas.UIFrameTickData LastFrameData = new UICanvas.UIFrameTickData();
         public UIConstraints Constraints;
+        private CursorType _hoverCursorType = CursorType.Arrow;
         protected bool _isLoaded = false;
         private List<UIComponent> _eventSources = new List<UIComponent>();
         private EventSourceListener _eventSourceListener;
@@ -203,6 +205,11 @@ namespace Electron2D.UserInterface
             Focused = false;
         }
 
+        public void SetHoverCursorType(CursorType type)
+        {
+            _hoverCursorType = type;
+        }
+
         protected virtual void Load()
         {
             if (UsingMeshRenderer) Renderer.Load();
@@ -286,7 +293,7 @@ namespace Electron2D.UserInterface
 
             switch (uiEvent)
             {
-                case UIEvent.Load: OnLoad?.Invoke(); break;
+                case UIEvent.Load: OnLoad?.Invoke();break;
                 case UIEvent.Click: OnClick?.Invoke(); break;
                 case UIEvent.ClickDown: OnClickDown?.Invoke(); break;
                 case UIEvent.ClickUp: OnClickUp?.Invoke(); break;
@@ -300,8 +307,14 @@ namespace Electron2D.UserInterface
                 case UIEvent.RightClickDown: OnRightClickDown?.Invoke(); break;
                 case UIEvent.RightClickUp: OnRightClickUp?.Invoke(); break;
                 case UIEvent.Hover: OnHover?.Invoke(); break;
-                case UIEvent.HoverStart: OnHoverStart?.Invoke(); break;
-                case UIEvent.HoverEnd: OnHoverEnd?.Invoke(); break;
+                case UIEvent.HoverStart:
+                    if(_hoverCursorType != CursorType.Arrow) Cursor.SetType(_hoverCursorType);
+                    OnHoverStart?.Invoke();
+                    break;
+                case UIEvent.HoverEnd:
+                    if (_hoverCursorType != CursorType.Arrow) Cursor.SetType(CursorType.Arrow);
+                    OnHoverEnd?.Invoke();
+                    break;
                 case UIEvent.Position: OnPositionChanged?.Invoke(); break;
                 case UIEvent.Resize: OnResized?.Invoke(); break;
                 case UIEvent.Anchor: OnAnchorChanged?.Invoke(); break;

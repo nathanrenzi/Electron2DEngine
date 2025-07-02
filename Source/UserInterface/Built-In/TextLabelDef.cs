@@ -5,33 +5,21 @@ using System.Numerics;
 
 namespace Electron2D.UserInterface
 {
-    public class TextFieldDef
+    public class TextLabelDef
     {
-        public int CaretWidth;
-        public int SizeX;
-        public int SizeY;
+        public float SizeX;
+        public float SizeY;
         public Color TextColor;
-        public Color PromptTextColor;
         public TextAlignment TextHorizontalAlignment;
         public TextAlignment TextVerticalAlignment;
         public TextAlignmentMode TextAlignmentMode;
         public TextOverflowMode TextOverflowMode;
-        public Vector4 TextAreaPadding;
         public FontGlyphStore TextFont;
         public Material TextMaterial;
-        public Material BackgroundPanelMaterial;
-        public Material CaretMaterial;
-        public SlicedPanelDef BackgroundPanelDef;
         public string Text;
-        public string PromptText;
-        public bool WaitForEnterKey;
-        public int MaxCharacterCount;
-        public int MaxLineCount;
-        public bool UseHoverCursor;
-        public GLFW.CursorType HoverCursorType;
 
         /// <summary>
-        /// Creates a new definition for a text field.
+        /// Creates a new definition for a text label.
         /// </summary>
         /// <param name="sizeX">The size of the field on the X axis.</param>
         /// <param name="sizeY">The size of the field on the Y axis.</param>
@@ -43,35 +31,20 @@ namespace Electron2D.UserInterface
         /// <param name="startText">The starting text of the text field.</param>
         /// <param name="promptText">The prompt text displayed behind the user's text when the text field is empty.</param>
         /// <param name="waitForEnterKey">Should the <see cref="TextField.OnTextEntered"/> event be called when the enter key is pressed, or when the text is updated?</param>
-        public TextFieldDef(int caretWidth, int sizeX, int sizeY, Vector4 textAreaPadding, FontGlyphStore textFont, Material textMaterial, 
-            Color textColor, Color promptTextColor, Material backgroundPanelMaterial, string startText, string promptText, int maxCharacterCount,
-            int maxLineCount = 1, TextAlignment textHorizontalAlignment = TextAlignment.Left, TextAlignment textVerticalAlignment = TextAlignment.Center,
-            TextAlignmentMode textAlignmentMode = TextAlignmentMode.Baseline, TextOverflowMode textOverflowMode = TextOverflowMode.Word,
-            SlicedPanelDef backgroundPanelDef = null, bool waitForEnterKey = false, bool useHoverCursor = true, GLFW.CursorType hoverCursor = GLFW.CursorType.Beam,
-            Material caretMaterial = null)
+        public TextLabelDef(string text, float sizeX, float sizeY, FontGlyphStore textFont, Material textMaterial, 
+            Color textColor, TextAlignment textHorizontalAlignment = TextAlignment.Left, TextAlignment textVerticalAlignment = TextAlignment.Center,
+            TextAlignmentMode textAlignmentMode = TextAlignmentMode.Baseline, TextOverflowMode textOverflowMode = TextOverflowMode.Word)
         {
-            CaretWidth = caretWidth;
             SizeX = sizeX;
             SizeY = sizeY;
             TextHorizontalAlignment = textHorizontalAlignment;
             TextVerticalAlignment = textVerticalAlignment;
             TextAlignmentMode = textAlignmentMode;
             TextOverflowMode = textOverflowMode;
-            TextAreaPadding = textAreaPadding;
             TextFont = textFont;
             TextMaterial = textMaterial;
             TextColor = textColor;
-            PromptTextColor = promptTextColor;
-            BackgroundPanelMaterial = backgroundPanelMaterial;
-            BackgroundPanelDef = backgroundPanelDef;
-            Text = startText;
-            PromptText = promptText;
-            WaitForEnterKey = waitForEnterKey;
-            MaxCharacterCount = maxCharacterCount;
-            MaxLineCount = maxLineCount;
-            CaretMaterial = caretMaterial;
-            UseHoverCursor = useHoverCursor;
-            HoverCursorType = hoverCursor;
+            Text = text;
         }
     }
 }
