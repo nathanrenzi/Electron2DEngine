@@ -240,7 +240,6 @@ namespace Electron2D.UserInterface
                     useScreenPosition, ignorePostProcessing);
             }
             _backgroundPanel.Interactable = false;
-
             _textLabel = new TextLabel(def.Text, def.TextFont.Arguments.FontName, def.TextFont.Arguments.FontSize, Color.White, Color.White,
                 new Vector2(def.SizeX - (def.TextAreaPadding.X + def.TextAreaPadding.Y),
                 def.SizeY - (def.TextAreaPadding.Z + def.TextAreaPadding.W)), def.TextHorizontalAlignment, def.TextVerticalAlignment, def.TextAlignmentMode, def.TextOverflowMode, 0, uiRenderLayer,

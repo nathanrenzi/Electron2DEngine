@@ -64,6 +64,29 @@ namespace Electron2D.UserInterface
         }
         private Vector2 _anchor;
 
+        public event Action OnLoad;
+        public event Action OnClick;
+        public event Action OnClickDown;
+        public event Action OnClickUp;
+        public event Action OnLeftClick;
+        public event Action OnLeftClickDown;
+        public event Action OnLeftClickUp;
+        public event Action OnMiddleClick;
+        public event Action OnMiddleClickDown;
+        public event Action OnMiddleClickUp;
+        public event Action OnRightClick;
+        public event Action OnRightClickDown;
+        public event Action OnRightClickUp;
+        public event Action OnHover;
+        public event Action OnHoverStart;
+        public event Action OnHoverEnd;
+        public event Action OnPositionChanged;
+        public event Action OnResized;
+        public event Action OnAnchorChanged;
+        public event Action OnVisibilityChanged;
+        public event Action OnInteractabilityEnd;
+        public event Action OnFocused;
+        public event Action OnFocusLost;
         public bool Focused { get; private set; }
 
         public MeshRenderer Renderer { get; private set; }
@@ -76,8 +99,9 @@ namespace Electron2D.UserInterface
         public UICanvas.UIFrameTickData ThisFrameData = new UICanvas.UIFrameTickData();
         public UICanvas.UIFrameTickData LastFrameData = new UICanvas.UIFrameTickData();
         public UIConstraints Constraints;
-
         protected bool _isLoaded = false;
+        private List<UIComponent> _eventSources = new List<UIComponent>();
+        private EventSourceListener _eventSourceListener;
         private UICanvas _parentCanvas;
         public float RightXBound
         {
@@ -137,6 +161,8 @@ namespace Electron2D.UserInterface
             {
                 RenderLayerManager.OrderRenderable(this);
             }
+            _eventSourceListener = new EventSourceListener();
+            _eventSourceListener.OnEvent += InvokeUIEvent;
             UI.MainCanvas.RegisterUiComponent(this);
         }
 
@@ -148,6 +174,10 @@ namespace Electron2D.UserInterface
         ~UIComponent()
         {
             if (_registerRenderable) RenderLayerManager.RemoveRenderable(this);
+            for (int i = 0; i < _eventSources.Count; i++)
+            {
+                _eventSources[i].RemoveUIListener(_eventSourceListener);
+            }
             UI.MainCanvas.UnregisterUiComponent(this);
         }
 
@@ -177,6 +207,24 @@ namespace Electron2D.UserInterface
         {
             if (UsingMeshRenderer) Renderer.Load();
             InvokeUIEvent(UIEvent.Load);
+        }
+
+        protected void AddEventSource(UIComponent component)
+        {
+            if(!_eventSources.Contains(component))
+            {
+                _eventSources.Add(component);
+                component.AddUIListener(_eventSourceListener);
+            }
+        }
+
+        protected void RemoveEventSource(UIComponent component)
+        {
+            if(_eventSources.Contains(component))
+            {
+                _eventSources.Remove(component);
+                component.RemoveUIListener(_eventSourceListener);
+            }
         }
 
         public virtual void UpdateMesh() { }
@@ -212,7 +260,7 @@ namespace Electron2D.UserInterface
                 && pos.Y >= BottomYBound + Transform.Position.Y - ExtraInteractionPixels && pos.Y <= TopYBound + Transform.Position.Y + ExtraInteractionPixels;
         }
 
-        public void AddUiListener(UIListener listener)
+        public void AddUIListener(UIListener listener)
         {
             if (Listeners.Contains(listener))
             {
@@ -222,18 +270,46 @@ namespace Electron2D.UserInterface
             Listeners.Add(listener);
         }
 
-        public void RemoveUiListener(UIListener listener)
+        public void RemoveUIListener(UIListener listener)
         {
             Listeners.Remove(listener);
         }
 
         public void InvokeUIEvent(UIEvent uiEvent)
         {
+            OnUIEvent(uiEvent);
+
             for (int i = 0; i < Listeners.Count; i++)
             {
                 Listeners[i].OnUiAction(this, uiEvent);
             }
-            OnUIEvent(uiEvent);
+
+            switch (uiEvent)
+            {
+                case UIEvent.Load: OnLoad?.Invoke(); break;
+                case UIEvent.Click: OnClick?.Invoke(); break;
+                case UIEvent.ClickDown: OnClickDown?.Invoke(); break;
+                case UIEvent.ClickUp: OnClickUp?.Invoke(); break;
+                case UIEvent.LeftClick: OnLeftClick?.Invoke(); break;
+                case UIEvent.LeftClickDown: OnLeftClickDown?.Invoke(); break;
+                case UIEvent.LeftClickUp: OnLeftClickUp?.Invoke(); break;
+                case UIEvent.MiddleClick: OnMiddleClick?.Invoke(); break;
+                case UIEvent.MiddleClickDown: OnMiddleClickDown?.Invoke(); break;
+                case UIEvent.MiddleClickUp: OnMiddleClickUp?.Invoke(); break;
+                case UIEvent.RightClick: OnRightClick?.Invoke(); break;
+                case UIEvent.RightClickDown: OnRightClickDown?.Invoke(); break;
+                case UIEvent.RightClickUp: OnRightClickUp?.Invoke(); break;
+                case UIEvent.Hover: OnHover?.Invoke(); break;
+                case UIEvent.HoverStart: OnHoverStart?.Invoke(); break;
+                case UIEvent.HoverEnd: OnHoverEnd?.Invoke(); break;
+                case UIEvent.Position: OnPositionChanged?.Invoke(); break;
+                case UIEvent.Resize: OnResized?.Invoke(); break;
+                case UIEvent.Anchor: OnAnchorChanged?.Invoke(); break;
+                case UIEvent.Visibility: OnVisibilityChanged?.Invoke(); break;
+                case UIEvent.InteractabilityEnd: OnInteractabilityEnd?.Invoke(); break;
+                case UIEvent.Focus: OnFocused?.Invoke(); break;
+                case UIEvent.LoseFocus: OnFocusLost?.Invoke(); break;
+            }
         }
 
         public void SetParentCanvas(UICanvas canvas)
@@ -257,6 +333,16 @@ namespace Electron2D.UserInterface
         }
 
         public int GetRenderLayer() => UIRenderLayer + (int)RenderLayer.Interface;
+
+        private class EventSourceListener : UIListener
+        {
+            public event Action<UIEvent> OnEvent;
+
+            public void OnUiAction(object sender, UIEvent uiEvent)
+            {
+                OnEvent?.Invoke(uiEvent);
+            }
+        }
     }
 
     public interface UIListener

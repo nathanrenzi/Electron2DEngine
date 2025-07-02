@@ -33,7 +33,7 @@
         {
             if(_parent != null)
             {
-                _parent.RemoveUiListener(this);
+                _parent.RemoveUIListener(this);
             }
 
             if(!_registeredToGameLoop)
@@ -43,7 +43,7 @@
             }
 
             _parent = parent;
-            _parent.AddUiListener(this);
+            _parent.AddUIListener(this);
             _active = true;
         }
 
