@@ -67,6 +67,7 @@ namespace Electron2D.UserInterface
                 {
                     _textLabel.Text = value.Length > 0 ? value : _promptText;
                     UpdateCaretDisplay();
+                    UpdateText();
                 }
             }
         }
@@ -84,6 +85,10 @@ namespace Electron2D.UserInterface
             set
             {
                 _promptText = value;
+                if(_initialized)
+                {
+                    UpdateText();
+                }
             }
         }
         private string _promptText;
@@ -252,10 +257,6 @@ namespace Electron2D.UserInterface
                 def.TextAlignmentMode,
                 def.TextOverflowMode
             ));
-            //_textLabel = new TextLabel(new def.Text, def.TextFont.Arguments.FontName, def.TextFont.Arguments.FontSize, Color.White, Color.White,
-            //    new Vector2(def.SizeX - (def.TextAreaPadding.X + def.TextAreaPadding.Y),
-            //    def.SizeY - (def.TextAreaPadding.Z + def.TextAreaPadding.W)), def.TextHorizontalAlignment, def.TextVerticalAlignment, def.TextAlignmentMode, def.TextOverflowMode, 0, uiRenderLayer,
-            //    def.TextMaterial.Shader, useScreenPosition, ignorePostProcessing);
             _textLabel.Interactable = false;
             _builder = new StringBuilder(Text);
             _caretMaterial = def.CaretMaterial == null ? 
@@ -270,6 +271,7 @@ namespace Electron2D.UserInterface
             UpdateCaretDisplay();
             _initialized = true;
             UpdateDisplay();
+            UpdateText();
             if(def.UseHoverCursor)
             {
                 SetHoverCursorType(def.HoverCursorType);
@@ -451,7 +453,16 @@ namespace Electron2D.UserInterface
                 }
             }
 
-            if(_builder.Length == 0)
+            if(textUpdated)
+            {
+                UpdateText();
+            }
+            _iterator.Validate();
+        }
+
+        private void UpdateText()
+        {
+            if (_builder.Length == 0)
             {
                 _text = "";
                 _textLabel.Text = _promptText;
@@ -464,13 +475,8 @@ namespace Electron2D.UserInterface
                 Text = _builder.ToString();
                 _textLabel.TextColor = _textColor;
             }
-
-            if(textUpdated)
-            {
-                OnTextUpdated?.Invoke();
-                if (!WaitForEnterKey) OnTextEntered?.Invoke(_text);
-            }
-            _iterator.Validate();
+            OnTextUpdated?.Invoke();
+            if (!WaitForEnterKey) OnTextEntered?.Invoke(_text);
         }
 
         public void KeyNonAlphaReleased(char code)

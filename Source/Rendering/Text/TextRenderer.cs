@@ -213,7 +213,16 @@ namespace Electron2D.Rendering.Text
         {
             if(formattedText.Length == 0)
             {
-                return new Vector2(GetXOffset(0), -GetYOffset()) + position;
+                int ypos = -GetYOffset();
+                if (VerticalAlignment == TextAlignment.Top)
+                {
+                    ypos -= FontGlyphStore.Arguments.FontSize;
+                }
+                else if (VerticalAlignment == TextAlignment.Center)
+                {
+                    ypos -= FontGlyphStore.Ascent / 2;
+                }
+                return new Vector2(GetXOffset(0), ypos) + position;
             }
             if(index <= formattedText.Length && index >= 0)
             {
