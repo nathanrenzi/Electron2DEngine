@@ -262,7 +262,7 @@ namespace Electron2D.Rendering.Shaders
                 location = glGetUniformLocation(ProgramID, _uniformName);
                 localUniforms.Add(_uniformName, location);
             }
-            float[] colArray = { _value.R / 255f, _value.G / 255f, _value.B / 255f, _value.A / 255f };
+            float[] colArray = { MathF.Pow(_value.R / 255f, 2.2f), MathF.Pow(_value.G / 255f, 2.2f), MathF.Pow(_value.B / 255f, 2.2f), _value.A / 255f };
             glUniform4fv(location, 1, colArray);
         }
 

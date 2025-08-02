@@ -13,17 +13,38 @@ namespace Electron2D
         /// <param name="sizeX"></param>
         /// <param name="sizeY"></param>
         /// <param name="renderLayer"></param>
-        public Sprite(Material material, int sizeX = 100, int sizeY = 100, float spritesPerSecond = 0, int renderLayer = 1)
+        /// <param name="transform">Sets a custom Transform object for the Sprite to use.</param> 
+        public Sprite(Material material, int sizeX = 100, int sizeY = 100, float spritesPerSecond = 0, int renderLayer = 1, Transform transform = null, bool useCustomTransformScale = false)
         {
             RenderLayer = renderLayer;
 
-            Transform = new Transform();
-            Transform.Scale = new System.Numerics.Vector2(sizeX, sizeY);
+            if(transform == null)
+            {
+                Transform = new Transform();
+                Transform.Scale = new System.Numerics.Vector2(sizeX, sizeY);
+            }
+            else
+            {
+                Transform = transform;
+                if(!useCustomTransformScale) Transform.Scale = new System.Numerics.Vector2(sizeX, sizeY);
+            }
 
             Renderer = new SpriteRenderer(Transform, material, renderLayer);
             Renderer.SpriteAnimationSpeed = spritesPerSecond;
 
             RenderLayerManager.OrderRenderable(this);
+        }
+
+        ~Sprite()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            RenderLayerManager.RemoveRenderable(this);
+            Renderer.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public void ForceTexture(Texture2DArray texture, bool mustFinishLoop)
@@ -39,11 +60,6 @@ namespace Electron2D
         public void NextSprite() { Renderer.NextSprite(); }
         public void PreviousSprite() { Renderer.PreviousSprite(); }
         public void SetSpriteAnimationSpeed(float spritesPerSecond) { Renderer.SpriteAnimationSpeed = spritesPerSecond; }
-
-        ~Sprite()
-        {
-            RenderLayerManager.RemoveRenderable(this);
-        }
 
         public int GetRenderLayer() => RenderLayer;
 

@@ -59,10 +59,10 @@ namespace Electron2D.Rendering
 
         public void Dispose()
         {
+            Program.Game.UnregisterGameClass(this);
             VertexBuffer.Dispose();
             VertexArray.Dispose();
             IndexBuffer.Dispose();
-            Program.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
         }
 

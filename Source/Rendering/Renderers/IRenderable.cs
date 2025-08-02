@@ -3,7 +3,7 @@
     /// <summary>
     /// An interface that allows an object to register in the render layer system.
     /// </summary>
-    public interface IRenderable
+    public interface IRenderable : IDisposable
     {
         public int GetRenderLayer();
         public void Render();

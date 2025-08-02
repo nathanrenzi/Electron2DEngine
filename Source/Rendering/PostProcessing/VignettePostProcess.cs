@@ -15,7 +15,7 @@ namespace Electron2D.Rendering.PostProcessing
 
         public VignettePostProcess(Color color, float softness, float radius, float roundness)
         {
-            _shader = new Shader(Shader.ParseShader("Resources/Built-In/Shaders/PostProcessing/Vignette.glsl"), true);
+            _shader = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/PostProcessing/Vignette.glsl")), true);
             Color = color;
             Softness = softness;
             Radius = radius;

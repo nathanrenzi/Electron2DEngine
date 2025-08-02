@@ -9,6 +9,7 @@ using Electron2D.PhysicsBox2D;
 using Electron2D.Audio;
 using Electron2D.Management;
 using Electron2D.Rendering.PostProcessing;
+using Electron2D.Networking;
 
 namespace Electron2D
 {
@@ -18,6 +19,7 @@ namespace Electron2D
 
         public Settings Settings { get; private set; }
         public Color BackgroundColor { get; private set; } = Color.Black;
+        public Vector4 LinearBackgroundColor { get; private set; } = Vector4.Zero;
 
         protected Thread PhysicsThread { get; private set; }
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
@@ -25,23 +27,56 @@ namespace Electron2D
 
         private bool _doFixedUpdate = false;
         private List<IGameClass> _classes = new List<IGameClass>();
+        private List<IGameClass> _classesAddQueue = new List<IGameClass>();
+        private List<IGameClass> _classesRemoveQueue = new List<IGameClass>();
+        private bool _useClassesQueue = false;
         private BlendMode _currentBlendMode = BlendMode.Interpolative;
         private AudioSpatialListener _defaultSpatialListener;
 
+        private void PopClassesQueue()
+        {
+            for (int i = 0; i < _classesRemoveQueue.Count; i++)
+            {
+                _classesAddQueue.Remove(_classesRemoveQueue[i]);
+            }
+            for (int i = 0; i < _classesAddQueue.Count; i++)
+            {
+                _classes.Add(_classesAddQueue[i]);
+            }
+            _classesAddQueue.Clear();
+            _classesRemoveQueue.Clear();
+        }
+
         public void RegisterGameClass(IGameClass gameClass)
         {
-            if (_classes.Contains(gameClass)) return;
-            _classes.Add(gameClass);
+            if (_classes.Contains(gameClass) || _classesAddQueue.Contains(gameClass)) return;
+            if(_useClassesQueue)
+            {
+                _classesAddQueue.Add(gameClass);
+            }
+            else
+            {
+                _classes.Add(gameClass);
+            }
         }
 
         public void UnregisterGameClass(IGameClass gameClass)
         {
-            _classes.Remove(gameClass);
+            if(_useClassesQueue)
+            {
+                _classesRemoveQueue.Add(gameClass);
+            }
+            else
+            {
+                _classesAddQueue.Remove(gameClass);
+                _classes.Remove(gameClass);
+            }
         }
 
         public void SetBackgroundColor(Color backgroundColor)
         {
             BackgroundColor = backgroundColor;
+            LinearBackgroundColor = new Vector4(MathF.Pow(backgroundColor.R / 255f, 2.2f), MathF.Pow(backgroundColor.G / 255f, 2.2f), MathF.Pow(backgroundColor.B / 255f, 2.2f), backgroundColor.A);
         }
 
         public void SetBlendingMode(BlendMode blendMode)
@@ -102,6 +137,7 @@ namespace Electron2D
             // Setup
             glEnable(GL_BLEND);
             glEnable(GL_STENCIL_TEST);
+            glEnable(GL_FRAMEBUFFER_SRGB);
             ApplyBlendingMode();
             // -----------
 
@@ -111,14 +147,14 @@ namespace Electron2D
                 // Displaying splashscreen
                 Debug.Log("Displaying splashscreen...");
                 Splashscreen.Initialize();
-                Texture2D splashscreenTexture = TextureFactory.Load("Resources/Built-In/Textures/Electron2DSplashscreen.png", true);
+                Texture2D splashscreenTexture = TextureFactory.Load(ResourceManager.GetEngineResourcePath("Textures/Electron2DSplashscreen.png"), true);
                 float splashscreenStartTime = (float)Glfw.Time;
                 float splashscreenDisplayTime = 4f;
                 float fadeTimePercentage = 0.3f;
                 float bufferTime = 0.5f;
                 float currentTime = -bufferTime;
                 bool hasPlayedAudio = false;
-                AudioInstance splashscreenAudio = AudioSystem.CreateInstance("Resources/Built-In/Audio/Electron2DRiff.mp3", volume: 0.3f);
+                AudioInstance splashscreenAudio = AudioSystem.CreateInstance(ResourceManager.GetEngineResourcePath("Audio/Electron2DRiff.mp3"), volume: 0.3f);
                 while (!Glfw.WindowShouldClose(Display.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
                 {
                     Input.ProcessInput(); // Letting the window know the program is responding
@@ -160,6 +196,10 @@ namespace Electron2D
             // Initializing physics thread
             PhysicsThread.Start();
 
+            // Initializing built-in network game classes
+            NetworkTransform.SetRegisterID(NetworkManager.RegisterNetworkGameClass(NetworkTransform.FactoryMethod));
+            NetworkAudioInstance.SetRegisterID(NetworkManager.RegisterNetworkGameClass(NetworkAudioInstance.FactoryMethod));
+
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
 
@@ -189,10 +229,13 @@ namespace Electron2D
                 double goST = Glfw.Time;
                 Update();
                 ShaderGlobalUniforms.UpdateShaders();
+                _useClassesQueue = true;
                 foreach (IGameClass gameClass in _classes)
                 {
                     gameClass.Update();
                 }
+                _useClassesQueue = false;
+                PopClassesQueue();
                 LateUpdateEvent?.Invoke();
                 PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
                 // --------------------------
@@ -201,12 +244,15 @@ namespace Electron2D
                 double phyST = Glfw.Time;
                 if(_doFixedUpdate)
                 {
+                    _useClassesQueue = true;
                     foreach (IGameClass gameClass in _classes)
                     {
                         gameClass.FixedUpdate();
                     }
                     _doFixedUpdate = false;
-                }
+                    _useClassesQueue = false;
+                    PopClassesQueue();
+                }               
                 PerformanceTimings.PhysicsMilliseconds = (Glfw.Time - phyST) * 1000;
                 // -------------------------------
 
@@ -257,7 +303,7 @@ namespace Electron2D
         private void GLClear()
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-            glClearColor(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, 1);
+            glClearColor(LinearBackgroundColor.X, LinearBackgroundColor.Y, LinearBackgroundColor.Z, 1);
         }
 
         private void RenderCall()

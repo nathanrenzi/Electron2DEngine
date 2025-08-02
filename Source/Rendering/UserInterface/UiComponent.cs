@@ -175,6 +175,11 @@ namespace Electron2D.UserInterface
 
         ~UIComponent()
         {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
             if (_registerRenderable) RenderLayerManager.RemoveRenderable(this);
             for (int i = 0; i < _eventSources.Count; i++)
             {

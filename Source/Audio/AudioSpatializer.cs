@@ -49,9 +49,17 @@ namespace Electron2D.Audio
                 AudioInstances.Add(_audioInstance);
                 if(Is3D)
                 {
+                    float fadeTime = _audioInstance.Stream.GetFadeTime();
+                    _audioInstance.Stream.SetFadeTime(0.0001f);
+                    _audioInstance.Stop();
+                    long position = _audioInstance.Stream.Position;
                     _audioInstance.Stream = _audioInstance.AudioClip.GetNewStream(_audioInstance, true);
+                    _audioInstance.Stream.Position = position;
+                    _audioInstance.Stream.SetFadeTime(0.0001f);
+                    if(_audioInstance.PlaybackState == PlaybackState.Playing) _audioInstance.Play();
+                    _audioInstance.Stream.SetFadeTime(fadeTime);
                 }
-                _audioInstance.SetSpatializerReference(this);
+                _audioInstance.SetSpatializer(this);
             }
         }
 
@@ -60,7 +68,7 @@ namespace Electron2D.Audio
             if (AudioInstances.Contains(_audioInstance))
             {
                 AudioInstances.Remove(_audioInstance);
-                _audioInstance.SetSpatializerReference(null);
+                _audioInstance.SetSpatializer(null);
             }
         }
 
@@ -68,13 +76,6 @@ namespace Electron2D.Audio
         {
             CalculateDistanceMultiplier();
             CalculatePanning();
-
-            for (int i = 0; i < AudioInstances.Count; i++)
-            {
-                AudioInstance instance = AudioInstances[i];
-                instance.VolumeMultiplier = DistanceBasedVolumeMultiplier01;
-                instance.PanningAdditive = DirectionBasedPanning;
-            }
         }
 
         private void CalculateDistanceMultiplier()

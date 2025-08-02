@@ -7,7 +7,7 @@ namespace Electron2D.Management
 {
     public static class TextureFactory
     {
-        public static Texture2D Load(string _textureName, bool _loadAsNonSRGBA)
+        public static Texture2D Load(string _textureName, bool _nonColor)
         {
             if (!File.Exists(_textureName))
             {
@@ -26,7 +26,7 @@ namespace Electron2D.Management
                 ImageLockMode.ReadOnly,
                 PixelFormat.Format32bppArgb);
    
-            glTexImage2D(GL_TEXTURE_2D, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
+            glTexImage2D(GL_TEXTURE_2D, 0, _nonColor ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -36,7 +36,7 @@ namespace Electron2D.Management
             return new Texture2D(handle, image.Width, image.Height);
         }
 
-        public static Texture2DArray LoadArray(string _textureName, int _layers, bool _loadAsNonSRGBA)
+        public static Texture2DArray LoadArray(string _textureName, int _layers, bool _nonColor)
         {
             if (!File.Exists(_textureName))
             {
@@ -55,7 +55,7 @@ namespace Electron2D.Management
                 ImageLockMode.ReadOnly,
                 PixelFormat.Format32bppArgb);
 
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height/_layers, _layers, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _nonColor ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height/_layers, _layers, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
 
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -66,7 +66,7 @@ namespace Electron2D.Management
             return new Texture2DArray(handle, image.Width, image.Height/_layers, _layers);
         }
 
-        public static Texture2DArray LoadArray(string _textureName, int _spriteWidth, int _spriteHeight, bool _loadAsNonSRGBA)
+        public static Texture2DArray LoadArray(string _textureName, int _spriteWidth, int _spriteHeight, bool _nonColor)
         {
             if (!File.Exists(_textureName))
             {
@@ -94,7 +94,7 @@ namespace Electron2D.Management
             int verticalLoops = (int)MathF.Floor(spritesheetImage.Height / (float)_spriteHeight);
 
             // Creating texture array in memory
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, _spriteWidth, _spriteHeight, horizontalLoops*verticalLoops, 0, GL_BGRA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _nonColor ? GL_RGBA : GL_SRGB_ALPHA, _spriteWidth, _spriteHeight, horizontalLoops*verticalLoops, 0, GL_BGRA, GL_UNSIGNED_BYTE, IntPtr.Zero);
 
             // Subbing in data from the spritesheet
             for (int y = 0; y < verticalLoops; y++)
@@ -125,7 +125,7 @@ namespace Electron2D.Management
             return new Texture2DArray(handle, _spriteWidth, _spriteHeight, horizontalLoops * verticalLoops);
         }
 
-        public static Texture2DArray LoadArray(string[] _textureNames, bool _loadAsNonSRGBA)
+        public static Texture2DArray LoadArray(string[] _textureNames, bool _nonColor)
         {
             if (!File.Exists(_textureNames[0]))
             {
@@ -145,7 +145,7 @@ namespace Electron2D.Management
                 ImageLockMode.ReadOnly,
                 PixelFormat.Format32bppArgb);
 
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _loadAsNonSRGBA ? GL_RGBA : GL_SRGB_ALPHA, firstImage.Width, firstImage.Height, _textureNames.Length, 0, GL_BGRA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _nonColor ? GL_RGBA : GL_SRGB_ALPHA, firstImage.Width, firstImage.Height, _textureNames.Length, 0, GL_BGRA, GL_UNSIGNED_BYTE, IntPtr.Zero);
             glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, firstImage.Width, firstImage.Height, 1, GL_BGRA, GL_UNSIGNED_BYTE, firstData.Scan0);
 
             for (int i = 1; i < _textureNames.Length; i++)

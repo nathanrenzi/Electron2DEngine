@@ -9,12 +9,21 @@ namespace Electron2D.Audio
         public ISampleProvider SampleProvider { get; set; }
         public IPanStrategy PanStrategy { get; }
         public bool Is3D { get; }
+        public bool EnableLooping { get; set; }
+        public override WaveFormat WaveFormat => sourceStream.WaveFormat;
+        public override long Length => sourceStream.Length;
+        public override long Position
+        {
+            get { return sourceStream.Position; }
+            set { sourceStream.Position = value; }
+        }
 
         private AudioInstance audioInstance;
         private WaveStream sourceStream;
         private VolumeSampleProvider volumeSampleProvider;
         private AudioPitchSampleProvider pitchShiftingSampleProvider;
         private PanningSampleProvider panningSampleProvider;
+        private AudioVolumeFadeSampleProvider volumeFadeSampleProvider;
 
         public AudioStream(AudioInstance _audioInstance, WaveStream _sourceStream, bool _is3D, IPanStrategy _panStrategy)
         {
@@ -35,7 +44,7 @@ namespace Electron2D.Audio
                 PanStrategy = _panStrategy;
             }
 
-            if(Is3D)
+            if (Is3D)
             {
                 //panningSampleProvider = new PanningSampleProvider(pitchShiftingSampleProvider.ToMono());
                 panningSampleProvider = new PanningSampleProvider(volumeSampleProvider.ToMono());
@@ -48,29 +57,32 @@ namespace Electron2D.Audio
                 //SampleProvider = pitchShiftingSampleProvider;
                 SampleProvider = volumeSampleProvider;
             }
+
+            volumeFadeSampleProvider = new AudioVolumeFadeSampleProvider(SampleProvider);
+            SampleProvider = volumeFadeSampleProvider;
         }
 
-        public bool EnableLooping { get; set; }
-
-        public override WaveFormat WaveFormat => sourceStream.WaveFormat;
-
-        public override long Length => sourceStream.Length;
-
-        public override long Position
-        {
-            get { return sourceStream.Position; }
-            set { sourceStream.Position = value; }
-        }
+        public void SetFadeDirection(int direction) => volumeFadeSampleProvider.SetFadeDirection(direction);
+        public void SetFadeTime(float fade) => volumeFadeSampleProvider.VolumeFadeTime = fade;
+        public float GetFadeTime() => volumeFadeSampleProvider.VolumeFadeTime;
 
         public override int Read(byte[] _buffer, int _offset, int _count)
         {
             int totalBytesRead = 0;
 
-            if(audioInstance.PlaybackState == PlaybackState.Playing)
+            if(volumeFadeSampleProvider.GetCurrentSampleCount() >= 0)
             {
-                volumeSampleProvider.Volume = audioInstance.Volume * audioInstance.VolumeMultiplier;
+                AudioSpatializer spatializer = audioInstance.GetSpatializer();
+                float volumeMultiplier = 1;
+                float panningAdditive = 0;
+                if(spatializer != null)
+                {
+                    volumeMultiplier = spatializer.DistanceBasedVolumeMultiplier01;
+                    panningAdditive = spatializer.DirectionBasedPanning;
+                }
+                volumeSampleProvider.Volume = audioInstance.Volume * volumeMultiplier;
                 pitchShiftingSampleProvider.Pitch = audioInstance.Pitch;
-                if(Is3D) panningSampleProvider.Pan = MathEx.Clamp(audioInstance.Panning + audioInstance.PanningAdditive, -1, 1);
+                if(Is3D) panningSampleProvider.Pan = MathEx.Clamp(audioInstance.Panning + panningAdditive, -1, 1);
 
                 while (totalBytesRead < _count)
                 {
@@ -88,6 +100,7 @@ namespace Electron2D.Audio
                     }
                     totalBytesRead += bytesRead;
                 }
+
                 return totalBytesRead;
             }
             else

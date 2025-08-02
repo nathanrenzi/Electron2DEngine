@@ -98,23 +98,30 @@ namespace Electron2D.Audio
         {
             int samplesRead = Source.Read(buffer, offset, count);
 
-            for (int i = 0; i < samplesRead; i++)
-            {
-                float inputSample = buffer[offset + i];
+            int channels = WaveFormat.Channels;
+            int totalFrames = samplesRead / channels;
 
-                float reverbSample = inputSample;
-                for(int x = 0; x < _combFilters.Length; x++)
+            for (int i = 0; i < totalFrames; i++)
+            {
+                for (int ch = 0; ch < channels; ch++)
                 {
-                    float newSample = _combFilters[x].Transform(reverbSample);
-                    newSample = _lowPassFilter.Transform(newSample);
-                    newSample = _highPassFilter.Transform(newSample);
-                    reverbSample += newSample / _combFilters.Length;
+                    int index = offset + i * channels + ch;
+                    float inputSample = buffer[index];
+
+                    float reverbSample = inputSample;
+                    for (int x = 0; x < _combFilters.Length; x++)
+                    {
+                        float newSample = _combFilters[x].Transform(reverbSample);
+                        newSample = _lowPassFilter.Transform(newSample);
+                        newSample = _highPassFilter.Transform(newSample);
+                        reverbSample += newSample / _combFilters.Length;
+                    }
+                    reverbSample = _allPassFilter1.Transform(reverbSample);
+                    reverbSample = _allPassFilter2.Transform(reverbSample);
+                    reverbSample = _allPassFilter3.Transform(reverbSample);
+                    buffer[index] += (1 - DryWetMix) * inputSample
+                        + (DryWetMix * reverbSample);
                 }
-                reverbSample = _allPassFilter1.Transform(reverbSample);
-                reverbSample = _allPassFilter2.Transform(reverbSample);
-                reverbSample = _allPassFilter3.Transform(reverbSample);
-                buffer[offset + i] += (1 - DryWetMix) * inputSample
-                    + (DryWetMix * reverbSample); ;
             }
 
             return samplesRead;

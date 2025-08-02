@@ -50,5 +50,5 @@ void main()
         res = texture(mainTextureArraySampler, vec3(texCoord, layer)) * vertexColor;
     }
 
-    FragColor = vec4(pow(res.r, 1.0 / 2.2), pow(res.g, 1.0 / 2.2), pow(res.b, 1.0 / 2.2), res.w);
+    FragColor = res;
 }

@@ -95,7 +95,5 @@ void main()
 
     // Multiplying the unlit object color with the light color
     vec3 res = objectColor.rgb * result;
-
-    // Converting to SRGB
-    FragColor = vec4(vec3(pow(res.r, 1.0 / 2.2), pow(res.g, 1.0 / 2.2), pow(res.b, 1.0 / 2.2)), objectColor.a);
+    FragColor = vec4(res.rgb, objectColor.a);
 }

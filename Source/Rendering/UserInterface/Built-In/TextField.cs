@@ -260,7 +260,7 @@ namespace Electron2D.UserInterface
             _textLabel.Interactable = false;
             _builder = new StringBuilder(Text);
             _caretMaterial = def.CaretMaterial == null ? 
-                Material.Create(new Shader(Shader.ParseShader("Resources/Built-In/Shaders/UserInterface/CaretBlink.glsl"), true, new string[] { "time" }))
+                Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")), true, new string[] { "time" }))
                 : def.CaretMaterial;
             _caretPanel = new Panel(_caretMaterial, uiRenderLayer + 2, _caretWidth, def.TextFont.Arguments.FontSize, useScreenPosition, ignorePostProcessing);
             _caretPanel.Visible = false;

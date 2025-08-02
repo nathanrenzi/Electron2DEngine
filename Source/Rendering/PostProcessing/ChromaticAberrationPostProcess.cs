@@ -15,7 +15,7 @@ namespace Electron2D.Rendering.PostProcessing
         public ChromaticAberrationPostProcess(float intensity, float redOffset = -0.005f,
             float greenOffset = -0.01f, float blueOffset = -0.015f)
         {
-            _shader = new Shader(Shader.ParseShader("Resources/Built-In/Shaders/PostProcessing/ChromaticAberration.glsl"), true);
+            _shader = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/PostProcessing/ChromaticAberration.glsl")), true);
             Intensity = intensity;
             RedOffset = redOffset;
             GreenOffset = greenOffset;

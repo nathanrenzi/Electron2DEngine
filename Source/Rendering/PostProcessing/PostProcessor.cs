@@ -1,5 +1,6 @@
 ﻿using Electron2D.Rendering.Shaders;
 using System.Drawing;
+using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Rendering.PostProcessing
@@ -53,7 +54,7 @@ namespace Electron2D.Rendering.PostProcessing
             if (_initialized) return;
             _initialized = true;
 
-            _shader = new Shader(Shader.ParseShader("Resources/Built-In/Shaders/PostProcessing/DefaultPostProcessing.glsl"), true);
+            _shader = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/PostProcessing/DefaultPostProcessing.glsl")), true);
 
             bool useHDR = ProjectSettings.UseHDRFrameBuffers;
             _renderBuffer = new FrameBuffer();
@@ -77,8 +78,8 @@ namespace Electron2D.Rendering.PostProcessing
             if (!_initialized) return;
 
             _renderBuffer.Bind();
-            Color clearColor = Program.Game.BackgroundColor;
-            glClearColor(clearColor.R / 255f, clearColor.G / 255f, clearColor.B / 255f, clearColor.A / 255f);
+            Vector4 clearColor = Program.Game.LinearBackgroundColor;
+            glClearColor(clearColor.X, clearColor.Y, clearColor.Z, 1);
             glClear(GL_COLOR_BUFFER_BIT);
         }
 
