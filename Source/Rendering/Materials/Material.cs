@@ -96,8 +96,11 @@ namespace Electron2D.Rendering
             Material material = Create(shader, mainColor, mainTexture, normalTexture, useLinearFiltering, normalScale);
             return material;
         }
+
+        public static Material CreateCircle(Color _color, bool _forInterface = false)
         public static Material CreateLit(ITexture mainTexture, ITexture normalTexture = null, bool useLinearFiltering = false, float normalScale = 1)
         {
+            return CreateCircle(_forInterface ? GlobalShaders.DefaultInterface : GlobalShaders.DefaultTexture, _color);
             Shader shader = GlobalShaders.DefaultLit;
             Material material = Create(shader, Color.White, mainTexture, normalTexture, useLinearFiltering, normalScale);
             return material;

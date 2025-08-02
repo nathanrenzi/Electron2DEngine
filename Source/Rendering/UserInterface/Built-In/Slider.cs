@@ -5,22 +5,22 @@ namespace Electron2D.UserInterface
     /// <summary>
     /// A simple color-only slider component. Will be updated with a textured one.
     /// </summary>
-    public class Slider : UiComponent, IGameClass
+    public class Slider : UIComponent, IGameClass
     {
         /// <summary>
         /// Listens to UI events. Replace with a non-private listener class for all UI in the future.
         /// </summary>
-        private class SliderListener : UiListener
+        private class SliderListener : UIListener
         {
             public bool ClickHeld;
 
-            public void OnUiAction(object _sender, UiEvent _event)
+            public void OnUiAction(object _sender, UIEvent _event)
             {
-                if(_event == UiEvent.LeftClickDown)
+                if(_event == UIEvent.LeftClickDown)
                 {
                     ClickHeld = true;
                 }
-                else if(_event == UiEvent.LeftClickUp)
+                else if(_event == UIEvent.LeftClickUp)
                 {
                     ClickHeld = false;
                 }
@@ -91,9 +91,9 @@ namespace Electron2D.UserInterface
         public bool AllowNonHandleValueUpdates = true;
         public bool SliderInteractable;
 
-        private UiComponent _backgroundPanel;
-        private UiComponent _sliderPanel;
-        private UiComponent _handlePanel;
+        private UIComponent _backgroundPanel;
+        private UIComponent _sliderPanel;
+        private UIComponent _handlePanel;
         private SliderListener _handleListener = new SliderListener();
         private SliderListener _backgroundListener = new SliderListener();
 
@@ -117,21 +117,21 @@ namespace Electron2D.UserInterface
 
             if(def.BackgroundPanelDef != null)
             {
-                _backgroundPanel = new SlicedPanel(def.BackgroundMaterial, def.SizeX, BackgroundSizeY,
-                    def.BackgroundPanelDef, uiRenderLayer, ignorePostProcessing);
-                _backgroundPanel.AddUiListener(_backgroundListener);
+                _backgroundPanel = new SlicedPanel(def.BackgroundPanelDef, def.BackgroundMaterial, def.SizeX, BackgroundSizeY,
+                    uiRenderLayer, useScreenPosition, ignorePostProcessing);
+                _backgroundPanel.AddUIListener(_backgroundListener);
             }
             else
             {
                 _backgroundPanel = new Panel(def.BackgroundMaterial, uiRenderLayer, def.SizeX,
                     def.BackgroundSizeY, useScreenPosition, ignorePostProcessing);
-                _backgroundPanel.AddUiListener(_backgroundListener);
+                _backgroundPanel.AddUIListener(_backgroundListener);
             }
 
             if (def.SliderPanelDef != null)
             {
-                _sliderPanel = new SlicedPanel(def.SliderMaterial, def.SizeX - HandlePadding, SliderSizeY,
-                    def.SliderPanelDef, uiRenderLayer + 1, ignorePostProcessing);
+                _sliderPanel = new SlicedPanel(def.SliderPanelDef, def.SliderMaterial, def.SizeX - HandlePadding, SliderSizeY,
+                    uiRenderLayer + 1, useScreenPosition, ignorePostProcessing);
                 _sliderPanel.Anchor = new Vector2(-1, 0);
             }
             else
@@ -143,15 +143,15 @@ namespace Electron2D.UserInterface
 
             if (def.HandlePanelDef != null)
             {
-                _handlePanel = new SlicedPanel(def.HandleMaterial, HandleSizeXY, HandleSizeXY,
-                    def.HandlePanelDef, uiRenderLayer + 2, ignorePostProcessing);
-                _handlePanel.AddUiListener(_handleListener);
+                _handlePanel = new SlicedPanel(def.HandlePanelDef, def.HandleMaterial, HandleSizeXY, HandleSizeXY,
+                    uiRenderLayer + 2, useScreenPosition, ignorePostProcessing);
+                _handlePanel.AddUIListener(_handleListener);
             }
             else
             {
                 _handlePanel = new Panel(def.HandleMaterial, uiRenderLayer + 2, def.HandleSizeXY,
                     def.HandleSizeXY, useScreenPosition, ignorePostProcessing);
-                _handlePanel.AddUiListener(_handleListener);
+                _handlePanel.AddUIListener(_handleListener);
             }
 
             _initialized = true;
@@ -200,26 +200,26 @@ namespace Electron2D.UserInterface
 
             if(_backgroundListener.ClickHeld && AllowNonHandleValueUpdates)
             {
-                Vector2 position = Input.GetOffsetMousePosition();
+                Vector2 position = Input.GetMouseScreenPosition();
                 Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
             }
             else if(_handleListener.ClickHeld)
             {
-                Vector2 position = Input.GetOffsetMousePosition();
+                Vector2 position = Input.GetMouseScreenPosition();
                 Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
             }
         }
 
-        protected override void OnUiEvent(UiEvent uiEvent)
+        protected override void OnUIEvent(UIEvent uiEvent)
         {
             switch(uiEvent)
             {
-                case UiEvent.Position:
-                case UiEvent.Anchor:
-                case UiEvent.Resize:
+                case UIEvent.Position:
+                case UIEvent.Anchor:
+                case UIEvent.Resize:
                     UpdateDisplay();
                     break;
-                case UiEvent.Visibility:
+                case UIEvent.Visibility:
                     _sliderPanel.Visible = Visible;
                     _backgroundPanel.Visible = Visible;
                     _handlePanel.Visible = Visible;

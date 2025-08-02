@@ -6,12 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <StartupObject>Electron2D.Program</StartupObject>
-    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Built-In\icon.ico" />
+    <None Remove="Resources\Built-In\Fonts\Roboto-Regular.ttf" />
+    <None Remove="Resources\Built-In\Shaders\UserInterface\CaretBlink.glsl" />
     <None Remove="Resources\Built-In\Textures\BlankNormal.png" />
     <None Remove="Resources\Built-In\Textures\BlankTexture.png" />
     <None Remove="Resources\Built-In\Textures\Electron2DSplashscreen.png" />
@@ -22,25 +21,10 @@
     <None Remove="Resources\Built-In\Shaders\PostProcessing\Inverted.glsl" />
     <None Remove="Resources\Built-In\Shaders\PostProcessing\LensDistortion.glsl" />
     <None Remove="Resources\Built-In\Shaders\PostProcessing\Vignette.glsl" />
-    <None Remove="Resources\spaceshipcolor.png" />
-    <None Remove="Resources\spaceshipnormal.png" />
-    <None Remove="Resources\WorkerShipColor.png" />
-    <None Remove="Resources\WorkerShipLighting.png" />
-    <None Remove="Resources\WorkerShipNormal.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\icon.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Built-In\Audio\TestAudio1.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Built-In\Audio\TestAudio2.wav">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\icon.ico">
+    <EmbeddedResource Include="Resources\Built-In\Fonts\Roboto-Regular.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Built-In\Shaders\PostProcessing\ChromaticAberration.glsl">
@@ -65,6 +49,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="DefaultSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Built-In\Shaders\UserInterface\CaretBlink.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Built-In\Textures\BlankNormal.png">
@@ -116,5 +103,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="echo %25date%25 %25time%25 &gt; &quot;$(ProjectDir)\Build\BuildDate.txt&quot;" />
+  </Target>
 
 </Project>

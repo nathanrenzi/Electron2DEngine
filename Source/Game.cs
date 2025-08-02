@@ -21,7 +21,7 @@ namespace Electron2D
 
         protected Thread PhysicsThread { get; private set; }
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
-        protected Camera2D StartCamera { get; set; }
+        protected Camera2D DefaultCamera { get; set; }
 
         private bool _doFixedUpdate = false;
         private List<IGameClass> _classes = new List<IGameClass>();
@@ -83,8 +83,8 @@ namespace Electron2D
 
             Initialize();
 
-            StartCamera = new Camera2D(Vector2.Zero, 1);
-            _defaultSpatialListener = new AudioSpatialListener(StartCamera.Transform);
+            DefaultCamera = new Camera2D(Vector2.Zero, 1);
+            _defaultSpatialListener = new AudioSpatialListener(DefaultCamera.Transform);
 
             Display.CreateWindow(Settings.WindowWidth, Settings.WindowHeight, ProjectSettings.WindowTitle);
             if(Settings.Vsync)
@@ -163,7 +163,7 @@ namespace Electron2D
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
 
-            GlobalUI.MainCanvas.Initialize();
+            UI.MainCanvas.Initialize();
             PostProcessor.Instance.Initialize();
             GC.Collect();
 

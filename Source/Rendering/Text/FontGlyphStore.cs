@@ -1,13 +1,14 @@
 ﻿using static FreeTypeSharp.Native.FT;
 using static Electron2D.OpenGL.GL;
 using FreeTypeSharp;
+using System.Drawing;
 
 namespace Electron2D.Rendering.Text
 {
     public class FontGlyphStore : IDisposable
     {
-        private bool disposed;
-        public bool Disposed => disposed;
+        private bool _disposed;
+        public bool Disposed => _disposed;
 
         public uint TextureHandle { get; private set; }
         public int TextureAtlasWidth { get; private set; }
@@ -16,18 +17,21 @@ namespace Electron2D.Rendering.Text
         public FreeTypeLibrary Library { get; }
         public IntPtr Face { get; }
         public bool UseKerning { get; }
+        public int Ascent { get; private set; }
+        public int Descent { get; private set; }
+        private bool _isDone = false;
 
-        public FontGlyphStore(uint _textureHandle, int _textureAtlasWidth, int _fontSize, string _fontFile, FreeTypeLibrary _library, IntPtr _face, bool _useKerning)
+        public FontGlyphStore(uint textureHandle, int textureAtlasWidth, int fontSize, string fontFile, FreeTypeLibrary library, IntPtr face, bool useKerning)
         {
-            TextureHandle = _textureHandle;
-            TextureAtlasWidth = _textureAtlasWidth;
-            Library = _library;
-            Face = _face;
-            UseKerning = _useKerning;
+            TextureHandle = textureHandle;
+            TextureAtlasWidth = textureAtlasWidth;
+            Library = library;
+            Face = face;
+            UseKerning = useKerning;
 
-            string[] split = _fontFile.Split("/");
+            string[] split = fontFile.Split("/");
             string fontName = split[split.Length - 1];
-            Arguments = new FontArguments() { FontSize = _fontSize, FontName = fontName };
+            Arguments = new FontArguments() { FontSize = fontSize, FontName = fontName };
         }
 
         ~FontGlyphStore()
@@ -35,9 +39,29 @@ namespace Electron2D.Rendering.Text
             Dispose(false);
         }
 
-        public void AddCharacter(char _char, Character _character)
+        public void AddCharacter(char code, Character character)
         {
-            Characters.Add(_char, _character);
+            if(_isDone) return;
+            Characters.Add(code, character);
+        }
+
+        public void Done()
+        {
+            if (_isDone) return;
+            _isDone = true;
+            foreach (var character in Characters.Values)
+            {
+                int descent = (int)(character.Size.Y - character.Bearing.Y);
+                int ascent = (int)(character.Size.Y - descent);
+                if(ascent > Ascent)
+                {
+                    Ascent = ascent;
+                }
+                if(descent > Descent)
+                {
+                    Descent = descent;
+                }
+            }
         }
 
         public void Dispose()
@@ -45,18 +69,18 @@ namespace Electron2D.Rendering.Text
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        private void Dispose(bool _safeToDisposeManagedObjects)
+        private void Dispose(bool safeToDisposeManagedObjects)
         {
-            if(!disposed)
+            if(!_disposed)
             {
                 glDeleteTexture(TextureHandle);
                 Characters.Clear();
                 FT_Done_Face(Face);
-                if (_safeToDisposeManagedObjects)
+                if (safeToDisposeManagedObjects)
                 {
                     Library.Dispose();
                 }
-                disposed = true;
+                _disposed = true;
             }
         }
     }

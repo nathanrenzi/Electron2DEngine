@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Electron2D.UserInterface
 {
-    public class TextLabel : UiComponent
+    public class TextLabel : UIComponent
     {
         public string Text
         {
@@ -76,44 +76,37 @@ namespace Electron2D.UserInterface
         public new TextRenderer Renderer { get; private set; }
         private FontGlyphStore fgh;
 
-        public TextLabel(string _text, string _fontFile, int _fontSize, Color _textColor, Color _outlineColor,
-            Vector2 _bounds, TextAlignment _horizontalAlignment = TextAlignment.Left, TextAlignment _verticalAlignment = TextAlignment.Top,
-            TextAlignmentMode _alignmentMode = TextAlignmentMode.Baseline, TextOverflowMode _overflowMode = TextOverflowMode.Disabled,
-            int _outlineSize = 0, int _uiRenderLayer = 0, Shader _customShader = null,
-            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, useScreenPosition: _useScreenPosition, useMeshRenderer: false)
+        public TextLabel(TextLabelDef def, bool useScreenPosition = true, int uiRenderLayer = 0, bool ignorePostProcessing = false)
+            : base(ignorePostProcessing, uiRenderLayer, useScreenPosition: useScreenPosition, useMeshRenderer: false)
         {
-            SizeX = _bounds.X;
-            SizeY = _bounds.Y;
-            fgh = ResourceManager.Instance.LoadFont(_fontFile, _fontSize, _outlineSize);
+            SizeX = def.SizeX;
+            SizeY = def.SizeY;
+            fgh = def.TextFont;
 
-            Shader shader;
-            if (_customShader != null)
-            {
-                if(!_customShader.Compiled) _customShader.Compile();
-                shader = _customShader;
-            }
-            else
-            {
-                shader = GlobalShaders.DefaultText;
-            }
-            Renderer = new TextRenderer(Transform, fgh, shader, _text, _bounds, _textColor, _outlineColor,
-                _horizontalAlignment, _verticalAlignment, _alignmentMode, _overflowMode);
+            Renderer = new TextRenderer(Transform, fgh, def.TextMaterial.Shader, def.Text, new Vector2(SizeX, SizeY), def.TextColor, Color.Black,
+                def.TextHorizontalAlignment, def.TextVerticalAlignment, def.TextAlignmentMode, def.TextOverflowMode);
         }
 
-        protected override void OnUiEvent(UiEvent _event)
+        protected override void OnUIEvent(UIEvent _event)
         {
             switch(_event)
             {
-                case UiEvent.Resize:
+                case UIEvent.Resize:
                     if (Renderer != null)
                     {
                         Renderer.Bounds = new Rectangle(0, 0, (int)SizeX, (int)SizeY);
                     }
                     break;
-                case UiEvent.Anchor:
+                case UIEvent.Anchor:
                     if(Renderer != null)
                     {
                         Renderer.Anchor = Anchor;
+                    }
+                    break;
+                case UIEvent.Position:
+                    if(Renderer != null)
+                    {
+                        Renderer.UpdateMesh();
                     }
                     break;
             }

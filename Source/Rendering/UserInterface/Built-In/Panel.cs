@@ -6,7 +6,7 @@ namespace Electron2D.UserInterface
     /// <summary>
     /// The most basic UI component.
     /// </summary>
-    public class Panel : UiComponent
+    public class Panel : UIComponent
     {
         public float[] Vertices { get; private set; } = new float[16];
         public static readonly uint[] Indices =

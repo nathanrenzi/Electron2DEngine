@@ -5,13 +5,13 @@ namespace Electron2D.UserInterface
     /// <summary>
     /// A UI Component that can procedurally stretch a texture along it's borders, maintaining the same scale at any size.
     /// </summary>
-    public class SlicedPanel : UiComponent
+    public class SlicedPanel : UIComponent
     {
-        private float[] vertices = new float[36 * 4];
+        private float[] _vertices = new float[36 * 4];
 
-        private static float[] defaultUV = new float[36 * 2];
+        private static float[] _defaultUV = new float[36 * 2];
 
-        private static readonly uint[] indices = // 18 tris * 3 uints
+        private static readonly uint[] _indices = // 18 tris * 3 uints
         {
             // Corners
             1, 0, 3,
@@ -44,31 +44,30 @@ namespace Electron2D.UserInterface
             33, 35, 34
         };
 
-        private float left;
-        private float right;
-        private float top;
-        private float bottom;
-        private float borderPixelSize;
+        private float _left;
+        private float _right;
+        private float _top;
+        private float _bottom;
+        private float _borderPixelSize;
+        private int _stride = 4; // This should be equal to how many floats are associated with each vertex
 
-        private int stride = 4; // This should be equal to how many floats are associated with each vertex
-
-        /// <param name="_sizeX">The starting size on the X axis.</param>
-        /// <param name="_sizeY">The starting size on the Y axis.</param>
-        public SlicedPanel(Material _material, int _sizeX, int _sizeY, SlicedPanelDef _def,
-            int _uiRenderLayer = 0, bool _ignorePostProcessing = false)
-            : base(_ignorePostProcessing, _uiRenderLayer, sizeX: _sizeX, sizeY: _sizeY)
+        /// <param name="sizeX">The starting size on the X axis.</param>
+        /// <param name="sizeY">The starting size on the Y axis.</param>
+        public SlicedPanel(SlicedPanelDef def, Material material, int sizeX, int sizeY,
+            int uiRenderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = false)
+            : base(ignorePostProcessing, uiRenderLayer, sizeX: sizeX, sizeY: sizeY, useScreenPosition: useScreenPosition)
         {
-            left = _def.Left;
-            right = _def.Right;
-            top = _def.Top;
-            bottom = _def.Bottom;
-            borderPixelSize = _def.BorderPixelSize * 2;
+            _left = def.Left;
+            _right = def.Right;
+            _top = def.Top;
+            _bottom = def.Bottom;
+            _borderPixelSize = def.BorderPixelSize * 2;
 
             BuildVertexMesh();
             // Indices are pre-written, so they are not generated at runtime
 
-            Renderer.SetVertexArrays(vertices, indices);
-            Renderer.SetMaterial(_material);
+            Renderer.SetVertexArrays(_vertices, _indices);
+            Renderer.SetMaterial(material);
         }
 
         /// <summary>
@@ -77,7 +76,7 @@ namespace Electron2D.UserInterface
         public void RebuildMesh()
         {
             BuildVertexMesh();
-            Renderer.SetVertexArrays(vertices, indices, false);
+            Renderer.SetVertexArrays(_vertices, _indices, false);
             Renderer.IsVertexDirty = true;
         }
 
@@ -93,16 +92,16 @@ namespace Electron2D.UserInterface
             float B1 = -SizeY + (Anchor.Y * -SizeY);
 
             // The positions of the padding
-            float L2 = L1 + borderPixelSize;
-            float R2 = R1 - borderPixelSize;
-            float T2 = T1 - borderPixelSize;
-            float B2 = B1 + borderPixelSize;
+            float L2 = L1 + _borderPixelSize;
+            float R2 = R1 - _borderPixelSize;
+            float T2 = T1 - _borderPixelSize;
+            float B2 = B1 + _borderPixelSize;
 
             // Creating the UV coordinates for the non-0 and non-1 UV values that should be the same regardless of the size of UI
-            float LU = Math.Clamp(left, 0, 1f);
-            float RU = 1 - Math.Clamp(right, 0, 1f);
-            float TV = 1 - Math.Clamp(top, 0, 1f);
-            float BV = Math.Clamp(bottom, 0, 1f);
+            float LU = Math.Clamp(_left, 0, 1f);
+            float RU = 1 - Math.Clamp(_right, 0, 1f);
+            float TV = 1 - Math.Clamp(_top, 0, 1f);
+            float BV = Math.Clamp(_bottom, 0, 1f);
 
             SetVertex(0, L1, T1, 0, 1);
             SetVertex(1, L2, T1, LU, 1);
@@ -146,10 +145,10 @@ namespace Electron2D.UserInterface
 
         private void SetVertex(int _index, float _x, float _y, float _u, float _v)
         {
-            vertices[_index * stride + 0] = _x;
-            vertices[_index * stride + 1] = _y;
-            vertices[_index * stride + 2] = _u;
-            vertices[_index * stride + 3] = _v;
+            _vertices[_index * _stride + 0] = _x;
+            _vertices[_index * _stride + 1] = _y;
+            _vertices[_index * _stride + 2] = _u;
+            _vertices[_index * _stride + 3] = _v;
         }
 
         /// <summary>
@@ -157,25 +156,25 @@ namespace Electron2D.UserInterface
         /// </summary>
         private void InitializeDefaultUVArray()
         {
-            int loops = vertices.Length / stride;
+            int loops = _vertices.Length / _stride;
             for (int i = 0; i < loops; i++)
             {
-                defaultUV[i * 2 + 0] = vertices[i * stride + (int)MeshVertexAttribute.UvX];
-                defaultUV[i * 2 + 1] = vertices[i * stride + (int)MeshVertexAttribute.UvY];
+                _defaultUV[i * 2 + 0] = _vertices[i * _stride + (int)MeshVertexAttribute.UvX];
+                _defaultUV[i * 2 + 1] = _vertices[i * _stride + (int)MeshVertexAttribute.UvY];
             }
         }
 
-        protected override void OnUiEvent(UiEvent _event)
+        protected override void OnUIEvent(UIEvent _event)
         {
             switch (_event)
             {
-                case UiEvent.Resize:
+                case UIEvent.Resize:
                     if(Renderer != null)
                     {
                         RebuildMesh();
                     }
                     break;
-                case UiEvent.Anchor:
+                case UIEvent.Anchor:
                     if(Renderer != null)
                     {
                         RebuildMesh();

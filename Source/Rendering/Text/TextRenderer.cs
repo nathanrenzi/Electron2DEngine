@@ -1,5 +1,6 @@
 ﻿using Electron2D.Rendering.Shaders;
 using FreeTypeSharp.Native;
+using System;
 using System.Drawing;
 using System.Numerics;
 using System.Text;
@@ -10,6 +11,51 @@ namespace Electron2D.Rendering.Text
 {
     public class TextRenderer : MeshRenderer
     {
+        public class Iterator : IDisposable
+        {
+            public int Index { get; private set; }
+            internal int _extraIncrement = 0;
+            private TextRenderer _renderer;
+
+            internal Iterator(TextRenderer renderer)
+            {
+                _renderer = renderer;
+                _renderer._iterators.Add(this);
+            }
+            
+            ~Iterator()
+            {
+                Dispose();
+            }
+
+            public void SetIndex(int index)
+            {
+                Index = index;
+            }
+
+            public void Increment()
+            {
+                Index += 1 + _extraIncrement;
+            }
+
+            public void Decrement()
+            {
+                Index--;
+            }
+
+            public void Validate()
+            {
+                if (Index >= _renderer.text.Length) Index = _renderer.text.Length;
+                if (Index < 0) Index = 0;
+            }
+
+            public void Dispose()
+            {
+                GC.SuppressFinalize(this);
+                _renderer._iterators.Remove(this);
+            }
+        }
+
         public FontGlyphStore FontGlyphStore;
         public string Text
         {
@@ -38,7 +84,7 @@ namespace Electron2D.Rendering.Text
             }
         }
         public Color OutlineColor;
-        private Transform transform;
+        public Transform transform;
         public Vector2 Anchor
         {
             get => anchor;
@@ -67,6 +113,7 @@ namespace Electron2D.Rendering.Text
         }
         private Rectangle bounds;
 
+        private List<Iterator> _iterators = new List<Iterator>();
         private List<int> lineOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
         private string formattedText;
         private float totalYHeight;
@@ -98,10 +145,132 @@ namespace Electron2D.Rendering.Text
             Load();
         }
 
+        public Iterator GetIterator()
+        {
+            return new Iterator(this);
+        }
+
+        public int GetCaretIndexFromWorldPosition(Vector2 worldPosition)
+        {
+            if (formattedText.Length == 0) return 0;
+            Vector2 localpos = worldPosition - position;
+            int offset = -1;
+            int xpos = GetXOffset(0);
+            int ypos = -GetYOffset();
+            int newlineCount = 0;
+            if(localpos.X <= xpos)
+            {
+                return 0;
+            }
+
+            if (AlignmentMode == TextAlignmentMode.Baseline)
+            {
+                if (VerticalAlignment == TextAlignment.Top)
+                {
+                    ypos -= FontGlyphStore.Arguments.FontSize;
+                }
+                else if (VerticalAlignment == TextAlignment.Center)
+                {
+                    ypos -= FontGlyphStore.Ascent / 2;
+                }
+            }
+
+            for (int i = 1; i < formattedText.Length; i++)
+            {
+                Character ch = FontGlyphStore.Characters[formattedText[i + offset]];
+
+                if (formattedText[i + offset] == '\n')
+                {
+                    newlineCount++;
+                    xpos = GetXOffset(newlineCount);
+                    ypos -= (int)(FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+                }
+                else
+                {
+                    xpos += (int)(ch.Advance * transform.Scale.X);
+                }
+
+                if (localpos.Y >= ypos - FontGlyphStore.Descent)
+                {
+                    if (localpos.X <= xpos)
+                    {
+                        if (localpos.X < xpos - ((ch.Advance * transform.Scale.X) / 2f))
+                        {
+                            return (int)MathF.Max(i - 1, 0);
+                        }
+                        else
+                        {
+                            return i;
+                        }
+                    }
+                }
+            }
+
+            return formattedText.Length;
+        }
+
+        public Vector2 GetCaretWorldPostion(int index)
+        {
+            if(formattedText.Length == 0)
+            {
+                int ypos = -GetYOffset();
+                if (VerticalAlignment == TextAlignment.Top)
+                {
+                    ypos -= FontGlyphStore.Arguments.FontSize;
+                }
+                else if (VerticalAlignment == TextAlignment.Center)
+                {
+                    ypos -= FontGlyphStore.Ascent / 2;
+                }
+                return new Vector2(GetXOffset(0), ypos) + position;
+            }
+            if(index <= formattedText.Length && index >= 0)
+            {
+                int offset = -1;
+                int xpos = GetXOffset(0);
+                int ypos = -GetYOffset();
+                int newlineCount = 0;
+
+                if (AlignmentMode == TextAlignmentMode.Baseline)
+                {
+                    if (VerticalAlignment == TextAlignment.Top)
+                    {
+                        ypos -= FontGlyphStore.Arguments.FontSize;
+                    }
+                    else if (VerticalAlignment == TextAlignment.Center)
+                    {
+                        ypos -= FontGlyphStore.Ascent / 2;
+                    }
+                }
+
+                for (int i = 1; i <= index; i++)
+                {
+                    Character ch = FontGlyphStore.Characters[formattedText[i + offset]];
+
+                    if (formattedText[i + offset] == '\n')
+                    {
+                        newlineCount++;
+                        xpos = GetXOffset(newlineCount);
+                        ypos -= (int)(FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+                    }
+                    else
+                    {
+                        xpos += (int)(ch.Advance * transform.Scale.X);
+                    }
+                }
+
+                return new Vector2(xpos, ypos) + position;
+            }
+            else
+            {
+                return Vector2.Zero;
+            }
+        }
+
         #region Text Formatting
         private unsafe void UpdateTextFormatting(string _inputText)
         {
-            if (_inputText == null || _inputText == "") return;
+            string unformattedText = _inputText == null ? "" : _inputText;
             lineOffsets.Clear();
 
             // Split input text into substrings
@@ -109,27 +278,27 @@ namespace Electron2D.Rendering.Text
             string[] words = null;
             if (OverflowMode == TextOverflowMode.Word)
             {
-                words = Regex.Split(_inputText, @"(\s)");
+                words = Regex.Split(unformattedText, @"(\s)");
             }
             else if (OverflowMode == TextOverflowMode.Character)
             {
-                words = _inputText.ToCharArray().Select(c => c.ToString()).ToArray();
+                words = unformattedText.ToCharArray().Select(c => c.ToString()).ToArray();
             }
             else if (OverflowMode == TextOverflowMode.Disabled)
             {
-                words = Regex.Split(_inputText, @"(\s)");
+                words = Regex.Split(unformattedText, @"(\s)");
                 float stringSize = 0;
                 uint g = 0;
                 uint p = 0;
 
                 // Measuring the input string
-                for (int i = 0; i < _inputText.Length; i++)
+                for (int i = 0; i < unformattedText.Length; i++)
                 {
                     // Skipping newline characters, rich text is not supported
-                    if (_inputText[i] == '\n') continue;
+                    if (unformattedText[i] == '\n') continue;
 
-                    Character ch = FontGlyphStore.Characters[_inputText[i]];
-                    g = FT_Get_Char_Index(FontGlyphStore.Face, _inputText[i]);
+                    Character ch = FontGlyphStore.Characters[unformattedText[i]];
+                    g = FT_Get_Char_Index(FontGlyphStore.Face, unformattedText[i]);
 
                     // Kerning
                     if (FontGlyphStore.UseKerning)
@@ -151,7 +320,7 @@ namespace Electron2D.Rendering.Text
                     p = g;
                 }
 
-                formattedText = _inputText;
+                formattedText = unformattedText;
                 lineOffsets.Add(Bounds.Width - (int)stringSize);
                 skipNewlines = true;
             }
@@ -166,11 +335,6 @@ namespace Electron2D.Rendering.Text
             float minHeight = 0;
             int newlineCount = 0;
             float wordLength = 0;
-
-            if (VerticalAlignment == TextAlignment.Top && AlignmentMode == TextAlignmentMode.Baseline)
-            {
-                builder.Append('\n');
-            }
 
             for (int w = 0; w < words.Length; w++)
             {
@@ -191,11 +355,8 @@ namespace Electron2D.Rendering.Text
                     if (ch.Size.Y - ch.Bearing.Y > minHeight) minHeight = ch.Size.Y - ch.Bearing.Y;
 
                     // If word is a newline character, handle it separately
-                    // DOES NOT WORK CURRENLY, NEWLINES ARE NOT SEPARATE WORDS
                     if (words[w] == "\n")
                     {
-                        continue;
-
                         _x = Bounds.X;
                         _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                         newlineCount++;
@@ -241,7 +402,6 @@ namespace Electron2D.Rendering.Text
                 {
                     newlineCount++;
                     lineOffsets.Add(Bounds.Width - (int)(_x - wordLength));
-
                     _x = wordLength;
                     _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                     minHeight = 0;
@@ -311,7 +471,7 @@ namespace Electron2D.Rendering.Text
             Layout.Add<float>(2); // UV
         }
 
-        private unsafe void UpdateMesh()
+        public unsafe void UpdateMesh()
         {
             List<float[]> tempVertexArrays = new List<float[]>();
             List<uint> tempIndices = new List<uint>();
@@ -322,67 +482,92 @@ namespace Electron2D.Rendering.Text
             uint previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
             uint glyphIndex = 0;
             int newlineCount = 0;
-            for (int i = 0; i < formattedText.Length; i++)
+
+            if (AlignmentMode == TextAlignmentMode.Baseline)
             {
-                Character ch = FontGlyphStore.Characters[formattedText[i]];
-                glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, formattedText[i]);
-
-                // If word is a newline character, handle it separately
-                if (formattedText[i] == '\n')
+                if(VerticalAlignment == TextAlignment.Top)
                 {
-                    newlineCount++;
-                    _x = GetXOffset(newlineCount) + position.X;
-                    // If the newline is the first character, it is meant to offset the first line, so use one as the multiplier
-                    _y -= FontGlyphStore.Arguments.FontSize * (i == 0 ? 1 : LineHeightMultiplier);
-                    previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
-                    continue;
+                    _y -= FontGlyphStore.Arguments.FontSize;
                 }
-
-                // Kerning
-                if (FontGlyphStore.UseKerning)
+                else if(VerticalAlignment == TextAlignment.Center)
                 {
-                    if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
-                    {
-                        long* temp = (long*)delta.x;
-                        long res = *temp;
-                        _x += res;
-                    }
-                    else
-                    {
-                        Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontName}");
-                    }
+                    _y -= FontGlyphStore.Ascent / 2f;
                 }
+            }
 
-                int xpos = (int)(_x + ch.Bearing.X * transform.Scale.X);
-                int ypos = (int)(_y - (ch.Size.Y - ch.Bearing.Y) * transform.Scale.X); // Causes text to be slightly vertically offset by 1 pixel
+            if (formattedText.Length > 0)
+            {
+                for (int i = 0; i < formattedText.Length; i++)
+                {
+                    Character ch = FontGlyphStore.Characters[formattedText[i]];
+                    glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, formattedText[i]);
 
-                float w = ch.Size.X * transform.Scale.X;
-                float h = ch.Size.Y * transform.Scale.X;
+                    // If word is a newline character, handle it separately
+                    if (formattedText[i] == '\n')
+                    {
+                        newlineCount++;
+                        _x = GetXOffset(newlineCount) + position.X;
+                        // If the newline is the first character, it is meant to offset the first line, so use one as the multiplier
+                        _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+                        previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
+                        continue;
+                    }
 
-                float L = ch.UVX.X;
-                float R = ch.UVX.Y;
-                float T = ch.UVY.X;
-                float B = ch.UVY.Y;
+                    // Kerning
+                    if (FontGlyphStore.UseKerning)
+                    {
+                        if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                        {
+                            long* temp = (long*)delta.x;
+                            long res = *temp;
+                            _x += res;
+                        }
+                        else
+                        {
+                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontName}");
+                        }
+                    }
 
-                uint count = (uint)tempVertexArrays.Count;
-                tempVertexArrays.Add(new float[] { xpos, ypos + h, L, T });     // Top Left
-                tempVertexArrays.Add(new float[] { xpos + w, ypos + h, R, T }); // Top Right
-                tempVertexArrays.Add(new float[] { xpos + w, ypos, R, B });     // Bottom Right
-                tempVertexArrays.Add(new float[] { xpos, ypos, L, B });         // Bottom Left
-                tempIndices.Add(count + 0);
-                tempIndices.Add(count + 1);
-                tempIndices.Add(count + 2);
-                tempIndices.Add(count + 0);
-                tempIndices.Add(count + 2);
-                tempIndices.Add(count + 3);
+                    int xpos = (int)(_x + ch.Bearing.X * transform.Scale.X);
+                    int ypos = (int)(_y - (ch.Size.Y - ch.Bearing.Y) * transform.Scale.X); // Causes text to be slightly vertically offset by 1 pixel
 
-                _x += ch.Advance * transform.Scale.X;
+                    float w = ch.Size.X * transform.Scale.X;
+                    float h = ch.Size.Y * transform.Scale.X;
 
-                previousIndex = glyphIndex;
+                    float L = ch.UVX.X;
+                    float R = ch.UVX.Y;
+                    float T = ch.UVY.X;
+                    float B = ch.UVY.Y;
+
+                    uint count = (uint)tempVertexArrays.Count;
+                    tempVertexArrays.Add(new float[] { xpos, ypos + h, L, T });     // Top Left
+                    tempVertexArrays.Add(new float[] { xpos + w, ypos + h, R, T }); // Top Right
+                    tempVertexArrays.Add(new float[] { xpos + w, ypos, R, B });     // Bottom Right
+                    tempVertexArrays.Add(new float[] { xpos, ypos, L, B });         // Bottom Left
+                    tempIndices.Add(count + 0);
+                    tempIndices.Add(count + 1);
+                    tempIndices.Add(count + 2);
+                    tempIndices.Add(count + 0);
+                    tempIndices.Add(count + 2);
+                    tempIndices.Add(count + 3);
+
+                    _x += ch.Advance * transform.Scale.X;
+
+                    previousIndex = glyphIndex;
+                }
+            }
+            else
+            {
+                // Send fake data for a point offscreen instead of sending no vertex data (causes crash)
+                tempVertexArrays.Add(new float[] { -10000, -10000, 0, 0 });
+                tempVertexArrays.Add(new float[] { -10000, -10000, 0, 0 });
+                tempVertexArrays.Add(new float[] { -10000, -10000, 0, 0 });
+                tempIndices.Add(0);
+                tempIndices.Add(1);
+                tempIndices.Add(2);
             }
 
             List<float> tempVertices = new List<float>();
-
             for (int i = 0; i < tempVertexArrays.Count; i++)
             {
                 for (int z = 0; z < tempVertexArrays[i].Length; z++)

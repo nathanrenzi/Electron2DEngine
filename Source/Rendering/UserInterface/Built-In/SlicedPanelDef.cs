@@ -8,18 +8,18 @@
         public float Bottom;
         public float BorderPixelSize;
 
-        /// <param name="_left">The left padding percentage of the 9-sliced texture.</param>
-        /// <param name="_right">The right padding percentage of the 9-sliced texture.</param>
-        /// <param name="_top">The top padding percentage of the 9-sliced texture.</param>
-        /// <param name="_bottom">The bottom padding percentage of the 9-sliced texture.</param>
-        /// <param name="_borderPixelSize">The size of the border.</param>
-        public SlicedPanelDef(float _left, float _right, float _top, float _bottom, float _borderPixelSize)
+        /// <param name="left">The left padding percentage of the 9-sliced texture.</param>
+        /// <param name="right">The right padding percentage of the 9-sliced texture.</param>
+        /// <param name="top">The top padding percentage of the 9-sliced texture.</param>
+        /// <param name="bottom">The bottom padding percentage of the 9-sliced texture.</param>
+        /// <param name="borderPixelSize">The size of the border.</param>
+        public SlicedPanelDef(float left, float right, float top, float bottom, float borderPixelSize)
         {
-            Left = _left;
-            Right = _right;
-            Top = _top;
-            Bottom = _bottom;
-            BorderPixelSize = _borderPixelSize;
+            Left = left;
+            Right = right;
+            Top = top;
+            Bottom = bottom;
+            BorderPixelSize = borderPixelSize;
         }
     }
 }

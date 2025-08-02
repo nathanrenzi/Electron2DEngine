@@ -31,7 +31,10 @@ namespace Electron2D
 
         public bool IsDirty { get; set; } = true;
 
-        public void CheckDirty() { } // Does not need to be implemented as time will always need to be set
+        public void CheckDirty()
+        {
+            IsDirty = true;
+        }
 
         public void ApplyUniform(Shader _shader)
         {

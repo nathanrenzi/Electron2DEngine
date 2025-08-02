@@ -2,10 +2,11 @@
 using Electron2D.Rendering;
 using System.Drawing;
 using Electron2D.Rendering.Shaders;
+using GLFW;
 
 namespace Electron2D.UserInterface
 {
-    public abstract class UiComponent : IRenderable
+    public abstract class UIComponent : IRenderable
     {
         public bool Visible
         {
@@ -13,7 +14,7 @@ namespace Electron2D.UserInterface
             set
             {
                 _visible = value;
-                InvokeUiAction(UiEvent.Visibility);
+                InvokeUIEvent(UIEvent.Visibility);
             }
         }
         private bool _visible = true;
@@ -36,7 +37,7 @@ namespace Electron2D.UserInterface
             set
             {
                 _sizeX = value;
-                InvokeUiAction(UiEvent.Resize);
+                InvokeUIEvent(UIEvent.Resize);
                 UpdateMesh();
             }
         }
@@ -47,7 +48,7 @@ namespace Electron2D.UserInterface
             set
             {
                 _sizeY = value;
-                InvokeUiAction(UiEvent.Resize);
+                InvokeUIEvent(UIEvent.Resize);
                 UpdateMesh();
             }
         }
@@ -58,25 +59,52 @@ namespace Electron2D.UserInterface
             set
             {
                 _anchor = value;
-                InvokeUiAction(UiEvent.Anchor);
+                InvokeUIEvent(UIEvent.Anchor);
                 UpdateMesh();
             }
         }
         private Vector2 _anchor;
 
+        public event Action OnLoad;
+        public event Action OnClick;
+        public event Action OnClickDown;
+        public event Action OnClickUp;
+        public event Action OnLeftClick;
+        public event Action OnLeftClickDown;
+        public event Action OnLeftClickUp;
+        public event Action OnMiddleClick;
+        public event Action OnMiddleClickDown;
+        public event Action OnMiddleClickUp;
+        public event Action OnRightClick;
+        public event Action OnRightClickDown;
+        public event Action OnRightClickUp;
+        public event Action OnHover;
+        public event Action OnHoverStart;
+        public event Action OnHoverEnd;
+        public event Action OnPositionChanged;
+        public event Action OnResized;
+        public event Action OnAnchorChanged;
+        public event Action OnVisibilityChanged;
+        public event Action OnInteractabilityEnd;
+        public event Action OnFocused;
+        public event Action OnFocusLost;
+        public bool Focused { get; private set; }
+
         public MeshRenderer Renderer { get; private set; }
         public Transform Transform { get; private set; }
-        public int UiRenderLayer { get; private set; }
+        public int UIRenderLayer { get; private set; }
         public bool Interactable { get; set; } = true;
         public float ExtraInteractionPixels { get; set; }
-        public List<UiListener> Listeners { get; private set; } = new List<UiListener>();
+        public List<UIListener> Listeners { get; private set; } = new List<UIListener>();
         public LayoutGroup ChildLayoutGroup { get; private set; }
-        public UiCanvas.UiFrameTickData ThisFrameData = new UiCanvas.UiFrameTickData();
-        public UiCanvas.UiFrameTickData LastFrameData = new UiCanvas.UiFrameTickData();
-        public UiConstraints Constraints;
-
+        public UICanvas.UIFrameTickData ThisFrameData = new UICanvas.UIFrameTickData();
+        public UICanvas.UIFrameTickData LastFrameData = new UICanvas.UIFrameTickData();
+        public UIConstraints Constraints;
+        private CursorType _hoverCursorType = CursorType.Arrow;
         protected bool _isLoaded = false;
-        private UiCanvas _parentCanvas;
+        private List<UIComponent> _eventSources = new List<UIComponent>();
+        private EventSourceListener _eventSourceListener;
+        private UICanvas _parentCanvas;
         public float RightXBound
         {
             get
@@ -106,16 +134,16 @@ namespace Electron2D.UserInterface
             }
         }
 
-        public UiComponent(bool ignorePostProcessing, int uiRenderLayer = 0, int sizeX = 100, int sizeY = 100, int extraInteractionSize = 0,
+        public UIComponent(bool ignorePostProcessing, int uiRenderLayer = 0, int sizeX = 100, int sizeY = 100, int extraInteractionSize = 0,
             bool initialize = true, bool useScreenPosition = true, bool useMeshRenderer = true, bool autoRender = true)
         {
             Transform = new Transform();
-            Transform.OnPositionChanged += () => InvokeUiAction(UiEvent.Position);
+            Transform.OnPositionChanged += () => InvokeUIEvent(UIEvent.Position);
 
             SizeX = sizeX;
             SizeY = sizeY;
-            Constraints = new UiConstraints(this);
-            UiRenderLayer = uiRenderLayer;
+            Constraints = new UIConstraints(this);
+            UIRenderLayer = uiRenderLayer;
             UseScreenPosition = useScreenPosition;
             UsingMeshRenderer = useMeshRenderer;
             _registerRenderable = autoRender;
@@ -135,7 +163,9 @@ namespace Electron2D.UserInterface
             {
                 RenderLayerManager.OrderRenderable(this);
             }
-            GlobalUI.MainCanvas.RegisterUiComponent(this);
+            _eventSourceListener = new EventSourceListener();
+            _eventSourceListener.OnEvent += InvokeUIEvent;
+            UI.MainCanvas.RegisterUiComponent(this);
         }
 
         public bool ShouldIgnorePostProcessing()
@@ -143,10 +173,14 @@ namespace Electron2D.UserInterface
             return _ignorePostProcessing;
         }
 
-        ~UiComponent()
+        ~UIComponent()
         {
             if (_registerRenderable) RenderLayerManager.RemoveRenderable(this);
-            GlobalUI.MainCanvas.UnregisterUiComponent(this);
+            for (int i = 0; i < _eventSources.Count; i++)
+            {
+                _eventSources[i].RemoveUIListener(_eventSourceListener);
+            }
+            UI.MainCanvas.UnregisterUiComponent(this);
         }
 
         public void Initialize()
@@ -159,10 +193,45 @@ namespace Electron2D.UserInterface
             }
         }
 
+        public void Focus(bool triggerFocusEvent = true)
+        {
+            if(triggerFocusEvent) _parentCanvas.Focus(this);
+            Focused = true;
+        }
+
+        public void Unfocus(bool triggerFocusEvent = true)
+        {
+            if (triggerFocusEvent) _parentCanvas.Unfocus(this);
+            Focused = false;
+        }
+
+        public void SetHoverCursorType(CursorType type)
+        {
+            _hoverCursorType = type;
+        }
+
         protected virtual void Load()
         {
             if (UsingMeshRenderer) Renderer.Load();
-            InvokeUiAction(UiEvent.Load);
+            InvokeUIEvent(UIEvent.Load);
+        }
+
+        protected void AddEventSource(UIComponent component)
+        {
+            if(!_eventSources.Contains(component))
+            {
+                _eventSources.Add(component);
+                component.AddUIListener(_eventSourceListener);
+            }
+        }
+
+        protected void RemoveEventSource(UIComponent component)
+        {
+            if(_eventSources.Contains(component))
+            {
+                _eventSources.Remove(component);
+                component.RemoveUIListener(_eventSourceListener);
+            }
         }
 
         public virtual void UpdateMesh() { }
@@ -185,9 +254,9 @@ namespace Electron2D.UserInterface
 
         public void SetRenderLayer(int uiRenderLayer)
         {
-            if (uiRenderLayer == UiRenderLayer) return;
-            RenderLayerManager.OrderRenderable(this, true, UiRenderLayer + (int)RenderLayer.Interface, uiRenderLayer + (int)RenderLayer.Interface);
-            UiRenderLayer = uiRenderLayer;
+            if (uiRenderLayer == UIRenderLayer) return;
+            RenderLayerManager.OrderRenderable(this, true, UIRenderLayer + (int)RenderLayer.Interface, uiRenderLayer + (int)RenderLayer.Interface);
+            UIRenderLayer = uiRenderLayer;
         }
 
         public virtual bool CheckBounds(Vector2 position)
@@ -198,7 +267,7 @@ namespace Electron2D.UserInterface
                 && pos.Y >= BottomYBound + Transform.Position.Y - ExtraInteractionPixels && pos.Y <= TopYBound + Transform.Position.Y + ExtraInteractionPixels;
         }
 
-        public void AddUiListener(UiListener listener)
+        public void AddUIListener(UIListener listener)
         {
             if (Listeners.Contains(listener))
             {
@@ -208,31 +277,65 @@ namespace Electron2D.UserInterface
             Listeners.Add(listener);
         }
 
-        public void RemoveUiListener(UiListener listener)
+        public void RemoveUIListener(UIListener listener)
         {
             Listeners.Remove(listener);
         }
 
-        public void InvokeUiAction(UiEvent uiEvent)
+        public void InvokeUIEvent(UIEvent uiEvent)
         {
+            OnUIEvent(uiEvent);
+
             for (int i = 0; i < Listeners.Count; i++)
             {
                 Listeners[i].OnUiAction(this, uiEvent);
             }
-            OnUiEvent(uiEvent);
+
+            switch (uiEvent)
+            {
+                case UIEvent.Load: OnLoad?.Invoke();break;
+                case UIEvent.Click: OnClick?.Invoke(); break;
+                case UIEvent.ClickDown: OnClickDown?.Invoke(); break;
+                case UIEvent.ClickUp: OnClickUp?.Invoke(); break;
+                case UIEvent.LeftClick: OnLeftClick?.Invoke(); break;
+                case UIEvent.LeftClickDown: OnLeftClickDown?.Invoke(); break;
+                case UIEvent.LeftClickUp: OnLeftClickUp?.Invoke(); break;
+                case UIEvent.MiddleClick: OnMiddleClick?.Invoke(); break;
+                case UIEvent.MiddleClickDown: OnMiddleClickDown?.Invoke(); break;
+                case UIEvent.MiddleClickUp: OnMiddleClickUp?.Invoke(); break;
+                case UIEvent.RightClick: OnRightClick?.Invoke(); break;
+                case UIEvent.RightClickDown: OnRightClickDown?.Invoke(); break;
+                case UIEvent.RightClickUp: OnRightClickUp?.Invoke(); break;
+                case UIEvent.Hover: OnHover?.Invoke(); break;
+                case UIEvent.HoverStart:
+                    if(_hoverCursorType != CursorType.Arrow) Cursor.SetType(_hoverCursorType);
+                    OnHoverStart?.Invoke();
+                    break;
+                case UIEvent.HoverEnd:
+                    if (_hoverCursorType != CursorType.Arrow) Cursor.SetType(CursorType.Arrow);
+                    OnHoverEnd?.Invoke();
+                    break;
+                case UIEvent.Position: OnPositionChanged?.Invoke(); break;
+                case UIEvent.Resize: OnResized?.Invoke(); break;
+                case UIEvent.Anchor: OnAnchorChanged?.Invoke(); break;
+                case UIEvent.Visibility: OnVisibilityChanged?.Invoke(); break;
+                case UIEvent.InteractabilityEnd: OnInteractabilityEnd?.Invoke(); break;
+                case UIEvent.Focus: OnFocused?.Invoke(); break;
+                case UIEvent.LoseFocus: OnFocusLost?.Invoke(); break;
+            }
         }
 
-        public void SetParentCanvas(UiCanvas canvas)
+        public void SetParentCanvas(UICanvas canvas)
         {
             _parentCanvas = canvas;
         }
 
-        public UiCanvas GetParentCanvas()
+        public UICanvas GetParentCanvas()
         {
             return _parentCanvas;
         }
 
-        protected virtual void OnUiEvent(UiEvent uiEvent) { }
+        protected virtual void OnUIEvent(UIEvent uiEvent) { }
 
         public virtual void Render()
         {
@@ -242,15 +345,25 @@ namespace Electron2D.UserInterface
             }
         }
 
-        public int GetRenderLayer() => UiRenderLayer + (int)RenderLayer.Interface;
+        public int GetRenderLayer() => UIRenderLayer + (int)RenderLayer.Interface;
+
+        private class EventSourceListener : UIListener
+        {
+            public event Action<UIEvent> OnEvent;
+
+            public void OnUiAction(object sender, UIEvent uiEvent)
+            {
+                OnEvent?.Invoke(uiEvent);
+            }
+        }
     }
 
-    public interface UiListener
+    public interface UIListener
     {
-        public void OnUiAction(object sender, UiEvent uiEvent);
+        public void OnUiAction(object sender, UIEvent uiEvent);
     }
 
-    public enum UiEvent
+    public enum UIEvent
     {
         Load,
         Click,
@@ -272,6 +385,8 @@ namespace Electron2D.UserInterface
         Resize,
         Anchor,
         Visibility,
-        InteractabilityEnd
+        InteractabilityEnd,
+        Focus,
+        LoseFocus
     }
 }

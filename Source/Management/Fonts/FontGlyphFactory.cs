@@ -88,6 +88,8 @@ namespace Electron2D.Management
                 pos += (int)f.GlyphBitmap.width;
             }
 
+            store.Done();
+
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
             return store;
