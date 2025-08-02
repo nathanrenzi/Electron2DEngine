@@ -67,7 +67,6 @@ namespace Electron2D.UserInterface
                 {
                     _textLabel.Text = value.Length > 0 ? value : _promptText;
                     UpdateCaretDisplay();
-                    UpdateText();
                 }
             }
         }
