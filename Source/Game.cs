@@ -19,6 +19,7 @@ namespace Electron2D
 
         public Settings Settings { get; private set; }
         public Color BackgroundColor { get; private set; } = Color.Black;
+        public Vector4 LinearBackgroundColor { get; private set; } = Vector4.Zero;
 
         protected Thread PhysicsThread { get; private set; }
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
@@ -75,6 +76,7 @@ namespace Electron2D
         public void SetBackgroundColor(Color backgroundColor)
         {
             BackgroundColor = backgroundColor;
+            LinearBackgroundColor = new Vector4(MathF.Pow(backgroundColor.R / 255f, 2.2f), MathF.Pow(backgroundColor.G / 255f, 2.2f), MathF.Pow(backgroundColor.B / 255f, 2.2f), backgroundColor.A);
         }
 
         public void SetBlendingMode(BlendMode blendMode)
@@ -135,6 +137,7 @@ namespace Electron2D
             // Setup
             glEnable(GL_BLEND);
             glEnable(GL_STENCIL_TEST);
+            glEnable(GL_FRAMEBUFFER_SRGB);
             ApplyBlendingMode();
             // -----------
 
@@ -300,7 +303,7 @@ namespace Electron2D
         private void GLClear()
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-            glClearColor(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, 1);
+            glClearColor(LinearBackgroundColor.X, LinearBackgroundColor.Y, LinearBackgroundColor.Z, 1);
         }
 
         private void RenderCall()

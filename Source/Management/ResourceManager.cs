@@ -89,7 +89,7 @@ namespace Electron2D
         /// </summary>
         /// <param name="_textureFileName"></param>
         /// <returns></returns>
-        public Texture2DArray LoadTextureArray(string _textureFileName, int _layers, bool _loadAsNonSRGBA = false)
+        public Texture2DArray LoadTextureArray(string _textureFileName, int _layers, bool _nonColor = false)
         {
             textureArrayCache.TryGetValue(_textureFileName, out var value);
             if (value is not null)
@@ -97,7 +97,7 @@ namespace Electron2D
                 return value;
             }
 
-            value = TextureFactory.LoadArray(_textureFileName, _layers, _loadAsNonSRGBA);
+            value = TextureFactory.LoadArray(_textureFileName, _layers, _nonColor);
             textureArrayCache.Add(_textureFileName, value);
             return value;
         }
@@ -106,9 +106,9 @@ namespace Electron2D
         /// Loads multiple individual textures into one texture array. All textures must be the same size.
         /// </summary>
         /// <param name="_textureFileNames"></param>
-        /// <param name="_loadAsNonSRGBA"></param>
+        /// <param name="_nonColor"></param>
         /// <returns></returns>
-        public Texture2DArray LoadTextureArray(string[] _textureFileNames, bool _loadAsNonSRGBA = false)
+        public Texture2DArray LoadTextureArray(string[] _textureFileNames, bool _nonColor = false)
         {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < _textureFileNames.Length; i++)
@@ -122,7 +122,7 @@ namespace Electron2D
                 return value;
             }
 
-            value = TextureFactory.LoadArray(_textureFileNames, _loadAsNonSRGBA);
+            value = TextureFactory.LoadArray(_textureFileNames, _nonColor);
             textureArrayCache.Add(builder.ToString(), value);
             return value;
         }
@@ -133,9 +133,9 @@ namespace Electron2D
         /// <param name="_textureFileName"></param>
         /// <param name="_spriteWidth"></param>
         /// <param name="_spriteHeight"></param>
-        /// <param name="_loadAsNonSRGBA"></param>
+        /// <param name="_nonColor"></param>
         /// <returns></returns>
-        public Texture2DArray LoadTextureArray(string _textureFileName, int _spriteWidth,  int _spriteHeight, bool _loadAsNonSRGBA = false)
+        public Texture2DArray LoadTextureArray(string _textureFileName, int _spriteWidth,  int _spriteHeight, bool _nonColor = false)
         {
             textureArrayCache.TryGetValue(_textureFileName, out var value);
             if (value is not null)
@@ -143,7 +143,7 @@ namespace Electron2D
                 return value;
             }
 
-            value = TextureFactory.LoadArray(_textureFileName, _spriteWidth, _spriteHeight, _loadAsNonSRGBA);
+            value = TextureFactory.LoadArray(_textureFileName, _spriteWidth, _spriteHeight, _nonColor);
             textureArrayCache.Add(_textureFileName, value);
             return value;
         }
@@ -156,7 +156,7 @@ namespace Electron2D
         /// </summary>
         /// <param name="_textureFileName">The local file path of the texture. Ex. Resources/Textures/TextureNameHere.png</param>
         /// <returns></returns>
-        public Texture2D LoadTexture(string _textureFileName, bool _loadAsNonSRGBA = false)
+        public Texture2D LoadTexture(string _textureFileName, bool _nonColor = false)
         {
             textureCache.TryGetValue(_textureFileName, out var value);
             if(value is not null)
@@ -164,7 +164,7 @@ namespace Electron2D
                 return value;
             }
 
-            value = TextureFactory.Load(_textureFileName, _loadAsNonSRGBA);
+            value = TextureFactory.Load(_textureFileName, _nonColor);
             textureCache.Add(_textureFileName, value);
             textureHandleCache.Add(value.Handle, value);
             return value;
