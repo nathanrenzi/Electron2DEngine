@@ -152,7 +152,7 @@ namespace Electron2D.PhysicsBox2D
                 return;
             }
             Rigidbodies.Add(this);
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
 
             BodyDef bodyDef = new BodyDef()
             {
@@ -206,7 +206,7 @@ namespace Electron2D.PhysicsBox2D
         {
             if (IsDestroyed) return;
             Rigidbodies.Remove(this);
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
             if (ID != uint.MaxValue) Physics.RemovePhysicsBody(ID);
             IsDestroyed = true;
             GC.SuppressFinalize(this);

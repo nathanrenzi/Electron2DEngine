@@ -157,7 +157,7 @@ namespace Electron2D.UserInterface
             _initialized = true;
 
             UpdateDisplay();
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
         }
 
         ~Slider()
@@ -169,7 +169,7 @@ namespace Electron2D.UserInterface
         public void Dispose()
         {
             Renderer.Dispose();
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
         }
 

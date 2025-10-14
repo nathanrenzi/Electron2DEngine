@@ -70,7 +70,7 @@ namespace Electron2D
             _isColliderDirty = true;
 
             RenderLayerManager.OrderRenderable(this);
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Electron2D
         public void Dispose()
         {
             RenderLayerManager.RemoveRenderable(this);
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
         }
 

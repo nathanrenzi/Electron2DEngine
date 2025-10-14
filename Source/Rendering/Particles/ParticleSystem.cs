@@ -114,7 +114,7 @@ namespace Electron2D
             if (_playOnAwake) Play();
 
             RenderLayerManager.OrderRenderable(this);
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
         }
 
         ~ParticleSystem()
@@ -126,7 +126,7 @@ namespace Electron2D
         {
             // remove all particles
             Renderer?.Dispose();
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
             RenderLayerManager.RemoveRenderable(this);
             GC.SuppressFinalize(this);
         }
@@ -688,9 +688,9 @@ namespace Electron2D
 
         public void Render()
         {
-            Program.Game.SetBlendingMode(BlendMode);
+            Engine.Game.SetBlendingMode(BlendMode);
             Renderer.Render();
-            Program.Game.SetBlendingMode(BlendMode.Interpolative);
+            Engine.Game.SetBlendingMode(BlendMode.Interpolative);
         }
 
         public bool ShouldIgnorePostProcessing()

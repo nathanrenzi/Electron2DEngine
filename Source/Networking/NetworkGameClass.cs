@@ -38,7 +38,7 @@ namespace Electron2D.Networking
 
         public NetworkGameClass()
         {
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
         }
 
         ~NetworkGameClass()
@@ -132,7 +132,7 @@ namespace Electron2D.Networking
                 Reset();
                 if (RemoveLocallyOnDespawn)
                 {
-                    Program.Game.UnregisterGameClass(this);
+                    Engine.Game.UnregisterGameClass(this);
                     GC.SuppressFinalize(this);
                     OnDisposed();
                 }
@@ -142,7 +142,7 @@ namespace Electron2D.Networking
                 OnNetworkDespawnedEvent?.Invoke();
                 OnDespawned();
                 Reset();
-                Program.Game.UnregisterGameClass(this);
+                Engine.Game.UnregisterGameClass(this);
                 GC.SuppressFinalize(this);
                 OnDisposed();
             }

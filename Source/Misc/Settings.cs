@@ -39,7 +39,7 @@ namespace Electron2D
                 if(!File.Exists("DefaultSettings.json"))
                 {
                     Debug.LogError("Missing default settings file!");
-                    Program.Game.Exit();
+                    Engine.Game.Exit();
                 }
 
                 File.Copy("DefaultSettings.json", "Settings.json");
@@ -51,7 +51,7 @@ namespace Electron2D
             if (settingsJson == null)
             {
                 Debug.LogError("Error reading settings file.");
-                Program.Game.Exit();
+                Engine.Game.Exit();
             }
             if (setDisplaySettings)
             {

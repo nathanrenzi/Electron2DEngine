@@ -26,7 +26,7 @@ namespace Electron2D.Audio
                 AddAudioInstance(audioInstances[i]);
             }
 
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
         }
 
         public AudioSpatializer(Transform transform, bool _is3D)
@@ -34,7 +34,7 @@ namespace Electron2D.Audio
             _transform = transform;
             Is3D = _is3D;
 
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
         }
 
         ~AudioSpatializer()
@@ -93,7 +93,7 @@ namespace Electron2D.Audio
 
         public void Dispose()
         {
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
         }
     }

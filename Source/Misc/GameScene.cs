@@ -10,7 +10,7 @@
 
         public GameScene()
         {
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
             CreateGameClasses();
         }
 
@@ -32,7 +32,7 @@
         {
             if (gameClass == this) return;
             if (_classes.Contains(gameClass)) return;
-            Program.Game.UnregisterGameClass(gameClass);
+            Engine.Game.UnregisterGameClass(gameClass);
             _classes.Add(gameClass);
         }
 
@@ -40,7 +40,7 @@
         {
             if(_classes.Remove(gameClass) && registerToGameOnRemove)
             {
-                Program.Game.RegisterGameClass(gameClass);
+                Engine.Game.RegisterGameClass(gameClass);
             }
         }
 
@@ -87,7 +87,7 @@
         public void Dispose()
         {
             GC.SuppressFinalize(this);
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
             for (int i = 0; i < _classes.Count; i++)
             {
                 _classes[i].Dispose();

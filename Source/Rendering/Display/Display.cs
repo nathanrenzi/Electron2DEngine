@@ -48,7 +48,7 @@ namespace Electron2D
             Glfw.WindowHint(Hint.RedBits, mode.RedBits);
             Glfw.WindowHint(Hint.GreenBits, mode.GreenBits);
             Glfw.WindowHint(Hint.BlueBits, mode.BlueBits);
-            Glfw.WindowHint(Hint.RefreshRate, Program.Game.Settings.RefreshRate);
+            Glfw.WindowHint(Hint.RefreshRate, Engine.Game.Settings.RefreshRate);
             Glfw.WindowHint(Hint.ContextVersionMajor, 3);
             Glfw.WindowHint(Hint.ContextVersionMinor, 3);
             Glfw.WindowHint(Hint.OpenglProfile, Profile.Core);
@@ -72,7 +72,7 @@ namespace Electron2D
                 Texture2D texture = ResourceManager.Instance.LoadTexture("Resources/icon.ico");
                 SetIcon(texture);
             }
-            Settings settings = Program.Game.Settings;
+            Settings settings = Engine.Game.Settings;
             SetWindowMode(settings.WindowMode);
         }
 
@@ -97,7 +97,7 @@ namespace Electron2D
         public static void SetWindowMode(WindowMode mode)
         {
             Rectangle screen = Glfw.PrimaryMonitor.WorkArea;
-            Settings settings = Program.Game.Settings;
+            Settings settings = Engine.Game.Settings;
             switch (mode)
             {
                 default:

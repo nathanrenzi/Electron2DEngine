@@ -72,7 +72,7 @@ namespace Electron2D.PhysicsBox2D
                 Dispose();
                 return;
             }
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
             Sensors.Add(this);
 
             Vector2 pos = (_transform.Position + (_transform.Up * Offset.Y) + (_transform.Right * Offset.X));
@@ -119,7 +119,7 @@ namespace Electron2D.PhysicsBox2D
 
         public void Dispose()
         {
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
             Sensors.Remove(this);
             GC.SuppressFinalize(this);
         }

@@ -17,7 +17,7 @@
 
         public void Dispose()
         {
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
         }
 
@@ -38,7 +38,7 @@
 
             if(!_registeredToGameLoop)
             {
-                Program.Game.RegisterGameClass(this);
+                Engine.Game.RegisterGameClass(this);
                 _registeredToGameLoop = true;
             }
 

@@ -55,7 +55,7 @@ namespace Electron2D.Networking
             Client = new ClientServer.Client(NetworkMode);
             Server = new ClientServer.Server(NetworkMode);
             Client.SetServer(Server);
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
         }
 
         /// <summary>
@@ -100,27 +100,27 @@ namespace Electron2D.Networking
                 if (SteamAPI.RestartAppIfNecessary((AppId_t)steamAppID))
                 {
                     Debug.Log("[Steamworks.NET] Game was not started through steam. Restarting...");
-                    Program.Game.Exit();
+                    Engine.Game.Exit();
                 }
             }
             catch (DllNotFoundException e)
             {
                 Debug.LogError("[Steamworks.NET] Could not load steam_api.dll. It is likely missing or not in the correct location. " +
                     "Refer to README for more details.\n" + e.Message);
-                Program.Game.Exit();
+                Engine.Game.Exit();
             }
             if (!SteamAPI.Init())
             {
                 Debug.LogError("[Steamworks.NET] Steam API could not be initialized. Please make sure steam is running. If you are receiving this error while developing, please " +
                     "make sure that steam_appid.txt is in the output directory. DO NOT ship that file with the final game build, it should only be for testing purposes.");
-                Program.Game.Exit();
+                Engine.Game.Exit();
             }
             RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.Log, Debug.LogError, false);
 
             Client = new ClientServer.Client(NetworkMode);
             Server = new ClientServer.Server(NetworkMode);
             Client.SetServer(Server);
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
         }
 
         ~NetworkManager()
@@ -166,7 +166,7 @@ namespace Electron2D.Networking
         {
             Client.Dispose();
             if(NetworkMode == NetworkMode.SteamP2P) SteamAPI.Shutdown();
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
             GC.SuppressFinalize(this);
         }
 

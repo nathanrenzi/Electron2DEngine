@@ -46,7 +46,7 @@ namespace Electron2D.Rendering
             _transform = transform;
             Material = material;
 
-            Program.Game.RegisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
         }
 
         ~MeshRenderer()
@@ -59,7 +59,7 @@ namespace Electron2D.Rendering
 
         public void Dispose()
         {
-            Program.Game.UnregisterGameClass(this);
+            Engine.Game.UnregisterGameClass(this);
             VertexBuffer.Dispose();
             VertexArray.Dispose();
             IndexBuffer.Dispose();
