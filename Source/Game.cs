@@ -1,15 +1,16 @@
-﻿using GLFW;
-using Electron2D.Rendering;
-using static Electron2D.OpenGL.GL;
-using System.Numerics;
-using Electron2D.Misc;
-using Electron2D.UserInterface;
-using System.Drawing;
-using Electron2D.PhysicsBox2D;
+﻿using Box2D.NetStandard.Common;
 using Electron2D.Audio;
 using Electron2D.Management;
-using Electron2D.Rendering.PostProcessing;
+using Electron2D.Misc;
 using Electron2D.Networking;
+using Electron2D.PhysicsBox2D;
+using Electron2D.Rendering;
+using Electron2D.Rendering.PostProcessing;
+using Electron2D.UserInterface;
+using GLFW;
+using System.Drawing;
+using System.Numerics;
+using static Electron2D.OpenGL.GL;
 
 namespace Electron2D
 {
@@ -103,9 +104,11 @@ namespace Electron2D
             }
         }
 
-        public void Run(Settings settings)
+        public void Run()
         {
-            Settings = settings;
+            Engine.Initialize(this);
+            Settings = Settings.LoadSettingsFile();
+            AudioSystem.Initialize(Settings.AudioMasterVolume);
             Debug.OpenLogFile();
             Debug.Log("Starting initialization...");
             Display.Initialize();

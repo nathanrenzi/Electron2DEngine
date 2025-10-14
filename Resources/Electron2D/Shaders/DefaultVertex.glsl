@@ -20,5 +20,5 @@ out vec4 FragColor;
 
 void main() 
 {
-    FragColor = pow(vertexColor, 2.2);
+    FragColor = pow(vertexColor, vec4(2.2));
 }
