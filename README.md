@@ -39,32 +39,32 @@ using Electron2D;
 
 public class MyGame : Game
 {
-  // This is ran when the game is first initialized
+  // This runs when the game is first initialized
   protected override void Initialize()
   {
 
   }
 
-  // This is ran when the game is ready to load content
+  // This runs when the game is ready to load content
   protected override void Load()
   {
 
   }
 
 
-  // This is ran every frame
+  // This runs every frame
   protected override void Update()
   {
 
   }
 
-  // This is ran every frame right before rendering
-  protected unsafe override void Render()
+  // This runs every frame right before rendering
+  protected override void Render()
   {
 
   }
 
-  // This is ran when the game is closing
+  // This runs when the game is closing
   protected override void OnGameClose()
   {
 
@@ -73,7 +73,7 @@ public class MyGame : Game
 ```
 Once you have your `Main` method and custom game class set up, your project is ready to run. From here, you can start adding your own game logic and assets.
 
-## Documentation (WIP)
+## Documentation (Work in Progress)
 Full tutorials and guides for using the engine are coming soon.
 
 ## Built With
@@ -91,5 +91,4 @@ Full tutorials and guides for using the engine are coming soon.
   - [**Nathan Renzi**](https://github.com/nathanrenzi)
 
 ## Licensing
-This project is licensed under the [MIT](LICENSE.md) License - see the [LICENSE.md](LICENSE.md) file
-for details
+This project is licensed under the [MIT License](LICENSE.md).
