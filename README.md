@@ -84,7 +84,7 @@ Full tutorials and guides for using the engine are coming soon.
   - [FreeTypeSharp](https://github.com/ryancheung/FreeTypeSharp) - Font rasterization
   - [NAudio](https://github.com/naudio/NAudio) - Audio backend
   - [RiptideNetworking](https://github.com/RiptideNetworking/Riptide) - Networking backend
-  - [Steamworks.NET](https://steamworks.github.io/) - Steamworks API wrapper for C#
+  - [Steamworks.NET](https://steamworks.github.io/) - C# wrapper for Steamworks API
   - [DotnetNoise](https://github.com/cmsommer/DotnetNoise) - Noise generation
 
 ## Author
