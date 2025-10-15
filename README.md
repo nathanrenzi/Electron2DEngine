@@ -79,7 +79,7 @@ Full tutorials and guides for using the engine are coming soon.
 ## Built With
   - [GL.cs](https://gist.githubusercontent.com/dcronqvist/8e0c594532748e8fc21133ac6e3e8514/raw/89a0bcbdbd9692790f95fd60143980482a12d817/GL.cs) - OpenGL C# bindings
   - [GLFW](https://www.glfw.org/) - Input and window management
-  - [GLFW.NET](https://github.com/ForeverZer0/glfw-net) - GLFW wrapper for C#
+  - [GLFW.NET](https://github.com/ForeverZer0/glfw-net) - C# wrapper for GLFW
   - [Box2D.NetStandard](https://github.com/codingben/box2d-netstandard/tree/v2.4) - 2D physics backend
   - [FreeTypeSharp](https://github.com/ryancheung/FreeTypeSharp) - Font rasterization
   - [NAudio](https://github.com/naudio/NAudio) - Audio backend
