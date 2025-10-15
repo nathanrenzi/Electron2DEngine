@@ -1,19 +1,82 @@
 # Electron2D
-
-A 2D game engine written in C#. This project is a self-study meant to give me more experience with large projects and to gain a better understanding of how game engines work.
+A 2D game engine written in C#.
 
 ## Setup
+To use Electron2D, follow these steps to prepare the required dependencies and files:
 
-In order to download and use this respository, a [GLFW pre-compiled binary](https://www.glfw.org/download) must be placed in the build directory (ex. Electron2DEngine/bin/Debug/net6.0).
+### 1. GLFW
+Download a [pre-compiled GLFW binary](https://www.glfw.org/download) and place it in the build directory of your project. The build directory is created when you first build the project, for example: `Electron2DEngine/bin/Debug/net8.0`.
 
-To use Steam networking, a SteamAPI dll, **steam_api64.dll**, must be located in the build directory of the project. To download this file, go to [this release](https://github.com/rlabrecque/Steamworks.NET/releases/tag/2024.8.0) of Steamworks.NET and download the standalone version. Once downloaded, find the **steam_api64.dll** file in the Windows-x64 folder and place it in the build directory. A **steam_appid.txt** file containing the number **480** must also be created/placed in the build directory, but MUST BE REMOVED before releasing on any platforms.
+### 2. Steam Networking
+To enable Steam networking, you must include the SteamAPI binary:
+- Download the standalone version of [Steamworks.NET release 2024.8.0](https://github.com/rlabrecque/Steamworks.NET/releases/tag/2024.8.0).
+- Locate the `steam_api64.dll` file in the **Windows-x64** folder of the downloaded package and copy it into the build directory.
+- Create a file named `steam_appid.txt` containing only the number **480**, and place it in the build directory.
 
-## Author
+**Important:** Remove `steam_appid.txt` before releasing your game. This file is only for development purposes as it overrides your application's Steam App ID; leaving it in the build can cause issues when distributing the game.
 
-  - [**Nathan Renzi**](https://github.com/nathanrenzi)
+### 3. Create the Main Function
+Create a `Program.cs` (or equivalent) file with a `Main` method, and add `[STAThread]` above the method. This method is the starting point of your application:
+```csharp
+using Electron2D;
+
+public class Program
+{
+  [STAThread]
+  public static void Main(string[] args)
+  {
+    // Instantiate your custom game class here
+    MyGame game = new MyGame();
+    game.Run();
+  }
+}
+```
+
+### 4. Create a Game Class
+Create a class that inherits from `Game`, which will contain your game logic:
+```csharp
+using Electron2D;
+
+public class MyGame : Game
+{
+  // This is ran when the game is first initialized
+  protected override void Initialize()
+  {
+
+  }
+
+  // This is ran when the game is ready to load content
+  protected override void Load()
+  {
+
+  }
+
+
+  // This is ran every frame
+  protected override void Update()
+  {
+
+  }
+
+  // This is ran every frame right before rendering
+  protected unsafe override void Render()
+  {
+
+  }
+
+  // This is ran when the game is closing
+  protected override void OnGameClose()
+  {
+
+  }
+}
+```
+Once you have your `Main` method and custom game class set up, your project is ready to run. From here, you can start adding your own game logic and assets.
+
+## Documentation (WIP)
+Full tutorials and guides for using the engine are coming soon.
 
 ## Built With
-
   - [GL.cs](https://gist.githubusercontent.com/dcronqvist/8e0c594532748e8fc21133ac6e3e8514/raw/89a0bcbdbd9692790f95fd60143980482a12d817/GL.cs) - OpenGL C# bindings
   - [GLFW](https://www.glfw.org/) - Input and window management
   - [GLFW.NET](https://github.com/ForeverZer0/glfw-net) - GLFW wrapper for C#
@@ -24,7 +87,9 @@ To use Steam networking, a SteamAPI dll, **steam_api64.dll**, must be located in
   - [Steamworks.NET](https://steamworks.github.io/) - Steamworks API wrapper for C#
   - [DotnetNoise](https://github.com/cmsommer/DotnetNoise) - Noise generation
 
-## Licensing
+## Author
+  - [**Nathan Renzi**](https://github.com/nathanrenzi)
 
+## Licensing
 This project is licensed under the [MIT](LICENSE.md) License - see the [LICENSE.md](LICENSE.md) file
 for details
