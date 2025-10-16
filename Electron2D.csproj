@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Electron2D\Audio\TestAudio1.mp3" />
-    <None Remove="Resources\Electron2D\Audio\TestAudio3.mp3" />
+    <None Remove="Resources\Audio\TestAudio1.mp3" />
+    <None Remove="Resources\Audio\TestAudio3.mp3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,76 +19,76 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Electron2D\Audio\TestAudio1.mp3">
+    <EmbeddedResource Include="Resources\Audio\TestAudio1.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Audio\TestAudio2.wav">
+    <EmbeddedResource Include="Resources\Audio\TestAudio2.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Audio\TestAudio3.mp3">
+    <EmbeddedResource Include="Resources\Audio\TestAudio3.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\ColorGrading.glsl">
+    <EmbeddedResource Include="Resources\Shaders\PostProcessing\ColorGrading.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\DefaultPostProcessing.glsl">
+    <EmbeddedResource Include="Resources\Shaders\PostProcessing\DefaultPostProcessing.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\GaussianBlur.glsl">
+    <EmbeddedResource Include="Resources\Shaders\PostProcessing\GaussianBlur.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\Inverted.glsl">
+    <EmbeddedResource Include="Resources\Shaders\PostProcessing\Inverted.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Electron2D\Audio\Electron2DRiff.mp3">
+    <EmbeddedResource Include="Resources\Audio\Electron2DRiff.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="DefaultSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Textures\BlankNormal.png">
+    <EmbeddedResource Include="Resources\Textures\BlankNormal.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Textures\BlankTexture.png">
+    <EmbeddedResource Include="Resources\Textures\BlankTexture.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Textures\Electron2DSplashscreen.png">
+    <EmbeddedResource Include="Resources\Textures\Electron2DSplashscreen.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultLit.glsl">
+    <EmbeddedResource Include="Resources\Shaders\DefaultLit.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultText.glsl">
+    <EmbeddedResource Include="Resources\Shaders\DefaultText.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultInterface.glsl">
+    <EmbeddedResource Include="Resources\Shaders\DefaultInterface.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultTextureArray.glsl">
+    <EmbeddedResource Include="Resources\Shaders\DefaultTextureArray.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultTexturedVertex.glsl">
+    <EmbeddedResource Include="Resources\Shaders\DefaultTexturedVertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultVertex.glsl">
+    <EmbeddedResource Include="Resources\Shaders\DefaultVertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\DefaultTexture.glsl">
+    <EmbeddedResource Include="Resources\Shaders\DefaultTexture.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\LensDistortion.glsl">
+    <EmbeddedResource Include="Resources\Shaders\PostProcessing\LensDistortion.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Shaders\PostProcessing\Vignette.glsl">
+    <EmbeddedResource Include="Resources\Shaders\PostProcessing\Vignette.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Electron2D\Textures\Circle.png">
+    <EmbeddedResource Include="Resources\Textures\Circle.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

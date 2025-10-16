@@ -37,11 +37,6 @@ namespace Electron2D
             return Path.Combine(ProjectSettings.EngineResourcePath, localPath);
         }
 
-        public static string GetResourcePath(string localPath)
-        {
-            return Path.Combine(ProjectSettings.ResourcePath, localPath);
-        }
-
         public Texture2D TryGetTexture2DFromITexture(ITexture texture)
         {
             foreach (var tex in textureCache)

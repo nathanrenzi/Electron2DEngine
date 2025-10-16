@@ -19,8 +19,7 @@
         public static bool ShowElectron2DSplashscreen { get; private set; } = false;
         public static bool UseHDRFrameBuffers { get; private set; } = false;
         public static string WindowTitle { get; private set; } = "Electron2D Development Build";
-        public static string EngineResourcePath { get; private set; } = "Resources/Electron2D/";
-        public static string ResourcePath { get; private set; } = "Resources/";
+        public static string EngineResourcePath { get; private set; } = "Resources/";
         // -------------------
 
         /// <summary>
@@ -50,7 +49,6 @@
             if (overrides.UseHDRFrameBuffers.HasValue) UseHDRFrameBuffers = overrides.UseHDRFrameBuffers.Value;
             if (!string.IsNullOrEmpty(overrides.WindowTitle)) WindowTitle = overrides.WindowTitle;
             if (!string.IsNullOrEmpty(overrides.EngineResourcePath)) EngineResourcePath = overrides.EngineResourcePath;
-            if (!string.IsNullOrEmpty(overrides.ResourcePath)) ResourcePath = overrides.ResourcePath;
         }
     }
 
@@ -74,7 +72,6 @@
         public bool? UseHDRFrameBuffers { get; set; }
         public string? WindowTitle { get; set; }
         public string? EngineResourcePath { get; set; }
-        public string? ResourcePath { get; set; }
         // -------------------
     }
 }
