@@ -72,5 +72,7 @@ namespace Electron2D.UserInterface
             GenerateVertices();
             Renderer.IsVertexDirty = true;
         }
+
+        protected override void OnDispose() { }
     }
 }

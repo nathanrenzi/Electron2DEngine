@@ -185,8 +185,13 @@ namespace Electron2D.UserInterface
             {
                 _eventSources[i].RemoveUIListener(_eventSourceListener);
             }
+            OnDispose();
+            Renderer?.Dispose();
             UI.MainCanvas.UnregisterUiComponent(this);
+            GC.SuppressFinalize(this);
         }
+
+        protected abstract void OnDispose(); 
 
         public void Initialize()
         {

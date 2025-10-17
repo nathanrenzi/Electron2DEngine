@@ -491,5 +491,11 @@ namespace Electron2D.UserInterface
                 _holdingRepeatTime = 0;
             }
         }
+
+        protected override void OnDispose()
+        {
+            _backgroundPanel.Dispose();
+            _textLabel.Dispose();
+        }
     }
 }

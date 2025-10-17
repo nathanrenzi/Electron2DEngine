@@ -182,5 +182,7 @@ namespace Electron2D.UserInterface
                     break;
             }
         }
+
+        protected override void OnDispose() { }
     }
 }

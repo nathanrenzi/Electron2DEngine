@@ -117,5 +117,7 @@ namespace Electron2D.UserInterface
             if (!Visible) return;
             Renderer.Render();
         }
+
+        protected override void OnDispose() { }
     }
 }

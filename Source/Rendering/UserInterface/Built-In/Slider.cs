@@ -160,17 +160,12 @@ namespace Electron2D.UserInterface
             Engine.Game.RegisterGameClass(this);
         }
 
-        ~Slider()
-        {
-            Dispose();
-        }
-
         public void FixedUpdate() { }
-        public void Dispose()
+        protected override void OnDispose()
         {
-            Renderer.Dispose();
-            Engine.Game.UnregisterGameClass(this);
-            GC.SuppressFinalize(this);
+            _sliderPanel.Dispose();
+            _backgroundPanel.Dispose();
+            _handlePanel.Dispose();
         }
 
         public override void UpdateMesh()
