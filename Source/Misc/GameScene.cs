@@ -9,7 +9,7 @@ namespace Electron2D
     {
         private List<IGameClass> _classes = new List<IGameClass>();
         private List<UIComponent> _uiComponents = new List<UIComponent>();
-        private bool[] _uiVisibilityState;
+        private bool[] _uiVisibilityState = null;
         protected bool _enabled = false;
 
         public GameScene()
@@ -62,9 +62,12 @@ namespace Electron2D
         public void Enable()
         {
             _enabled = true;
-            for (int i = 0; i < _uiComponents.Count; i++)
+            if(_uiVisibilityState != null)
             {
-                _uiComponents[i].Visible = _uiVisibilityState[i];
+                for (int i = 0; i < _uiComponents.Count; i++)
+                {
+                    _uiComponents[i].Visible = _uiVisibilityState[i];
+                }
             }
         }
 
