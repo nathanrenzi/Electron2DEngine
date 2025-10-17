@@ -51,7 +51,7 @@ namespace Electron2D
         public void RegisterGameClass(IGameClass gameClass)
         {
             if (_classes.Contains(gameClass) || _classesAddQueue.Contains(gameClass)) return;
-            if(_useClassesQueue)
+            if (_useClassesQueue)
             {
                 _classesAddQueue.Add(gameClass);
             }
@@ -63,7 +63,7 @@ namespace Electron2D
 
         public void UnregisterGameClass(IGameClass gameClass)
         {
-            if(_useClassesQueue)
+            if (_useClassesQueue)
             {
                 _classesRemoveQueue.Add(gameClass);
             }
@@ -119,13 +119,21 @@ namespace Electron2D
                 new Vector2(0, ProjectSettings.PhysicsGravity), true, ProjectSettings.PhysicsVelocityIterations,
                 ProjectSettings.PhysicsPositionIterations));
 
-            Initialize();
+            try
+            {
+                Initialize();
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogError($"Unhandled exception while initializing: {exception}");
+                Exit(true);
+            }
 
             DefaultCamera = new Camera2D(Vector2.Zero, 1);
             _defaultSpatialListener = new AudioSpatialListener(DefaultCamera.Transform);
 
             Display.CreateWindow(Settings.WindowWidth, Settings.WindowHeight, ProjectSettings.WindowTitle);
-            if(Settings.Vsync)
+            if (Settings.Vsync)
             {
                 // VSYNC ON
                 Glfw.SwapInterval(1);
@@ -213,69 +221,86 @@ namespace Electron2D
             Debug.Log("Initialization complete");
             Debug.Log("#################### GAME STARTED ####################", ConsoleColor.DarkGreen);
 
-            Load();
+            try
+            {
+                Load();
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogError($"Unhandled exception while loading: {exception}");
+                Exit(true);
+            }
+
             // Rendering before the game loop prevents a black screen when the window is opened
             GLClear();
             RenderCall();
 
             while (!Glfw.WindowShouldClose(Display.Window))
             {
-                Time.DeltaTime = (float)Glfw.Time - Time.GameTime;
-                Time.GameTime = (float)Glfw.Time;
-                PerformanceTimings.FramesPerSecond = 1 / Time.DeltaTime;
-
-                // Input
-                Input.ProcessInput();
-                // -----------------------
-
-                // Updating
-                double goST = Glfw.Time;
-                Update();
-                ShaderGlobalUniforms.UpdateShaders();
-                _useClassesQueue = true;
-                foreach (IGameClass gameClass in _classes)
+                try
                 {
-                    gameClass.Update();
-                }
-                _useClassesQueue = false;
-                PopClassesQueue();
-                LateUpdateEvent?.Invoke();
-                PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
-                // --------------------------
+                    Time.DeltaTime = (float)Glfw.Time - Time.GameTime;
+                    Time.GameTime = (float)Glfw.Time;
+                    PerformanceTimings.FramesPerSecond = 1 / Time.DeltaTime;
 
-                // Physics
-                double phyST = Glfw.Time;
-                if(_doFixedUpdate)
-                {
+                    // Input
+                    Input.ProcessInput();
+                    // -----------------------
+
+                    // Updating
+                    double goST = Glfw.Time;
+                    Update();
+                    ShaderGlobalUniforms.UpdateShaders();
                     _useClassesQueue = true;
                     foreach (IGameClass gameClass in _classes)
                     {
-                        gameClass.FixedUpdate();
+                        gameClass.Update();
                     }
-                    _doFixedUpdate = false;
                     _useClassesQueue = false;
                     PopClassesQueue();
-                }               
-                PerformanceTimings.PhysicsMilliseconds = (Glfw.Time - phyST) * 1000;
-                // -------------------------------
+                    LateUpdateEvent?.Invoke();
+                    PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
+                    // --------------------------
+
+                    // Physics
+                    double phyST = Glfw.Time;
+                    if (_doFixedUpdate)
+                    {
+                        _useClassesQueue = true;
+                        foreach (IGameClass gameClass in _classes)
+                        {
+                            gameClass.FixedUpdate();
+                        }
+                        _doFixedUpdate = false;
+                        _useClassesQueue = false;
+                        PopClassesQueue();
+                    }
+                    PerformanceTimings.PhysicsMilliseconds = (Glfw.Time - phyST) * 1000;
+                    // -------------------------------
 
 
-                // Rendering
-                double rendST = Glfw.Time;
-                ApplyBlendingMode();
-                GLClear();
-                double ppST = Glfw.Time;
-                PostProcessor.Instance.BeforeGameRender();
-                RenderCall();
-                PostProcessor.Instance.AfterGameRender();
-                PostProcessor.Instance.Render();
-                PerformanceTimings.PostProcessingMilliseconds = (Glfw.Time - ppST) * 1000;
-                RenderLayerManager.RenderAllLayersIgnorePostProcessing();
+                    // Rendering
+                    double rendST = Glfw.Time;
+                    ApplyBlendingMode();
+                    GLClear();
+                    double ppST = Glfw.Time;
+                    PostProcessor.Instance.BeforeGameRender();
+                    RenderCall();
+                    PostProcessor.Instance.AfterGameRender();
+                    PostProcessor.Instance.Render();
+                    PerformanceTimings.PostProcessingMilliseconds = (Glfw.Time - ppST) * 1000;
+                    RenderLayerManager.RenderAllLayersIgnorePostProcessing();
 
-                Glfw.SwapBuffers(Display.Window);
-                if(ProjectSettings.GraphicsErrorCheckingEnabled) LogErrors();
-                PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
-                // -------------------------------
+                    Glfw.SwapBuffers(Display.Window);
+                    if (ProjectSettings.GraphicsErrorCheckingEnabled) LogErrors();
+                    PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
+                    // -------------------------------
+                }
+                catch (System.Exception exception)
+                {
+                    Debug.LogError($"Unhandled exception: {exception}");
+                    Exit(true);
+                }
             }
 
             Exit(false);
@@ -323,7 +348,7 @@ namespace Electron2D
 
             string description;
             ErrorCode code = Glfw.GetError(out description);
-            if(code != ErrorCode.None)
+            if (code != ErrorCode.None)
             {
                 Debug.LogError($"GLFW {description} | {code}");
             }

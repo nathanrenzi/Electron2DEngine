@@ -65,10 +65,10 @@ namespace Electron2D.Rendering
         public static Material Create(Shader shader, Color mainColor, ITexture mainTexture = null, ITexture normalTexture = null, bool useLinearFiltering = false, float normalScale = 1)
         {
             if (_blankTexture == null)
-                _blankTexture = ResourceManager.Instance.LoadTexture("Resources/Electron2D/Textures/BlankTexture.png");
+                _blankTexture = ResourceManager.Instance.LoadTexture(ResourceManager.GetEngineResourcePath("/Textures/BlankTexture.png"));
 
             if (_blankNormal == null)
-                _blankNormal = ResourceManager.Instance.LoadTexture("Resources/Electron2D/Textures/BlankNormal.png", true);
+                _blankNormal = ResourceManager.Instance.LoadTexture(ResourceManager.GetEngineResourcePath("/Textures/BlankNormal.png"), true);
 
             return new Material(shader, (mainTexture == null ? _blankTexture : mainTexture), (normalTexture == null ? _blankNormal : normalTexture), mainColor, useLinearFiltering, normalScale);
         }
@@ -83,15 +83,15 @@ namespace Electron2D.Rendering
         }
         public static Material CreateCircle(Shader shader, Color color)
         {
-            return Create(shader, color, ResourceManager.Instance.LoadTexture("Resources/Electron2D/Textures/Circle.png"));
+            return Create(shader, color, ResourceManager.Instance.LoadTexture(ResourceManager.GetEngineResourcePath("/Textures/Circle.png")));
         }
         public static Material CreateCircle(Color color)
         {
             return CreateCircle(GlobalShaders.DefaultTexture, color);
         }
-        public static Material CreateCircle(Color _color, bool _forInterface = false)
+        public static Material CreateCircle(Color color, bool forInterface = false)
         {
-            return CreateCircle(_forInterface ? GlobalShaders.DefaultInterface : GlobalShaders.DefaultTexture, _color);
+            return CreateCircle(forInterface ? GlobalShaders.DefaultInterface : GlobalShaders.DefaultTexture, color);
         }
         public static Material CreateLit(Color mainColor, ITexture mainTexture = null, ITexture normalTexture = null,
             bool useLinearFiltering = false, float normalScale = 1)
