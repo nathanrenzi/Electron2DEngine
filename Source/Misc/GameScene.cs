@@ -1,11 +1,15 @@
-﻿namespace Electron2D
+﻿using Electron2D.UserInterface;
+
+namespace Electron2D
 {
     /// <summary>
-    /// A scene of <see cref="IGameClass"/> objects that can be enabled, disabled, or disposed.
+    /// A scene of <see cref="IGameClass"/> and <see cref="UIComponent"/> objects that can be enabled, disabled, or disposed.
     /// </summary>
-    public class GameScene : IGameClass
+    public abstract class GameScene : IGameClass
     {
         private List<IGameClass> _classes = new List<IGameClass>();
+        private List<UIComponent> _uiComponents = new List<UIComponent>();
+        private bool[] _uiVisibilityState;
         protected bool _enabled = false;
 
         public GameScene()
@@ -23,10 +27,10 @@
         /// Should create any game classes that should be added to the scene. Make sure to call <see cref="Register(IGameClass)"/>
         /// on every game class created.
         /// </summary>
-        protected virtual void CreateGameClasses() { }
-        protected virtual void OnUpdate() { }
-        protected virtual void OnFixedUpdate() { }
-        protected virtual void OnDispose() { }
+        protected abstract void CreateGameClasses();
+        protected abstract void OnUpdate();
+        protected abstract void OnFixedUpdate();
+        protected abstract void OnDispose();
 
         public void Register(IGameClass gameClass)
         {
@@ -36,28 +40,46 @@
             _classes.Add(gameClass);
         }
 
-        public void Unregister(IGameClass gameClass, bool registerToGameOnRemove = false)
+        public void Register(UIComponent uiComponent)
         {
-            if(_classes.Remove(gameClass) && registerToGameOnRemove)
-            {
-                Engine.Game.RegisterGameClass(gameClass);
-            }
+            if (_uiComponents.Contains(uiComponent)) return;
+            _uiComponents.Add(uiComponent);
+        }
+
+        public void Unregister(IGameClass gameClass)
+        {
+            _classes.Remove(gameClass);
+        }
+
+        public void Unregister(UIComponent uiComponent)
+        {
+            _uiComponents.Remove(uiComponent);
         }
 
         /// <summary>
-        /// Enables the scene, and all registered game classes.
+        /// Enables the scene, and all registered objects.
         /// </summary>
         public void Enable()
         {
             _enabled = true;
+            for (int i = 0; i < _uiComponents.Count; i++)
+            {
+                _uiComponents[i].Visible = _uiVisibilityState[i];
+            }
         }
 
         /// <summary>
-        /// Disables the scene, and all registered game classes.
+        /// Disables the scene, and all registered objects.
         /// </summary>
         public void Disable()
         {
             _enabled = false;
+            _uiVisibilityState = new bool[_uiComponents.Count];
+            for (int i = 0; i < _uiComponents.Count; i++)
+            {
+                _uiVisibilityState[i] = _uiComponents[i].Visible;
+                _uiComponents[i].Visible = false;
+            }
         }
 
         public void Update()
@@ -81,8 +103,7 @@
         }
 
         /// <summary>
-        /// Disposes the scene, and all registered game objects. This will completely remove all game classes,
-        /// unlike <see cref="Disable"/> which only prevents them from being rendered and updated.
+        /// Disposes the scene, and all registered objects.
         /// </summary>
         public void Dispose()
         {
@@ -92,8 +113,14 @@
             {
                 _classes[i].Dispose();
             }
+            for (int i = 0; i < _uiComponents.Count; i++)
+            {
+                _uiComponents[i].Dispose();
+            }
             OnDispose();
             _classes = null;
+            _uiComponents = null;
+            _uiVisibilityState = null;
         }
     }
 }
