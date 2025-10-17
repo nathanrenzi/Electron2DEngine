@@ -306,23 +306,23 @@ namespace Electron2D
             Exit(false);
         }
 
-        private void RunPhysicsThread(CancellationToken _token, double _physicsTimestep, Vector2 _gravity,
-            bool _doSleep, int _velocityIterations = 8, int _positionIterations = 2)
+        private void RunPhysicsThread(CancellationToken token, double physicsTimestep, Vector2 gravity,
+            bool doSleep, int velocityIterations = 8, int positionIterations = 2)
         {
-            Physics.Initialize(_gravity, _doSleep);
+            Physics.Initialize(gravity, doSleep);
 
             double lastTickTime = 0;
-            while (!_token.IsCancellationRequested)
+            while (!token.IsCancellationRequested)
             {
                 double time = Glfw.Time;
-                if (lastTickTime + _physicsTimestep <= time)
+                if (lastTickTime + physicsTimestep <= time)
                 {
                     double delta = time - lastTickTime;
                     Time.FixedDeltaTime = (float)delta;
                     lastTickTime = time;
 
                     // Do Physics Tick
-                    Physics.Step((float)delta, _velocityIterations, _positionIterations);
+                    Physics.Step((float)delta, velocityIterations, positionIterations);
                     _doFixedUpdate = true;
                 }
             }
