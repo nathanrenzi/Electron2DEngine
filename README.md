@@ -18,8 +18,6 @@ To enable Steam networking, you must include the SteamAPI binary:
 ### 3. Create the Main Function
 Create a `Program.cs` (or equivalent) file with a `Main` method, and add `[STAThread]` above the method. This method is the starting point of your application:
 ```csharp
-using Electron2D;
-
 public class Program
 {
   [STAThread]
