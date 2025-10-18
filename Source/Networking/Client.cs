@@ -376,7 +376,7 @@ namespace Electron2D.Networking.ClientServer
         }
         private void HandleConnectionFailed(object? sender, ConnectionFailedEventArgs e)
         {
-            ConnectionFailed?.Invoke(e.Message.GetString());
+            ConnectionFailed?.Invoke(e.Message?.GetString() ?? "");
         }
         private void HandleConnected(object? sender, EventArgs e)
         {
