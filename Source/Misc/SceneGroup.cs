@@ -16,6 +16,8 @@ namespace Electron2D
         private List<IGameClass> _classes = new List<IGameClass>();
         private List<UIComponent> _uiComponents = new List<UIComponent>();
         private Dictionary<UIComponent, UIState> _uiStateDictionary = new();
+        private Dictionary<SceneGroup, bool> _sceneGroupStateDictionary = new();
+        public bool Enabled => _enabled;
         protected bool _enabled = false;
         protected bool _disposed = false;
 
@@ -41,11 +43,45 @@ namespace Electron2D
         protected abstract void OnFixedUpdate();
         protected abstract void OnDispose();
 
+        public bool Contains(IGameClass gameClass)
+        {
+            if (_disposed) return false;
+            return _classes.Contains(gameClass);
+        }
+
+        public bool Contains(UIComponent uiComponent)
+        {
+            if (_disposed) return false;
+            return _uiComponents.Contains(uiComponent);
+        }
+
+        private bool ContainsRecursive(SceneGroup sceneGroup)
+        {
+            foreach (var cls in _classes)
+            {
+                if (cls == sceneGroup) return true;
+                if (cls is SceneGroup sg && sg.ContainsRecursive(sceneGroup)) return true;
+            }
+            return false;
+        }
+
         public void Register(IGameClass gameClass)
         {
             if (_disposed) return;
             if (gameClass == this) return;
             if (_classes.Contains(gameClass)) return;
+            if (gameClass is SceneGroup sg)
+            {
+                if (sg.ContainsRecursive(this))
+                {
+                    throw new Exception("Circular dependency detected when trying to register SceneGroup.");
+                }
+                if (!_enabled)
+                {
+                    _sceneGroupStateDictionary.Add(sg, sg.Enabled);
+                    sg.Disable();
+                }
+            }
             Engine.Game.UnregisterGameClass(gameClass);
             _classes.Add(gameClass);
         }
@@ -54,7 +90,7 @@ namespace Electron2D
         {
             if (_disposed) return;
             if (_uiComponents.Contains(uiComponent)) return;
-            if(!_enabled)
+            if (!_enabled)
             {
                 RecordUIState(uiComponent);
                 uiComponent.Visible = false;
@@ -67,6 +103,10 @@ namespace Electron2D
         {
             if (_disposed) return;
             _classes.Remove(gameClass);
+            if (gameClass is SceneGroup sg)
+            {
+                _sceneGroupStateDictionary.Remove(sg);
+            }
         }
 
         public void Unregister(UIComponent uiComponent)
@@ -88,6 +128,7 @@ namespace Electron2D
         public void Enable()
         {
             if (_disposed) return;
+            if (_enabled) return;
             _enabled = true;
             foreach (var pair in _uiStateDictionary)
             {
@@ -95,7 +136,13 @@ namespace Electron2D
                 uiComponent.Visible = pair.Value.Visible;
                 uiComponent.Interactable = pair.Value.Interactable;
             }
+            foreach (var pair in _sceneGroupStateDictionary)
+            {
+                SceneGroup sceneGroup = pair.Key;
+                if (pair.Value) sceneGroup.Enable();
+            }
             _uiStateDictionary.Clear();
+            _sceneGroupStateDictionary.Clear();
             OnEnable();
         }
 
@@ -105,11 +152,25 @@ namespace Electron2D
         public void Disable()
         {
             if (_disposed) return;
+            if (!_enabled) return;
             _enabled = false;
             _uiStateDictionary.Clear();
+            _sceneGroupStateDictionary.Clear();
             for (int i = 0; i < _uiComponents.Count; i++)
             {
-                RecordUIState(_uiComponents[i]);
+                UIComponent uiComponent = _uiComponents[i];
+                RecordUIState(uiComponent);
+                uiComponent.Visible = false;
+                uiComponent.Interactable = false;
+            }
+            for (int i = 0; i < _classes.Count; i++)
+            {
+                IGameClass gameClass = _classes[i];
+                if (gameClass is SceneGroup sg)
+                {
+                    _sceneGroupStateDictionary.Add(sg, sg.Enabled);
+                    sg.Disable();
+                }
             }
             OnDisable();
         }
@@ -121,17 +182,15 @@ namespace Electron2D
                 Visible = uiComponent.Visible,
                 Interactable = uiComponent.Interactable
             });
-            uiComponent.Visible = false;
-            uiComponent.Interactable = false;
         }
 
         public void Update()
         {
             if (_disposed) return;
             if (!_enabled) return;
-            for(int i = 0; i < _classes.Count; i++)
+            foreach (var gameClass in _classes.ToArray())
             {
-                _classes[i].Update();
+                gameClass.Update();
             }
             OnUpdate();
         }
@@ -140,9 +199,9 @@ namespace Electron2D
         {
             if (_disposed) return;
             if (!_enabled) return;
-            for (int i = 0; i < _classes.Count; i++)
+            foreach (var gameClass in _classes.ToArray())
             {
-                _classes[i].FixedUpdate();
+                gameClass.FixedUpdate();
             }
             OnFixedUpdate();
         }
@@ -164,9 +223,10 @@ namespace Electron2D
                 _uiComponents[i].Dispose();
             }
             OnDispose();
-            _classes = null;
-            _uiComponents = null;
-            _uiStateDictionary = null;
+            _classes.Clear();
+            _uiComponents.Clear();
+            _uiStateDictionary.Clear();
+            _sceneGroupStateDictionary.Clear();
             _disposed = true;
         }
     }
