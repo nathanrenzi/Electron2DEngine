@@ -28,6 +28,8 @@ namespace Electron2D.Networking.ClientServer
         public bool AllowNonHostOwnership { get; set; } = true;
 
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
+        public event Action<ushort> ClientConnected;
+        public event Action<ushort> ClientDisconnected;
 
         private ConcurrentQueue<(BuiltInMessageType, Message, ushort)> _messageQueue = new();
         private Dictionary<uint, List<NetworkGameClassData>> _syncingClientSnapshots = new();
@@ -354,6 +356,7 @@ namespace Electron2D.Networking.ClientServer
                 (ushort)BuiltInMessageType.NetworkClassRequestSyncData);
             toHostMessage.AddUShort(e.Client.Id);
             Send(toHostMessage, _hostID);
+            ClientConnected?.Invoke(e.Client.Id);
         }
         private void HandleClientDisconnected(object? sender, ServerDisconnectedEventArgs e)
         {
@@ -378,6 +381,7 @@ namespace Electron2D.Networking.ClientServer
             }
             _queueNetworkGameClasses = false;
             PopQueues();
+            ClientDisconnected?.Invoke(e.Client.Id);
         }
         #endregion
 
