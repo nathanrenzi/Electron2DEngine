@@ -16,10 +16,14 @@ namespace Electron2D
         private List<IGameClass> _classes = new List<IGameClass>();
         private List<UIComponent> _uiComponents = new List<UIComponent>();
         private Dictionary<UIComponent, UIState> _uiStateDictionary = new();
-        private Dictionary<SceneGroup, bool> _sceneGroupStateDictionary = new();
-        public bool Enabled => _enabled;
-        protected bool _enabled = false;
+
         protected bool _disposed = false;
+        private bool _disabledByParent = false;
+        private bool _intendedEnableState = false;
+        private bool _hasParent = false;
+        protected bool _enabled = false;
+
+        public bool Enabled => _enabled && !_disabledByParent;
 
         public SceneGroup()
         {
@@ -29,7 +33,7 @@ namespace Electron2D
 
         ~SceneGroup()
         {
-            Dispose();
+            Dispose(false);
         }
 
         /// <summary>
@@ -67,142 +71,201 @@ namespace Electron2D
 
         public void Register(IGameClass gameClass)
         {
-            if (_disposed) return;
-            if (gameClass == this) return;
-            if (_classes.Contains(gameClass)) return;
+            if (_disposed || gameClass == this || _classes.Contains(gameClass)) return;
+
             if (gameClass is SceneGroup sg)
             {
+                if (sg._hasParent)
+                {
+                    Debug.LogError("SceneGroup already has a parent, cannot register.");
+                    return;
+                }
+
                 if (sg.ContainsRecursive(this))
                 {
                     throw new Exception("Circular dependency detected when trying to register SceneGroup.");
                 }
-                if (!_enabled)
+
+                sg._hasParent = true;
+
+
+                if (_enabled)
                 {
-                    _sceneGroupStateDictionary.Add(sg, sg.Enabled);
-                    sg.Disable();
+                    sg._disabledByParent = false;
+                    if (sg._intendedEnableState)
+                    {
+                        sg.Enable();
+                    }
+                }
+                else
+                {
+                    sg._disabledByParent = true;
+                    sg.Disable(true);
                 }
             }
+
             Engine.Game.UnregisterGameClass(gameClass);
             _classes.Add(gameClass);
         }
 
         public void Register(UIComponent uiComponent)
         {
-            if (_disposed) return;
-            if (_uiComponents.Contains(uiComponent)) return;
+            if (_disposed || _uiComponents.Contains(uiComponent)) return;
+
             if (!_enabled)
             {
                 RecordUIState(uiComponent);
                 uiComponent.Visible = false;
                 uiComponent.Interactable = false;
             }
+
             _uiComponents.Add(uiComponent);
         }
 
         public void Unregister(IGameClass gameClass)
         {
             if (_disposed) return;
+
             _classes.Remove(gameClass);
+
             if (gameClass is SceneGroup sg)
             {
-                _sceneGroupStateDictionary.Remove(sg);
+                sg._hasParent = false;
+
+                // When removed, restore intended state if different from actual
+                if (sg._intendedEnableState && !sg._enabled)
+                {
+                    sg.Enable();
+                }
+                else if (sg._intendedEnableState && sg._enabled)
+                {
+                    sg.Disable();
+                }
             }
         }
 
         public void Unregister(UIComponent uiComponent)
         {
             if (_disposed) return;
-            if (_uiStateDictionary.ContainsKey(uiComponent))
+
+            if (_uiStateDictionary.TryGetValue(uiComponent, out var state))
             {
-                UIState state = _uiStateDictionary[uiComponent];
                 uiComponent.Visible = state.Visible;
                 uiComponent.Interactable = state.Interactable;
                 _uiStateDictionary.Remove(uiComponent);
             }
+
             _uiComponents.Remove(uiComponent);
         }
 
         /// <summary>
         /// Enables the group, and all registered objects.
         /// </summary>
-        public void Enable()
+        public void Enable(bool parentEnabling = false)
         {
             if (_disposed) return;
-            if (_enabled) return;
+
+            if (!parentEnabling)
+            {
+                _intendedEnableState = true;
+            }
+
+            if (_enabled || _disabledByParent) return;
             _enabled = true;
+
+            // Restore UI
             foreach (var pair in _uiStateDictionary)
             {
                 UIComponent uiComponent = pair.Key;
                 uiComponent.Visible = pair.Value.Visible;
                 uiComponent.Interactable = pair.Value.Interactable;
             }
-            foreach (var pair in _sceneGroupStateDictionary)
-            {
-                SceneGroup sceneGroup = pair.Key;
-                if (pair.Value) sceneGroup.Enable();
-            }
             _uiStateDictionary.Clear();
-            _sceneGroupStateDictionary.Clear();
+
+            // Enable children
+            foreach (var cls in _classes)
+            {
+                if (cls is SceneGroup sg)
+                {
+                    sg._disabledByParent = false;
+                    if (sg._intendedEnableState)
+                    {
+                        sg.Enable();
+                    }
+                }
+            }
+
             OnEnable();
         }
 
         /// <summary>
         /// Disables the group, and all registered objects.
         /// </summary>
-        public void Disable()
+        public void Disable(bool parentDisabling = false)
         {
             if (_disposed) return;
+
+            if (parentDisabling)
+            {
+                _disabledByParent = true;
+            }
+            else
+            {
+                _intendedEnableState = false;
+            }
+
+            // Preventing state from being recorded again
             if (!_enabled) return;
             _enabled = false;
-            _uiStateDictionary.Clear();
-            _sceneGroupStateDictionary.Clear();
-            for (int i = 0; i < _uiComponents.Count; i++)
+
+            foreach (var uiComponent in _uiComponents)
             {
-                UIComponent uiComponent = _uiComponents[i];
                 RecordUIState(uiComponent);
                 uiComponent.Visible = false;
                 uiComponent.Interactable = false;
             }
-            for (int i = 0; i < _classes.Count; i++)
+
+            foreach (var cls in _classes)
             {
-                IGameClass gameClass = _classes[i];
-                if (gameClass is SceneGroup sg)
+                if (cls is SceneGroup sg)
                 {
-                    _sceneGroupStateDictionary.Add(sg, sg.Enabled);
-                    sg.Disable();
+                    sg.Disable(true);
                 }
             }
+
             OnDisable();
         }
 
         private void RecordUIState(UIComponent uiComponent)
         {
-            _uiStateDictionary.Add(uiComponent, new UIState()
+            _uiStateDictionary[uiComponent] = new UIState()
             {
                 Visible = uiComponent.Visible,
                 Interactable = uiComponent.Interactable
-            });
+            };
         }
 
         public void Update()
         {
-            if (_disposed) return;
-            if (!_enabled) return;
+            if (_disposed || !_enabled) return;
+
             foreach (var gameClass in _classes.ToArray())
             {
                 gameClass.Update();
             }
+
             OnUpdate();
         }
 
         public void FixedUpdate()
         {
-            if (_disposed) return;
-            if (!_enabled) return;
+            if (_disposed || !_enabled) return;
+
             foreach (var gameClass in _classes.ToArray())
             {
                 gameClass.FixedUpdate();
             }
+
             OnFixedUpdate();
         }
 
@@ -211,23 +274,32 @@ namespace Electron2D
         /// </summary>
         public void Dispose()
         {
-            if (_disposed) return;
+            Dispose(true);
             GC.SuppressFinalize(this);
-            Engine.Game.UnregisterGameClass(this);
-            for (int i = 0; i < _classes.Count; i++)
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+            _disposed = true;
+
+            if (disposing)
             {
-                _classes[i].Dispose();
+                Engine.Game.UnregisterGameClass(this);
+                foreach (var gameClass in _classes)
+                {
+                    gameClass.Dispose();
+                }
+                foreach (var uiComponent in _uiComponents)
+                {
+                    uiComponent.Dispose();
+                }
+                OnDispose();
             }
-            for (int i = 0; i < _uiComponents.Count; i++)
-            {
-                _uiComponents[i].Dispose();
-            }
-            OnDispose();
+
             _classes.Clear();
             _uiComponents.Clear();
             _uiStateDictionary.Clear();
-            _sceneGroupStateDictionary.Clear();
-            _disposed = true;
         }
     }
 }
