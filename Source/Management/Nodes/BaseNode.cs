@@ -4,7 +4,7 @@
     /// A basic <see cref="Node"/> implementation that provides grouping and lifecycle management
     /// for game objects without requiring subclassing.
     /// </summary>
-    public class BaseNode : Node
+    public sealed class BaseNode : Node
     {
         protected override void OnLoad() { }
         protected override void OnEnable() { }
