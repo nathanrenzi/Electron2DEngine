@@ -21,9 +21,9 @@ namespace Electron2D
 
         protected bool _disposed = false;
         private bool _disabledByParent = false;
-        private bool _desiredEnableState = false;
+        private bool _desiredEnableState = true;
         private bool _hasParent = false;
-        protected bool _enabled = false;
+        protected bool _enabled = true;
 
         public bool Enabled => _enabled && !_disabledByParent;
 
