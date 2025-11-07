@@ -3,41 +3,43 @@
 namespace Electron2D
 {
     /// <summary>
-    /// A group of <see cref="IGameClass"/> and/or <see cref="UIComponent"/> objects that can be enabled, disabled, or disposed.
+    /// The abstract base class for all scene hierarchy elements in Electron2D.
+    /// Handles grouping, lifecycle management, and parent-child state propagation for 
+    /// <see cref="IGameClass"/>, <see cref="UIComponent"/>, and nested <see cref="Node"/> instances.
     /// </summary>
-    public abstract class SceneGroup : IGameClass
+    public abstract class Node : IGameClass
     {
-        private struct UIState
+        protected struct UIState
         {
             public bool Visible;
             public bool Interactable;
         }
 
-        private List<IGameClass> _classes = new List<IGameClass>();
-        private List<UIComponent> _uiComponents = new List<UIComponent>();
-        private Dictionary<UIComponent, UIState> _uiStateDictionary = new();
+        protected readonly List<IGameClass> _gameClasses = new List<IGameClass>();
+        protected readonly List<UIComponent> _uiComponents = new List<UIComponent>();
+        protected readonly Dictionary<UIComponent, UIState> _uiStateDictionary = new();
 
         protected bool _disposed = false;
         private bool _disabledByParent = false;
-        private bool _intendedEnableState = false;
+        private bool _desiredEnableState = false;
         private bool _hasParent = false;
         protected bool _enabled = false;
 
         public bool Enabled => _enabled && !_disabledByParent;
 
-        public SceneGroup()
+        public Node()
         {
             Engine.Game.RegisterGameClass(this);
             OnLoad();
         }
 
-        ~SceneGroup()
+        ~Node()
         {
             Dispose(false);
         }
 
         /// <summary>
-        /// Should create any objects that should be added to the group. Make sure to call <see cref="Register"/>
+        /// Should create any objects that should be added to the node. Make sure to call <see cref="AddChild"/>
         /// on every <see cref="IGameClass"/> or <see cref="UIComponent"/> created.
         /// </summary>
         protected abstract void OnLoad();
@@ -50,7 +52,7 @@ namespace Electron2D
         public bool Contains(IGameClass gameClass)
         {
             if (_disposed) return false;
-            return _classes.Contains(gameClass);
+            return _gameClasses.Contains(gameClass);
         }
 
         public bool Contains(UIComponent uiComponent)
@@ -59,31 +61,31 @@ namespace Electron2D
             return _uiComponents.Contains(uiComponent);
         }
 
-        private bool ContainsRecursive(SceneGroup sceneGroup)
+        private bool ContainsRecursive(Node node)
         {
-            foreach (var cls in _classes)
+            foreach (var cls in _gameClasses)
             {
-                if (cls == sceneGroup) return true;
-                if (cls is SceneGroup sg && sg.ContainsRecursive(sceneGroup)) return true;
+                if (cls == node) return true;
+                if (cls is Node sg && sg.ContainsRecursive(node)) return true;
             }
             return false;
         }
 
-        public void Register(IGameClass gameClass)
+        public void AddChild(IGameClass gameClass)
         {
-            if (_disposed || gameClass == this || _classes.Contains(gameClass)) return;
+            if (_disposed || gameClass == this || _gameClasses.Contains(gameClass)) return;
 
-            if (gameClass is SceneGroup sg)
+            if (gameClass is Node sg)
             {
                 if (sg._hasParent)
                 {
-                    Debug.LogError("SceneGroup already has a parent, cannot register.");
+                    Debug.LogError("Node already has a parent, cannot register.");
                     return;
                 }
 
                 if (sg.ContainsRecursive(this))
                 {
-                    throw new Exception("Circular dependency detected when trying to register SceneGroup.");
+                    throw new Exception("Circular dependency detected when trying to register Node.");
                 }
 
                 sg._hasParent = true;
@@ -92,23 +94,23 @@ namespace Electron2D
                 if (_enabled)
                 {
                     sg._disabledByParent = false;
-                    if (sg._intendedEnableState)
+                    if (sg._desiredEnableState)
                     {
-                        sg.Enable();
+                        sg.EnableInternal(false);
                     }
                 }
                 else
                 {
                     sg._disabledByParent = true;
-                    sg.Disable(true);
+                    sg.DisableInternal(true);
                 }
             }
 
             Engine.Game.UnregisterGameClass(gameClass);
-            _classes.Add(gameClass);
+            _gameClasses.Add(gameClass);
         }
 
-        public void Register(UIComponent uiComponent)
+        public void AddChild(UIComponent uiComponent)
         {
             if (_disposed || _uiComponents.Contains(uiComponent)) return;
 
@@ -122,29 +124,29 @@ namespace Electron2D
             _uiComponents.Add(uiComponent);
         }
 
-        public void Unregister(IGameClass gameClass)
+        public void RemoveChild(IGameClass gameClass)
         {
             if (_disposed) return;
 
-            _classes.Remove(gameClass);
+            _gameClasses.Remove(gameClass);
 
-            if (gameClass is SceneGroup sg)
+            if (gameClass is Node sg)
             {
                 sg._hasParent = false;
 
                 // When removed, restore intended state if different from actual
-                if (sg._intendedEnableState && !sg._enabled)
+                if (sg._desiredEnableState && !sg._enabled)
                 {
-                    sg.Enable();
+                    sg.EnableInternal(false);
                 }
-                else if (sg._intendedEnableState && sg._enabled)
+                else if (sg._desiredEnableState && sg._enabled)
                 {
-                    sg.Disable();
+                    sg.DisableInternal(false);
                 }
             }
         }
 
-        public void Unregister(UIComponent uiComponent)
+        public void RemoveChild(UIComponent uiComponent)
         {
             if (_disposed) return;
 
@@ -159,15 +161,20 @@ namespace Electron2D
         }
 
         /// <summary>
-        /// Enables the group, and all registered objects.
+        /// Enables the node, and all registered objects.
         /// </summary>
-        public void Enable(bool parentEnabling = false)
+        public void Enable()
+        {
+            EnableInternal(false);
+        }
+
+        private void EnableInternal(bool parentEnabling)
         {
             if (_disposed) return;
 
             if (!parentEnabling)
             {
-                _intendedEnableState = true;
+                _desiredEnableState = true;
             }
 
             if (_enabled || _disabledByParent) return;
@@ -183,14 +190,14 @@ namespace Electron2D
             _uiStateDictionary.Clear();
 
             // Enable children
-            foreach (var cls in _classes)
+            foreach (var cls in _gameClasses)
             {
-                if (cls is SceneGroup sg)
+                if (cls is Node sg)
                 {
                     sg._disabledByParent = false;
-                    if (sg._intendedEnableState)
+                    if (sg._desiredEnableState)
                     {
-                        sg.Enable();
+                        sg.EnableInternal(false);
                     }
                 }
             }
@@ -199,9 +206,14 @@ namespace Electron2D
         }
 
         /// <summary>
-        /// Disables the group, and all registered objects.
+        /// Disables the node, and all registered objects.
         /// </summary>
-        public void Disable(bool parentDisabling = false)
+        public void Disable()
+        {
+            DisableInternal(false);
+        }
+
+        private void DisableInternal(bool parentDisabling)
         {
             if (_disposed) return;
 
@@ -211,10 +223,9 @@ namespace Electron2D
             }
             else
             {
-                _intendedEnableState = false;
+                _desiredEnableState = false;
             }
 
-            // Preventing state from being recorded again
             if (!_enabled) return;
             _enabled = false;
 
@@ -225,11 +236,11 @@ namespace Electron2D
                 uiComponent.Interactable = false;
             }
 
-            foreach (var cls in _classes)
+            foreach (var cls in _gameClasses)
             {
-                if (cls is SceneGroup sg)
+                if (cls is Node sg)
                 {
-                    sg.Disable(true);
+                    sg.DisableInternal(true);
                 }
             }
 
@@ -249,7 +260,7 @@ namespace Electron2D
         {
             if (_disposed || !_enabled) return;
 
-            foreach (var gameClass in _classes.ToArray())
+            foreach (var gameClass in _gameClasses.ToArray())
             {
                 gameClass.Update();
             }
@@ -261,7 +272,7 @@ namespace Electron2D
         {
             if (_disposed || !_enabled) return;
 
-            foreach (var gameClass in _classes.ToArray())
+            foreach (var gameClass in _gameClasses.ToArray())
             {
                 gameClass.FixedUpdate();
             }
@@ -270,7 +281,7 @@ namespace Electron2D
         }
 
         /// <summary>
-        /// Disposes the group, and all registered objects.
+        /// Disposes the node, and all registered objects.
         /// </summary>
         public void Dispose()
         {
@@ -285,8 +296,7 @@ namespace Electron2D
 
             if (disposing)
             {
-                Engine.Game.UnregisterGameClass(this);
-                foreach (var gameClass in _classes)
+                foreach (var gameClass in _gameClasses)
                 {
                     gameClass.Dispose();
                 }
@@ -294,10 +304,11 @@ namespace Electron2D
                 {
                     uiComponent.Dispose();
                 }
+                Engine.Game.UnregisterGameClass(this);
                 OnDispose();
             }
 
-            _classes.Clear();
+            _gameClasses.Clear();
             _uiComponents.Clear();
             _uiStateDictionary.Clear();
         }
