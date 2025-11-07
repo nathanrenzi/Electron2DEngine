@@ -20,8 +20,9 @@ namespace Electron2D.Networking.ClientServer
 
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
         public event Action NetworkGameClassesLoaded;
-        public event Action<string> ConnectionFailed;
-        public event Action ConnectionSuccess;
+        public event Action<RejectReason> ConnectionFailed;
+        public event Action Connected;
+        public event Action<DisconnectReason> Disconnected;
         public event Action<ushort> ClientConnected;
         public event Action<ushort> ClientDisconnected;
         public event Action<string> NetworkGameClassSpawned;
@@ -49,7 +50,7 @@ namespace Electron2D.Networking.ClientServer
             }
             RiptideClient.ConnectionFailed += HandleConnectionFailed;
             RiptideClient.Connected += HandleConnected;
-            RiptideClient.Disconnected += HandleDisconnect;
+            RiptideClient.Disconnected += HandleDisconnected;
             RiptideClient.MessageReceived += HandleMessageReceived;
             RiptideClient.ClientConnected += (obj, e) => ClientConnected?.Invoke(e.Id);
             RiptideClient.ClientDisconnected += (obj, e) => ClientDisconnected?.Invoke(e.Id);
@@ -376,13 +377,13 @@ namespace Electron2D.Networking.ClientServer
         }
         private void HandleConnectionFailed(object? sender, ConnectionFailedEventArgs e)
         {
-            ConnectionFailed?.Invoke(e.Message?.GetString() ?? "");
+            ConnectionFailed?.Invoke(e.Reason);
         }
         private void HandleConnected(object? sender, EventArgs e)
         {
-            ConnectionSuccess?.Invoke();
+            Connected?.Invoke();
         }
-        private void HandleDisconnect(object? sender, EventArgs e)
+        private void HandleDisconnected(object? sender, DisconnectedEventArgs e)
         {
             foreach (var pair in NetworkGameClasses)
             {
@@ -393,6 +394,7 @@ namespace Electron2D.Networking.ClientServer
             _isPaused = false;
             _isSyncing = false;
             _syncCount = 0;
+            Disconnected?.Invoke(e.Reason);
         }
         #endregion
 
