@@ -6,8 +6,10 @@
     /// </summary>
     public class StateNode : Node
     {
+        public string ActiveState => _activeState;
+
         private Dictionary<string, List<Node>> _states = new();
-        private string _currentState = "";
+        private string _activeState = "";
 
         /// <summary>
         /// Adds a node to a given state. The node is also added as a child of this StateNode.
@@ -34,7 +36,7 @@
 
                 // Only enabling/disabling if the Node was not yet a child of this StateNode
                 // to avoid overwriting the parental disabling.
-                if(_currentState == state)
+                if(_activeState == state)
                 {
                     node.Enable();
                 }
@@ -93,7 +95,7 @@
         /// <param name="state">The name of the state whose nodes should be activated. Must not be <see langword="null"/> or empty.</param>
         public void SetState(string state)
         {
-            _currentState = state;
+            _activeState = state;
             bool found = _states.ContainsKey(state);
 
             // First pass: disable all nodes not in the active state
@@ -123,7 +125,7 @@
         }
         protected override void OnEnable()
         {
-            SetState(_currentState);
+            SetState(_activeState);
         }
         protected override void OnFixedUpdate() { }
         protected override void OnLoad() { }
