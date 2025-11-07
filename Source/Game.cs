@@ -158,7 +158,7 @@ namespace Electron2D
                 // Displaying splashscreen
                 Debug.Log("Displaying splashscreen...");
                 Splashscreen.Initialize();
-                Texture2D splashscreenTexture = TextureFactory.Load(ResourceManager.GetEngineResourcePath("Textures/Electron2DSplashscreen.png"), true);
+                Texture2D splashscreenTexture = TextureFactory.Load(ResourceManager.GetEngineResourcePath("Textures/Electron2DSplashscreen.png"), false);
                 float splashscreenStartTime = (float)Glfw.Time;
                 float splashscreenDisplayTime = 4f;
                 float fadeTimePercentage = 0.3f;
@@ -174,11 +174,11 @@ namespace Electron2D
                     float e;
                     if (t <= fadeTimePercentage)
                     {
-                        e = Easing.EaseInOutSine(t / fadeTimePercentage);
+                        e = -0.5f * (MathF.Cos(MathF.PI * (t / fadeTimePercentage)) - 1f);
                     }
                     else if (t >= 1 - fadeTimePercentage)
                     {
-                        e = Easing.EaseInOutSine((1 - t) / fadeTimePercentage);
+                        e = -0.5f * (MathF.Cos(MathF.PI * ((1 - t) / fadeTimePercentage)) - 1f);
                     }
                     else
                     {
