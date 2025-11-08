@@ -36,27 +36,27 @@ namespace Electron2D.UserInterface
         {
             tempVertexList.Clear();
 
+            // Top Left
+            tempVertexList.Add(LeftXBound * 2);
+            tempVertexList.Add(TopYBound * 2);
+            tempVertexList.Add(0);
+            tempVertexList.Add(0);
+
             // Top Right
             tempVertexList.Add(RightXBound * 2);
             tempVertexList.Add(TopYBound * 2);
             tempVertexList.Add(1);
-            tempVertexList.Add(1);
+            tempVertexList.Add(0);
 
             // Bottom Right
             tempVertexList.Add(RightXBound * 2);
             tempVertexList.Add(BottomYBound * 2);
             tempVertexList.Add(1);
-            tempVertexList.Add(0);
+            tempVertexList.Add(1);
 
             // Bottom Left
             tempVertexList.Add(LeftXBound * 2);
             tempVertexList.Add(BottomYBound * 2);
-            tempVertexList.Add(0);
-            tempVertexList.Add(0);
-
-            // Top Left
-            tempVertexList.Add(LeftXBound * 2);
-            tempVertexList.Add(TopYBound * 2);
             tempVertexList.Add(0);
             tempVertexList.Add(1);
 

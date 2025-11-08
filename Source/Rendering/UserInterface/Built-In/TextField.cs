@@ -248,7 +248,7 @@ namespace Electron2D.UserInterface
                 def.Text,
                 def.SizeX - (def.TextAreaPadding.X + def.TextAreaPadding.Y),
                 def.SizeY - (def.TextAreaPadding.Z + def.TextAreaPadding.W),
-                def.TextFont,
+                def.TextFontArguments,
                 def.TextMaterial,
                 def.TextColor,
                 def.TextHorizontalAlignment,
@@ -261,7 +261,7 @@ namespace Electron2D.UserInterface
             _caretMaterial = def.CaretMaterial == null ? 
                 Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")), true, new string[] { "time" }))
                 : def.CaretMaterial;
-            _caretPanel = new Panel(_caretMaterial, uiRenderLayer + 2, _caretWidth, def.TextFont.Arguments.FontSize, useScreenPosition, ignorePostProcessing);
+            _caretPanel = new Panel(_caretMaterial, uiRenderLayer + 2, _caretWidth, def.TextFontArguments.FontSize, useScreenPosition, ignorePostProcessing);
             _caretPanel.Visible = false;
             _caretPanel.Interactable = false;
             _textColor = def.TextColor;
@@ -310,14 +310,14 @@ namespace Electron2D.UserInterface
             _textLabel.Anchor = Anchor;
             _textLabel.SizeX = SizeX - (TextAreaPadding.X + TextAreaPadding.Y);
             _textLabel.SizeY = SizeY - (TextAreaPadding.Z + TextAreaPadding.W);
-            _textLabel.Transform.Position = Transform.Position + (new Vector2(TextAreaPadding.X, TextAreaPadding.W) * 0.5f) - (new Vector2(TextAreaPadding.Y, TextAreaPadding.Z) * 0.5f);
+            _textLabel.Transform.Position = Transform.Position + (new Vector2(TextAreaPadding.X, -TextAreaPadding.Z) * 0.5f) - (new Vector2(TextAreaPadding.Y, -TextAreaPadding.W) * 0.5f);
             UpdateCaretDisplay();
         }
 
         private void UpdateCaretDisplay()
         {
             if(!_initialized) return;
-            _caretPanel.Transform.Position = _textLabel.Renderer.GetCaretWorldPostion(_iterator.Index) + new Vector2(_caretPanel.SizeX / 2f, _caretPanel.SizeY / 3f);
+            _caretPanel.Transform.Position = _textLabel.Renderer.GetCaretWorldPostion(_iterator.Index) + new Vector2(_caretPanel.SizeX / 2f, -_caretPanel.SizeY / 3f);
             _caretMaterial.Shader.SetFloat("startTime", Time.GameTime);
         }
 

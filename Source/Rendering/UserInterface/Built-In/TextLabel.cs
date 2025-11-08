@@ -1,4 +1,5 @@
-﻿using Electron2D.Rendering.Shaders;
+﻿using Electron2D.Management;
+using Electron2D.Rendering.Shaders;
 using Electron2D.Rendering.Text;
 using System.Drawing;
 using System.Numerics;
@@ -81,8 +82,7 @@ namespace Electron2D.UserInterface
         {
             SizeX = def.SizeX;
             SizeY = def.SizeY;
-            fgh = def.TextFont;
-
+            fgh = ResourceManager.Instance.LoadFont(def.TextFontArguments.FontFile, def.TextFontArguments.FontSize, def.TextFontArguments.OutlineWidth);
             Renderer = new TextRenderer(Transform, fgh, def.TextMaterial.Shader, def.Text, new Vector2(SizeX, SizeY), def.TextColor, Color.Black,
                 def.TextHorizontalAlignment, def.TextVerticalAlignment, def.TextAlignmentMode, def.TextOverflowMode);
         }
@@ -115,6 +115,7 @@ namespace Electron2D.UserInterface
         public override void Render()
         {
             if (!Visible) return;
+            Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix", UICanvas.Instance.UIModelMatrix);
             Renderer.Render();
         }
 

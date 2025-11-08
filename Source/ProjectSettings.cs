@@ -1,4 +1,6 @@
-﻿namespace Electron2D
+﻿using Electron2D.UserInterface;
+
+namespace Electron2D
 {
     public static class ProjectSettings
     {
@@ -15,6 +17,7 @@
         // -------------------
 
         // Misc --------------
+        public static UISettings UISettings { get; private set; } = new UISettings();
         public static bool GraphicsErrorCheckingEnabled { get; private set; } = false;
         public static bool ShowElectron2DSplashscreen { get; private set; } = false;
         public static bool UseHDRFrameBuffers { get; private set; } = false;
@@ -44,6 +47,7 @@
             if (overrides.ServerHeartbeatIntervalMilliseconds.HasValue) ServerHeartbeatIntervalMilliseconds = overrides.ServerHeartbeatIntervalMilliseconds.Value;
 
             // Misc
+            if (overrides.UISettings != null) UISettings = overrides.UISettings;
             if (overrides.GraphicsErrorCheckingEnabled.HasValue) GraphicsErrorCheckingEnabled = overrides.GraphicsErrorCheckingEnabled.Value;
             if (overrides.ShowElectron2DSplashscreen.HasValue) ShowElectron2DSplashscreen = overrides.ShowElectron2DSplashscreen.Value;
             if (overrides.UseHDRFrameBuffers.HasValue) UseHDRFrameBuffers = overrides.UseHDRFrameBuffers.Value;
@@ -67,6 +71,7 @@
         // -------------------
 
         // Misc --------------
+        public UISettings? UISettings { get; set; }
         public bool? GraphicsErrorCheckingEnabled { get; set; }
         public bool? ShowElectron2DSplashscreen { get; set; }
         public bool? UseHDRFrameBuffers { get; set; }

@@ -177,16 +177,28 @@ namespace Electron2D.UserInterface
         {
             if (!_initialized) return;
 
-            _backgroundPanel.Transform.Position = new Vector2(Transform.Position.X, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
+            // Background panel
+            _backgroundPanel.Transform.Position = new Vector2(
+                Transform.Position.X,
+                Transform.Position.Y + (Anchor.Y * BackgroundSizeY / 2f)
+            );
             _backgroundPanel.SizeX = SizeX;
             _backgroundPanel.SizeY = BackgroundSizeY;
 
-            float endPosition = ((SizeX-HandlePadding*2) * Value01);
-            _sliderPanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding / 2f, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
+            // Slider fill
+            float endPosition = ((SizeX - HandlePadding * 2) * Value01);
+            _sliderPanel.Transform.Position = new Vector2(
+                Transform.Position.X + LeftXBound + HandlePadding / 2f,
+                Transform.Position.Y + (Anchor.Y * BackgroundSizeY / 2f)
+            );
             _sliderPanel.SizeX = endPosition + HandlePadding;
             _sliderPanel.SizeY = SliderSizeY;
 
-            _handlePanel.Transform.Position = new Vector2(Transform.Position.X + LeftXBound + HandlePadding + endPosition, Transform.Position.Y + (-Anchor.Y * BackgroundSizeY / 2f));
+            // Handle position
+            _handlePanel.Transform.Position = new Vector2(
+                Transform.Position.X + LeftXBound + HandlePadding + endPosition,
+                Transform.Position.Y + (Anchor.Y * BackgroundSizeY / 2f)
+            );
         }
 
         public void Update()

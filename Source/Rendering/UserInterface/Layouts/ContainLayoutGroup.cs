@@ -17,10 +17,10 @@ namespace Electron2D.UserInterface
             {
                 UIComponent component = Components[i];
 
-                component.Anchor = new Vector2(-1, 1);
+                component.Anchor = new Vector2(-1, -1);
                 component.SizeX = _parent.SizeX - (Padding.X + Padding.Y);
                 component.SizeY = _parent.SizeY - (Padding.Z + Padding.W);
-                component.Transform.Position = new Vector2(_parent.LeftXBound + Padding.X, _parent.TopYBound - Padding.Y) + _parent.Transform.Position;
+                component.Transform.Position = new Vector2(_parent.LeftXBound + Padding.X, _parent.TopYBound + Padding.Z) + _parent.Transform.Position;
             }
         }
     }

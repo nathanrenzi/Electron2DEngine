@@ -214,7 +214,7 @@ namespace Electron2D
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
 
-            UI.MainCanvas.Initialize();
+            UICanvas uiCanvas = new UICanvas();
             PostProcessor.Instance.Initialize();
             GC.Collect();
 

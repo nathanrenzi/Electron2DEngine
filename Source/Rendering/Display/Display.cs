@@ -10,6 +10,7 @@ namespace Electron2D
     public static class Display
     {
         public const float REFERENCE_WINDOW_WIDTH = 1920f;
+        public static event Action OnWindowResize;
 
         public static Window Window { get; private set; }
         public static Vector2 WindowSize { get; private set; }
@@ -117,6 +118,7 @@ namespace Electron2D
                     WindowSize = new Vector2(screen.Width, screen.Height);
                     break;
             }
+            OnWindowResize?.Invoke();
         }
 
         public static void DestroyWindow()

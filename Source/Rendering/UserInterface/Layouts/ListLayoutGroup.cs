@@ -79,7 +79,6 @@ namespace Electron2D.UserInterface
         {
             float yPosition = 0;
             float xPosition = 0;
-
             Vector2 anchor = Vector2.Zero;
 
             float totalSize = ((Components.Count - 1) * Spacing);
@@ -91,16 +90,16 @@ namespace Electron2D.UserInterface
             switch (VerticalAlignment)
             {
                 case LayoutAlignment.Top:
-                    yPosition = _parent.TopYBound - Padding.Z;
-                    anchor.Y = 1;
+                    yPosition = _parent.TopYBound + Padding.Z;
+                    anchor.Y = -1;
                     break;
                 case LayoutAlignment.Center:
-                    yPosition = Direction == ListDirection.Vertical ? _parent.TopYBound - (totalSize / 2f) : 0;
+                    yPosition = _parent.TopYBound + (_parent.SizeY - totalSize) / 2f;
                     anchor.Y = 0;
                     break;
                 case LayoutAlignment.Bottom:
-                    yPosition = _parent.BottomYBound + Padding.W;
-                    anchor.Y = -1;
+                    yPosition = _parent.BottomYBound - Padding.W - totalSize;
+                    anchor.Y = 1;
                     break;
             }
 
@@ -125,18 +124,18 @@ namespace Electron2D.UserInterface
                 component.Anchor = anchor;
                 component.Transform.Position = new Vector2(xPosition, yPosition) + _parent.Transform.Position;
 
-                if(Direction == ListDirection.Vertical)
+                if (Direction == ListDirection.Vertical)
                 {
                     if (VerticalAlignment is LayoutAlignment.Top or LayoutAlignment.Center)
                     {
-                        yPosition -= component.SizeY + Spacing;
+                        yPosition += component.SizeY + Spacing;
                     }
                     else if (VerticalAlignment is LayoutAlignment.Bottom)
                     {
-                        yPosition += component.SizeY + Spacing;
+                        yPosition -= component.SizeY + Spacing;
                     }
                 }
-                else // Horizontal
+                else
                 {
                     if (HorizontalAlignment is LayoutAlignment.Right or LayoutAlignment.Center)
                     {

@@ -88,20 +88,20 @@ namespace Electron2D.UserInterface
             // The positions of the outer vertices
             float L1 = -SizeX + (Anchor.X * -SizeX);
             float R1 = SizeX + (Anchor.X * -SizeX);
-            float T1 = SizeY + (Anchor.Y * -SizeY);
-            float B1 = -SizeY + (Anchor.Y * -SizeY);
+            float T1 = -SizeY + (Anchor.Y * -SizeY);
+            float B1 = SizeY + (Anchor.Y * -SizeY);
 
             // The positions of the padding
             float L2 = L1 + _borderPixelSize;
             float R2 = R1 - _borderPixelSize;
-            float T2 = T1 - _borderPixelSize;
-            float B2 = B1 + _borderPixelSize;
+            float T2 = T1 + _borderPixelSize;
+            float B2 = B1 - _borderPixelSize;
 
             // Creating the UV coordinates for the non-0 and non-1 UV values that should be the same regardless of the size of UI
             float LU = Math.Clamp(_left, 0, 1f);
             float RU = 1 - Math.Clamp(_right, 0, 1f);
-            float TV = 1 - Math.Clamp(_top, 0, 1f);
-            float BV = Math.Clamp(_bottom, 0, 1f);
+            float TV = Math.Clamp(_top, 0, 1f);
+            float BV = 1- Math.Clamp(_bottom, 0, 1f);
 
             SetVertex(0, L1, T1, 0, 1);
             SetVertex(1, L2, T1, LU, 1);

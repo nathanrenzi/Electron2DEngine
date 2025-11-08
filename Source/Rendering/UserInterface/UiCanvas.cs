@@ -14,41 +14,92 @@ namespace Electron2D.UserInterface
             public bool IsInteractable;
         }
 
+        public static UICanvas Instance { get; private set; }
+        public event Action<float> OnUIScaleChanged;
+        public Matrix4x4 UIModelMatrix { get; private set; }
+        public Matrix4x4 UIModelMatrixInverse { get; private set; }
+        public float Scale => UIModelMatrix.M11;
+
         private List<UIComponent> _activeComponents = new List<UIComponent>();
         private UIComponent _focusedComponent = null;
+        private UIScalingMode _scalingMode;
+        private Vector2 _virtualResolution;
+        private bool _maintainAspect;
 
-        // Add an ActiveUiComponent class that also holds a reference to the constraints being used
-        //  and use that for the above list instead
-
-        private bool _initialized = false;
-
-        public void Initialize()
+        public UICanvas()
         {
-            if (_initialized == true) return;
-            _initialized = true;
-
+            if (Instance != null)
+            {
+                Debug.LogError("Only one UICanvas can exist at a time.");
+                return;
+            }
+            Instance = this;
+            _scalingMode = ProjectSettings.UISettings.ScalingMode;
+            _virtualResolution = ProjectSettings.UISettings.VirtualResolution;
+            _maintainAspect = ProjectSettings.UISettings.MaintainAspect;
+            UpdateScaling();
             Game.LateUpdateEvent += CheckForInput;
         }
 
-        public void RegisterUiComponent(UIComponent component)
+        public void RegisterUIComponent(UIComponent component)
         {
             if (_activeComponents.Contains(component)) return;
-
-            component.SetParentCanvas(this);
             _activeComponents.Add(component);
         }
 
-        public void UnregisterUiComponent(UIComponent component)
+        public void UnregisterUIComponent(UIComponent component)
         {
             if (!_activeComponents.Contains(component)) return;
-
             _activeComponents.Remove(component);
+        }
+
+        private void UpdateScaling()
+        {
+            if (_scalingMode == UIScalingMode.RealResolution)
+            {
+                UIModelMatrix = Matrix4x4.Identity;
+                UIModelMatrixInverse = Matrix4x4.Identity;
+            }
+            else
+            {
+                float scaleX = Display.WindowSize.X / _virtualResolution.X;
+                float scaleY = Display.WindowSize.Y / _virtualResolution.Y;
+
+                if (_maintainAspect)
+                {
+                    float uniformScale = MathF.Min(scaleX, scaleY);
+                    scaleX = scaleY = uniformScale;
+                }
+
+                float offsetX = (Display.WindowSize.X - _virtualResolution.X * scaleX) / 2f;
+                float offsetY = (Display.WindowSize.Y - _virtualResolution.Y * scaleY) / 2f;
+
+                UIModelMatrix = Matrix4x4.CreateScale(scaleX, scaleY, 1f) *
+                    Matrix4x4.CreateTranslation(offsetX, offsetY, 0f);
+
+                Matrix4x4.Invert(UIModelMatrix, out var inverse);
+                UIModelMatrixInverse = inverse;
+            }
+
+            OnUIScaleChanged?.Invoke(Scale);
+        }
+
+        public Vector2 VirtualToScreen(Vector2 position)
+        {
+            Vector4 r = Vector4.Transform(new Vector4(position, 0, 1), UIModelMatrix);
+            return new Vector2(r.X, r.Y);
+        }
+
+        public Vector2 ScreenToVirtual(Vector2 position)
+        {
+            Vector4 r = Vector4.Transform(new Vector4(position, 0, 1), UIModelMatrixInverse);
+            return new Vector2(r.X, r.Y);
         }
 
         public void CheckForInput()
         {
             Vector2 mousePos = Input.GetMouseWorldPosition();
-            Vector2 mousePosScreen = Input.GetMouseScreenPosition();
+            Vector2 mousePosScreen = ScreenToVirtual(Input.GetMouseScreenPosition());
             int hoveredCount = 0;
             for (int i = 0; i < _activeComponents.Count; i++)
             {

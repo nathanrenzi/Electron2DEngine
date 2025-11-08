@@ -239,7 +239,7 @@ namespace Electron2D
         public FontGlyphStore LoadFont(string _fontFile, int _fontSize, int _outlineSize)
         {
             string[] s = _fontFile.Split('/');
-            FontArguments args = new FontArguments() { FontName = s[s.Length - 1], FontSize = _fontSize };
+            FontArguments args = new FontArguments() { FontFile = s[s.Length - 1], FontSize = _fontSize };
             fontCache.TryGetValue(args, out var value);
             if (value is not null)
             {

@@ -101,9 +101,15 @@ namespace Electron2D.Rendering
         {
             if(!_disposed)
             {
-                glDeleteTexture(Handle);
-                ResourceManager.Instance.RemoveTexture(this);
-                _disposed = true;
+                try
+                {
+                    glDeleteTexture(Handle);
+                    ResourceManager.Instance.RemoveTexture(this);
+                    _disposed = true;
+                } catch(Exception e)
+                {
+                    Debug.LogError($"Could not dispose texture {Handle}: {e.Message}");
+                }
             }
         }
         public void Dispose()

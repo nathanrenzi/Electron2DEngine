@@ -1,7 +1,6 @@
 ﻿using static FreeTypeSharp.Native.FT;
 using static Electron2D.OpenGL.GL;
 using FreeTypeSharp;
-using System.Drawing;
 
 namespace Electron2D.Rendering.Text
 {
@@ -29,9 +28,7 @@ namespace Electron2D.Rendering.Text
             Face = face;
             UseKerning = useKerning;
 
-            string[] split = fontFile.Split("/");
-            string fontName = split[split.Length - 1];
-            Arguments = new FontArguments() { FontSize = fontSize, FontName = fontName };
+            Arguments = new FontArguments() { FontSize = fontSize, FontFile = fontFile };
         }
 
         ~FontGlyphStore()
