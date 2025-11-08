@@ -110,7 +110,7 @@ namespace Electron2D.UserInterface
                     anchor.X = -1;
                     break;
                 case LayoutAlignment.Center:
-                    xPosition = Direction == ListDirection.Horizontal ? _parent.RightXBound - (totalSize / 2f) : 0;
+                    xPosition = Direction == ListDirection.Horizontal ? _parent.RightXBound - (_parent.SizeX - totalSize) / 2f : _parent.LeftXBound + _parent.SizeX / 2f;
                     anchor.X = 0;
                     break;
                 case LayoutAlignment.Right:
@@ -126,7 +126,7 @@ namespace Electron2D.UserInterface
 
                 if (Direction == ListDirection.Vertical)
                 {
-                    if (VerticalAlignment is LayoutAlignment.Top or LayoutAlignment.Center)
+                    if (VerticalAlignment == LayoutAlignment.Top || VerticalAlignment == LayoutAlignment.Center)
                     {
                         yPosition += component.SizeY + Spacing;
                     }
@@ -137,7 +137,7 @@ namespace Electron2D.UserInterface
                 }
                 else
                 {
-                    if (HorizontalAlignment is LayoutAlignment.Right or LayoutAlignment.Center)
+                    if (HorizontalAlignment == LayoutAlignment.Right || HorizontalAlignment == LayoutAlignment.Center)
                     {
                         xPosition -= component.SizeX + Spacing;
                     }
