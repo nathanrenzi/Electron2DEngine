@@ -2,49 +2,53 @@
 {
     public class UIConstraints
     {
-        private UIConstraint positionXConstraint;
-        private UIConstraint positionYConstraint;
-        private UIConstraint sizeXConstraint;
-        private UIConstraint sizeYConstraint;
-        private UIComponent component;
+        public bool IsDirty { get; set; }
+        private List<UIConstraint> _constraints = new List<UIConstraint>();
+        private UIComponent _component;
 
-        public UIConstraints(UIComponent _component)
+        public UIConstraints(UIComponent component)
         {
-            component = _component;
+            _component = component;
+        }
+
+        public void Add(UIConstraint constraint)
+        {
+            if(!_constraints.Contains(constraint))
+            {
+                _constraints.Add(constraint);
+                IsDirty = true;
+            }
+            else
+            {
+                Debug.LogError("Constraint has already been added to this UIConstraints object, cannot add!");
+            }
+        }
+
+        public void Remove(UIConstraint constraint)
+        {
+            _constraints.Remove(constraint);
+            IsDirty = true;
         }
 
         public void ApplyConstraints()
         {
-            if(sizeXConstraint != null) sizeXConstraint.ApplyConstraint(component);
-            if (sizeYConstraint != null) sizeYConstraint.ApplyConstraint(component);
-            if (positionXConstraint != null) positionXConstraint.ApplyConstraint(component);
-            if (positionYConstraint != null) positionYConstraint.ApplyConstraint(component);
+            foreach (var constraint in _constraints)
+            {
+                constraint.ApplyConstraint(_component);
+            }
+
+            foreach (var constraint in _constraints)
+            {
+                if(!constraint.CheckConstraint(_component))
+                {
+                    Debug.LogWarning($"Constraint of type '{constraint.GetType().Name}' was not satisfied!");
+                }
+            }
         }
 
-        public void SetPosition(UIConstraint _constraint)
+        public void Clear()
         {
-            if (_constraint.Side == UIConstraintSide.Left || _constraint.Side == UIConstraintSide.Right)
-            {
-                positionXConstraint = _constraint;
-            }
-            else if (_constraint.Side == UIConstraintSide.Top || _constraint.Side == UIConstraintSide.Bottom)
-            {
-                positionYConstraint = _constraint;
-            }
-            _constraint.ApplyConstraint(component);
-        }
-
-        public void SetSize(UIConstraint _constraint)
-        {
-            if(_constraint.Side == UIConstraintSide.Left || _constraint.Side == UIConstraintSide.Right)
-            {
-                sizeXConstraint = _constraint;
-            }
-            else if (_constraint.Side == UIConstraintSide.Top || _constraint.Side == UIConstraintSide.Bottom)
-            {
-                sizeYConstraint = _constraint;
-            }
-            _constraint.ApplyConstraint(component);
+            _constraints.Clear();
         }
     }
 }

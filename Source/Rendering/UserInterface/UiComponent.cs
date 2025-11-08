@@ -161,6 +161,7 @@ namespace Electron2D.UserInterface
             {
                 _eventSources[i].RemoveUIListener(_eventSourceListener);
             }
+            Constraints.Clear();
             OnDispose();
             Renderer?.Dispose();
             UICanvas.Instance.UnregisterUIComponent(this);
@@ -320,6 +321,11 @@ namespace Electron2D.UserInterface
 
         public virtual void Render()
         {
+            if(Constraints.IsDirty)
+            {
+                ApplyConstraints();
+                Constraints.IsDirty = false;
+            }
             if (Visible && UsingMeshRenderer)
             {
                 Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix", UICanvas.Instance.UIModelMatrix);

@@ -14,6 +14,12 @@ namespace Electron2D
             return Clamp(_value, 0, 1);
         }
 
+        public static float Lerp(float a, float b, float t)
+        {
+            t = Math.Clamp(t, 0, 1);
+            return a + (b - a) * t;
+        }
+
         public static Vector2 RotateVector2(Vector2 _vector2, float _degrees)
         {
             float radians = _degrees * (MathF.PI / 180f);
