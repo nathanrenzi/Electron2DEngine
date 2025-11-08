@@ -1,5 +1,4 @@
-﻿using Box2D.NetStandard.Dynamics.Fixtures;
-using Electron2D.Rendering;
+﻿using Electron2D.Rendering;
 using GLFW;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -67,9 +66,9 @@ namespace Electron2D
             Glfw.MakeContextCurrent(Window);
             Import(Glfw.GetProcAddress);
 
-            if (File.Exists("Resources/icon.ico"))
+            if (File.Exists(ResourceManager.GetEngineResourcePath("icon.ico")))
             {
-                Texture2D texture = ResourceManager.Instance.LoadTexture("Resources/icon.ico");
+                Texture2D texture = ResourceManager.Instance.LoadTexture(ResourceManager.GetEngineResourcePath("icon.ico"));
                 SetIcon(texture);
             }
             Settings settings = Engine.Game.Settings;
