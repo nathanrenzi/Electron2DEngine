@@ -23,11 +23,11 @@
 
         public void SetPosition(UIConstraint _constraint)
         {
-            if (_constraint.side == UIConstraintSide.Left || _constraint.side == UIConstraintSide.Right)
+            if (_constraint.Side == UIConstraintSide.Left || _constraint.Side == UIConstraintSide.Right)
             {
                 positionXConstraint = _constraint;
             }
-            else if (_constraint.side == UIConstraintSide.Top || _constraint.side == UIConstraintSide.Bottom)
+            else if (_constraint.Side == UIConstraintSide.Top || _constraint.Side == UIConstraintSide.Bottom)
             {
                 positionYConstraint = _constraint;
             }
@@ -36,11 +36,11 @@
 
         public void SetSize(UIConstraint _constraint)
         {
-            if(_constraint.side == UIConstraintSide.Left || _constraint.side == UIConstraintSide.Right)
+            if(_constraint.Side == UIConstraintSide.Left || _constraint.Side == UIConstraintSide.Right)
             {
                 sizeXConstraint = _constraint;
             }
-            else if (_constraint.side == UIConstraintSide.Top || _constraint.side == UIConstraintSide.Bottom)
+            else if (_constraint.Side == UIConstraintSide.Top || _constraint.Side == UIConstraintSide.Bottom)
             {
                 sizeYConstraint = _constraint;
             }

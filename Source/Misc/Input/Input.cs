@@ -382,14 +382,16 @@ namespace Electron2D
         }
 
         /// <summary>
-        /// Gets the mouse position, offset to the middle of the window.
+        /// Gets the mouse position, offset to the middle of the window (screen-space, no scaling).
         /// </summary>
         /// <returns></returns>
         public static Vector2 GetMouseScreenPosition()
         {
             Vector2 offset = Display.WindowSize / 2f;
-            return new Vector2((float)MousePosition.X - offset.X,
-                Display.WindowSize.Y - (float)MousePosition.Y - offset.Y) / Display.WindowScale;
+            return new Vector2(
+                MousePosition.X - offset.X,
+                Display.WindowSize.Y - MousePosition.Y - offset.Y
+            );
         }
 
         /// <summary>
@@ -400,10 +402,8 @@ namespace Electron2D
         {
             Vector2 worldPosition = GetMouseScreenPosition();
 
-            // Offsetting and scaling the position based on the current camera
             worldPosition /= Camera2D.Main.Zoom;
-            worldPosition += (Camera2D.Main.Transform.Position / Display.WindowScale);
-            // ----------------------
+            worldPosition += Camera2D.Main.Transform.Position;
 
             return new Vector2(worldPosition.X, worldPosition.Y);
         }

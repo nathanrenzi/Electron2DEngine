@@ -18,35 +18,52 @@ namespace Electron2D.Rendering
             if (Main == null) Main = this;
         }
 
+        /// <summary>
+        /// Converts world coordinates to view space (camera-relative).
+        /// </summary>
+        public Matrix4x4 GetViewMatrix()
+        {
+            Matrix4x4 translation = Matrix4x4.CreateTranslation(-Transform.Position.X, -Transform.Position.Y, 0);
+            Matrix4x4 rotation = Matrix4x4.CreateRotationZ(-Transform.Rotation * MathF.PI / 180f);
+            Matrix4x4 zoom = Matrix4x4.CreateScale(Zoom, Zoom, 1f);
+
+            return translation * rotation * zoom;
+        }
+
+        /// <summary>
+        /// Creates an orthographic projection based on the current window size.
+        /// </summary>
         public Matrix4x4 GetProjectionMatrix()
         {
-            float positionScale = Display.WindowScale;
-            float left = (Transform.Position.X * positionScale) - Display.WindowSize.X / 2f;
-            float right = (Transform.Position.X * positionScale) + Display.WindowSize.X / 2f;
-            float top = (Transform.Position.Y * positionScale) + Display.WindowSize.Y / 2f;
-            float bottom = (Transform.Position.Y * positionScale) - Display.WindowSize.Y / 2f;
+            float halfWidth = Display.WindowSize.X / 2f;
+            float halfHeight = Display.WindowSize.Y / 2f;
 
-            Matrix4x4 orthoMatrix = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, 0.01f, 100f);
-            Matrix4x4 zoomMatrix = Matrix4x4.CreateScale(Zoom);
+            return Matrix4x4.CreateOrthographicOffCenter(
+                -halfWidth, halfWidth,
+                -halfHeight, halfHeight,
+                -1f, 1f
+            );
+        }
 
-            return orthoMatrix * zoomMatrix;
+        /// <summary>
+        /// Creates a combined view-projection matrix used for rendering.
+        /// </summary>
+        /// <returns></returns>
+        public Matrix4x4 GetViewProjectionMatrix()
+        {
+            return GetViewMatrix() * GetProjectionMatrix();
         }
         
         /// <summary>
-        /// Returns an unscaled projection matrix that has no position and has default zoom.
+        /// Creates an unscaled orthographic projection for UI or screen-space rendering.
         /// </summary>
-        /// <returns></returns>
         public Matrix4x4 GetUnscaledProjectionMatrix()
         {
-            float left = 0 - Display.WindowSize.X / 2f;
-            float right = 0 + Display.WindowSize.X / 2f;
-            float top = 0 + Display.WindowSize.Y / 2f;
-            float bottom = 0 - Display.WindowSize.Y / 2f;
-
-            Matrix4x4 orthoMatrix = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, 0.01f, 100f);
-            Matrix4x4 zoomMatrix = Matrix4x4.CreateScale(1);
-
-            return orthoMatrix * zoomMatrix;
+            return Matrix4x4.CreateOrthographicOffCenter(
+                0f, Display.WindowSize.X,
+                Display.WindowSize.Y, 0f,
+                -1f, 1f
+            );
         }
     }
 }

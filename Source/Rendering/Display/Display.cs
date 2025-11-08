@@ -13,13 +13,6 @@ namespace Electron2D
 
         public static Window Window { get; private set; }
         public static Vector2 WindowSize { get; private set; }
-        public static float WindowScale
-        {
-            get
-            {
-                return WindowSize.X / REFERENCE_WINDOW_WIDTH;
-            }
-        }
         private static WindowMode _windowMode = WindowMode.None;
 
         public static void Initialize()

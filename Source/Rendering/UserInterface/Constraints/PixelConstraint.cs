@@ -9,12 +9,12 @@ namespace Electron2D.UserInterface
         public PixelConstraint(int _pixelDistance, UIConstraintSide _side)
         {
             pixelDistance = _pixelDistance;
-            side = _side;
+            Side = _side;
         }
 
         public override void ApplyConstraint(UIComponent _component)
         {
-            switch(side)
+            switch(Side)
             {
                 case UIConstraintSide.Left:
                     _component.Transform.Position = new Vector2(LeftWindowBound + pixelDistance + MathF.Abs(_component.LeftXBound), _component.Transform.Position.Y);

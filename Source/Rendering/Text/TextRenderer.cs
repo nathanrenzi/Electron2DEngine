@@ -581,7 +581,8 @@ namespace Electron2D.Rendering.Text
 
         protected override void BeforeRender()
         {
-            Material.Shader.SetMatrix4x4("model", Matrix4x4.CreateScale(Display.WindowScale, Display.WindowScale, 1));
+            Matrix4x4 model = Matrix4x4.CreateScale(transform.Scale.X, transform.Scale.Y, 1f);
+            Material.Shader.SetMatrix4x4("model", model);
             Material.Shader.SetColor("outlineColor", OutlineColor);
         }
     }
