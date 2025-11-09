@@ -23,6 +23,7 @@ namespace Electron2D
         private bool _disabledByParent = false;
         private bool _desiredEnableState = true;
         private bool _hasParent = false;
+        private bool _isLoaded = false;
         protected bool _enabled = true;
 
         public bool Enabled => _enabled && !_disabledByParent;
@@ -30,6 +31,22 @@ namespace Electron2D
         public Node()
         {
             Engine.Game.RegisterGameClass(this);
+            Load();
+        }
+
+        protected Node(bool load)
+        {
+            Engine.Game.RegisterGameClass(this);
+            if(load)
+            {
+                Load();
+            }
+        }
+
+        protected void Load()
+        {
+            if (_isLoaded) return;
+            _isLoaded = true;
             OnLoad();
         }
 
