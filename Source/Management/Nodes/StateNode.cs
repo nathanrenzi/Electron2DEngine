@@ -4,7 +4,7 @@
     /// A <see cref="Node"/> that groups child nodes into named states and enables or disables them 
     /// automatically when the active state changes.
     /// </summary>
-    public class StateNode : Node
+    public sealed class StateNode : Node
     {
         public string ActiveState => _activeState;
 
@@ -16,7 +16,7 @@
         /// </summary>
         /// <param name="state">The state that the node should be added to. Must not be <see langword="null"/> or empty.</param>
         /// <param name="node">The node to be added. Must not be <see langword="null"/>.</param>
-        public void Add(string state, Node node)
+        public void AddState(string state, Node node)
         {
             if (!_states.TryGetValue(state, out var list))
             {
@@ -53,7 +53,7 @@
         /// </summary>
         /// <param name="state">The state that the node should be removed from. Must not be <see langword="null"/> or empty.</param>
         /// <param name="node">The node to be removed. Must not be <see langword="null"/>.</param>
-        public void Remove(string state, Node node)
+        public void RemoveState(string state, Node node)
         {
             if(_states.ContainsKey(state))
             {
@@ -80,7 +80,7 @@
         /// Removes the specified node from all states, and also removes it as a child of this StateNode.
         /// </summary>
         /// <param name="node">The node to be removed. Must not be <see langword="null"/>.</param>
-        public void Remove(Node node)
+        public void RemoveFromStates(Node node)
         {
             foreach (var list in _states.Values)
             {

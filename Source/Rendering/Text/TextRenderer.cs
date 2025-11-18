@@ -73,7 +73,6 @@ namespace Electron2D.Rendering.Text
         public TextAlignment VerticalAlignment { get; set; }
         public TextAlignmentMode AlignmentMode { get; set; }
         public TextOverflowMode OverflowMode { get; set; }
-        public float MeshScale { get; set; } = 1;
         public Color TextColor
         {
             get
@@ -519,11 +518,11 @@ namespace Electron2D.Rendering.Text
                     // Kerning
                     if (FontGlyphStore.UseKerning)
                     {
-                        if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                        if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex,
+                            (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
                         {
-                            long* temp = (long*)delta.x;
-                            long res = *temp;
-                            _x += res;
+                            float kx = delta.x / 64f;
+                            _x += kx;
                         }
                         else
                         {
@@ -531,11 +530,11 @@ namespace Electron2D.Rendering.Text
                         }
                     }
 
-                    int xpos = (int)(_x + ch.Bearing.X * MeshScale);
-                    int ypos = (int)(_y - ch.Bearing.Y * MeshScale);
+                    int xpos = (int)(_x + ch.Bearing.X);
+                    int ypos = (int)(_y - ch.Bearing.Y);
 
-                    float w = ch.Size.X * MeshScale;
-                    float h = ch.Size.Y * MeshScale;
+                    float w = ch.Size.X;
+                    float h = ch.Size.Y;
 
                     float L = ch.UVX.X;
                     float R = ch.UVX.Y;
@@ -554,7 +553,7 @@ namespace Electron2D.Rendering.Text
                     tempIndices.Add(count + 2);
                     tempIndices.Add(count + 3);
 
-                    _x += ch.Advance * MeshScale;
+                    _x += ch.Advance;
 
                     previousIndex = glyphIndex;
                 }

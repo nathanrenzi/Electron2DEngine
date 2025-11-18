@@ -95,12 +95,14 @@ namespace Electron2D.UserInterface
                     if (Renderer != null)
                     {
                         Renderer.Bounds = new Rectangle(0, 0, (int)SizeX, (int)SizeY);
+                        Renderer.UpdateMesh();
                     }
                     break;
                 case UIEvent.Anchor:
                     if(Renderer != null)
                     {
                         Renderer.Anchor = Anchor;
+                        Renderer.UpdateMesh();
                     }
                     break;
                 case UIEvent.Position:
