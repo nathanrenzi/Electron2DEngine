@@ -362,7 +362,12 @@ namespace Electron2D
         /// <summary>
         /// Exits the game.
         /// </summary>
-        public void Exit(bool terminateGlfw = true)
+        public void Exit()
+        {
+            Glfw.SetWindowShouldClose(Display.Window, true);
+        }
+
+        private void Exit(bool terminateGlfw = true)
         {
             Display.DestroyWindow();
             OnGameClose();
