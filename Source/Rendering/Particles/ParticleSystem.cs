@@ -641,7 +641,7 @@ namespace Electron2D
             }
             else
             {
-                color = new Vector4(_particle.Color.R, _particle.Color.G, _particle.Color.B, _particle.Color.A);
+                color = new Vector4(_particle.Color.R / 255f, _particle.Color.G / 255f, _particle.Color.B / 255f, _particle.Color.A / 255f);
             }
 
             // Top Left
