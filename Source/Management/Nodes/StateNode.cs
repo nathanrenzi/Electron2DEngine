@@ -118,7 +118,6 @@
             }
         }
 
-        protected override void OnDisable() { }
         protected override void OnDispose()
         {
             _states.Clear();
@@ -127,8 +126,5 @@
         {
             SetState(_activeState);
         }
-        protected override void OnFixedUpdate() { }
-        protected override void OnLoad() { }
-        protected override void OnUpdate() { }
     }
 }

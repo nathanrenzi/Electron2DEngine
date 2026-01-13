@@ -3,11 +3,11 @@
 namespace Electron2D
 {
     /// <summary>
-    /// The abstract base class for all scene hierarchy elements in Electron2D.
+    /// The base class for all scene hierarchy elements in Electron2D.
     /// Handles grouping, lifecycle management, and parent-child state propagation for 
     /// <see cref="IGameClass"/>, <see cref="UIComponent"/>, and nested <see cref="Node"/> instances.
     /// </summary>
-    public abstract class Node : IGameClass
+    public class Node : IGameClass
     {
         protected struct UIState
         {
@@ -15,6 +15,7 @@ namespace Electron2D
             public bool Interactable;
         }
 
+        public Node? Parent { get; private set; } = null;
         protected readonly List<IGameClass> _gameClasses = new List<IGameClass>();
         protected readonly List<UIComponent> _uiComponents = new List<UIComponent>();
         protected readonly Dictionary<UIComponent, UIState> _uiStateDictionary = new();
@@ -22,7 +23,6 @@ namespace Electron2D
         protected bool _disposed = false;
         private bool _disabledByParent = false;
         private bool _desiredEnableState = true;
-        private bool _hasParent = false;
         private bool _isLoaded = false;
         protected bool _enabled = true;
 
@@ -59,12 +59,13 @@ namespace Electron2D
         /// Should create any objects that should be added to the node. Make sure to call <see cref="AddChild"/>
         /// on every <see cref="IGameClass"/> or <see cref="UIComponent"/> created.
         /// </summary>
-        protected abstract void OnLoad();
-        protected abstract void OnEnable();
-        protected abstract void OnDisable();
-        protected abstract void OnUpdate();
-        protected abstract void OnFixedUpdate();
-        protected abstract void OnDispose();
+        protected virtual void OnLoad() { }
+        protected virtual void OnEnable() { }
+        protected virtual void OnDisable() { }
+        protected virtual void OnUpdate() { }
+        protected virtual void OnFixedUpdate() { }
+        protected virtual void OnDispose() { }
+        protected virtual void OnParentChanged(Node newParent) { }
 
         public bool Contains(IGameClass gameClass)
         {
@@ -94,7 +95,7 @@ namespace Electron2D
 
             if (gameClass is Node sg)
             {
-                if (sg._hasParent)
+                if (sg.Parent != null)
                 {
                     Debug.LogError("Node already has a parent, cannot register.");
                     return;
@@ -105,7 +106,7 @@ namespace Electron2D
                     throw new Exception("Circular dependency detected when trying to register Node.");
                 }
 
-                sg._hasParent = true;
+                sg.SetParent(this);
 
 
                 if (_enabled)
@@ -149,7 +150,7 @@ namespace Electron2D
 
             if (gameClass is Node sg)
             {
-                sg._hasParent = false;
+                sg.SetParent(null);
 
                 // When removed, restore intended state if different from actual
                 if (sg._desiredEnableState && !sg._enabled)
@@ -175,6 +176,14 @@ namespace Electron2D
             }
 
             _uiComponents.Remove(uiComponent);
+        }
+
+        public void SetParent(Node parent)
+        {
+            if (_disposed) return;
+
+            Parent = parent;
+            OnParentChanged(parent);
         }
 
         /// <summary>
