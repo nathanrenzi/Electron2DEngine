@@ -10,6 +10,7 @@ namespace Electron2D
     public static class Display
     {
         public const float REFERENCE_WINDOW_WIDTH = 1920f;
+        public const float REFERENCE_WINDOW_HEIGHT = 1080f;
         public static event Action OnWindowResize;
 
         public static Window Window { get; private set; }

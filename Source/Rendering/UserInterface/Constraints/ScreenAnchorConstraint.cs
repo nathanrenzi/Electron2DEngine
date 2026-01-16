@@ -16,9 +16,11 @@ namespace Electron2D.UserInterface
         private readonly Vector2 _anchorPosition;
         private readonly ScreenAnchorConstraintMode _mode;
         private static float LeftWindowBound => 0;
-        private static float RightWindowBound => Display.WindowSize.X;
+        private static float RightWindowBound => ProjectSettings.UISettings.ScalingMode == UIScalingMode.VirtualResolution ?
+            ProjectSettings.UISettings.VirtualResolution.X : Display.WindowSize.X;
         private static float TopWindowBound => 0;
-        private static float BottomWindowBound => Display.WindowSize.Y;
+        private static float BottomWindowBound => ProjectSettings.UISettings.ScalingMode == UIScalingMode.VirtualResolution ?
+            ProjectSettings.UISettings.VirtualResolution.Y : Display.WindowSize.Y;
 
         /// <summary>
         /// Anchors a component to a virtual position on the screen.
