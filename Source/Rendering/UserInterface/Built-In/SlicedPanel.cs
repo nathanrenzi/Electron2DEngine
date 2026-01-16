@@ -76,7 +76,6 @@ namespace Electron2D.UserInterface
         public void RebuildMesh()
         {
             BuildVertexMesh();
-            Renderer.SetVertexArrays(_vertices, _indices, false);
             Renderer.IsVertexDirty = true;
         }
 
@@ -168,13 +167,8 @@ namespace Electron2D.UserInterface
         {
             switch (_event)
             {
-                case UIEvent.Resize:
-                    if(Renderer != null)
-                    {
-                        RebuildMesh();
-                    }
-                    break;
                 case UIEvent.Anchor:
+                case UIEvent.Resize:
                     if(Renderer != null)
                     {
                         RebuildMesh();
