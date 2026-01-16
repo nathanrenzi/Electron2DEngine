@@ -16,7 +16,7 @@ namespace Electron2D
 {
     public abstract class Game
     {
-        public static event Action LateUpdateEvent;
+        public event Action LateUpdateEvent;
 
         public Settings Settings { get; private set; }
         public Color BackgroundColor { get; private set; } = Color.Black;
@@ -33,6 +33,7 @@ namespace Electron2D
         private bool _useClassesQueue = false;
         private BlendMode _currentBlendMode = BlendMode.Interpolative;
         private AudioSpatialListener _defaultSpatialListener;
+        private bool _hasExited = false;
 
         private void PopClassesQueue()
         {
@@ -300,6 +301,7 @@ namespace Electron2D
                 {
                     Debug.LogError($"Unhandled exception: {exception}");
                     Exit(true);
+                    break;
                 }
             }
 
@@ -364,12 +366,15 @@ namespace Electron2D
         /// </summary>
         public void Exit()
         {
+            if(_hasExited) return;
             Glfw.SetWindowShouldClose(Display.Window, true);
         }
 
         private void Exit(bool terminateGlfw = true)
         {
-            Display.DestroyWindow();
+            if (_hasExited) return;
+            _hasExited = true;
+
             OnGameClose();
             List<IGameClass> classesCopy = new List<IGameClass>(_classes);
             foreach (IGameClass gameClass in classesCopy)
@@ -381,7 +386,11 @@ namespace Electron2D
             PhysicsCancellationToken.Dispose();
             AudioSystem.Dispose();
             Debug.CloseLogFile();
-            if (terminateGlfw) Glfw.Terminate();
+            if (terminateGlfw)
+            {
+                Display.DestroyWindow();
+                Glfw.Terminate();
+            }
         }
 
         protected virtual void Initialize() { }      // This is ran when the game is first initialized

@@ -38,7 +38,7 @@ namespace Electron2D.UserInterface
             _virtualResolution = ProjectSettings.UISettings.VirtualResolution;
             _maintainAspect = ProjectSettings.UISettings.MaintainAspect;
             UpdateScaling();
-            Game.LateUpdateEvent += CheckForInput;
+            Engine.Game.LateUpdateEvent += CheckForInput;
         }
 
         public void RegisterUIComponent(UIComponent component)

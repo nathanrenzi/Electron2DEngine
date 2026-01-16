@@ -276,7 +276,7 @@ namespace Electron2D.UserInterface
             {
                 SetHoverCursorType(def.HoverCursorType);
             }
-            Game.LateUpdateEvent += LateUpdate;
+            Engine.Game.LateUpdateEvent += LateUpdate;
         }
 
         public void LateUpdate()
