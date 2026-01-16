@@ -99,6 +99,7 @@ namespace Electron2D.UserInterface
         public bool Interactable { get; set; } = true;
         public float ExtraInteractionPixels { get; set; }
         public List<UIListener> Listeners { get; private set; } = new List<UIListener>();
+        public LayoutGroup ParentLayoutGroup { get; private set; }
         public LayoutGroup ChildLayoutGroup { get; private set; }
         public UICanvas.UIFrameTickData ThisFrameData = new UICanvas.UIFrameTickData();
         public UICanvas.UIFrameTickData LastFrameData = new UICanvas.UIFrameTickData();
@@ -180,6 +181,15 @@ namespace Electron2D.UserInterface
             }
         }
 
+        public void SetSize(Vector2 size, bool sendEvent = true)
+        {
+            _sizeX = size.X;
+            _sizeY = size.Y;
+            if (sendEvent)
+                InvokeUIEvent(UIEvent.Resize);
+            UpdateMesh();
+        }
+
         public void Focus(bool triggerFocusEvent = true)
         {
             if(triggerFocusEvent) UICanvas.Instance.Focus(this);
@@ -228,10 +238,15 @@ namespace Electron2D.UserInterface
             if (UsingMeshRenderer) Renderer.Material.MainColor = color;
         }
 
+        public void SetParentLayoutGroup(LayoutGroup layoutGroup)
+        {
+            ParentLayoutGroup = layoutGroup;
+        }
+
         public void SetLayoutGroup(LayoutGroup layoutGroup)
         {
             ChildLayoutGroup = layoutGroup;
-            ChildLayoutGroup.SetUiParent(this);
+            ChildLayoutGroup.SetUIParent(this);
         }
 
         protected virtual void ApplyConstraints()
@@ -239,7 +254,7 @@ namespace Electron2D.UserInterface
             Constraints.ApplyConstraints();
         }
 
-        public void SetRenderLayer(int uiRenderLayer)
+        public virtual void SetRenderLayer(int uiRenderLayer)
         {
             if (uiRenderLayer == UIRenderLayer) return;
             RenderLayerManager.OrderRenderable(this, true, UIRenderLayer + (int)RenderLayer.Interface, uiRenderLayer + (int)RenderLayer.Interface);

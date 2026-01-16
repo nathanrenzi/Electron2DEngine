@@ -21,15 +21,22 @@
             GC.SuppressFinalize(this);
         }
 
+        private void FlagIsDirty()
+        {
+            _isDirty = true;
+            if (_parent.ParentLayoutGroup != null)
+                _parent.ParentLayoutGroup.FlagIsDirty();
+        }
+
         public void OnUiAction(object sender, UIEvent uiEvent)
         {
             if(uiEvent == UIEvent.Resize)
             {
-                _isDirty = true;
+                FlagIsDirty();
             }
         }
 
-        public void SetUiParent(UIComponent parent)
+        public void SetUIParent(UIComponent parent)
         {
             if(_parent != null)
             {
@@ -63,7 +70,7 @@
             }
         }
 
-        public void AddToLayout(UIComponent _component)
+        public void AddToLayout(UIComponent _component, bool _updateRenderLayer = true)
         {
             if(!_active)
             {
@@ -77,8 +84,12 @@
                 return;
             }
 
+            if (_updateRenderLayer)
+                _component.SetRenderLayer(_parent.UIRenderLayer + 1);
+
+            _component.SetParentLayoutGroup(this);
             Components.Add(_component);
-            _isDirty = true;
+            FlagIsDirty();
         }
 
         public bool RemoveFromLayout(UIComponent _component)
@@ -92,7 +103,8 @@
             if (Components.Contains(_component))
             {
                 Components.Remove(_component);
-                _isDirty = true;
+                FlagIsDirty();
+                _component.SetParentLayoutGroup(null);
                 return true;
             }
             else

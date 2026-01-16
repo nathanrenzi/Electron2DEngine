@@ -4,102 +4,167 @@ namespace Electron2D.UserInterface
 {
     public class ListLayoutGroup : LayoutGroup
     {
-        public Vector4 Padding; // Left, Right, Top, Bottom
-        public float Spacing;
+        public Vector4 Padding { get; set; }
+        public float Spacing { get; set; }
+        public ListDirection Direction { get; set; }
+        public ChildSizeMode ChildSizeMode { get; set; }
+        public SizeMode SizeMode { get; set; }
+        public Vector2 ControlSize { get; set; }
+        public LayoutAlignment HorizontalAlignment { get; set; }
+        public LayoutAlignment VerticalAlignment { get; set; }
+        public SizeMode FitParentToList { get; set; }
+        public bool SpaceBetween { get; set; }
+        private float _totalChildSize = 0;
+        private float _totalChildCrossSize = 0;
+        private float _spaceBetween = 0;
 
-        // Control size overrides expand size
-        public ListDirection Direction;
-        public SizeMode ExpandSizeMode;
-        public SizeMode ControlSizeMode;
-        public Vector2 ChildSize = new Vector2(50, 50);
-        public LayoutAlignment HorizontalAlignment;
-        public LayoutAlignment VerticalAlignment;
-
-        public ListLayoutGroup(Vector4 _padding, float _spacing, ListDirection _direction, SizeMode _expandSizeMode = SizeMode.WidthHeight,
-            SizeMode _controlSizeMode = SizeMode.None, LayoutAlignment _horizontalAlignment = LayoutAlignment.Left,
-            LayoutAlignment _verticalAlignment = LayoutAlignment.Top) : base()
+        public ListLayoutGroup(Vector4 padding, float spacing, ListDirection direction,
+            LayoutAlignment horizontalAlignment = LayoutAlignment.Left,
+            LayoutAlignment verticalAlignment = LayoutAlignment.Top,
+            ChildSizeMode childSizeMode = ChildSizeMode.None, SizeMode sizeMode = SizeMode.None,
+            SizeMode fitParentToList = SizeMode.None, Vector2? controlSize = null, bool spaceBetween = false) : base()
         {
-            Direction = _direction;
-            ExpandSizeMode = _expandSizeMode;
-            ControlSizeMode = _controlSizeMode;
-            Padding = _padding;
-            Spacing = _spacing;
-            HorizontalAlignment = _horizontalAlignment;
-            VerticalAlignment = _verticalAlignment;
+            Padding = padding;
+            Spacing = spacing;
+            Direction = direction;
+            ChildSizeMode = childSizeMode;
+            SizeMode = sizeMode;
+            ControlSize = controlSize != null ? controlSize.Value : new Vector2(50, 50);
+            HorizontalAlignment = horizontalAlignment;
+            VerticalAlignment = verticalAlignment;
+            FitParentToList = fitParentToList;
+            SpaceBetween = spaceBetween;
         }
 
         protected override void RecalculateLayout()
         {
             SetComponentSizes();
+            CalculateChildSizes();
+            if(ChildSizeMode == ChildSizeMode.Expand)
+            {
+                switch (SizeMode)
+                {
+                    case SizeMode.Width:
+                        if (FitParentToList != SizeMode.Width)
+                            ApplyFitParentToList();
+                        break;
+                    case SizeMode.Height:
+                        if (FitParentToList != SizeMode.Height)
+                            ApplyFitParentToList();
+                        break;
+                    case SizeMode.None:
+                        ApplyFitParentToList();
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                if (FitParentToList != SizeMode.None)
+                    ApplyFitParentToList();
+            }
             SetComponentPositions();
             UpdateComponentMeshes();
         }
 
+        private void ApplyFitParentToList()
+        {
+            float sizeX = _parent.SizeX;
+            if(FitParentToList is SizeMode.Width or SizeMode.WidthHeight)
+            {
+                sizeX = (Direction == ListDirection.Horizontal ? _totalChildSize : _totalChildCrossSize) + Padding.X + Padding.Y;
+            }
+
+            float sizeY = _parent.SizeY;
+            if(FitParentToList is SizeMode.Height or SizeMode.WidthHeight)
+            {
+                sizeY = (Direction == ListDirection.Vertical ? _totalChildSize : _totalChildCrossSize) + Padding.Z + Padding.W;
+            }
+
+            _parent.SetSize(new Vector2(sizeX, sizeY));
+        }
+
         private void SetComponentSizes()
         {
-            float expandXSize = _parent.SizeX - (Padding.X + Padding.Y);
-            float expandYSize = _parent.SizeY - (Padding.Z + Padding.W);
-
-            if(Direction == ListDirection.Vertical)
+            if(ChildSizeMode == ChildSizeMode.Expand)
             {
-                expandYSize -= (Components.Count - 1) * Spacing;
-                expandYSize /= Components.Count;
-            }
-            else
-            {
-                expandXSize -= (Components.Count - 1) * Spacing;
-                expandXSize /= Components.Count;
-            }
+                float expandXSize = _parent.SizeX - (Padding.X + Padding.Y);
+                float expandYSize = _parent.SizeY - (Padding.Z + Padding.W);
 
+                if (Direction == ListDirection.Vertical)
+                {
+                    expandYSize -= (Components.Count - 1) * Spacing;
+                    expandYSize /= Components.Count;
+                }
+                else
+                {
+                    expandXSize -= (Components.Count - 1) * Spacing;
+                    expandXSize /= Components.Count;
+                }
+
+                foreach (var component in Components)
+                {
+                    if (SizeMode is SizeMode.Width or SizeMode.WidthHeight)
+                    {
+                        component.SizeX = expandXSize;
+                    }
+                    if (SizeMode is SizeMode.Height or SizeMode.WidthHeight)
+                    {
+                        component.SizeY = expandYSize;
+                    }
+                }
+            }
+            else if(ChildSizeMode == ChildSizeMode.Control)
+            {
+                foreach (var component in Components)
+                {
+                    if (SizeMode is SizeMode.Width or SizeMode.WidthHeight)
+                    {
+                        component.SizeX = ControlSize.X;
+                    }
+                    if (SizeMode is SizeMode.Height or SizeMode.WidthHeight)
+                    {
+                        component.SizeY = ControlSize.Y;
+                    }
+                }
+            }
+        }
+
+        private void CalculateChildSizes()
+        {
+            _totalChildSize = ((Components.Count - 1) * Spacing);
+            _totalChildCrossSize = 0;
+            _spaceBetween = Spacing;
+            float size = 0;
             foreach (var component in Components)
             {
-                // Size X
-                if(ControlSizeMode is SizeMode.Width or SizeMode.WidthHeight)
-                {
-                    component.SizeX = ChildSize.X;
-                }
-                else if(ExpandSizeMode is SizeMode.Width or SizeMode.WidthHeight)
-                {
-                    component.SizeX = expandXSize;
-                }
-
-                // Size Y
-                if (ControlSizeMode is SizeMode.Height or SizeMode.WidthHeight)
-                {
-                    component.SizeY = ChildSize.Y;
-                }
-                else if (ExpandSizeMode is SizeMode.Height or SizeMode.WidthHeight)
-                {
-                    component.SizeY = expandYSize;
-                }
+                size += Direction == ListDirection.Vertical ? component.SizeY : component.SizeX;
+                _totalChildCrossSize = MathF.Max(_totalChildCrossSize, Direction == ListDirection.Vertical ? component.SizeX : component.SizeY);
             }
+            _totalChildSize += size;
+            if(SpaceBetween && Components.Count > 1)
+                _spaceBetween = ((Direction == ListDirection.Horizontal ? _parent.SizeX - Padding.X - Padding.Y :
+                    _parent.SizeY - Padding.Z - Padding.W) - size) / (Components.Count - 1);
         }
 
         private void SetComponentPositions()
         {
             float yPosition = 0;
             float xPosition = 0;
-            Vector2 anchor = Vector2.Zero;
-
-            float totalSize = ((Components.Count - 1) * Spacing);
-            foreach (var component in Components)
-            {
-                totalSize += Direction == ListDirection.Vertical ? component.SizeY : component.SizeX;
-            }
 
             switch (VerticalAlignment)
             {
                 case LayoutAlignment.Top:
                     yPosition = _parent.TopYBound + Padding.Z;
-                    anchor.Y = -1;
                     break;
                 case LayoutAlignment.Center:
-                    yPosition = _parent.TopYBound + (_parent.SizeY - totalSize) / 2f;
-                    anchor.Y = 0;
+                    yPosition = Direction == ListDirection.Horizontal ? _parent.TopYBound + (_parent.SizeY - _totalChildCrossSize) / 2f
+                        : _parent.TopYBound + (_parent.SizeY - _totalChildSize) / 2f;
                     break;
                 case LayoutAlignment.Bottom:
-                    yPosition = _parent.BottomYBound - Padding.W - totalSize;
-                    anchor.Y = 1;
+                    yPosition = _parent.BottomYBound - Padding.W - 
+                        (Direction == ListDirection.Horizontal ? _totalChildCrossSize : _totalChildSize);
                     break;
             }
 
@@ -107,44 +172,29 @@ namespace Electron2D.UserInterface
             {
                 case LayoutAlignment.Left:
                     xPosition = _parent.LeftXBound + Padding.X;
-                    anchor.X = -1;
                     break;
                 case LayoutAlignment.Center:
-                    xPosition = Direction == ListDirection.Horizontal ? _parent.RightXBound - (_parent.SizeX - totalSize) / 2f : _parent.LeftXBound + _parent.SizeX / 2f;
-                    anchor.X = 0;
+                    xPosition = Direction == ListDirection.Horizontal ? _parent.LeftXBound +
+                        (_parent.SizeX - _totalChildSize) / 2f : _parent.LeftXBound + (_parent.SizeX - _totalChildCrossSize) / 2f;
                     break;
                 case LayoutAlignment.Right:
-                    xPosition = _parent.RightXBound - Padding.Y;
-                    anchor.X = 1;
+                    xPosition = _parent.RightXBound - Padding.Y -
+                        (Direction == ListDirection.Horizontal ? _totalChildSize : _totalChildCrossSize);
                     break;
             }
 
             foreach (var component in Components)
             {
-                component.Anchor = anchor;
+                component.Anchor = new Vector2(-1, -1);
                 component.Transform.Position = new Vector2(xPosition, yPosition) + _parent.Transform.Position;
 
                 if (Direction == ListDirection.Vertical)
                 {
-                    if (VerticalAlignment == LayoutAlignment.Top || VerticalAlignment == LayoutAlignment.Center)
-                    {
-                        yPosition += component.SizeY + Spacing;
-                    }
-                    else if (VerticalAlignment is LayoutAlignment.Bottom)
-                    {
-                        yPosition -= component.SizeY + Spacing;
-                    }
+                    yPosition += component.SizeY + _spaceBetween;
                 }
                 else
                 {
-                    if (HorizontalAlignment == LayoutAlignment.Right || HorizontalAlignment == LayoutAlignment.Center)
-                    {
-                        xPosition -= component.SizeX + Spacing;
-                    }
-                    else if (HorizontalAlignment is LayoutAlignment.Left)
-                    {
-                        xPosition += component.SizeX + Spacing;
-                    }
+                    xPosition += component.SizeX + _spaceBetween;
                 }
             }
         }
