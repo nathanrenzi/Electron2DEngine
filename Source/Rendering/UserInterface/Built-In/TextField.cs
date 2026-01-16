@@ -244,6 +244,7 @@ namespace Electron2D.UserInterface
                     useScreenPosition, ignorePostProcessing);
             }
             _backgroundPanel.Interactable = false;
+            _backgroundPanel.SetLayoutGroup(new ContainLayoutGroup(TextAreaPadding));
             _textLabel = new TextLabel(new TextLabelDef(
                 def.Text,
                 def.SizeX - (def.TextAreaPadding.X + def.TextAreaPadding.Y),
@@ -257,6 +258,7 @@ namespace Electron2D.UserInterface
                 def.TextOverflowMode
             ));
             _textLabel.Interactable = false;
+            _backgroundPanel.ChildLayoutGroup.AddToLayout(_textLabel);
             _builder = new StringBuilder(Text);
             _caretMaterial = def.CaretMaterial == null ? 
                 Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")), true, new string[] { "time" }))
@@ -267,7 +269,6 @@ namespace Electron2D.UserInterface
             _textColor = def.TextColor;
             _promptTextColor = def.PromptTextColor;
             _iterator = _textLabel.Renderer.GetIterator();
-            UpdateCaretDisplay();
             _initialized = true;
             UpdateDisplay();
             UpdateText();
@@ -307,10 +308,6 @@ namespace Electron2D.UserInterface
             _backgroundPanel.SizeX = SizeX;
             _backgroundPanel.SizeY = SizeY;
             _backgroundPanel.Transform.Position = Transform.Position;
-            _textLabel.Anchor = Anchor;
-            _textLabel.SizeX = SizeX - (TextAreaPadding.X + TextAreaPadding.Y);
-            _textLabel.SizeY = SizeY - (TextAreaPadding.Z + TextAreaPadding.W);
-            _textLabel.Transform.Position = Transform.Position + (new Vector2(TextAreaPadding.X, -TextAreaPadding.Z) * 0.5f) - (new Vector2(TextAreaPadding.Y, -TextAreaPadding.W) * 0.5f);
             UpdateCaretDisplay();
         }
 
@@ -490,6 +487,14 @@ namespace Electron2D.UserInterface
                 _holdingCharTime = 0;
                 _holdingRepeatTime = 0;
             }
+        }
+
+        public override void SetRenderLayer(int uiRenderLayer)
+        {
+            base.SetRenderLayer(uiRenderLayer);
+            _backgroundPanel.SetRenderLayer(uiRenderLayer);
+            _textLabel.SetRenderLayer(uiRenderLayer);
+            _caretPanel.SetRenderLayer(uiRenderLayer);
         }
 
         protected override void OnDispose()
