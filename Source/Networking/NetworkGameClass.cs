@@ -188,6 +188,7 @@ namespace Electron2D.Networking
             }
             UpdateVersion++;
             Message message = Message.Create(sendMode, (ushort)BuiltInMessageType.NetworkClassUpdated);
+            message.AddByte((byte)sendMode);
             message.AddString(NetworkID);
             message.AddUInt(UpdateVersion);
             message.AddUShort(type);

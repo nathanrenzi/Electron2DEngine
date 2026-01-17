@@ -202,6 +202,7 @@ namespace Electron2D.Networking.ClientServer
                 case BuiltInMessageType.NetworkClassUpdated:
                     data = new NetworkGameClassUpdatedData()
                     {
+                        MessageSendMode = (MessageSendMode)message.GetByte(),
                         NetworkID = message.GetString(),
                         Version = message.GetUInt(),
                         Type = message.GetUShort(),
@@ -234,6 +235,7 @@ namespace Electron2D.Networking.ClientServer
                     break;
             }
             _messageQueue.Enqueue((messageType, data, fromClient));
+            message.Release();
         }
 
         private void HandleNetworkClassRequestSync(ushort client, NetworkGameClassRequestSyncData data)
@@ -304,7 +306,7 @@ namespace Electron2D.Networking.ClientServer
                 return;
             }
 
-            Message returnMessage = Message.Create(MessageSendMode.Reliable, (ushort)BuiltInMessageType.NetworkClassUpdated);
+            Message returnMessage = Message.Create(data.MessageSendMode, (ushort)BuiltInMessageType.NetworkClassUpdated);
             returnMessage.AddString(data.NetworkID);
             returnMessage.AddUInt(data.Version);
             returnMessage.AddUShort(data.Type);

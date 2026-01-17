@@ -1,4 +1,6 @@
-﻿namespace Electron2D.Networking
+﻿using Riptide;
+
+namespace Electron2D.Networking
 {
     public struct NetworkGameClassData
     {
@@ -10,6 +12,7 @@
     }
     public struct NetworkGameClassUpdatedData
     {
+        public MessageSendMode MessageSendMode;
         public string NetworkID;
         public uint Version;
         public ushort Type;
