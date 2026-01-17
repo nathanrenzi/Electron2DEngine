@@ -28,7 +28,7 @@ namespace Electron2D.Networking
             return networkTransform;
         }
 
-        public Transform Transform { get; }
+        public Transform Transform { get; private set; }
         public Vector2 Scale
         { 
             get
@@ -117,9 +117,9 @@ namespace Electron2D.Networking
         public NetworkTransform(Transform transform)
         {
             Transform = transform;
-            PositionNetworkSettings = new NetworkValueSettings() { SendAutomatically = false, MessageSendMode = MessageSendMode.Unreliable };
-            RotationNetworkSettings = new NetworkValueSettings() { SendAutomatically = false, MessageSendMode = MessageSendMode.Unreliable };
-            ScaleNetworkSettings = new NetworkValueSettings() { SendAutomatically = false, MessageSendMode = MessageSendMode.Unreliable };
+            PositionNetworkSettings = new NetworkValueSettings() { SendAutomatically = true, MessageSendMode = MessageSendMode.Unreliable };
+            RotationNetworkSettings = new NetworkValueSettings() { SendAutomatically = true, MessageSendMode = MessageSendMode.Unreliable };
+            ScaleNetworkSettings = new NetworkValueSettings() { SendAutomatically = true, MessageSendMode = MessageSendMode.Unreliable };
         }
 
         public override void Update()
@@ -271,6 +271,7 @@ namespace Electron2D.Networking
 
         public override void OnDisposed()
         {
+            Transform = null;
             _interpolateToPositionQueue.Clear();
             _interpolateToPositionQueue = null;
         }
