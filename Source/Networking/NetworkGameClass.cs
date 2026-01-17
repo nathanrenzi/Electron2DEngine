@@ -35,10 +35,18 @@ namespace Electron2D.Networking
 
         private Dictionary<string, DependencyCallback> _dependencies = new Dictionary<string, DependencyCallback>();
         private bool _hasAddedDependencies = false;
+        private bool _markDispose = false;
 
         public NetworkGameClass()
         {
             Engine.Game.RegisterGameClass(this);
+            Engine.Game.LateUpdateEvent += () =>
+            {
+                if (_markDispose)
+                {
+                    Dispose();
+                }
+            };
         }
 
         ~NetworkGameClass()
@@ -53,6 +61,13 @@ namespace Electron2D.Networking
         {
             RemoveLocallyOnDespawn = true;
             Despawn();
+        }
+        /// <summary>
+        /// Marks the object for disposal. Safe to use when disposing from another thread.
+        /// </summary>
+        public void MarkDispose()
+        {
+            _markDispose = true;
         }
         public abstract void FixedUpdate();
         public abstract void Update();
@@ -97,7 +112,6 @@ namespace Electron2D.Networking
             if (_client.NetworkGameClasses.ContainsKey(networkID))
             {
                 Debug.LogError($"Network game class with id [{networkID}] already exists on the client. Cannot spawn.");
-                Despawn(false);
                 return;
             }
 
@@ -165,6 +179,11 @@ namespace Electron2D.Networking
             if (!IsOwner)
             {
                 Debug.LogError("Cannot send data using NetworkGameClass that does not belong to the client.");
+                return;
+            }
+            if (!IsNetworkInitialized)
+            {
+                Debug.LogWarning("Trying to send a message from a NetworkGameClass that has not been initialized yet.");
                 return;
             }
             UpdateVersion++;

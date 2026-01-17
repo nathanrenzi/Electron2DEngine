@@ -21,16 +21,17 @@ namespace Electron2D.Networking.ClientServer
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
         public event Action NetworkGameClassesLoaded;
         public event Action<RejectReason> ConnectionFailed;
-        public event Action Connected;
+        public event Action ConnectionSuccessful;
         public event Action<DisconnectReason> Disconnected;
         public event Action<ushort> ClientConnected;
         public event Action<ushort> ClientDisconnected;
         public event Action<string> NetworkGameClassSpawned;
 
+        private Queue<(NetworkGameClass, string, ushort)> _syncingNetworkGameClasses = new();
         private Thread _clientThread;
         private CancellationTokenSource _clientCancellationTokenSource;
         private Server _server;
-        private ConcurrentQueue<(BuiltInMessageType, Message)> _messageQueue = new();
+        private ConcurrentQueue<(BuiltInMessageType, object)> _messageQueue = new();
         private bool _isSyncing = false;
         private bool _isPaused = false;
         private int _syncCount = 0;
@@ -95,35 +96,37 @@ namespace Electron2D.Networking.ClientServer
             {
                 while(_messageQueue.Count > 0)
                 {
-                    (BuiltInMessageType, Message) message;
-                    if (!_messageQueue.TryDequeue(out message)) break;
-                    if(_isSyncing && message.Item1 != BuiltInMessageType.NetworkClassSync)
+                    (BuiltInMessageType, object) data;
+                    if (!_messageQueue.TryDequeue(out data)) break;
+                    if(_isSyncing && data.Item1 != BuiltInMessageType.NetworkClassSync)
                     {
-                        _messageQueue.Enqueue(message);
+                        _messageQueue.Enqueue(data);
                         break;
                     }
 
-                    switch (message.Item1)
+                    switch (data.Item1)
                     {
                         case BuiltInMessageType.NetworkClassSpawned:
-                            HandleNetworkClassSpawned(message.Item2);
-                            message.Item2.Release();
+                            HandleNetworkClassSpawned((NetworkGameClassData)data.Item2);
                             break;
                         case BuiltInMessageType.NetworkClassUpdated:
-                            HandleNetworkClassUpdated(message.Item2);
-                            message.Item2.Release();
+                            HandleNetworkClassUpdated((NetworkGameClassUpdatedData)data.Item2);
                             break;
                         case BuiltInMessageType.NetworkClassDespawned:
-                            HandleNetworkClassDespawned(message.Item2);
-                            message.Item2.Release();
+                            HandleNetworkClassDespawned((string)data.Item2);
                             break;
                         case BuiltInMessageType.NetworkClassSync:
-                            HandleNetworkClassSync(message.Item2);
-                            message.Item2.Release();
+                            if(_isSyncing)
+                            {
+                                HandleNetworkClassSyncSpawn((NetworkGameClassSyncSpawnData)data.Item2);
+                            }
+                            else
+                            {
+                                HandleNetworkClassSyncStart((int)data.Item2);
+                            }
                             break;
                         case BuiltInMessageType.NetworkClassRequestSyncData:
-                            HandleNetworkClassRequestSyncData(message.Item2);
-                            message.Item2.Release();
+                            HandleNetworkClassRequestSyncData((ushort)data.Item2);
                             break;
                     }
                 }
@@ -161,7 +164,7 @@ namespace Electron2D.Networking.ClientServer
             message.AddString(password);
             if(_networkMode == NetworkMode.NetworkP2P)
             {
-                return RiptideClient.Connect($"{address}:{port}", message: message, useMessageHandlers: false);
+                return RiptideClient.Connect($"{(address == "localhost" ? "127.0.0.1" : address)}:{port}", message: message, useMessageHandlers: false);
             }
             else
             {
@@ -203,7 +206,6 @@ namespace Electron2D.Networking.ClientServer
             }
             else
             {
-                Debug.LogError($"NetworkGameClass with ID: [{networkID}] does not exist!");
                 return null;
             }
         }
@@ -257,19 +259,64 @@ namespace Electron2D.Networking.ClientServer
                 return;
             }
 
-            Message message = Message.Create();
-            message.AddMessage(e.Message);
-            _messageQueue.Enqueue(((BuiltInMessageType)e.MessageId, message));
+            BuiltInMessageType messageType = (BuiltInMessageType)e.MessageId;
+            Message message = e.Message;
+            object data = null;
+            switch (messageType)
+            {
+                case BuiltInMessageType.NetworkClassSpawned:
+                    data = new NetworkGameClassData()
+                    {
+                        Version = message.GetUInt(),
+                        RegisterID = message.GetInt(),
+                        NetworkID = message.GetString(),
+                        OwnerID = message.GetUShort(),
+                        Json = message.GetString()
+                    };
+                    break;
+                case BuiltInMessageType.NetworkClassUpdated:
+                    data = new NetworkGameClassUpdatedData()
+                    {
+                        NetworkID = message.GetString(),
+                        Version = message.GetUInt(),
+                        Type = message.GetUShort(),
+                        Json = message.GetString()
+                    };
+                    break;
+                case BuiltInMessageType.NetworkClassDespawned:
+                    data = message.GetString();
+                    break;
+                case BuiltInMessageType.NetworkClassSync:
+                    if (_isSyncing)
+                    {
+                        data = new NetworkGameClassSyncSpawnData()
+                        {
+                            Version = message.GetUInt(),
+                            RegisterID = message.GetInt(),
+                            NetworkID = message.GetString(),
+                            ClientID = message.GetUShort(),
+                            Json = message.GetString()
+                        };
+                    }
+                    else
+                    {
+                        data = message.GetInt();
+                    }
+                    break;
+                case BuiltInMessageType.NetworkClassRequestSyncData:
+                    data = message.GetUShort();
+                    break;
+            }
+            _messageQueue.Enqueue((messageType, data));
         }
-        private void HandleNetworkClassRequestSyncData(Message message)
+        private void HandleNetworkClassRequestSyncData(ushort client)
         {
             // Server calls this on host client only
             _isPaused = true;
-            ushort syncClient = message.GetUShort();
-            if (syncClient == ID) return;
+            if (client == ID) return;
             Message returnMessage = Message.Create(MessageSendMode.Reliable,
                 (ushort)BuiltInMessageType.NetworkClassRequestSyncData);
-            returnMessage.AddUShort(syncClient);
+            returnMessage.AddUShort(client);
             int initializedClasses = 0;
             foreach (var gameClass in NetworkGameClasses.Values)
             {
@@ -293,50 +340,42 @@ namespace Electron2D.Networking.ClientServer
             Send(returnMessage);
             _isPaused = false;
         }
-        private void HandleNetworkClassSpawned(Message message)
+        private void HandleNetworkClassSpawned(NetworkGameClassData data)
         {
-            uint version = message.GetUInt();
-            int registerID = message.GetInt();
-            string networkID = message.GetString();
-            ushort clientID = message.GetUShort();
-            string json = message.GetString();
-
-            if (clientID == ID)
+            if (data.OwnerID == ID)
             {
                 // Network game class was spawned by local player
-                NetworkGameClasses[networkID].SetUpdateVersion(version);
-                NetworkGameClasses[networkID].NetworkInitialize(networkID, clientID, this, _server);
+                if (!NetworkGameClasses.ContainsKey(data.NetworkID))
+                {
+                    Debug.LogError($"(CLIENT): Could not initialize locally spawned NetworkGameClass with id [{data.NetworkID}]. This should not happen.");
+                    return;
+                }
+                NetworkGameClasses[data.NetworkID].SetUpdateVersion(data.Version);
+                NetworkGameClasses[data.NetworkID].NetworkInitialize(data.NetworkID, data.OwnerID, this, _server);
             }
             else
             {
-                NetworkGameClass networkGameClass = NetworkManager.NetworkGameClassRegister[registerID](json);
-                networkGameClass.SetUpdateVersion(version);
-                NetworkGameClasses.Add(networkID, networkGameClass);
-                networkGameClass.NetworkInitialize(networkID, clientID, this, _server);
+                NetworkGameClass networkGameClass = NetworkManager.NetworkGameClassRegister[data.RegisterID](data.Json);
+                networkGameClass.SetUpdateVersion(data.Version);
+                NetworkGameClasses.Add(data.NetworkID, networkGameClass);
+                networkGameClass.NetworkInitialize(data.NetworkID, data.OwnerID, this, _server);
             }
 
-            NetworkGameClassSpawned?.Invoke(networkID);
+            NetworkGameClassSpawned?.Invoke(data.NetworkID);
         }
-        private void HandleNetworkClassUpdated(Message message)
+        private void HandleNetworkClassUpdated(NetworkGameClassUpdatedData data)
         {
-            string networkID = message.GetString();
-            uint updateVersion = message.GetUInt();
-            ushort type = message.GetUShort();
-            string json = message.GetString();
-
-            NetworkGameClass networkGameClass = GetNetworkGameClass(networkID);
+            NetworkGameClass networkGameClass = GetNetworkGameClass(data.NetworkID);
             if (networkGameClass != null)
             {
-                if (networkGameClass.CheckAndHandleUpdateVersion(type, updateVersion))
+                if (networkGameClass.CheckAndHandleUpdateVersion(data.Type, data.Version))
                 {
-                    networkGameClass.ReceiveData(type, json);
+                    networkGameClass.ReceiveData(data.Type, data.Json);
                 }
             }
         }
-        private void HandleNetworkClassDespawned(Message message)
+        private void HandleNetworkClassDespawned(string networkID)
         {
-            string networkID = message.GetString();
-
             NetworkGameClass networkGameClass = GetNetworkGameClass(networkID);
             if (networkGameClass != null)
             {
@@ -344,36 +383,54 @@ namespace Electron2D.Networking.ClientServer
                 networkGameClass.Despawn(false);
             }
         }
-        private void HandleNetworkClassSync(Message message)
+        private void HandleNetworkClassSyncSpawn(NetworkGameClassSyncSpawnData data)
         {
-            if(_isSyncing)
+            if (data.ClientID == ID)
             {
-                // Receiving sync data
-                HandleNetworkClassSpawned(message);
-                _syncCount--;
-                Debug.Log($"(CLIENT): Received sync data from server, {_syncCount} left.");
-                if (_syncCount == 0)
+                // Network game class was spawned by local player
+                if (!NetworkGameClasses.ContainsKey(data.NetworkID))
                 {
-                    _isSyncing = false;
-                    NetworkGameClassesLoaded?.Invoke();
-                    Debug.Log("(CLIENT): Done syncing!");
+                    Debug.LogError($"(CLIENT): Could not initialize locally spawned NetworkGameClass with id [{data.NetworkID}]. This should not happen.");
+                    return;
                 }
+                NetworkGameClasses[data.NetworkID].SetUpdateVersion(data.Version);
+                _syncingNetworkGameClasses.Enqueue((NetworkGameClasses[data.NetworkID], data.NetworkID, data.ClientID));
             }
             else
             {
-                int syncCount = message.GetInt();
-                _syncCount = syncCount;
-                if(syncCount == 0)
-                {
-                    NetworkGameClassesLoaded?.Invoke();
-                    Debug.Log("(CLIENT): Received sync signal from server with no data to sync, done syncing!");
-                    return;
-                }
-                // Telling the server to start the sync
-                _isSyncing = true;
-                Debug.Log($"(CLIENT): Received sync signal from server, total count: {syncCount}. Asking server for data...");
-                Send(Message.Create(MessageSendMode.Reliable, (ushort)BuiltInMessageType.NetworkClassSync));
+                NetworkGameClass networkGameClass = NetworkManager.NetworkGameClassRegister[data.RegisterID](data.Json);
+                networkGameClass.SetUpdateVersion(data.Version);
+                NetworkGameClasses.Add(data.NetworkID, networkGameClass);
+                _syncingNetworkGameClasses.Enqueue((networkGameClass, data.NetworkID, data.ClientID));
             }
+            NetworkGameClassSpawned?.Invoke(data.NetworkID);
+            _syncCount--;
+            Debug.Log($"(CLIENT): Received sync data from server, {_syncCount} left.");
+            if (_syncCount == 0)
+            {
+                _isSyncing = false;
+                while (_syncingNetworkGameClasses.Count != 0)
+                {
+                    (NetworkGameClass, string, ushort) gameClassData = _syncingNetworkGameClasses.Dequeue();
+                    gameClassData.Item1.NetworkInitialize(gameClassData.Item2, gameClassData.Item3, this, _server);
+                }
+                NetworkGameClassesLoaded?.Invoke();
+                Debug.Log("(CLIENT): Done syncing!");
+            }
+        }
+        private void HandleNetworkClassSyncStart(int syncCount)
+        {
+            _syncCount = syncCount;
+            if (syncCount == 0)
+            {
+                NetworkGameClassesLoaded?.Invoke();
+                Debug.Log("(CLIENT): Received sync signal from server with no data to sync, done syncing!");
+                return;
+            }
+            // Telling the server to start the sync
+            _isSyncing = true;
+            Debug.Log($"(CLIENT): Received sync signal from server, total count: {syncCount}. Asking server for data...");
+            Send(Message.Create(MessageSendMode.Reliable, (ushort)BuiltInMessageType.NetworkClassSync));
         }
         private void HandleConnectionFailed(object? sender, ConnectionFailedEventArgs e)
         {
@@ -381,15 +438,23 @@ namespace Electron2D.Networking.ClientServer
         }
         private void HandleConnected(object? sender, EventArgs e)
         {
-            Connected?.Invoke();
+            ConnectionSuccessful?.Invoke();
         }
         private void HandleDisconnected(object? sender, DisconnectedEventArgs e)
         {
             foreach (var pair in NetworkGameClasses)
             {
-                pair.Value.Despawn(false);
+                if(!pair.Value.IsOwner)
+                {
+                    pair.Value.MarkDispose();
+                }
+                else
+                {
+                    pair.Value.Despawn(true);
+                }
             }
             NetworkGameClasses.Clear();
+            _syncingNetworkGameClasses.Clear();
             _messageQueue.Clear();
             _isPaused = false;
             _isSyncing = false;
