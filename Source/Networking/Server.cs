@@ -22,7 +22,7 @@ namespace Electron2D.Networking.ClientServer
         public event Action<ushort> ClientConnected;
         public event Action<ushort> ClientDisconnected;
 
-        private ConcurrentQueue<(BuiltInMessageType, object, ushort)> _messageQueue = new();
+        private Queue<(BuiltInMessageType, object, ushort)> _messageQueue = new();
         private Dictionary<uint, List<NetworkGameClassData>> _syncingClientSnapshots = new();
         private Dictionary<string, ushort> _networkGameClassOwners = new();
         private List<string> _networkGameClassesToRemove = new();
@@ -53,19 +53,12 @@ namespace Electron2D.Networking.ClientServer
         }
 
         /// <summary>
-        /// Should be called at a fixed timestep.
-        /// </summary>
-        public void ServerFixedUpdate()
-        {
-            RiptideServer.Update();
-        }
-
-        /// <summary>
         /// Should be called as often as possible.
         /// </summary>
         public void ServerUpdate()
         {
-            while(_messageQueue.Count > 0)
+            RiptideServer?.Update();
+            while (_messageQueue.Count > 0)
             {
                 (BuiltInMessageType, object, ushort) message;
                 if(_messageQueue.TryDequeue(out message))
@@ -235,7 +228,6 @@ namespace Electron2D.Networking.ClientServer
                     break;
             }
             _messageQueue.Enqueue((messageType, data, fromClient));
-            message.Release();
         }
 
         private void HandleNetworkClassRequestSync(ushort client, NetworkGameClassRequestSyncData data)

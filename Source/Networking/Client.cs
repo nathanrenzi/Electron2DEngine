@@ -28,10 +28,8 @@ namespace Electron2D.Networking.ClientServer
         public event Action<string> NetworkGameClassSpawned;
 
         private Queue<(NetworkGameClass, string, ushort)> _syncingNetworkGameClasses = new();
-        private Thread _clientThread;
-        private CancellationTokenSource _clientCancellationTokenSource;
         private Server _server;
-        private ConcurrentQueue<(BuiltInMessageType, object)> _messageQueue = new();
+        private Queue<(BuiltInMessageType, object)> _messageQueue = new();
         private bool _isSyncing = false;
         private bool _isPaused = false;
         private int _syncCount = 0;
@@ -55,25 +53,11 @@ namespace Electron2D.Networking.ClientServer
             RiptideClient.MessageReceived += HandleMessageReceived;
             RiptideClient.ClientConnected += (obj, e) => ClientConnected?.Invoke(e.Id);
             RiptideClient.ClientDisconnected += (obj, e) => ClientDisconnected?.Invoke(e.Id);
-
-            _clientCancellationTokenSource = new CancellationTokenSource();
-            _clientThread = new Thread(() => ClientThreadUpdateLoop(_clientCancellationTokenSource.Token));
-            _clientThread.Priority = ThreadPriority.Highest;
-            _clientThread.Start();
         }
 
         ~Client()
         {
             Dispose();
-        }
-
-        private void ClientThreadUpdateLoop(CancellationToken cancellationToken)
-        {
-            while(!cancellationToken.IsCancellationRequested)
-            {
-                RiptideClient.Update();
-                Thread.Sleep(50);
-            }
         }
 
         /// <summary>
@@ -92,7 +76,8 @@ namespace Electron2D.Networking.ClientServer
         /// </summary>
         public void ClientUpdate()
         {
-            if(!_isPaused)
+            RiptideClient?.Update();
+            if (!_isPaused)
             {
                 while(_messageQueue.Count > 0)
                 {
@@ -466,8 +451,6 @@ namespace Electron2D.Networking.ClientServer
         public void Dispose()
         {
             GC.SuppressFinalize(this);
-            _clientCancellationTokenSource.Cancel();
-            _clientThread.Join();
             Disconnect();
         }
     }

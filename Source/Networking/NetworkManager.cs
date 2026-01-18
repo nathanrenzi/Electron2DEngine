@@ -154,13 +154,7 @@ namespace Electron2D.Networking
             Client.ClientUpdate();
         }
 
-        public void FixedUpdate()
-        {
-            if(Server != null)
-            {
-                Server.ServerFixedUpdate();
-            }
-        }
+        public void FixedUpdate() { }
 
         public void Dispose()
         {
