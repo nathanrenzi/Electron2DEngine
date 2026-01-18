@@ -1,6 +1,6 @@
 ﻿using Riptide;
 using Riptide.Utils;
-using Electron2D.Networking.ClientServer;
+using Electron2D.Networking.Core;
 using Steamworks;
 
 namespace Electron2D.Networking
@@ -27,8 +27,8 @@ namespace Electron2D.Networking
         }
         private static NetworkManager _instance;
 
-        public ClientServer.Server Server { get; private set; }
-        public ClientServer.Client Client { get; private set; }
+        public Core.Server Server { get; private set; }
+        public Core.Client Client { get; private set; }
 
         public NetworkMode NetworkMode { get; private set; }
 
@@ -52,8 +52,8 @@ namespace Electron2D.Networking
 
             NetworkMode = NetworkMode.NetworkP2P;
             RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.Log, Debug.LogError, false);
-            Client = new ClientServer.Client(NetworkMode);
-            Server = new ClientServer.Server(NetworkMode);
+            Client = new Core.Client(NetworkMode);
+            Server = new Core.Server(NetworkMode);
             Client.SetServer(Server);
             Engine.Game.RegisterGameClass(this);
         }
@@ -117,8 +117,8 @@ namespace Electron2D.Networking
             }
             RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.Log, Debug.LogError, false);
 
-            Client = new ClientServer.Client(NetworkMode);
-            Server = new ClientServer.Server(NetworkMode);
+            Client = new Core.Client(NetworkMode);
+            Server = new Core.Server(NetworkMode);
             Client.SetServer(Server);
             Engine.Game.RegisterGameClass(this);
         }

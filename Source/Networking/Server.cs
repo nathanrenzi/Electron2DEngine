@@ -1,9 +1,7 @@
 ﻿using Riptide;
-using Riptide.Transports;
 using Riptide.Transports.Steam;
-using System.Collections.Concurrent;
 
-namespace Electron2D.Networking.ClientServer
+namespace Electron2D.Networking.Core
 {
     /// <summary>
     /// A simple host/client server implementation using <see cref="Riptide.Server"/>. Not recommended to use 

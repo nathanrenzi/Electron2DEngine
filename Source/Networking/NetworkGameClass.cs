@@ -30,11 +30,10 @@ namespace Electron2D.Networking
         public event Action OnNetworkInitializedEvent;
         public event Action OnNetworkDespawnedEvent;
 
-        protected ClientServer.Client _client;
-        protected ClientServer.Server _server;
+        protected Core.Client _client;
+        protected Core.Server _server;
 
         private Dictionary<string, DependencyCallback> _dependencies = new Dictionary<string, DependencyCallback>();
-        private bool _hasAddedDependencies = false;
         private bool _markDispose = false;
 
         public NetworkGameClass()
@@ -76,7 +75,7 @@ namespace Electron2D.Networking
         /// Sends a request to the server to spawn this object.
         /// </summary>
         public void Spawn(string networkID = null, bool removeLocallyOnDespawn = false,
-            ClientServer.Client customClient = null, ClientServer.Server customServer = null)
+            Core.Client customClient = null, Core.Server customServer = null)
         {
             if (IsNetworkInitialized) return;
             if (customClient != null)
@@ -201,19 +200,17 @@ namespace Electron2D.Networking
         /// <param name="networkID"></param>
         /// <param name="ownerID"></param>
         /// <param name="json"></param>
-        public void NetworkInitialize(string networkID, ushort ownerID, ClientServer.Client client, ClientServer.Server server)
+        public void NetworkInitialize(string networkID, ushort ownerID, Core.Client client, Core.Server server)
         {
             if (IsNetworkInitialized) return;
 
             _client = client;
             _server = server;
-            if (!(server.IsRunning && client.IsConnected))
-            {
-                NetworkID = networkID;
-                OwnerID = ownerID;
-                IsOwner = client.ID == ownerID;
-            }
+            NetworkID = networkID;
+            OwnerID = ownerID;
+            IsOwner = client.ID == ownerID;
             IsNetworkInitialized = true;
+            NetworkManager.Instance.Client.NetworkGameClassSpawned += CheckDependencyAndInvokeCallback;
             OnNetworkInitializedEvent?.Invoke();
             OnNetworkInitialized();
         }
@@ -229,17 +226,12 @@ namespace Electron2D.Networking
             }
         }
         /// <summary>
-        /// Adds a <see cref="NetworkGameClass"/> dependency, and runs a method once the specified NetworkGameClass is initialized.
+        /// Adds a <see cref="NetworkGameClass"/> dependency, and invokes a callback once the specified NetworkGameClass is initialized, or if it already is.
         /// </summary>
         /// <param name="networkID">The networkID of the dependency.</param>
-        /// <param name="onNetworkIDInitialized">The method that will run when the dependency is met.</param>
+        /// <param name="onNetworkIDInitialized">The callback that will be invoked when the dependency is met.</param>
         protected void AddDependency<T>(string networkID, Action<T> onNetworkIDInitialized) where T : NetworkGameClass
         {
-            if (!_hasAddedDependencies)
-            {
-                NetworkManager.Instance.Client.NetworkGameClassSpawned += CheckDependency;
-                _hasAddedDependencies = true;
-            }
             _dependencies.Add(networkID, new DependencyCallback
             {
                 ExpectedType = typeof(T),
@@ -247,10 +239,10 @@ namespace Electron2D.Networking
             });
             if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(networkID))
             {
-                CheckDependency(networkID);
+                CheckDependencyAndInvokeCallback(networkID);
             }
         }
-        private void CheckDependency(string networkID)
+        private void CheckDependencyAndInvokeCallback(string networkID)
         {
             if (_dependencies.ContainsKey(networkID))
             {
@@ -320,6 +312,7 @@ namespace Electron2D.Networking
             OwnerID = 0;
             NetworkID = "";
             UpdateVersion = 0;
+            NetworkManager.Instance.Client.NetworkGameClassSpawned -= CheckDependencyAndInvokeCallback;
         }
     }
 }

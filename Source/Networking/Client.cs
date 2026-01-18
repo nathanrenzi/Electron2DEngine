@@ -1,8 +1,7 @@
 ﻿using Riptide;
 using Riptide.Transports.Steam;
-using System.Collections.Concurrent;
 
-namespace Electron2D.Networking.ClientServer
+namespace Electron2D.Networking.Core
 {
     /// <summary>
     /// A simple host/client client implementation using <see cref="Riptide.Client"/>. Not recommended to use 
@@ -388,7 +387,6 @@ namespace Electron2D.Networking.ClientServer
                 NetworkGameClasses.Add(data.NetworkID, networkGameClass);
                 _syncingNetworkGameClasses.Enqueue((networkGameClass, data.NetworkID, data.ClientID));
             }
-            NetworkGameClassSpawned?.Invoke(data.NetworkID);
             _syncCount--;
             Debug.Log($"(CLIENT): Received sync data from server, {_syncCount} left.");
             if (_syncCount == 0)
@@ -398,6 +396,7 @@ namespace Electron2D.Networking.ClientServer
                 {
                     (NetworkGameClass, string, ushort) gameClassData = _syncingNetworkGameClasses.Dequeue();
                     gameClassData.Item1.NetworkInitialize(gameClassData.Item2, gameClassData.Item3, this, _server);
+                    NetworkGameClassSpawned?.Invoke(gameClassData.Item2);
                 }
                 NetworkGameClassesLoaded?.Invoke();
                 Debug.Log("(CLIENT): Done syncing!");
