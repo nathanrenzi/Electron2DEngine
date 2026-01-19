@@ -215,7 +215,7 @@ namespace Electron2D.UserInterface
 
         public void Update()
         {
-            if (!SliderInteractable) return;
+            if (!Interactable || !SliderInteractable) return;
 
             if(_backgroundListener.ClickHeld && AllowNonHandleValueUpdates)
             {
