@@ -68,8 +68,8 @@ namespace Electron2D.Networking
         {
             _markDispose = true;
         }
-        public abstract void FixedUpdate();
-        public abstract void Update();
+        public virtual void FixedUpdate() { }
+        public virtual void Update() { }
 
         /// <summary>
         /// Sends a request to the server to spawn this object.
@@ -276,7 +276,7 @@ namespace Electron2D.Networking
         /// </summary>
         /// <param name="type">The type of data received.</param>
         /// <param name="json">The update data in json format.</param>
-        public abstract void ReceiveData(ushort type, string json);
+        public virtual void ReceiveData(ushort type, string json) { }
         /// <summary>
         /// Returns the register ID of the class. The register ID must be set by passing the value returned
         /// from <see cref="NetworkManager.RegisterNetworkGameClass"/> into a static method in each subclass.
@@ -303,7 +303,7 @@ namespace Electron2D.Networking
         /// <param name="type">The type of update received.</param>
         /// <param name="version">The version number for the update received.</param>
         /// <returns></returns>
-        public abstract bool CheckAndHandleUpdateVersion(ushort type, uint version);
+        public virtual bool CheckAndHandleUpdateVersion(ushort type, uint version) => true;
 
         private void Reset()
         {
