@@ -257,7 +257,7 @@ namespace Electron2D.UserInterface
         public virtual void SetRenderLayer(int uiRenderLayer)
         {
             if (uiRenderLayer == UIRenderLayer) return;
-            RenderLayerManager.OrderRenderable(this, true, UIRenderLayer + (int)RenderLayer.Interface, uiRenderLayer + (int)RenderLayer.Interface);
+            RenderLayerManager.OrderRenderable(this, _registerRenderable, UIRenderLayer + (int)RenderLayer.Interface, uiRenderLayer + (int)RenderLayer.Interface);
             UIRenderLayer = uiRenderLayer;
         }
 
