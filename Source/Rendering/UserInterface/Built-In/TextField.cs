@@ -314,13 +314,13 @@ namespace Electron2D.UserInterface
         private void UpdateCaretDisplay()
         {
             if(!_initialized) return;
-            _caretPanel.Transform.Position = _textLabel.Renderer.GetCaretWorldPostion(_iterator.Index) + new Vector2(_caretPanel.SizeX / 2f, -_caretPanel.SizeY / 3f);
+            _caretPanel.Transform.Position = _textLabel.Renderer.GetCaretVirtualPostion(_iterator.Index) + new Vector2(_caretPanel.SizeX / 2f, -_caretPanel.SizeY / 3f);
             _caretMaterial.Shader.SetFloat("startTime", Time.GameTime);
         }
 
-        private void OnClick()
+        private new void OnClick()
         {
-            _iterator.SetIndex(_builder.Length == 0 ? 0 : _textLabel.Renderer.GetCaretIndexFromWorldPosition(Input.GetMouseScreenPosition()));
+            _iterator.SetIndex(_builder.Length == 0 ? 0 : _textLabel.Renderer.GetCaretIndexFromVirtualPosition(UICanvas.Instance.ScreenToVirtual(Input.GetMouseScreenPosition())));
             UpdateCaretDisplay();
         }
 
@@ -366,6 +366,7 @@ namespace Electron2D.UserInterface
                 case UIEvent.Visibility:
                     _backgroundPanel.Visible = Visible;
                     _textLabel.Visible = Visible;
+                    _caretPanel.Visible = Focused && Visible;
                     break;
             }
         }
@@ -501,6 +502,7 @@ namespace Electron2D.UserInterface
         {
             _backgroundPanel.Dispose();
             _textLabel.Dispose();
+            _caretPanel.Dispose();
         }
     }
 }
