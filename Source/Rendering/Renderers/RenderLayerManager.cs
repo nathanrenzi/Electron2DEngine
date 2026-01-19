@@ -5,41 +5,41 @@
     /// </summary>
     public static class RenderLayerManager
     {
-        public static event Action<int, bool> onLayerRendered;
+        public static event Action<int, bool> OnLayerRendered;
 
-        private static SortedList<int, List<IRenderable>> orderedLayerList = new SortedList<int, List<IRenderable>>();
-        private static SortedList<int, List<IRenderable>> orderedLayerListIgnorePostProcessing = new SortedList<int, List<IRenderable>>();
+        private static SortedList<int, List<IRenderable>> _orderedLayerList = new SortedList<int, List<IRenderable>>();
+        private static SortedList<int, List<IRenderable>> _orderedLayerListIgnorePostProcessing = new SortedList<int, List<IRenderable>>();
 
         /// <summary>
         /// Registers or reorders the IRenderable in the render layer sorted list.
         /// </summary>
-        /// <param name="_renderable">The IRenderable to order in the sorted list.</param>
-        /// <param name="_reorder">True if the IRenderable already exists in the render layer list.</param>
-        /// <param name="_oldRenderLayer">Used for reordering. The old render layer of the IRenderable being reordered.</param>
-        /// <param name="_newRenderLayer">Used for reordering. The new render layer of the IRenderable being reordered.</param>
-        public static void OrderRenderable(IRenderable _renderable, bool _reorder = false, int _oldRenderLayer = -1, int _newRenderLayer = -1)
+        /// <param name="renderable">The IRenderable to order in the sorted list.</param>
+        /// <param name="reorder">True if the IRenderable already exists in the render layer list.</param>
+        /// <param name="oldRenderLayer">Used for reordering. The old render layer of the IRenderable being reordered.</param>
+        /// <param name="newRenderLayer">Used for reordering. The new render layer of the IRenderable being reordered.</param>
+        public static void OrderRenderable(IRenderable renderable, bool reorder = false, int oldRenderLayer = -1, int newRenderLayer = -1)
         {
-            SortedList<int, List<IRenderable>> orderedList = _renderable.ShouldIgnorePostProcessing() ?
-                orderedLayerListIgnorePostProcessing : orderedLayerList;
+            SortedList<int, List<IRenderable>> orderedList = renderable.ShouldIgnorePostProcessing() ?
+                _orderedLayerListIgnorePostProcessing : _orderedLayerList;
 
             // Removing the old render layer if the IRenderable is reordering itself instead of initializing
-            if (_reorder)
+            if (reorder)
             {
                 // If the render layer is registered in the sorted list, remove the gameobject from the value list
                 List<IRenderable> list;
-                if (orderedList.TryGetValue(_oldRenderLayer, out list))
+                if (orderedList.TryGetValue(oldRenderLayer, out list))
                 {
-                    bool removed = list.Remove(_renderable);
-                    if (!removed) Console.WriteLine($"Since item does not exist in layer {_oldRenderLayer}, cannot remove it.");
+                    bool removed = list.Remove(renderable);
+                    if (!removed) Debug.LogError($"Since item does not exist in layer {oldRenderLayer}, cannot remove it.");
                 }
             }
 
-            int renderOrder = _reorder ? _newRenderLayer : _renderable.GetRenderLayer();
+            int renderOrder = reorder ? newRenderLayer : renderable.GetRenderLayer();
             // If true, the render layer was not in the sorted list yet so it is added
-            if (!orderedList.TryAdd(renderOrder, new List<IRenderable> { _renderable }))
+            if (!orderedList.TryAdd(renderOrder, new List<IRenderable> { renderable }))
             {
                 // If false, the render layer already exists so the object must be added to an existing value list
-                orderedList[renderOrder].Add(_renderable);
+                orderedList[renderOrder].Add(renderable);
 
                 // The sorted list class is already sorted in ascending layer, so no extra sorting is necessary
             }
@@ -48,17 +48,17 @@
         /// <summary>
         /// Removes the IRenderable from the rendering system (Can still render these manually after removal).
         /// </summary>
-        /// <param name="_renderable">The IRenderable to remove</param>
-        public static void RemoveRenderable(IRenderable _renderable)
+        /// <param name="renderable">The IRenderable to remove</param>
+        public static void RemoveRenderable(IRenderable renderable)
         {
-            SortedList<int, List<IRenderable>> orderedList = _renderable.ShouldIgnorePostProcessing() ?
-                orderedLayerListIgnorePostProcessing : orderedLayerList;
+            SortedList<int, List<IRenderable>> orderedList = renderable.ShouldIgnorePostProcessing() ?
+                _orderedLayerListIgnorePostProcessing : _orderedLayerList;
 
             // Removing the object from the render order dictionary
             List<IRenderable> list;
-            if (orderedList.TryGetValue(_renderable.GetRenderLayer(), out list))
+            if (orderedList.TryGetValue(renderable.GetRenderLayer(), out list))
             {
-                list.Remove(_renderable);
+                list.Remove(renderable);
             }
         }
 
@@ -69,9 +69,9 @@
         {
             try
             {
-                foreach (KeyValuePair<int, List<IRenderable>> pair in orderedLayerList)
+                foreach (KeyValuePair<int, List<IRenderable>> pair in _orderedLayerList)
                 {
-                    onLayerRendered?.Invoke(pair.Key, false);
+                    OnLayerRendered?.Invoke(pair.Key, false);
 
                     for (int i = 0; i < pair.Value.Count; i++)
                     {
@@ -93,9 +93,9 @@
         {
             try
             {
-                foreach (KeyValuePair<int, List<IRenderable>> pair in orderedLayerListIgnorePostProcessing)
+                foreach (KeyValuePair<int, List<IRenderable>> pair in _orderedLayerListIgnorePostProcessing)
                 {
-                    onLayerRendered?.Invoke(pair.Key, true);
+                    OnLayerRendered?.Invoke(pair.Key, true);
 
                     for (int i = 0; i < pair.Value.Count; i++)
                     {
