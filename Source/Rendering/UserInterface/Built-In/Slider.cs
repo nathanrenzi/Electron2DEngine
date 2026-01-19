@@ -217,14 +217,9 @@ namespace Electron2D.UserInterface
         {
             if (!Interactable || !SliderInteractable) return;
 
-            if(_backgroundListener.ClickHeld && AllowNonHandleValueUpdates)
+            if ((_backgroundListener.ClickHeld && AllowNonHandleValueUpdates) || _handleListener.ClickHeld)
             {
-                Vector2 position = Input.GetMouseScreenPosition();
-                Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
-            }
-            else if(_handleListener.ClickHeld)
-            {
-                Vector2 position = Input.GetMouseScreenPosition();
+                Vector2 position = UICanvas.Instance.ScreenToVirtual(Input.GetMouseScreenPosition());
                 Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
             }
 
