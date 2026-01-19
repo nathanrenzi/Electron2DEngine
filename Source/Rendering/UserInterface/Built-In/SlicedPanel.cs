@@ -90,11 +90,18 @@ namespace Electron2D.UserInterface
             float T1 = -SizeY + (Anchor.Y * -SizeY);
             float B1 = SizeY + (Anchor.Y * -SizeY);
 
+            // Scaling border to prevent overlap
+            float width = R1 - L1;
+            float height = B1 - T1;
+            float maxTotalBorder = Math.Min(width, height);
+            float scale = Math.Min(1f, maxTotalBorder / (_borderPixelSize * 2f));
+            float border = _borderPixelSize * scale;
+
             // The positions of the padding
-            float L2 = L1 + _borderPixelSize;
-            float R2 = R1 - _borderPixelSize;
-            float T2 = T1 + _borderPixelSize;
-            float B2 = B1 - _borderPixelSize;
+            float L2 = L1 + border;
+            float R2 = R1 - border;
+            float T2 = T1 + border;
+            float B2 = B1 - border;
 
             // Creating the UV coordinates for the non-0 and non-1 UV values that should be the same regardless of the size of UI
             float LU = Math.Clamp(_left, 0, 1f);
