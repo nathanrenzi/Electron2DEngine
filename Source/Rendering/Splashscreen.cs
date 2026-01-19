@@ -43,6 +43,7 @@ namespace Electron2D.Rendering
             shader.Use();
             shader.SetColor("mainColor", Color.FromArgb(_alpha, Color.White));
             shader.SetMatrix4x4("model", Matrix4x4.Identity);
+            shader.SetMatrix4x4("uiMatrix", Matrix4x4.Identity);
             shader.SetMatrix4x4("projection", Matrix4x4.Identity);
 
             _texture.Use(GL_TEXTURE0);
