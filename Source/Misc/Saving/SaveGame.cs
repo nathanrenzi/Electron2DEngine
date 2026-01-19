@@ -213,7 +213,7 @@ namespace Electron2D
             }
         }
 
-        public float GetFloat(string key)
+        public float? GetFloat(string key)
         {
             Dictionary<string, string> keyValuePairs = Read();
             if(keyValuePairs.ContainsKey(key))
@@ -239,12 +239,11 @@ namespace Electron2D
             }
             else
             {
-                Debug.LogError($"Key [{key}] does not exist in save file [{FilePath}].");
-                throw new Exception();
+                return null;
             }
         }
 
-        public int GetInt(string key)
+        public int? GetInt(string key)
         {
             Dictionary<string, string> keyValuePairs = Read();
             if (keyValuePairs.ContainsKey(key))
@@ -270,12 +269,11 @@ namespace Electron2D
             }
             else
             {
-                Debug.LogError($"Key [{key}] does not exist in save file [{FilePath}].");
-                throw new Exception();
+                return null;
             }
         }
 
-        public string GetString(string key)
+        public string? GetString(string key)
         {
             Dictionary<string, string> keyValuePairs = Read();
             if (keyValuePairs.ContainsKey(key))
@@ -301,12 +299,11 @@ namespace Electron2D
             }
             else
             {
-                Debug.LogError($"Key [{key}] does not exist in save file [{FilePath}].");
-                throw new Exception();
+                return null;
             }
         }
 
-        public Vector2 GetVector2(string key)
+        public Vector2? GetVector2(string key)
         {
             Dictionary<string, string> keyValuePairs = Read();
             if (keyValuePairs.ContainsKey(key))
@@ -334,12 +331,11 @@ namespace Electron2D
             }
             else
             {
-                Debug.LogError($"Key [{key}] does not exist in save file [{FilePath}].");
-                throw new Exception();
+                return null;
             }
         }
 
-        public bool GetBool(string key)
+        public bool? GetBool(string key)
         {
             Dictionary<string, string> keyValuePairs = Read();
             if (keyValuePairs.ContainsKey(key))
@@ -365,8 +361,7 @@ namespace Electron2D
             }
             else
             {
-                Debug.LogError($"Key [{key}] does not exist in save file [{FilePath}].");
-                throw new Exception();
+                return null;
             }
         }
 
@@ -402,12 +397,11 @@ namespace Electron2D
             }
             else
             {
-                Debug.LogError($"Key [{key}] does not exist in save file [{FilePath}].");
-                throw new Exception();
+                return null;
             }
         }
 
-        public SaveData GetSave(string key)
+        public SaveData? GetSave(string key)
         {
             Dictionary<string, string> keyValuePairs = Read();
             if (keyValuePairs.ContainsKey(key))
@@ -473,8 +467,7 @@ namespace Electron2D
             }
             else
             {
-                Debug.LogError($"Key [{key}] does not exist in save file [{FilePath}].");
-                throw new Exception();
+                return null;
             }
         }
 
