@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Drawing;
+using System.Numerics;
 
 namespace Electron2D.UserInterface
 {
@@ -90,7 +91,10 @@ namespace Electron2D.UserInterface
         public bool ForceWholeNumbers = false;
         public bool AllowNonHandleValueUpdates = true;
         public bool SliderInteractable;
+        public event Action<float> OnValueChanged;
+        public event Action<float> OnValueChanged01;
 
+        private float _lastValue = 0;
         private UIComponent _backgroundPanel;
         private UIComponent _sliderPanel;
         private UIComponent _handlePanel;
@@ -155,6 +159,9 @@ namespace Electron2D.UserInterface
             }
 
             _initialized = true;
+            OnValueChanged?.Invoke(Value);
+            OnValueChanged01?.Invoke(Value01);
+            _lastValue = Value;
 
             UpdateDisplay();
             Engine.Game.RegisterGameClass(this);
@@ -173,32 +180,37 @@ namespace Electron2D.UserInterface
             UpdateDisplay();
         }
 
+        public override void SetRenderLayer(int uiRenderLayer)
+        {
+            base.SetRenderLayer(uiRenderLayer);
+            _backgroundPanel.SetRenderLayer(uiRenderLayer);
+            _sliderPanel.SetRenderLayer(uiRenderLayer);
+            _handlePanel.SetRenderLayer(uiRenderLayer);
+        }
+
         private void UpdateDisplay()
         {
             if (!_initialized) return;
 
-            // Background panel
             _backgroundPanel.Transform.Position = new Vector2(
-                Transform.Position.X,
-                Transform.Position.Y + (Anchor.Y * BackgroundSizeY / 2f)
+                Transform.Position.X + LeftXBound,
+                Transform.Position.Y - (Anchor.Y * SizeY / 2f)
             );
-            _backgroundPanel.SizeX = SizeX;
-            _backgroundPanel.SizeY = BackgroundSizeY;
+            _backgroundPanel.Anchor = new Vector2(-1, 0);
+            _backgroundPanel.SetSize(new Vector2(SizeX, BackgroundSizeY));
 
-            // Slider fill
             float endPosition = ((SizeX - HandlePadding * 2) * Value01);
             _sliderPanel.Transform.Position = new Vector2(
-                Transform.Position.X + LeftXBound + HandlePadding / 2f,
-                Transform.Position.Y + (Anchor.Y * BackgroundSizeY / 2f)
+                Transform.Position.X + LeftXBound,
+                Transform.Position.Y - (Anchor.Y * SizeY / 2f)
             );
-            _sliderPanel.SizeX = endPosition + HandlePadding;
-            _sliderPanel.SizeY = SliderSizeY;
+            _sliderPanel.SetSize(new Vector2(endPosition + HandlePadding, SliderSizeY));
 
-            // Handle position
             _handlePanel.Transform.Position = new Vector2(
                 Transform.Position.X + LeftXBound + HandlePadding + endPosition,
-                Transform.Position.Y + (Anchor.Y * BackgroundSizeY / 2f)
+                Transform.Position.Y - (Anchor.Y * SizeY / 2f)
             );
+            _handlePanel.SetSize(new Vector2(HandleSizeXY, HandleSizeXY));
         }
 
         public void Update()
@@ -214,6 +226,13 @@ namespace Electron2D.UserInterface
             {
                 Vector2 position = Input.GetMouseScreenPosition();
                 Value01 = (position.X - (Transform.Position.X + LeftXBound + HandlePadding)) / (SizeX - HandlePadding * 2);
+            }
+
+            if (_lastValue != Value)
+            {
+                OnValueChanged?.Invoke(Value);
+                OnValueChanged01?.Invoke(Value01);
+                _lastValue = Value;
             }
         }
 
