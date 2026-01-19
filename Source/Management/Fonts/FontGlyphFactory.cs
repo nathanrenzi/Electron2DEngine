@@ -1,4 +1,5 @@
 ﻿using Electron2D.Rendering.Text;
+using Electron2D.UserInterface;
 using FreeTypeSharp;
 using FreeTypeSharp.Native;
 using System.Numerics;
@@ -9,7 +10,9 @@ namespace Electron2D.Management
 {
     public static class FontGlyphFactory
     {
-        public static FontGlyphStore Load(string _fontFile, int _fontSize, int _outlineWidth)
+        public const int ATLAS_PADDING = 2;
+
+        public static unsafe FontGlyphStore Load(string _fontFile, int _fontSize, int _outlineWidth)
         {
             FreeTypeLibrary library = new FreeTypeLibrary();
             IntPtr face;
@@ -28,7 +31,8 @@ namespace Electron2D.Management
             }
 
             // Setting font pixel size, 0 width means dynamically scaled with height
-            FT_Set_Pixel_Sizes(face, 0, (uint)_fontSize);
+            float scale = UICanvas.Instance.Scale;
+            FT_Set_Pixel_Sizes(face, 0, (uint)(_fontSize * scale));
 
             FreeTypeFaceFacade f = new FreeTypeFaceFacade(library, face);
 
@@ -50,8 +54,8 @@ namespace Electron2D.Management
                     Debug.LogError($"FREETYPE: Failed to load glyph '{(char)c}'");
                     continue;
                 }
-                atlasWidth += (int)f.GlyphBitmap.width;
-                atlasHeight = (int)f.GlyphBitmap.rows > atlasHeight ? (int)f.GlyphBitmap.rows : atlasHeight;
+                atlasWidth += (int)f.GlyphBitmap.width + ATLAS_PADDING;
+                atlasHeight = (int)MathF.Max(atlasHeight, (int)f.GlyphBitmap.rows);
             }
 
             // Generating the texture
@@ -59,13 +63,22 @@ namespace Electron2D.Management
             glActiveTexture(GL_TEXTURE10);
             glBindTexture(GL_TEXTURE_2D, texture);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, IntPtr.Zero);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlasWidth, atlasHeight + ATLAS_PADDING, 0, GL_RED, GL_UNSIGNED_BYTE, IntPtr.Zero);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-            FontGlyphStore store = new FontGlyphStore(texture, atlasWidth, _fontSize, _fontFile, library, face, f.HasKerningFlag);
+            int size = atlasWidth * (atlasHeight + ATLAS_PADDING);
+            byte[] clear = new byte[size]; // initialized to 0
+            fixed (byte* p = clear)
+            {
+                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+                    atlasWidth, atlasHeight + ATLAS_PADDING,
+                    GL_RED, GL_UNSIGNED_BYTE, (IntPtr)p);
+            }
+
+            FontGlyphStore store = new FontGlyphStore(texture, atlasWidth, atlasHeight, _fontSize, _fontFile, library, face, f.HasKerningFlag);
 
             int pos = 0;
             for (uint c = 0; c < 128; c++)
@@ -79,15 +92,15 @@ namespace Electron2D.Management
                 glTexSubImage2D(GL_TEXTURE_2D, 0, pos, 0, (int)f.GlyphBitmap.width, (int)f.GlyphBitmap.rows, GL_RED, GL_UNSIGNED_BYTE, f.GlyphBitmap.buffer);
 
                 Character character = new Character(
-                    new Vector2(f.GlyphBitmap.width, f.GlyphBitmap.rows),                        // Size (in pixels)
-                    new Vector2(pos / (float)atlasWidth, (pos + f.GlyphBitmap.width) / (float)atlasWidth), // UV X (Left, Right)
-                    new Vector2(0, f.GlyphBitmap.rows / (float)atlasHeight),                     // UV Y (Top, Bottom)
-                    new Vector2(f.GlyphBitmapLeft, f.GlyphBitmapTop),                            // Bearing (in pixels)
-                    (uint)f.GlyphMetricHorizontalAdvance                                         // Advance (in pixels)
+                    new Vector2(f.GlyphBitmap.width / scale, f.GlyphBitmap.rows / scale),
+                    new Vector2(pos / (float)atlasWidth, (pos + f.GlyphBitmap.width) / (float)atlasWidth),
+                    new Vector2(0, f.GlyphBitmap.rows / (float)(atlasHeight + ATLAS_PADDING)),
+                    new Vector2(f.GlyphBitmapLeft / scale, f.GlyphBitmapTop / scale),
+                    (uint)(f.GlyphMetricHorizontalAdvance / scale)
                 );
                 store.AddCharacter((char)c, character);
 
-                pos += (int)f.GlyphBitmap.width;
+                pos += (int)f.GlyphBitmap.width + ATLAS_PADDING;
             }
 
             store.Done();

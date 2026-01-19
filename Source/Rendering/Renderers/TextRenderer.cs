@@ -1,7 +1,6 @@
 ﻿using Electron2D.Rendering.Shaders;
 using Electron2D.UserInterface;
 using FreeTypeSharp.Native;
-using System;
 using System.Drawing;
 using System.Numerics;
 using System.Text;
@@ -122,7 +121,8 @@ namespace Electron2D.Rendering.Text
             TextAlignment horizontalAlignment = TextAlignment.Left,
             TextAlignment verticalAlignment = TextAlignment.Top,
             TextAlignmentMode alignmentMode = TextAlignmentMode.Baseline,
-            TextOverflowMode overflowMode = TextOverflowMode.Word)
+            TextOverflowMode overflowMode = TextOverflowMode.Word,
+            bool useUnscaledProjectionMatrix = true)
             : base(transform, Material.Create(shader, new Texture2D(fontGlyphStore.TextureHandle, fontGlyphStore.TextureAtlasWidth, fontGlyphStore.Arguments.FontSize)))
         {
             _shader = shader;
@@ -135,8 +135,7 @@ namespace Electron2D.Rendering.Text
             VerticalAlignment = verticalAlignment;
             AlignmentMode = alignmentMode;
             OverflowMode = overflowMode;
-
-            UseUnscaledProjectionMatrix = true;
+            UseUnscaledProjectionMatrix = useUnscaledProjectionMatrix;
 
             // This must be the last thing initialized, as it will reformat the text
             Text = text;
@@ -185,7 +184,7 @@ namespace Electron2D.Rendering.Text
                 }
                 else
                 {
-                    xpos += (int)(ch.Advance * Transform.Scale.X);
+                    xpos += (int)ch.Advance;
                 }
 
                 int lineTop = ypos - (AlignmentMode == TextAlignmentMode.Baseline ? 0 : 0);
@@ -195,7 +194,7 @@ namespace Electron2D.Rendering.Text
                 {
                     if (localpos.X <= xpos)
                     {
-                        if (localpos.X < xpos - ((ch.Advance * Transform.Scale.X) / 2f))
+                        if (localpos.X < xpos - (ch.Advance / 2f))
                         {
                             return (int)MathF.Max(i - 1, 0);
                         }
@@ -256,7 +255,7 @@ namespace Electron2D.Rendering.Text
                     }
                     else
                     {
-                        xpos += (int)(ch.Advance * Transform.Scale.X);
+                        xpos += (int)ch.Advance;
                     }
                 }
 
@@ -316,7 +315,7 @@ namespace Electron2D.Rendering.Text
                         }
                     }
 
-                    stringSize += ch.Advance * Transform.Scale.X;
+                    stringSize += ch.Advance;
 
                     p = g;
                 }
@@ -375,7 +374,7 @@ namespace Electron2D.Rendering.Text
                         {
                             // 26.6 fixed-point to float pixels
                             float kx = delta.x / 64f;
-                            _x += kx * Transform.Scale.X;
+                            _x += kx;
                         }
                         else
                         {
@@ -387,14 +386,14 @@ namespace Electron2D.Rendering.Text
 
                     if (!outsideBoundsFlag)
                     {
-                        float nextX = _x + (ch.Advance * Transform.Scale.X);
+                        float nextX = _x + ch.Advance;
                         if (nextX - Bounds.X > Bounds.Width)
                             outsideBoundsFlag = true;
                     }
 
                     // Advancing x position
-                    _x += ch.Advance * Transform.Scale.X;
-                    wordLength += ch.Advance * Transform.Scale.X;
+                    _x += ch.Advance;
+                    wordLength += ch.Advance;
 
                     previousIndex = glyphIndex;
                 }
@@ -478,9 +477,9 @@ namespace Electron2D.Rendering.Text
             List<float[]> tempVertexArrays = new List<float[]>();
             List<uint> tempIndices = new List<uint>();
 
-            float x = GetXOffset(0) + _position.X;
+            int x = GetXOffset(0);
             float _x = x;
-            float _y = _position.Y + GetYOffset();
+            float _y = GetYOffset();
             uint previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
             uint glyphIndex = 0;
             int newlineCount = 0;
@@ -508,7 +507,7 @@ namespace Electron2D.Rendering.Text
                     if (_formattedText[i] == '\n')
                     {
                         newlineCount++;
-                        _x = GetXOffset(newlineCount) + _position.X;
+                        _x = GetXOffset(newlineCount);
                         // If the newline is the first character, it is meant to offset the first line, so use one as the multiplier
                         _y += FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                         previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
@@ -530,8 +529,14 @@ namespace Electron2D.Rendering.Text
                         }
                     }
 
-                    int xpos = (int)(_x + ch.Bearing.X);
-                    int ypos = (int)(_y - ch.Bearing.Y);
+                    float xposUnsnapped = _x + ch.Bearing.X;
+                    float yposUnsnapped = _y - ch.Bearing.Y;
+                    Vector2 snapped = UICanvas.Instance.VirtualToScreen(new Vector2(xposUnsnapped, yposUnsnapped));
+                    snapped.X = MathF.Round(snapped.X);
+                    snapped.Y = MathF.Round(snapped.Y);
+                    Vector2 corrected = UICanvas.Instance.ScreenToVirtual(snapped);
+                    float xpos = corrected.X;
+                    float ypos = corrected.Y;
 
                     float w = ch.Size.X;
                     float h = ch.Size.Y;
@@ -583,8 +588,10 @@ namespace Electron2D.Rendering.Text
 
         protected override void BeforeRender()
         {
-            Matrix4x4 model = Matrix4x4.CreateScale(Transform.Scale.X, Transform.Scale.Y, 1f);
-            Material.Shader.SetMatrix4x4("model", model);
+            Material.Shader.SetMatrix4x4("uiMatrix", UseUnscaledProjectionMatrix ? UICanvas.Instance.UIModelMatrix
+                : Matrix4x4.CreateReflection(new Plane(new Vector3(0, 1, 0), 0)));
+            Material.Shader.SetMatrix4x4("model", Matrix4x4.CreateScale(Transform.Scale.X, Transform.Scale.Y, 1f)
+                * Transform.GetRotationMatrix() * Matrix4x4.CreateTranslation(_position.X, _position.Y, 0));
             Material.Shader.SetColor("outlineColor", OutlineColor);
         }
     }

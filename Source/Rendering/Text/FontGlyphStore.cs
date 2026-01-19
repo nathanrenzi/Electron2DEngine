@@ -11,6 +11,7 @@ namespace Electron2D.Rendering.Text
 
         public uint TextureHandle { get; private set; }
         public int TextureAtlasWidth { get; private set; }
+        public int TextureAtlasHeight { get; private set; }
         public Dictionary<char, Character> Characters { get; } = new Dictionary<char, Character>();
         public FontArguments Arguments { get; }
         public FreeTypeLibrary Library { get; }
@@ -20,10 +21,11 @@ namespace Electron2D.Rendering.Text
         public int Descent { get; private set; }
         private bool _isDone = false;
 
-        public FontGlyphStore(uint textureHandle, int textureAtlasWidth, int fontSize, string fontFile, FreeTypeLibrary library, IntPtr face, bool useKerning)
+        public FontGlyphStore(uint textureHandle, int textureAtlasWidth, int textureAtlasHeight, int fontSize, string fontFile, FreeTypeLibrary library, IntPtr face, bool useKerning)
         {
             TextureHandle = textureHandle;
             TextureAtlasWidth = textureAtlasWidth;
+            TextureAtlasHeight = textureAtlasHeight;
             Library = library;
             Face = face;
             UseKerning = useKerning;

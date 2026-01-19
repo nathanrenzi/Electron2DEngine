@@ -108,10 +108,10 @@ namespace Electron2D.UserInterface
         protected bool _isLoaded = false;
         private List<UIComponent> _eventSources = new List<UIComponent>();
         private EventSourceListener _eventSourceListener;
-        public float RightXBound => SizeX / 2f + (-Anchor.X * SizeX / 2f);
-        public float LeftXBound => -SizeX / 2f + (-Anchor.X * SizeX / 2f);
-        public float BottomYBound => SizeY / 2f + (-Anchor.Y * SizeY / 2f);
-        public float TopYBound => -SizeY / 2f + (-Anchor.Y * SizeY / 2f);
+        public float RightXBound => (int)(SizeX / 2f + (-Anchor.X * SizeX / 2f));
+        public float LeftXBound => (int)(-SizeX / 2f + (-Anchor.X * SizeX / 2f));
+        public float BottomYBound => (int)(SizeY / 2f + (-Anchor.Y * SizeY / 2f));
+        public float TopYBound => (int)(-SizeY / 2f + (-Anchor.Y * SizeY / 2f));
 
         public UIComponent(bool ignorePostProcessing, int uiRenderLayer = 0, int sizeX = 100, int sizeY = 100, int extraInteractionSize = 0,
             bool initialize = true, bool useScreenPosition = true, bool useMeshRenderer = true, bool autoRender = true)
@@ -343,7 +343,7 @@ namespace Electron2D.UserInterface
             }
             if (Visible && UsingMeshRenderer)
             {
-                Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix", UICanvas.Instance.UIModelMatrix);
+                Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix", UseScreenPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
                 Renderer.Render();
             }
         }
