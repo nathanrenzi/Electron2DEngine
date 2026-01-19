@@ -147,15 +147,15 @@ namespace Electron2D.Rendering.Text
             return new Iterator(this);
         }
 
-        public int GetCaretIndexFromWorldPosition(Vector2 worldPosition)
+        public int GetCaretIndexFromVirtualPosition(Vector2 virtualPosition)
         {
             if (_formattedText.Length == 0) return 0;
-            Vector2 localpos = worldPosition - _position;
+            virtualPosition -= Transform.Position;
             int offset = -1;
             int xpos = GetXOffset(0);
             int ypos = GetYOffset();
             int newlineCount = 0;
-            if(localpos.X <= xpos)
+            if(virtualPosition.X <= xpos)
             {
                 return 0;
             }
@@ -187,14 +187,14 @@ namespace Electron2D.Rendering.Text
                     xpos += (int)ch.Advance;
                 }
 
-                int lineTop = ypos - (AlignmentMode == TextAlignmentMode.Baseline ? 0 : 0);
-                int lineBottom = ypos + (int)(FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
-                bool onThisLine = localpos.Y >= lineTop && localpos.Y < lineBottom;
+                int lineTop = ypos;
+                int lineBottom = ypos - (int)(FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+                bool onThisLine = virtualPosition.Y >= lineBottom && virtualPosition.Y < lineTop;
                 if (onThisLine)
                 {
-                    if (localpos.X <= xpos)
+                    if (virtualPosition.X <= xpos)
                     {
-                        if (localpos.X < xpos - (ch.Advance / 2f))
+                        if (virtualPosition.X < xpos - (ch.Advance / 2f))
                         {
                             return (int)MathF.Max(i - 1, 0);
                         }
@@ -209,7 +209,7 @@ namespace Electron2D.Rendering.Text
             return _formattedText.Length;
         }
 
-        public Vector2 GetCaretWorldPostion(int index)
+        public Vector2 GetCaretVirtualPostion(int index)
         {
             if(_formattedText.Length == 0)
             {
