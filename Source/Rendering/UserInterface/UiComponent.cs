@@ -108,10 +108,10 @@ namespace Electron2D.UserInterface
         protected bool _isLoaded = false;
         private List<UIComponent> _eventSources = new List<UIComponent>();
         private EventSourceListener _eventSourceListener;
-        public float RightXBound => (int)(SizeX / 2f + (-Anchor.X * SizeX / 2f));
-        public float LeftXBound => (int)(-SizeX / 2f + (-Anchor.X * SizeX / 2f));
-        public float BottomYBound => (int)(SizeY / 2f + (-Anchor.Y * SizeY / 2f));
-        public float TopYBound => (int)(-SizeY / 2f + (-Anchor.Y * SizeY / 2f));
+        public float RightXBound => MathF.Ceiling(SizeX / 2f + (-Anchor.X * SizeX / 2f));
+        public float LeftXBound => MathF.Ceiling(-SizeX / 2f + (-Anchor.X * SizeX / 2f));
+        public float BottomYBound => MathF.Ceiling(SizeY / 2f + (-Anchor.Y * SizeY / 2f));
+        public float TopYBound => MathF.Ceiling(-SizeY / 2f + (-Anchor.Y * SizeY / 2f));
 
         public UIComponent(bool ignorePostProcessing, int uiRenderLayer = 0, int sizeX = 100, int sizeY = 100, int extraInteractionSize = 0,
             bool initialize = true, bool useScreenPosition = true, bool useMeshRenderer = true, bool autoRender = true)
