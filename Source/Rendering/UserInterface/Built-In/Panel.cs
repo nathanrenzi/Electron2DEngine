@@ -25,7 +25,7 @@ namespace Electron2D.UserInterface
             Renderer.SetVertexArrays(Vertices, Indices);
         }
         public Panel(Material _material, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
-            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, _sizeY, useScreenPosition: _useScreenPosition)
+            bool _useScreenPosition = true, bool _ignorePostProcessing = true) : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, _sizeY, useScreenPosition: _useScreenPosition)
         {
             GenerateVertices();
             Renderer.SetMaterial(_material);
