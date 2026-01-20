@@ -222,7 +222,7 @@ namespace Electron2D.UserInterface
         /// <param name="uiRenderLayer">The UI render layer of this object. Added onto <see cref="RenderLayer.Interface"/> so that UI components are rendered on top.</param>
         /// <param name="ignorePostProcessing">Should this object ignore post processing effects?</param>
         public TextField(TextFieldDef def, bool useScreenPosition = true, int uiRenderLayer = 0,
-            bool ignorePostProcessing = false)
+            bool ignorePostProcessing = true)
             : base(ignorePostProcessing, uiRenderLayer, def.SizeX, def.SizeY,
                 0, true, useScreenPosition, false, true)
         {

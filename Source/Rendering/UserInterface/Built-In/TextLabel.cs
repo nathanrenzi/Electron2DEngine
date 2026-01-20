@@ -75,7 +75,7 @@ namespace Electron2D.UserInterface
         public new TextRenderer Renderer { get; private set; }
         private FontGlyphStore fgh;
 
-        public TextLabel(TextLabelDef def, bool useScreenPosition = true, int uiRenderLayer = 0, bool ignorePostProcessing = false)
+        public TextLabel(TextLabelDef def, bool useScreenPosition = true, int uiRenderLayer = 0, bool ignorePostProcessing = true)
             : base(ignorePostProcessing, uiRenderLayer, useScreenPosition: useScreenPosition, useMeshRenderer: false)
         {
             SizeX = def.SizeX;

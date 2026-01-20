@@ -217,6 +217,7 @@ namespace Electron2D
 
             UICanvas uiCanvas = new UICanvas();
             PostProcessor.Instance.Initialize();
+            Display.SetAntialiasingMode(Settings.AntialiasingMode);
             GC.Collect();
 
             Debug.Log("Initialization complete");

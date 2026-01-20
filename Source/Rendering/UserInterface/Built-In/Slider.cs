@@ -104,7 +104,7 @@ namespace Electron2D.UserInterface
         private bool _initialized = false;
 
         public Slider(SliderDef def, bool useScreenPosition = true, int uiRenderLayer = 0,
-            bool ignorePostProcessing = false)
+            bool ignorePostProcessing = true)
             : base(ignorePostProcessing, uiRenderLayer, def.SizeX, (int)MathF.Max(def.SliderSizeY, def.BackgroundSizeY),
                 0, true, useScreenPosition, false, false)
         {

@@ -1,4 +1,5 @@
 ﻿using Electron2D.Rendering;
+using Electron2D.Rendering.PostProcessing;
 using GLFW;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -16,6 +17,7 @@ namespace Electron2D
         public static Window Window { get; private set; }
         public static Vector2 WindowSize { get; private set; }
         private static WindowMode _windowMode = WindowMode.None;
+        private static PostProcessingStack _fxaaPostProcessing = new(-1);
 
         public static void Initialize()
         {
@@ -48,6 +50,7 @@ namespace Electron2D
             Glfw.WindowHint(Hint.OpenglProfile, Profile.Core);
             Glfw.WindowHint(Hint.Focused, true);
             Glfw.WindowHint(Hint.Resizable, false);
+            Glfw.WindowHint(Hint.Samples, 4);
 
             Window = Glfw.CreateWindow(width, height, title, GLFW.Monitor.None, Window.None);
 
@@ -68,6 +71,7 @@ namespace Electron2D
             }
             Settings settings = Engine.Game.Settings;
             SetWindowMode(settings.WindowMode);
+            _fxaaPostProcessing.Add(new FXAAPostProcess());
         }
 
         /// <summary>
@@ -120,6 +124,24 @@ namespace Electron2D
                     break;
             }
             OnWindowResize?.Invoke();
+        }
+
+        public static void SetAntialiasingMode(AntialiasingMode antialiasing)
+        {
+            switch (antialiasing)
+            {
+                case AntialiasingMode.None:
+                    PostProcessor.Instance.Unregister(_fxaaPostProcessing);
+                    glDisable(GL_MULTISAMPLE);
+                    break;
+                case AntialiasingMode.MSAA:
+                    PostProcessor.Instance.Unregister(_fxaaPostProcessing);
+                    glEnable(GL_MULTISAMPLE);
+                    break;
+                case AntialiasingMode.FXAA:
+                    PostProcessor.Instance.Register(_fxaaPostProcessing);
+                    break;
+            }
         }
 
         public static void DestroyWindow()

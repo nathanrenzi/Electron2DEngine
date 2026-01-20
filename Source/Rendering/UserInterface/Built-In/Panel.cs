@@ -18,7 +18,7 @@ namespace Electron2D.UserInterface
         private List<float> tempVertexList = new List<float>();
 
         public Panel(Color _mainColor, int _uiRenderLayer = 0, int _sizeX = 100, int _sizeY = 100,
-            bool _useScreenPosition = true, bool _ignorePostProcessing = false) : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, _sizeY, useScreenPosition: _useScreenPosition)
+            bool _useScreenPosition = true, bool _ignorePostProcessing = true) : base(_ignorePostProcessing, _uiRenderLayer, _sizeX, _sizeY, useScreenPosition: _useScreenPosition)
         {
             GenerateVertices();
             SetColor(_mainColor);
