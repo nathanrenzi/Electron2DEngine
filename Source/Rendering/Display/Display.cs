@@ -14,19 +14,25 @@ namespace Electron2D
         public const float REFERENCE_WINDOW_HEIGHT = 1080f;
         public static event Action OnWindowResize;
 
-        public static Window Window { get; private set; }
+        public static GLFW.Window Window { get; private set; }
+        public static GLFW.Monitor Monitor { get; private set; }
         public static Vector2 WindowSize { get; private set; }
-        private static WindowMode _windowMode = WindowMode.None;
         private static PostProcessingStack _fxaaPostProcessing = new(-1);
+        private static SizeCallback _windowResizeCallback;
+        private static MonitorCallback _monitorCallback;
 
         public static void Initialize()
         {
             Glfw.Init();
+            AssignMonitorPointers();
         }
 
         public static void CreateWindow(int width, int height, string title)
         {
-            if(Window != Window.None)
+            Settings settings = Engine.Game.Settings;
+            Monitor = settings.Monitor;
+
+            if (Window != Window.None)
             {
                 Debug.LogError("Cannot create a window. Multiple windows are not supported.");
                 return;
@@ -34,13 +40,12 @@ namespace Electron2D
 
             if (width <= 0 || height <= 0)
             {
-                width = Glfw.PrimaryMonitor.WorkArea.Width;
-                height = Glfw.PrimaryMonitor.WorkArea.Height;
+                width = settings.Monitor.WorkArea.Width;
+                height = settings.Monitor.WorkArea.Height;
             }
 
-            VideoMode mode = Glfw.GetVideoMode(Glfw.PrimaryMonitor);
+            VideoMode mode = Glfw.GetVideoMode(settings.Monitor);
 
-            // OpenGL 3.3 Core Profile
             Glfw.WindowHint(Hint.RedBits, mode.RedBits);
             Glfw.WindowHint(Hint.GreenBits, mode.GreenBits);
             Glfw.WindowHint(Hint.BlueBits, mode.BlueBits);
@@ -51,27 +56,58 @@ namespace Electron2D
             Glfw.WindowHint(Hint.Focused, true);
             Glfw.WindowHint(Hint.Resizable, false);
             Glfw.WindowHint(Hint.Samples, 4);
+            Glfw.WindowHint(Hint.Maximized, settings.WindowMode == WindowMode.Fullscreen);
 
             Window = Glfw.CreateWindow(width, height, title, GLFW.Monitor.None, Window.None);
 
             if (Window == Window.None)
             {
-                // Error creating window
-                Console.WriteLine("Error creating window.");
+                Debug.LogError("Error creating window.");
                 return;
             }
 
             Glfw.MakeContextCurrent(Window);
             Import(Glfw.GetProcAddress);
 
+            if (settings.Vsync)
+            {
+                Glfw.SwapInterval(1);
+            }
+            else
+            {
+                Glfw.SwapInterval(0);
+            }
+
             if (File.Exists(ResourceManager.GetEngineResourcePath("icon.ico")))
             {
                 Texture2D texture = ResourceManager.Instance.LoadTexture(ResourceManager.GetEngineResourcePath("icon.ico"));
                 SetIcon(texture);
             }
-            Settings settings = Engine.Game.Settings;
+
             SetWindowMode(settings.WindowMode);
+
+            _windowResizeCallback = new SizeCallback(OnFramebufferResize);
+            Glfw.SetFramebufferSizeCallback(Window, _windowResizeCallback);
+
+            _monitorCallback = new MonitorCallback((monitor, connection) => AssignMonitorPointers());
+            Glfw.SetMonitorCallback(_monitorCallback);
+
             _fxaaPostProcessing.Add(new FXAAPostProcess());
+        }
+
+        private static void AssignMonitorPointers()
+        {
+            for (int i = 0; i < Glfw.Monitors.Length; i++)
+            {
+                Glfw.Monitors[i].UserPointer = i;
+            }
+        }
+
+        private static void OnFramebufferResize(Window window, int width, int height)
+        {
+            glViewport(0, 0, width, height);
+            WindowSize = new Vector2(width, height);
+            OnWindowResize?.Invoke();
         }
 
         /// <summary>
@@ -89,27 +125,27 @@ namespace Electron2D
                     ImageLockMode.ReadOnly,
                     PixelFormat.Format32bppArgb);
             GLFW.Image image = new GLFW.Image(iconTexture.Width, iconTexture.Height, data.Scan0);
-            Glfw.SetWindowIcon(Window, 1, new GLFW.Image[] { image });
+            Glfw.SetWindowIcon(Window, 1, [image]);
         }
 
         public static void SetWindowMode(WindowMode mode)
         {
-            Rectangle screen = Glfw.PrimaryMonitor.WorkArea;
             Settings settings = Engine.Game.Settings;
+            Rectangle screen = Monitor.WorkArea;
             switch (mode)
             {
                 default:
                 case WindowMode.Fullscreen:
-                    Glfw.SetWindowMonitor(Window, Glfw.PrimaryMonitor, 0, 0, screen.Width,
+                    Glfw.SetWindowMonitor(Window, Monitor, 0, 0, screen.Width,
                         screen.Height, settings.RefreshRate);
-                    glViewport(0, 0, screen.Width, screen.Height);
+                    glViewport(screen.X, screen.Y, screen.Width, screen.Height);
                     WindowSize = new Vector2(screen.Width, screen.Height);
                     break;
                 case WindowMode.Windowed:
                     Glfw.SetWindowAttribute(Window, WindowAttribute.Decorated, true);
                     Glfw.SetWindowMonitor(Window, GLFW.Monitor.None,
-                        (screen.Width - settings.WindowWidth) / 2,
-                        (screen.Height - settings.WindowHeight) / 2,
+                        (screen.Width - settings.WindowWidth) / 2 + screen.X,
+                        (screen.Height - settings.WindowHeight) / 2 + screen.Y,
                         settings.WindowWidth,
                         settings.WindowHeight, settings.RefreshRate);
                     glViewport(0, 0, settings.WindowWidth, settings.WindowHeight);
@@ -117,7 +153,7 @@ namespace Electron2D
                     break;
                 case WindowMode.BorderlessWindow:
                     Glfw.SetWindowAttribute(Window, WindowAttribute.Decorated, false);
-                    Glfw.SetWindowMonitor(Window, GLFW.Monitor.None, 0, 0, screen.Width,
+                    Glfw.SetWindowMonitor(Window, GLFW.Monitor.None, screen.X, screen.Y, screen.Width,
                         screen.Height, settings.RefreshRate);
                     glViewport(0, 0, screen.Width, screen.Height);
                     WindowSize = new Vector2(screen.Width, screen.Height);

@@ -39,6 +39,7 @@ namespace Electron2D.UserInterface
             _maintainAspect = ProjectSettings.UISettings.MaintainAspect;
             UpdateScaling();
             Engine.Game.LateUpdateEvent += CheckForInput;
+            Display.OnWindowResize += UpdateScaling;
         }
 
         public void RegisterUIComponent(UIComponent component)
@@ -79,6 +80,12 @@ namespace Electron2D.UserInterface
 
                 Matrix4x4.Invert(UIModelMatrix, out var inverse);
                 UIModelMatrixInverse = inverse;
+            }
+
+            for (int i = 0; i < _activeComponents.Count; i++)
+            {
+                _activeComponents[i].InvokeUIEvent(UIEvent.Position);
+                _activeComponents[i].InvokeUIEvent(UIEvent.Resize);
             }
 
             OnUIScaleChanged?.Invoke(Scale);

@@ -107,13 +107,13 @@ namespace Electron2D
 
         public void Run()
         {
-            Engine.Initialize(this);
-            Settings = Settings.LoadSettingsFile();
-            AudioSystem.Initialize(Settings.AudioMasterVolume);
             Debug.OpenLogFile();
             Debug.Log("Starting initialization...");
+            Engine.Initialize(this);
             Display.Initialize();
+            Settings = Settings.LoadSettingsFile();
             Cursor.Initialize();
+            AudioSystem.Initialize(Settings.AudioMasterVolume);
 
             // Starting Physics Thread
             PhysicsThread = new Thread(() => RunPhysicsThread(PhysicsCancellationToken.Token, ProjectSettings.PhysicsTimestep,
@@ -134,16 +134,6 @@ namespace Electron2D
             _defaultSpatialListener = new AudioSpatialListener(DefaultCamera.Transform);
 
             Display.CreateWindow(Settings.WindowWidth, Settings.WindowHeight, ProjectSettings.WindowTitle);
-            if (Settings.Vsync)
-            {
-                // VSYNC ON
-                Glfw.SwapInterval(1);
-            }
-            else
-            {
-                // VSYNC OFF
-                Glfw.SwapInterval(0);
-            }
             Input.Initialize();
 
             // Setup
