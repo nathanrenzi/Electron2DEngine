@@ -12,27 +12,27 @@ namespace Electron2D.Management
     {
         public const int ATLAS_PADDING = 2;
 
-        public static unsafe FontGlyphStore Load(string _fontFile, int _fontSize, int _outlineWidth)
+        public static unsafe FontGlyphStore Load(string fontFile, int fontSize, float fontScale, int outlineWidth)
         {
             FreeTypeLibrary library = new FreeTypeLibrary();
             IntPtr face;
             FT_Error error;
 
-            error = FT_New_Face(library.Native, _fontFile, 0, out face);
+            error = FT_New_Face(library.Native, fontFile, 0, out face);
             if (error == FT_Error.FT_Err_Unknown_File_Format)
             {
-                Debug.LogError($"FREETYPE: The font file {_fontFile} could be opened and read, but it appears that its font format is unsupported");
+                Debug.LogError($"FREETYPE: The font file {fontFile} could be opened and read, but it appears that its font format is unsupported");
                 return null;
             }
             else if (error != FT_Error.FT_Err_Ok)
             {
-                Debug.LogError($"FREETYPE: The font file {_fontFile} could not be opened or read");
+                Debug.LogError($"FREETYPE: The font file {fontFile} could not be opened or read");
                 return null;
             }
 
             // Setting font pixel size, 0 width means dynamically scaled with height
-            float scale = UICanvas.Instance.Scale;
-            FT_Set_Pixel_Sizes(face, 0, (uint)(_fontSize * scale));
+            float scale = UICanvas.Instance.Scale * fontScale;
+            FT_Set_Pixel_Sizes(face, 0, (uint)(fontSize * scale));
 
             FreeTypeFaceFacade f = new FreeTypeFaceFacade(library, face);
 
@@ -78,7 +78,7 @@ namespace Electron2D.Management
                     GL_RED, GL_UNSIGNED_BYTE, (IntPtr)p);
             }
 
-            FontGlyphStore store = new FontGlyphStore(texture, atlasWidth, atlasHeight, _fontSize, _fontFile, library, face, f.HasKerningFlag);
+            FontGlyphStore store = new FontGlyphStore(texture, atlasWidth, atlasHeight, fontSize, fontFile, library, face, f.HasKerningFlag);
 
             int pos = 0;
             for (uint c = 0; c < 128; c++)

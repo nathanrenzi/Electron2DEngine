@@ -236,11 +236,11 @@ namespace Electron2D.UserInterface
             if(def.BackgroundPanelDef != null)
             {
                 _backgroundPanel = new SlicedPanel(def.BackgroundPanelDef, def.BackgroundPanelMaterial, def.SizeX, def.SizeY,
-                    uiRenderLayer - 1, useScreenPosition, ignorePostProcessing);
+                    uiRenderLayer, useScreenPosition, ignorePostProcessing);
             }
             else
             {
-                _backgroundPanel = new Panel(def.BackgroundPanelMaterial, uiRenderLayer - 1, def.SizeX, def.SizeY,
+                _backgroundPanel = new Panel(def.BackgroundPanelMaterial, uiRenderLayer, def.SizeX, def.SizeY,
                     useScreenPosition, ignorePostProcessing);
             }
             _backgroundPanel.Interactable = false;
@@ -256,14 +256,14 @@ namespace Electron2D.UserInterface
                 def.TextVerticalAlignment,
                 def.TextAlignmentMode,
                 def.TextOverflowMode
-            ));
+            ), uiRenderLayer: uiRenderLayer);
             _textLabel.Interactable = false;
             _backgroundPanel.ChildLayoutGroup.AddToLayout(_textLabel);
             _builder = new StringBuilder(Text);
             _caretMaterial = def.CaretMaterial == null ? 
-                Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")), true, new string[] { "time" }))
+                Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")), true, ["time"]))
                 : def.CaretMaterial;
-            _caretPanel = new Panel(_caretMaterial, uiRenderLayer + 2, _caretWidth, def.TextFontArguments.FontSize, useScreenPosition, ignorePostProcessing);
+            _caretPanel = new Panel(_caretMaterial, uiRenderLayer, _caretWidth, def.TextFontArguments.FontSize, useScreenPosition, ignorePostProcessing);
             _caretPanel.Visible = false;
             _caretPanel.Interactable = false;
             _textColor = def.TextColor;
@@ -314,7 +314,12 @@ namespace Electron2D.UserInterface
         private void UpdateCaretDisplay()
         {
             if(!_initialized) return;
-            _caretPanel.Transform.Position = _textLabel.Renderer.GetCaretVirtualPostion(_iterator.Index) + new Vector2(_caretPanel.SizeX / 2f, -_caretPanel.SizeY / 3f);
+            Vector2 position = _textLabel.Renderer.GetCaretVirtualPostion(_iterator.Index) + new Vector2(_caretPanel.SizeX / 2f, -_caretPanel.SizeY / 3f);
+            Vector2 screen = UICanvas.Instance.VirtualToScreen(position);
+            screen.X = MathF.Floor(screen.X);
+            screen.Y = MathF.Floor(screen.Y);
+            position = UICanvas.Instance.ScreenToVirtual(screen);
+            _caretPanel.Transform.Position = position;
             _caretMaterial.Shader.SetFloat("startTime", Time.GameTime);
         }
 

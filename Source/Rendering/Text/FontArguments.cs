@@ -4,12 +4,14 @@
     {
         public string FontFile;
         public int FontSize;
-        public int OutlineWidth;
+        public float FontScale = 1f;
+        public int OutlineWidth = 0;
 
-        public FontArguments(string fontName, int fontSize, int outlineWidth)
+        public FontArguments(string fontName, int fontSize, float fontScale = 1f, int outlineWidth = 0)
         {
             FontFile = fontName;
             FontSize = fontSize;
+            FontScale = fontScale;
             OutlineWidth = outlineWidth;
         }
     }

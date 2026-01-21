@@ -589,9 +589,13 @@ namespace Electron2D.Rendering.Text
         protected override void BeforeRender()
         {
             Material.Shader.SetMatrix4x4("uiMatrix", UseUnscaledProjectionMatrix ? UICanvas.Instance.UIModelMatrix
-                : Matrix4x4.CreateReflection(new Plane(new Vector3(0, 1, 0), 0)));
+                : Matrix4x4.Identity);
+
             Material.Shader.SetMatrix4x4("model", Matrix4x4.CreateScale(Transform.Scale.X, Transform.Scale.Y, 1f)
-                * Transform.GetRotationMatrix() * Matrix4x4.CreateTranslation(_position.X, _position.Y, 0));
+                * Transform.GetRotationMatrix() * (UseUnscaledProjectionMatrix ? Matrix4x4.Identity
+                : Matrix4x4.CreateReflection(new Plane(new Vector3(0, 1, 0), 0)))
+                * Matrix4x4.CreateTranslation(_position.X, _position.Y, 0));
+
             Material.Shader.SetColor("outlineColor", OutlineColor);
         }
     }

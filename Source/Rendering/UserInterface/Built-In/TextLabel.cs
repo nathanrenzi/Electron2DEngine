@@ -80,7 +80,8 @@ namespace Electron2D.UserInterface
         {
             SizeX = def.SizeX;
             SizeY = def.SizeY;
-            fgh = ResourceManager.Instance.LoadFont(def.TextFontArguments.FontFile, def.TextFontArguments.FontSize, def.TextFontArguments.OutlineWidth);
+            fgh = ResourceManager.Instance.LoadFont(def.TextFontArguments.FontFile, def.TextFontArguments.FontSize,
+                def.TextFontArguments.FontScale, def.TextFontArguments.OutlineWidth);
             Renderer = new TextRenderer(Transform, fgh, def.TextMaterial.Shader, def.Text, new Vector2(SizeX, SizeY), def.TextColor, Color.Black,
                 def.TextHorizontalAlignment, def.TextVerticalAlignment, def.TextAlignmentMode, def.TextOverflowMode, useScreenPosition);
         }

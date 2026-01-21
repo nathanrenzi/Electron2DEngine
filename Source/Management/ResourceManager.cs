@@ -67,12 +67,12 @@ namespace Electron2D
         /// <summary>
         /// Removes a texture from the cache. This is called from <see cref="Texture2DArray.Dispose()"/>
         /// </summary>
-        /// <param name="_texture">The texture to remove from the cache.</param>
-        public void RemoveTextureArray(Texture2DArray _texture)
+        /// <param name="texture">The texture to remove from the cache.</param>
+        public void RemoveTextureArray(Texture2DArray texture)
         {
             foreach (var pair in textureArrayCache)
             {
-                if (pair.Value == _texture)
+                if (pair.Value == texture)
                 {
                     textureCache.Remove(pair.Key);
                 }
@@ -82,33 +82,33 @@ namespace Electron2D
         /// <summary>
         /// Directly loads a vertical spritesheet as a texture array, from bottom to top.
         /// </summary>
-        /// <param name="_textureFileName"></param>
+        /// <param name="textureFileName"></param>
         /// <returns></returns>
-        public Texture2DArray LoadTextureArray(string _textureFileName, int _layers, bool _nonColor = false)
+        public Texture2DArray LoadTextureArray(string textureFileName, int layers, bool nonColor = false)
         {
-            textureArrayCache.TryGetValue(_textureFileName, out var value);
+            textureArrayCache.TryGetValue(textureFileName, out var value);
             if (value is not null)
             {
                 return value;
             }
 
-            value = TextureFactory.LoadArray(_textureFileName, _layers, _nonColor);
-            textureArrayCache.Add(_textureFileName, value);
+            value = TextureFactory.LoadArray(textureFileName, layers, nonColor);
+            textureArrayCache.Add(textureFileName, value);
             return value;
         }
 
         /// <summary>
         /// Loads multiple individual textures into one texture array. All textures must be the same size.
         /// </summary>
-        /// <param name="_textureFileNames"></param>
-        /// <param name="_nonColor"></param>
+        /// <param name="textureFileNames"></param>
+        /// <param name="nonColor"></param>
         /// <returns></returns>
-        public Texture2DArray LoadTextureArray(string[] _textureFileNames, bool _nonColor = false)
+        public Texture2DArray LoadTextureArray(string[] textureFileNames, bool nonColor = false)
         {
             StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < _textureFileNames.Length; i++)
+            for (int i = 0; i < textureFileNames.Length; i++)
             {
-                builder.Append(_textureFileNames[i]);
+                builder.Append(textureFileNames[i]);
             }
 
             textureArrayCache.TryGetValue(builder.ToString(), out var value);
@@ -117,7 +117,7 @@ namespace Electron2D
                 return value;
             }
 
-            value = TextureFactory.LoadArray(_textureFileNames, _nonColor);
+            value = TextureFactory.LoadArray(textureFileNames, nonColor);
             textureArrayCache.Add(builder.ToString(), value);
             return value;
         }
@@ -125,21 +125,21 @@ namespace Electron2D
         /// <summary>
         /// Loads a spritesheet as a texture array, left to right, top to bottom.
         /// </summary>
-        /// <param name="_textureFileName"></param>
-        /// <param name="_spriteWidth"></param>
-        /// <param name="_spriteHeight"></param>
-        /// <param name="_nonColor"></param>
+        /// <param name="textureFileName"></param>
+        /// <param name="spriteWidth"></param>
+        /// <param name="spriteHeight"></param>
+        /// <param name="nonColor"></param>
         /// <returns></returns>
-        public Texture2DArray LoadTextureArray(string _textureFileName, int _spriteWidth,  int _spriteHeight, bool _nonColor = false)
+        public Texture2DArray LoadTextureArray(string textureFileName, int spriteWidth,  int spriteHeight, bool nonColor = false)
         {
-            textureArrayCache.TryGetValue(_textureFileName, out var value);
+            textureArrayCache.TryGetValue(textureFileName, out var value);
             if (value is not null)
             {
                 return value;
             }
 
-            value = TextureFactory.LoadArray(_textureFileName, _spriteWidth, _spriteHeight, _nonColor);
-            textureArrayCache.Add(_textureFileName, value);
+            value = TextureFactory.LoadArray(textureFileName, spriteWidth, spriteHeight, nonColor);
+            textureArrayCache.Add(textureFileName, value);
             return value;
         }
         #endregion
@@ -149,18 +149,18 @@ namespace Electron2D
         /// Loads a texture into memory and returns it.
         /// After a texture is loaded, the already stored texture will be returned instead of creating a new Texture2D object.
         /// </summary>
-        /// <param name="_textureFileName">The local file path of the texture. Ex. Resources/Textures/TextureNameHere.png</param>
+        /// <param name="textureFileName">The local file path of the texture. Ex. Resources/Textures/TextureNameHere.png</param>
         /// <returns></returns>
-        public Texture2D LoadTexture(string _textureFileName, bool _nonColor = false)
+        public Texture2D LoadTexture(string textureFileName, bool nonColor = false)
         {
-            textureCache.TryGetValue(_textureFileName, out var value);
+            textureCache.TryGetValue(textureFileName, out var value);
             if(value is not null)
             {
                 return value;
             }
 
-            value = TextureFactory.Load(_textureFileName, _nonColor);
-            textureCache.Add(_textureFileName, value);
+            value = TextureFactory.Load(textureFileName, nonColor);
+            textureCache.Add(textureFileName, value);
             textureHandleCache.Add(value.Handle, value);
             return value;
         }
@@ -168,30 +168,30 @@ namespace Electron2D
         /// <summary>
         /// Returns a previously loaded texture using it's OpenGL handle.
         /// </summary>
-        /// <param name="_handle"></param>
+        /// <param name="handle"></param>
         /// <returns></returns>
-        public Texture2D GetTexture(uint _handle)
+        public Texture2D GetTexture(uint handle)
         {
-            textureHandleCache.TryGetValue(_handle, out var value);
+            textureHandleCache.TryGetValue(handle, out var value);
             if (value is not null)
             {
                 return value;
             }
 
-            Debug.LogError($"Texture with handle {_handle} does not exist.");
+            Debug.LogError($"Texture with handle {handle} does not exist.");
             return null;
         }
 
         /// <summary>
         /// Removes a texture from the cache. This is called from <see cref="Texture2D.Dispose()"/>
         /// </summary>
-        /// <param name="_texture">The texture to remove from the cache.</param>
-        public void RemoveTexture(Texture2D _texture)
+        /// <param name="texture">The texture to remove from the cache.</param>
+        public void RemoveTexture(Texture2D texture)
         {
-            textureHandleCache.Remove(_texture.Handle);
+            textureHandleCache.Remove(texture.Handle);
             foreach (var pair in textureCache)
             {
-                if(pair.Value == _texture)
+                if(pair.Value == texture)
                 {
                     textureCache.Remove(pair.Key);
                 }
@@ -203,15 +203,15 @@ namespace Electron2D
         /// </summary>
         /// <param name="texture"></param>
         /// <returns></returns>
-        public Point GetTextureSize(object _texture)
+        public Point GetTextureSize(object texture)
         {
-            if(textureHandleCache.TryGetValue((uint)_texture, out Texture2D tex))
+            if(textureHandleCache.TryGetValue((uint)texture, out Texture2D tex))
             {
                 return new Point(tex.Width, tex.Height);
             }
             else
             {
-                Debug.LogError($"Texture handle {_texture} is not registered, cannot get size.");
+                Debug.LogError($"Texture handle {texture} is not registered, cannot get size.");
                 return new Point(0, 0);
             }
         }
@@ -219,50 +219,51 @@ namespace Electron2D
         /// <summary>
         /// Sets the pixel data of a texture.
         /// </summary>
-        /// <param name="_texture"></param>
-        /// <param name="_bounds"></param>
-        /// <param name="_data"></param>
-        public void SetTextureData(object _texture, Rectangle _bounds, byte[] _data)
+        /// <param name="texture"></param>
+        /// <param name="bounds"></param>
+        /// <param name="data"></param>
+        public void SetTextureData(object texture, Rectangle bounds, byte[] data)
         {
-            if (textureHandleCache.TryGetValue((uint)_texture, out Texture2D tex))
+            if (textureHandleCache.TryGetValue((uint)texture, out Texture2D tex))
             {
-                tex.SetData(_bounds, _data);
+                tex.SetData(bounds, data);
             }
             else
             {
-                Debug.LogError($"Texture handle {_texture} is not registered, cannot set data.");
+                Debug.LogError($"Texture handle {texture} is not registered, cannot set data.");
             }
         }
         #endregion
 
         #region Fonts
-        public FontGlyphStore LoadFont(string _fontFile, int _fontSize, int _outlineSize)
+        public FontGlyphStore LoadFont(string fontFile, int fontSize, float fontScale, int outlineSize)
         {
-            string[] s = _fontFile.Split('/');
-            FontArguments args = new FontArguments() { FontFile = s[s.Length - 1], FontSize = _fontSize };
+            string[] s = fontFile.Split('/');
+            FontArguments args = new FontArguments() { FontFile = s[s.Length - 1], FontSize = fontSize,
+                FontScale = fontScale, OutlineWidth = outlineSize };
             fontCache.TryGetValue(args, out var value);
             if (value is not null)
             {
                 return value;
             }
 
-            value = FontGlyphFactory.Load(_fontFile, _fontSize, _outlineSize);
+            value = FontGlyphFactory.Load(fontFile, fontSize, fontScale, outlineSize);
             fontCache.Add(args, value);
             return value;
         }
         #endregion
 
         #region AudioClips
-        public AudioClip LoadAudioClip(string _audioFileName)
+        public AudioClip LoadAudioClip(string audioFileName)
         {
-            audioClipCache.TryGetValue(_audioFileName, out var value);
+            audioClipCache.TryGetValue(audioFileName, out var value);
             if (value is not null)
             {
                 return value;
             }
 
-            value = new AudioClip(_audioFileName);
-            audioClipCache.Add(_audioFileName, value);
+            value = new AudioClip(audioFileName);
+            audioClipCache.Add(audioFileName, value);
             return value;
         }
 
