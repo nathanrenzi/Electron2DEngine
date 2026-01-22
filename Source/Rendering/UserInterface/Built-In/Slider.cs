@@ -15,7 +15,7 @@ namespace Electron2D.UserInterface
         {
             public bool ClickHeld;
 
-            public void OnUiAction(object _sender, UIEvent _event)
+            public void OnUIAction(object _sender, UIEvent _event)
             {
                 if(_event == UIEvent.LeftClickDown)
                 {

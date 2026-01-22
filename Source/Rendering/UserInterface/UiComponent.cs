@@ -295,7 +295,7 @@ namespace Electron2D.UserInterface
 
             for (int i = 0; i < Listeners.Count; i++)
             {
-                Listeners[i].OnUiAction(this, uiEvent);
+                Listeners[i].OnUIAction(this, uiEvent);
             }
 
             switch (uiEvent)
@@ -354,7 +354,7 @@ namespace Electron2D.UserInterface
         {
             public event Action<UIEvent> OnEvent;
 
-            public void OnUiAction(object sender, UIEvent uiEvent)
+            public void OnUIAction(object sender, UIEvent uiEvent)
             {
                 OnEvent?.Invoke(uiEvent);
             }
@@ -363,7 +363,7 @@ namespace Electron2D.UserInterface
 
     public interface UIListener
     {
-        public void OnUiAction(object sender, UIEvent uiEvent);
+        public void OnUIAction(object sender, UIEvent uiEvent);
     }
 
     public enum UIEvent

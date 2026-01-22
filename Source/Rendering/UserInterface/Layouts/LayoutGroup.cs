@@ -28,7 +28,7 @@
                 _parent.ParentLayoutGroup.FlagIsDirty();
         }
 
-        public void OnUiAction(object sender, UIEvent uiEvent)
+        public void OnUIAction(object sender, UIEvent uiEvent)
         {
             if(uiEvent == UIEvent.Resize)
             {

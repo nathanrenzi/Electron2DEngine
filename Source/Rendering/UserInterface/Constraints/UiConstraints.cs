@@ -13,21 +13,20 @@
 
         public void Add(UIConstraint constraint)
         {
-            if(!_constraints.Contains(constraint))
+            if (!_constraints.Contains(constraint))
             {
                 _constraints.Add(constraint);
                 IsDirty = true;
             }
             else
             {
-                Debug.LogError("Constraint has already been added to this UIConstraints object, cannot add!");
+                Debug.LogWarning("Constraint has already been added to this UIConstraints object, cannot add!");
             }
         }
 
         public void Remove(UIConstraint constraint)
         {
             _constraints.Remove(constraint);
-            IsDirty = true;
         }
 
         public void ApplyConstraints()

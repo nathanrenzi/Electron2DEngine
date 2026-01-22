@@ -115,10 +115,21 @@ namespace Electron2D.UserInterface
 
         public override void Render()
         {
-            if (!Visible) return;
-            Renderer.Render();
+            if (Constraints.IsDirty)
+            {
+                ApplyConstraints();
+                Constraints.IsDirty = false;
+            }
+            if (Visible)
+            {
+                Renderer.Render();
+            }
         }
 
-        protected override void OnDispose() { }
+        protected override void OnDispose()
+        {
+            Renderer.Dispose();
+            fgh = null;
+        }
     }
 }
