@@ -113,7 +113,7 @@ namespace Electron2D.UserInterface
         public float BottomYBound => MathF.Ceiling(SizeY / 2f + (-Anchor.Y * SizeY / 2f));
         public float TopYBound => MathF.Ceiling(-SizeY / 2f + (-Anchor.Y * SizeY / 2f));
 
-        public UIComponent(bool ignorePostProcessing, int uiRenderLayer = 0, int sizeX = 100, int sizeY = 100, int extraInteractionSize = 0,
+        protected UIComponent(bool ignorePostProcessing, int uiRenderLayer = 0, int sizeX = 100, int sizeY = 100, int extraInteractionSize = 0,
             bool initialize = true, bool useScreenPosition = true, bool useMeshRenderer = true, bool autoRender = true)
         {
             Transform = new Transform();
