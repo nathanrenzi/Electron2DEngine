@@ -53,6 +53,7 @@ namespace Electron2D.Audio
                     _audioInstance.Stream.SetFadeTime(0.0001f);
                     _audioInstance.Stop();
                     long position = _audioInstance.Stream.Position;
+                    _audioInstance.Stream.Dispose();
                     _audioInstance.Stream = _audioInstance.AudioClip.GetNewStream(_audioInstance, true);
                     _audioInstance.Stream.Position = position;
                     _audioInstance.Stream.SetFadeTime(0.0001f);

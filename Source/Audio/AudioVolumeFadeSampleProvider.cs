@@ -4,6 +4,8 @@ namespace Electron2D.Audio
 {
     public class AudioVolumeFadeSampleProvider : ISampleProvider
     {
+        public event Action OnFadeInEnd;
+        public event Action OnFadeOutEnd;
         public float VolumeFadeTime { get; set; } = 0;
         public ISampleProvider Source { get; private set; }
         public WaveFormat WaveFormat => Source.WaveFormat;
@@ -11,12 +13,17 @@ namespace Electron2D.Audio
         private int _currentSampleCount = 1;
         private int _maxSampleCount = 1;
         private int _direction;
+        private bool _fadeInCompleted = true;
+        private bool _fadeOutCompleted = true;
 
         public void SetFadeDirection(int direction)
         {
             _direction = Math.Sign(direction);
             _maxSampleCount = (int)(VolumeFadeTime * WaveFormat.SampleRate);
             _currentSampleCount = (int)MathEx.Clamp(_currentSampleCount, 0, _maxSampleCount);
+
+            _fadeInCompleted = false;
+            _fadeOutCompleted = false;
         }
 
         public int GetCurrentSampleCount() => _currentSampleCount;
@@ -38,6 +45,17 @@ namespace Electron2D.Audio
                 for (int i = 0; i < totalFrames; i++)
                 {
                     float fadeMultiplier = MathEx.Clamp01((float)_currentSampleCount / _maxSampleCount);
+                    if(_direction > 0 && !_fadeInCompleted && _currentSampleCount >= _maxSampleCount)
+                    {
+                        _fadeInCompleted = true;
+                        OnFadeInEnd?.Invoke();
+                    }
+                    else if(_direction < 0 && !_fadeOutCompleted && _currentSampleCount <= 0)
+                    {
+                        _fadeOutCompleted = true;
+                        OnFadeOutEnd?.Invoke();
+                    }
+
                     for (int ch = 0; ch < channels; ch++)
                     {
                         int index = offset + i * channels + ch;
