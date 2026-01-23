@@ -113,6 +113,14 @@ namespace Electron2D.UserInterface
             }
         }
 
+        public override void SetColor(Color color)
+        {
+            if (Renderer != null)
+            {
+                TextColor = color;
+            }
+        }
+
         public override void Render()
         {
             if (Constraints.IsDirty)
