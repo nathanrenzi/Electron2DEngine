@@ -195,12 +195,12 @@ namespace Electron2D.Networking
             _client.Send(message);
         }
         /// <summary>
-        /// Called by the server when spawning over the network. Should not be called elsewhere.
+        /// Called by the server when spawning over the network.
         /// </summary>
         /// <param name="networkID"></param>
         /// <param name="ownerID"></param>
         /// <param name="json"></param>
-        public void NetworkInitialize(string networkID, ushort ownerID, Core.Client client, Core.Server server)
+        internal void NetworkInitialize(string networkID, ushort ownerID, Core.Client client, Core.Server server)
         {
             if (IsNetworkInitialized) return;
 
@@ -218,7 +218,7 @@ namespace Electron2D.Networking
         /// Sets the global update version for this object.
         /// </summary>
         /// <param name="newVersion">Must be newer than the current update version.</param>
-        public void SetUpdateVersion(uint newVersion)
+        internal void SetUpdateVersion(uint newVersion)
         {
             if (newVersion > UpdateVersion)
             {
@@ -270,31 +270,31 @@ namespace Electron2D.Networking
         /// Should get the current state of the network class in json format.
         /// </summary>
         /// <returns>The current state of the object in json format.</returns>
-        public abstract string ToJson();
+        protected internal abstract string ToJson();
         /// <summary>
         /// Should interpret the json data received from the server.
         /// </summary>
         /// <param name="type">The type of data received.</param>
         /// <param name="json">The update data in json format.</param>
-        public virtual void ReceiveData(ushort type, string json) { }
+        protected internal virtual void ReceiveData(ushort type, string json) { }
         /// <summary>
         /// Returns the register ID of the class. The register ID must be set by passing the value returned
         /// from <see cref="NetworkManager.RegisterNetworkGameClass"/> into a static method in each subclass.
         /// </summary>
         /// <returns></returns>
-        public abstract int GetRegisterID();
+        protected internal abstract int GetRegisterID();
         /// <summary>
         /// Called when the server initializes the network game class.
         /// </summary>
-        public abstract void OnNetworkInitialized();
+        protected internal abstract void OnNetworkInitialized();
         /// <summary>
         /// Called when the server despawns the network game class.
         /// </summary>
-        public abstract void OnDespawned();
+        protected internal abstract void OnDespawned();
         /// <summary>
         /// Called when this object is disposed.
         /// </summary>
-        public abstract void OnDisposed();
+        protected internal abstract void OnDisposed();
         /// <summary>
         /// Should check the received version against the stored one, either in <see cref="UpdateVersion"/> or in a custom version variable,
         /// optionally using the type parameter.
@@ -303,7 +303,7 @@ namespace Electron2D.Networking
         /// <param name="type">The type of update received.</param>
         /// <param name="version">The version number for the update received.</param>
         /// <returns></returns>
-        public virtual bool CheckAndHandleUpdateVersion(ushort type, uint version) => true;
+        protected internal virtual bool CheckAndHandleUpdateVersion(ushort type, uint version) => true;
 
         private void Reset()
         {

@@ -200,10 +200,8 @@ namespace Electron2D.Networking
             }
         }
 
-        public override void FixedUpdate() { }
-
         public static void SetRegisterID(int registerID) => _registerID = registerID;
-        public override int GetRegisterID() => _registerID;
+        protected internal override int GetRegisterID() => _registerID;
 
         /// <summary>
         /// Manually sends a position update.
@@ -235,7 +233,7 @@ namespace Electron2D.Networking
             Send(messageSendMode, json, 3);
         }
 
-        public override bool CheckAndHandleUpdateVersion(ushort type, uint version)
+        protected internal override bool CheckAndHandleUpdateVersion(ushort type, uint version)
         {
             if(type == 1)
             {
@@ -264,21 +262,21 @@ namespace Electron2D.Networking
             return false;
         }
 
-        public override void OnDespawned()
+        protected internal override void OnDespawned()
         {
             _interpolateToPositionQueue.Clear();
         }
 
-        public override void OnDisposed()
+        protected internal override void OnDisposed()
         {
             Transform = null;
             _interpolateToPositionQueue.Clear();
             _interpolateToPositionQueue = null;
         }
 
-        public override void OnNetworkInitialized() { }
+        protected internal override void OnNetworkInitialized() { }
 
-        public override void ReceiveData(ushort type, string json)
+        protected internal override void ReceiveData(ushort type, string json)
         {
             if(type == 1)
             {
@@ -308,7 +306,7 @@ namespace Electron2D.Networking
             }
         }
 
-        public override string ToJson()
+        protected internal override string ToJson()
         {
             NetworkTransformInitializationJson initJson = new NetworkTransformInitializationJson();
             initJson.Position = _lastSentPosition;

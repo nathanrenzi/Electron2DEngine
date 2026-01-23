@@ -63,9 +63,9 @@
         }
 
         /// <summary>
-        /// Called by the game loop to render all current render layers. Should not be called manually.
+        /// Called by the game loop to render all current render layers.
         /// </summary>
-        public static void RenderAllLayers()
+        internal static void RenderAllLayers()
         {
             try
             {
@@ -87,9 +87,9 @@
         }
 
         /// <summary>
-        /// Called by the game loop to render all current render layers that ignore post processing. Should not be called manually.
+        /// Called by the game loop to render all current render layers that ignore post processing.
         /// </summary>
-        public static void RenderAllLayersIgnorePostProcessing()
+        internal static void RenderAllLayersIgnorePostProcessing()
         {
             try
             {

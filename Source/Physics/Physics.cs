@@ -71,12 +71,12 @@ namespace Electron2D.PhysicsBox2D
         }
 
         /// <summary>
-        /// Steps the physics simulation. This should only be called by the physics thread.
+        /// Steps the physics simulation.
         /// </summary>
         /// <param name="_deltaTime"></param>
         /// <param name="_velocityIterations"></param>
         /// <param name="_positionIterations"></param>
-        public static void Step(float _deltaTime, int _velocityIterations, int _positionIterations)
+        internal static void Step(float _deltaTime, int _velocityIterations, int _positionIterations)
         {
             _stepLock = true;
             world.Step(_deltaTime, _velocityIterations, _positionIterations);

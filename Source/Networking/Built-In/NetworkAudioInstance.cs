@@ -94,7 +94,7 @@ namespace Electron2D.Networking
 
         private NetworkAudioInstance() { }
 
-        public override bool CheckAndHandleUpdateVersion(ushort type, uint version)
+        protected internal override bool CheckAndHandleUpdateVersion(ushort type, uint version)
         {
             if (version > UpdateVersion)
             {
@@ -108,21 +108,21 @@ namespace Electron2D.Networking
         public override void Update() { }
 
         public static void SetRegisterID(int registerID) => _registerID = registerID;
-        public override int GetRegisterID() => _registerID;
+        protected internal override int GetRegisterID() => _registerID;
 
-        public override void OnDespawned()
+        protected internal override void OnDespawned()
         {
             _audioInstance.Stop();
             _audioInstance.Dispose();
         }
 
-        public override void OnDisposed()
+        protected internal override void OnDisposed()
         {
             _audioInstance.Stop();
             _audioInstance.Dispose();
         }
 
-        public override void OnNetworkInitialized() { }
+        protected internal override void OnNetworkInitialized() { }
 
         public void Play()
         {
@@ -207,7 +207,7 @@ namespace Electron2D.Networking
             _audioInstance.AddEffect(effect);
         }
 
-        public override void ReceiveData(ushort type, string json)
+        protected internal override void ReceiveData(ushort type, string json)
         {
             switch (type)
             {
@@ -253,7 +253,7 @@ namespace Electron2D.Networking
             }
         }
 
-        public override string ToJson()
+        protected internal override string ToJson()
         {
             NetworkAudioInstanceInitializationJson json = new NetworkAudioInstanceInitializationJson()
             {
