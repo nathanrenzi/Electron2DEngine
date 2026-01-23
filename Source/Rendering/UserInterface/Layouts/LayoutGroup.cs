@@ -62,9 +62,9 @@
                 RecalculateLayout();
                 for (int i = 0; i < Components.Count; i++)
                 {
-                    if (Components[i].ChildLayoutGroup != null)
+                    if (Components[i].LayoutGroup != null)
                     {
-                        Components[i].ChildLayoutGroup._isDirty = true;
+                        Components[i].LayoutGroup._isDirty = true;
                     }
                 }
             }

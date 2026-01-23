@@ -258,7 +258,7 @@ namespace Electron2D.UserInterface
                 def.TextOverflowMode
             ), uiRenderLayer: uiRenderLayer);
             _textLabel.Interactable = false;
-            _backgroundPanel.ChildLayoutGroup.AddToLayout(_textLabel);
+            _backgroundPanel.LayoutGroup.AddToLayout(_textLabel);
             _builder = new StringBuilder(Text);
             _caretMaterial = def.CaretMaterial == null ? 
                 Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")), true, ["time"]))

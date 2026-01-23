@@ -100,7 +100,7 @@ namespace Electron2D.UserInterface
         public float ExtraInteractionPixels { get; set; }
         public List<UIListener> Listeners { get; private set; } = new List<UIListener>();
         public LayoutGroup ParentLayoutGroup { get; private set; }
-        public LayoutGroup ChildLayoutGroup { get; private set; }
+        public LayoutGroup LayoutGroup { get; private set; }
         public UICanvas.UIFrameTickData ThisFrameData = new UICanvas.UIFrameTickData();
         public UICanvas.UIFrameTickData LastFrameData = new UICanvas.UIFrameTickData();
         public UIConstraints Constraints;
@@ -245,8 +245,8 @@ namespace Electron2D.UserInterface
 
         public void SetLayoutGroup(LayoutGroup layoutGroup)
         {
-            ChildLayoutGroup = layoutGroup;
-            ChildLayoutGroup.SetUIParent(this);
+            LayoutGroup = layoutGroup;
+            LayoutGroup.SetUIParent(this);
         }
 
         protected virtual void ApplyConstraints()
