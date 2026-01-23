@@ -144,6 +144,16 @@ namespace Electron2D.Networking
             return -1;
         }
 
+        /// <summary>
+        /// Registers an instance of a <see cref="NetworkService"/> to both the <see cref="Client"/> and the <see cref="Server"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public void RegisterService<T>() where T : NetworkService
+        {
+            Client.NetworkServiceManager.Register<T>();
+            Server.NetworkServiceManager.Register<T>();
+        }
+
         public void Update()
         {
             if(NetworkMode == NetworkMode.SteamP2P) SteamAPI.RunCallbacks();

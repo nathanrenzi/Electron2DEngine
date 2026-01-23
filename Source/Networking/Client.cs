@@ -4,20 +4,18 @@ using Riptide.Transports.Steam;
 namespace Electron2D.Networking.Core
 {
     /// <summary>
-    /// A simple host/client client implementation using <see cref="Riptide.Client"/>. Not recommended to use 
-    /// outside of <see cref="NetworkManager.Client"/>
+    /// A host/client client implementation using <see cref="Riptide.Client"/>.
     /// </summary>
-    public class Client : IDisposable
+    public sealed class Client : IDisposable
     {
         public Riptide.Client RiptideClient { get; private set; }
         public SteamClient SteamClient { get; private set; }
-
+        internal NetworkServiceManager NetworkServiceManager { get; private set; } = new(false);
         public Dictionary<string, NetworkGameClass> NetworkGameClasses { get; private set; } = new();
         public ushort ID => RiptideClient.Id;
         public bool IsConnected => RiptideClient.IsConnected;
         public bool IsConnecting => RiptideClient.IsConnecting;
 
-        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
         public event Action NetworkGameClassesLoaded;
         public event Action<RejectReason> ConnectionFailed;
         public event Action ConnectionSuccessful;
@@ -239,7 +237,7 @@ namespace Electron2D.Networking.Core
         {
             if (e.MessageId < NetworkManager.MIN_MESSAGE_TYPE_INTERCEPT || e.MessageId > NetworkManager.MAX_MESSAGE_TYPE_INTERCEPT)
             {
-                MessageReceived?.Invoke(sender, e);
+                NetworkServiceManager.Dispatch(e.MessageId, e.Message);
                 return;
             }
 

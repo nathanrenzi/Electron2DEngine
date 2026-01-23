@@ -4,19 +4,17 @@ using Riptide.Transports.Steam;
 namespace Electron2D.Networking.Core
 {
     /// <summary>
-    /// A simple host/client server implementation using <see cref="Riptide.Server"/>. Not recommended to use 
-    /// outside of <see cref="NetworkManager.Server"/>
+    /// A host/client server implementation using <see cref="Riptide.Server"/>.
     /// </summary>
     public class Server
     {
         public Riptide.Server RiptideServer { get; private set; }
         public SteamServer SteamServer { get; private set; }
-
+        internal NetworkServiceManager NetworkServiceManager { get; private set; } = new(true);
         public long TimeStarted { get; private set; } = -1;
         public bool IsRunning => RiptideServer.IsRunning;
         public bool AllowNonHostOwnership { get; set; } = true;
 
-        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
         public event Action<ushort> ClientConnected;
         public event Action<ushort> ClientDisconnected;
 
@@ -170,7 +168,7 @@ namespace Electron2D.Networking.Core
         {
             if (e.MessageId < NetworkManager.MIN_MESSAGE_TYPE_INTERCEPT || e.MessageId > NetworkManager.MAX_MESSAGE_TYPE_INTERCEPT)
             {
-                MessageReceived?.Invoke(sender, e);
+                NetworkServiceManager.Dispatch(e.MessageId, e.Message);
                 return;
             }
 
@@ -368,6 +366,7 @@ namespace Electron2D.Networking.Core
                     (ushort)BuiltInMessageType.NetworkClassSync);
                 hostInitializeMessage.AddInt(0);
                 Send(hostInitializeMessage, _hostID);
+                ClientConnected?.Invoke(e.Client.Id);
                 return;
             }
 

@@ -2,7 +2,7 @@
 
 namespace Electron2D.Networking
 {
-    public struct NetworkGameClassData
+    internal struct NetworkGameClassData
     {
         public uint Version;
         public int RegisterID;
@@ -10,7 +10,7 @@ namespace Electron2D.Networking
         public ushort OwnerID;
         public string Json;
     }
-    public struct NetworkGameClassUpdatedData
+    internal struct NetworkGameClassUpdatedData
     {
         public MessageSendMode MessageSendMode;
         public string NetworkID;
@@ -19,7 +19,7 @@ namespace Electron2D.Networking
         public string Json;
     }
 
-    public struct NetworkGameClassSyncSpawnData
+    internal struct NetworkGameClassSyncSpawnData
     {
         public uint Version;
         public int RegisterID;
@@ -28,7 +28,7 @@ namespace Electron2D.Networking
         public string Json;
     }
 
-    public struct NetworkGameClassRequestSyncData
+    internal struct NetworkGameClassRequestSyncData
     {
         public ushort ToClient;
         public NetworkGameClassData[] GameClasses;
