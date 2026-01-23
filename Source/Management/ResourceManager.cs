@@ -32,6 +32,17 @@ namespace Electron2D
             }
         }
 
+        private static bool ValidatePath(string path)
+        {
+            if(!File.Exists(path))
+            {
+                Debug.LogError($"File not found: {path}");
+                return false;
+            }
+
+            return true;
+        }
+
         public static string GetEngineResourcePath(string localPath)
         {
             return Path.Combine(ProjectSettings.EngineResourcePath, localPath);
@@ -86,6 +97,9 @@ namespace Electron2D
         /// <returns></returns>
         public Texture2DArray LoadTextureArray(string textureFileName, int layers, bool nonColor = false)
         {
+            if (!ValidatePath(textureFileName))
+                return null;
+
             textureArrayCache.TryGetValue(textureFileName, out var value);
             if (value is not null)
             {
@@ -108,6 +122,8 @@ namespace Electron2D
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < textureFileNames.Length; i++)
             {
+                if (!ValidatePath(textureFileNames[i]))
+                    return null;
                 builder.Append(textureFileNames[i]);
             }
 
@@ -132,6 +148,9 @@ namespace Electron2D
         /// <returns></returns>
         public Texture2DArray LoadTextureArray(string textureFileName, int spriteWidth,  int spriteHeight, bool nonColor = false)
         {
+            if (!ValidatePath(textureFileName))
+                return null;
+
             textureArrayCache.TryGetValue(textureFileName, out var value);
             if (value is not null)
             {
@@ -153,6 +172,9 @@ namespace Electron2D
         /// <returns></returns>
         public Texture2D LoadTexture(string textureFileName, bool nonColor = false)
         {
+            if (!ValidatePath(textureFileName))
+                return null;
+
             textureCache.TryGetValue(textureFileName, out var value);
             if(value is not null)
             {
@@ -238,6 +260,9 @@ namespace Electron2D
         #region Fonts
         public FontGlyphStore LoadFont(string fontFile, int fontSize, float fontScale, int outlineSize)
         {
+            if (!ValidatePath(fontFile))
+                return null;
+
             string[] s = fontFile.Split('/');
             FontArguments args = new FontArguments() { FontFile = s[s.Length - 1], FontSize = fontSize,
                 FontScale = fontScale, OutlineWidth = outlineSize };
@@ -256,6 +281,9 @@ namespace Electron2D
         #region AudioClips
         public AudioClip LoadAudioClip(string audioFileName)
         {
+            if (!ValidatePath(audioFileName))
+                return null;
+
             audioClipCache.TryGetValue(audioFileName, out var value);
             if (value is not null)
             {
