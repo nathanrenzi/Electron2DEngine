@@ -9,7 +9,7 @@ namespace Electron2D.Networking
     /// sends update data to the server, which is then received and interpreted by all other clients.
     /// <see cref="ToJson()"/> is called by a message from the server, requesting the current
     /// state of the game class so that a connecting client can properly initialize their object. Any
-    /// subclasses of <see cref="NetworkGameClass"/> must call <see cref="NetworkManager.RegisterNetworkGameClass"/>
+    /// subclasses of <see cref="NetworkGameClass"/> must call <see cref="Network.RegisterNetworkGameClass"/>
     /// in the <see cref="Game.Initialize"/> method to be properly instantiated over the network.
     /// </summary>
     public abstract class NetworkGameClass : IGameClass
@@ -84,7 +84,7 @@ namespace Electron2D.Networking
             }
             else
             {
-                _client = NetworkManager.Instance.Client;
+                _client = Network.Instance.Client;
             }
 
             if (customServer != null)
@@ -93,7 +93,7 @@ namespace Electron2D.Networking
             }
             else
             {
-                _server = NetworkManager.Instance.Server;
+                _server = Network.Instance.Server;
             }
 
             if(string.IsNullOrEmpty(networkID))
@@ -210,7 +210,7 @@ namespace Electron2D.Networking
             OwnerID = ownerID;
             IsOwner = client.ID == ownerID;
             IsNetworkInitialized = true;
-            NetworkManager.Instance.Client.NetworkGameClassSpawned += CheckDependencyAndInvokeCallback;
+            Network.Instance.Client.NetworkGameClassSpawned += CheckDependencyAndInvokeCallback;
             OnNetworkInitializedEvent?.Invoke();
             OnNetworkInitialized();
         }
@@ -237,7 +237,7 @@ namespace Electron2D.Networking
                 ExpectedType = typeof(T),
                 Callback = obj => onNetworkIDInitialized((T)obj)
             });
-            if (NetworkManager.Instance.Client.NetworkGameClasses.ContainsKey(networkID))
+            if (Network.Instance.Client.NetworkGameClasses.ContainsKey(networkID))
             {
                 CheckDependencyAndInvokeCallback(networkID);
             }
@@ -246,7 +246,7 @@ namespace Electron2D.Networking
         {
             if (_dependencies.ContainsKey(networkID))
             {
-                NetworkGameClass networkGameClass = NetworkManager.Instance.Client.GetNetworkGameClass(networkID);
+                NetworkGameClass networkGameClass = Network.Instance.Client.GetNetworkGameClass(networkID);
                 DependencyCallback callback = _dependencies[networkID];
                 if(callback.ExpectedType.IsInstanceOfType(networkGameClass))
                 {
@@ -279,7 +279,7 @@ namespace Electron2D.Networking
         protected internal virtual void ReceiveData(ushort type, string json) { }
         /// <summary>
         /// Returns the register ID of the class. The register ID must be set by passing the value returned
-        /// from <see cref="NetworkManager.RegisterNetworkGameClass"/> into a static method in each subclass.
+        /// from <see cref="Network.RegisterNetworkGameClass"/> into a static method in each subclass.
         /// </summary>
         /// <returns></returns>
         protected internal abstract int GetRegisterID();
@@ -312,7 +312,7 @@ namespace Electron2D.Networking
             OwnerID = 0;
             NetworkID = "";
             UpdateVersion = 0;
-            NetworkManager.Instance.Client.NetworkGameClassSpawned -= CheckDependencyAndInvokeCallback;
+            Network.Instance.Client.NetworkGameClassSpawned -= CheckDependencyAndInvokeCallback;
         }
     }
 }

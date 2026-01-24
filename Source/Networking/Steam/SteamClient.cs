@@ -70,7 +70,7 @@ namespace Riptide.Transports.Steam
                 Debug.LogError("Could not accept invite, connection string is invalid!");
                 return;
             }
-            NetworkManager.Instance.Client.Connect(parts[0], ProjectSettings.SteamPort, parts[1]);
+            Network.Instance.Client.Connect(parts[0], ProjectSettings.SteamPort, parts[1]);
         }
 
         public void ChangeLocalServer(SteamServer newLocalServer)

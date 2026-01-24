@@ -8,24 +8,13 @@ namespace Electron2D.Networking
     /// <summary>
     /// A general purpose networking class powered by <see href="https://riptide.tomweiland.net/manual/overview/get-started.html">RiptideNetworking</see>.
     /// </summary>
-    public class NetworkManager : IGameClass
+    public sealed class Network : IGameClass
     {
         public delegate NetworkGameClass CreateNetworkGameClass(string json);
         public delegate void SetNetworkGameClassRegisterID(int registerID);
         public static List<CreateNetworkGameClass> NetworkGameClassRegister { get; private set; } = new();
 
-        public static NetworkManager Instance
-        {
-            get
-            {
-                if(_instance == null)
-                {
-                    _instance = new NetworkManager();
-                }
-                return _instance;
-            }
-        }
-        private static NetworkManager _instance;
+        public static Network Instance { get; } = new();
 
         public Core.Server Server { get; private set; }
         public Core.Client Client { get; private set; }
@@ -48,7 +37,6 @@ namespace Electron2D.Networking
             {
                 Debug.LogError("NetworkManager is already initialized, cannot initialize again without resetting!");
             }
-            if (_instance != null && _instance != this) return;
 
             NetworkMode = NetworkMode.NetworkP2P;
             RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.Log, Debug.LogError, false);
@@ -70,7 +58,6 @@ namespace Electron2D.Networking
             {
                 Debug.LogError("NetworkManager is already initialized, cannot initialize again without resetting!");
             }
-            if (_instance != null && _instance != this) return;
 
             NetworkMode = NetworkMode.SteamP2P;
             uint steamAppID;
@@ -123,11 +110,6 @@ namespace Electron2D.Networking
             Engine.Game.RegisterGameClass(this);
         }
 
-        ~NetworkManager()
-        {
-            Dispose();
-        }
-
         /// <summary>
         /// Registers the factory method of a NetworkGameClass subclass so that they can be created at runtime.
         /// </summary>
@@ -142,16 +124,6 @@ namespace Electron2D.Networking
             }
 
             return -1;
-        }
-
-        /// <summary>
-        /// Registers an instance of a <see cref="NetworkService"/> to both the <see cref="Client"/> and the <see cref="Server"/>.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public void RegisterService<T>() where T : NetworkService
-        {
-            Client.NetworkServiceManager.Register<T>();
-            Server.NetworkServiceManager.Register<T>();
         }
 
         public void Update()
@@ -169,9 +141,10 @@ namespace Electron2D.Networking
         public void Dispose()
         {
             Client.Dispose();
+            NetworkGameClassRegister.Clear();
+            NetworkGameClassRegister = null;
             if(NetworkMode == NetworkMode.SteamP2P) SteamAPI.Shutdown();
             Engine.Game.UnregisterGameClass(this);
-            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -181,6 +154,7 @@ namespace Electron2D.Networking
         {
             Client.Dispose();
             Server.Stop();
+            NetworkGameClassRegister.Clear();
             if (NetworkMode == NetworkMode.SteamP2P)
             {
                 Server.SteamServer.Shutdown();

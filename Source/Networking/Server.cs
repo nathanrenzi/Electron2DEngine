@@ -6,11 +6,11 @@ namespace Electron2D.Networking.Core
     /// <summary>
     /// A host/client server implementation using <see cref="Riptide.Server"/>.
     /// </summary>
-    public class Server
+    public sealed class Server
     {
         public Riptide.Server RiptideServer { get; private set; }
         public SteamServer SteamServer { get; private set; }
-        internal NetworkServiceManager NetworkServiceManager { get; private set; } = new(true);
+        public NetworkServiceManager Services { get; private set; } = new(true);
         public long TimeStarted { get; private set; } = -1;
         public bool IsRunning => RiptideServer.IsRunning;
         public bool AllowNonHostOwnership { get; set; } = true;
@@ -166,9 +166,9 @@ namespace Electron2D.Networking.Core
         #region Handlers
         private void HandleMessageReceived(object? sender, MessageReceivedEventArgs e)
         {
-            if (e.MessageId < NetworkManager.MIN_MESSAGE_TYPE_INTERCEPT || e.MessageId > NetworkManager.MAX_MESSAGE_TYPE_INTERCEPT)
+            if (e.MessageId < Network.MIN_MESSAGE_TYPE_INTERCEPT || e.MessageId > Network.MAX_MESSAGE_TYPE_INTERCEPT)
             {
-                NetworkServiceManager.Dispatch(e.MessageId, e.Message);
+                Services.Dispatch(e.MessageId, e.FromConnection.Id, e.Message);
                 return;
             }
 

@@ -10,7 +10,7 @@ namespace Electron2D.Networking.Core
     {
         public Riptide.Client RiptideClient { get; private set; }
         public SteamClient SteamClient { get; private set; }
-        internal NetworkServiceManager NetworkServiceManager { get; private set; } = new(false);
+        public NetworkServiceManager Services { get; private set; } = new(false);
         public Dictionary<string, NetworkGameClass> NetworkGameClasses { get; private set; } = new();
         public ushort ID => RiptideClient.Id;
         public bool IsConnected => RiptideClient.IsConnected;
@@ -235,9 +235,9 @@ namespace Electron2D.Networking.Core
         #region Handlers
         private void HandleMessageReceived(object? sender, MessageReceivedEventArgs e)
         {
-            if (e.MessageId < NetworkManager.MIN_MESSAGE_TYPE_INTERCEPT || e.MessageId > NetworkManager.MAX_MESSAGE_TYPE_INTERCEPT)
+            if (e.MessageId < Network.MIN_MESSAGE_TYPE_INTERCEPT || e.MessageId > Network.MAX_MESSAGE_TYPE_INTERCEPT)
             {
-                NetworkServiceManager.Dispatch(e.MessageId, e.Message);
+                Services.Dispatch(e.MessageId, e.Message);
                 return;
             }
 
@@ -337,7 +337,7 @@ namespace Electron2D.Networking.Core
             }
             else
             {
-                NetworkGameClass networkGameClass = NetworkManager.NetworkGameClassRegister[data.RegisterID](data.Json);
+                NetworkGameClass networkGameClass = Network.NetworkGameClassRegister[data.RegisterID](data.Json);
                 networkGameClass.SetUpdateVersion(data.Version);
                 NetworkGameClasses.Add(data.NetworkID, networkGameClass);
                 networkGameClass.NetworkInitialize(data.NetworkID, data.OwnerID, this, _server);
@@ -380,7 +380,7 @@ namespace Electron2D.Networking.Core
             }
             else
             {
-                NetworkGameClass networkGameClass = NetworkManager.NetworkGameClassRegister[data.RegisterID](data.Json);
+                NetworkGameClass networkGameClass = Network.NetworkGameClassRegister[data.RegisterID](data.Json);
                 networkGameClass.SetUpdateVersion(data.Version);
                 NetworkGameClasses.Add(data.NetworkID, networkGameClass);
                 _syncingNetworkGameClasses.Enqueue((networkGameClass, data.NetworkID, data.ClientID));

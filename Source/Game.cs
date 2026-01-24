@@ -199,8 +199,8 @@ namespace Electron2D
             PhysicsThread.Start();
 
             // Initializing built-in network game classes
-            NetworkTransform.SetRegisterID(NetworkManager.RegisterNetworkGameClass(NetworkTransform.FactoryMethod));
-            NetworkAudioInstance.SetRegisterID(NetworkManager.RegisterNetworkGameClass(NetworkAudioInstance.FactoryMethod));
+            NetworkTransform.SetRegisterID(Network.RegisterNetworkGameClass(NetworkTransform.FactoryMethod));
+            NetworkAudioInstance.SetRegisterID(Network.RegisterNetworkGameClass(NetworkAudioInstance.FactoryMethod));
 
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);

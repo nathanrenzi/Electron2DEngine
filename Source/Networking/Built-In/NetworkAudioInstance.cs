@@ -241,7 +241,7 @@ namespace Electron2D.Networking
                 case 7:
                     (string, bool) data = JsonConvert.DeserializeObject<(string, bool)>(json);
                     if(data.Item1 != null && data.Item1 != string.Empty 
-                        && NetworkManager.Instance.Client.TryGetNetworkGameClass(data.Item1, out var networkTransform))
+                        && Network.Instance.Client.TryGetNetworkGameClass(data.Item1, out var networkTransform))
                     {
                         SetSpatializer((NetworkTransform)networkTransform, data.Item2);
                     }
