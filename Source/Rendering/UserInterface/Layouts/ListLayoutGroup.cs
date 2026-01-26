@@ -13,7 +13,9 @@ namespace Electron2D.UserInterface
         public LayoutAlignment HorizontalAlignment { get; set; }
         public LayoutAlignment VerticalAlignment { get; set; }
         public SizeMode FitParentToList { get; set; }
+        public bool ReverseOrder { get; set; }
         public bool SpaceBetween { get; set; }
+        private IEnumerable<UIComponent> _orderedComponents => ReverseOrder ? Components.AsEnumerable().Reverse() : Components;
         private float _totalChildSize = 0;
         private float _totalChildCrossSize = 0;
         private float _spaceBetween = 0;
@@ -22,7 +24,8 @@ namespace Electron2D.UserInterface
             LayoutAlignment horizontalAlignment = LayoutAlignment.Left,
             LayoutAlignment verticalAlignment = LayoutAlignment.Top,
             ChildSizeMode childSizeMode = ChildSizeMode.None, SizeMode sizeMode = SizeMode.None,
-            SizeMode fitParentToList = SizeMode.None, Vector2? controlSize = null, bool spaceBetween = false) : base()
+            SizeMode fitParentToList = SizeMode.None, Vector2? controlSize = null, bool spaceBetween = false,
+            bool reverseOrder = false) : base()
         {
             Padding = padding;
             Spacing = spacing;
@@ -34,6 +37,7 @@ namespace Electron2D.UserInterface
             VerticalAlignment = verticalAlignment;
             FitParentToList = fitParentToList;
             SpaceBetween = spaceBetween;
+            ReverseOrder = reverseOrder;
         }
 
         protected override void RecalculateLayout()
@@ -103,7 +107,7 @@ namespace Electron2D.UserInterface
                     expandXSize /= Components.Count;
                 }
 
-                foreach (var component in Components)
+                foreach (var component in _orderedComponents)
                 {
                     if (SizeMode is SizeMode.Width or SizeMode.WidthHeight)
                     {
@@ -117,7 +121,7 @@ namespace Electron2D.UserInterface
             }
             else if(ChildSizeMode == ChildSizeMode.Control)
             {
-                foreach (var component in Components)
+                foreach (var component in _orderedComponents)
                 {
                     if (SizeMode is SizeMode.Width or SizeMode.WidthHeight)
                     {
@@ -137,7 +141,7 @@ namespace Electron2D.UserInterface
             _totalChildCrossSize = 0;
             _spaceBetween = Spacing;
             float size = 0;
-            foreach (var component in Components)
+            foreach (var component in _orderedComponents)
             {
                 size += Direction == ListDirection.Vertical ? component.SizeY : component.SizeX;
                 _totalChildCrossSize = MathF.Max(_totalChildCrossSize, Direction == ListDirection.Vertical ? component.SizeX : component.SizeY);
@@ -183,7 +187,7 @@ namespace Electron2D.UserInterface
                     break;
             }
 
-            foreach (var component in Components)
+            foreach (var component in _orderedComponents)
             {
                 component.Anchor = new Vector2(-1, -1);
                 component.Transform.Position = new Vector2(xPosition, yPosition) + _parent.Transform.Position;
