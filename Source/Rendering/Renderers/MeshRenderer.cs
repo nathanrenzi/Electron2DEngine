@@ -1,4 +1,5 @@
-﻿using static Electron2D.OpenGL.GL;
+﻿using System.Numerics;
+using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Rendering
 {
@@ -18,7 +19,7 @@ namespace Electron2D.Rendering
         public int RenderLayer { get; protected set; }
         public Action OnBeforeRender { get; set; }
 
-        private Transform _transform;
+        private Transform? _transform;
 
         /// <summary>
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
@@ -40,6 +41,14 @@ namespace Electron2D.Rendering
         public int StencilReference { get; set; } = 1;
         public uint StencilFunctionMask { get; set; } = 0xFF;
         public bool Enabled { get; set; } = true;
+
+        public MeshRenderer(Material material)
+        {
+            _transform = null;
+            Material = material;
+
+            Engine.Game.RegisterGameClass(this);
+        }
 
         public MeshRenderer(Transform transform, Material material)
         {
@@ -199,7 +208,10 @@ namespace Electron2D.Rendering
             }
 
             Material.Use();
-            Material.Shader.SetMatrix4x4("model", _transform.GetScaleMatrix() * _transform.GetRotationMatrix() * _transform.GetPositionMatrix());
+            if(_transform != null)
+            {
+                Material.Shader.SetMatrix4x4("model", _transform.GetScaleMatrix() * _transform.GetRotationMatrix() * _transform.GetPositionMatrix());
+            }
             Material.Shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.Main.GetUnscaledProjectionMatrix() : Camera2D.Main.GetViewProjectionMatrix());
 
             VertexArray.Bind();

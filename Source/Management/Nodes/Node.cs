@@ -1,4 +1,4 @@
-﻿using Electron2D.UserInterface;
+﻿using Electron2D.UI;
 
 namespace Electron2D
 {
@@ -17,8 +17,7 @@ namespace Electron2D
 
         public Node? Parent { get; private set; } = null;
         protected readonly List<IGameClass> _gameClasses = new List<IGameClass>();
-        protected readonly List<UIComponent> _uiComponents = new List<UIComponent>();
-        protected readonly Dictionary<UIComponent, UIState> _uiStateDictionary = new();
+        protected readonly List<UIElement> _uiElements = new List<UIElement>();
 
         protected bool _disposed = false;
         private bool _disabledByParent = false;
@@ -73,10 +72,10 @@ namespace Electron2D
             return _gameClasses.Contains(gameClass);
         }
 
-        public bool Contains(UIComponent uiComponent)
+        public bool Contains(UIElement element)
         {
             if (_disposed) return false;
-            return _uiComponents.Contains(uiComponent);
+            return _uiElements.Contains(element);
         }
 
         private bool ContainsRecursive(Node node)
@@ -128,18 +127,11 @@ namespace Electron2D
             _gameClasses.Add(gameClass);
         }
 
-        public void AddChild(UIComponent uiComponent)
+        public void AddChild(UIElement element)
         {
-            if (_disposed || _uiComponents.Contains(uiComponent)) return;
-
-            if (!_enabled)
-            {
-                RecordUIState(uiComponent);
-                uiComponent.Visible = false;
-                uiComponent.Interactable = false;
-            }
-
-            _uiComponents.Add(uiComponent);
+            if (_disposed || _uiElements.Contains(element)) return;
+            element.Enabled = _enabled;
+            _uiElements.Add(element);
         }
 
         public void RemoveChild(IGameClass gameClass)
@@ -164,18 +156,11 @@ namespace Electron2D
             }
         }
 
-        public void RemoveChild(UIComponent uiComponent)
+        public void RemoveChild(UIElement element)
         {
             if (_disposed) return;
-
-            if (_uiStateDictionary.TryGetValue(uiComponent, out var state))
-            {
-                uiComponent.Visible = state.Visible;
-                uiComponent.Interactable = state.Interactable;
-                _uiStateDictionary.Remove(uiComponent);
-            }
-
-            _uiComponents.Remove(uiComponent);
+            element.Enabled = true;
+            _uiElements.Remove(element);
         }
 
         public void SetParent(Node parent)
@@ -206,16 +191,11 @@ namespace Electron2D
             if (_enabled || _disabledByParent) return;
             _enabled = true;
 
-            // Restore UI
-            foreach (var pair in _uiStateDictionary)
-            {
-                UIComponent uiComponent = pair.Key;
-                uiComponent.Visible = pair.Value.Visible;
-                uiComponent.Interactable = pair.Value.Interactable;
-            }
-            _uiStateDictionary.Clear();
-
             // Enable children
+            foreach (var element in _uiElements)
+            {
+                element.Enabled = true;
+            }
             foreach (var cls in _gameClasses)
             {
                 if (cls is Node sg)
@@ -255,13 +235,10 @@ namespace Electron2D
             if (!_enabled) return;
             _enabled = false;
 
-            foreach (var uiComponent in _uiComponents)
+            foreach (var element in _uiElements)
             {
-                RecordUIState(uiComponent);
-                uiComponent.Visible = false;
-                uiComponent.Interactable = false;
+                element.Enabled = false;
             }
-
             foreach (var cls in _gameClasses)
             {
                 if (cls is Node sg)
@@ -271,15 +248,6 @@ namespace Electron2D
             }
 
             OnDisable();
-        }
-
-        private void RecordUIState(UIComponent uiComponent)
-        {
-            _uiStateDictionary[uiComponent] = new UIState()
-            {
-                Visible = uiComponent.Visible,
-                Interactable = uiComponent.Interactable
-            };
         }
 
         public void Update()
@@ -326,17 +294,16 @@ namespace Electron2D
                 {
                     gameClass.Dispose();
                 }
-                foreach (var uiComponent in _uiComponents)
+                foreach (var element in _uiElements)
                 {
-                    uiComponent.Dispose();
+                    element.Dispose();
                 }
                 Engine.Game.UnregisterGameClass(this);
                 OnDispose();
             }
 
             _gameClasses.Clear();
-            _uiComponents.Clear();
-            _uiStateDictionary.Clear();
+            _uiElements.Clear();
         }
     }
 }

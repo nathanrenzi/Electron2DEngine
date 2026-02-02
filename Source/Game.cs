@@ -6,7 +6,7 @@ using Electron2D.Networking;
 using Electron2D.PhysicsBox2D;
 using Electron2D.Rendering;
 using Electron2D.Rendering.PostProcessing;
-using Electron2D.UserInterface;
+using Electron2D.UI;
 using GLFW;
 using System.Drawing;
 using System.Numerics;
