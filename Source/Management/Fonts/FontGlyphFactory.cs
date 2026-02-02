@@ -1,5 +1,5 @@
 ﻿using Electron2D.Rendering.Text;
-using Electron2D.UserInterface;
+using Electron2D.UI;
 using FreeTypeSharp;
 using FreeTypeSharp.Native;
 using System.Numerics;

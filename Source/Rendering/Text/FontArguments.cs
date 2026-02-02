@@ -2,6 +2,8 @@
 {
     public struct FontArguments
     {
+        public static readonly FontArguments Default = new FontArguments(ResourceManager.GetEngineResourcePath("Fonts/Roboto-Regular.ttf"), 12);
+
         public string FontFile;
         public int FontSize;
         public float FontScale = 1f;
