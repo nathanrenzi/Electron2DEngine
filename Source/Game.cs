@@ -5,7 +5,7 @@ using Electron2D.PhysicsBox2D;
 using Electron2D.Rendering;
 using Electron2D.Rendering.PostProcessing;
 using Electron2D.Rendering.Shaders;
-using Electron2D.UserInterface;
+using Electron2D.UI;
 using GLFW;
 using System.Drawing;
 using System.Numerics;
@@ -200,8 +200,6 @@ namespace Electron2D
             // Initializing physics thread
             PhysicsThread.Start();
 
-            // Initializing built-in network game classes
-            NetworkTransform.SetRegisterID(Network.RegisterNetworkGameClass(NetworkTransform.FactoryMethod));
 
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);

@@ -1,4 +1,4 @@
-﻿using Electron2D.UserInterface;
+﻿using Electron2D.UI;
 
 namespace Electron2D
 {
