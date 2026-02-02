@@ -1,5 +1,5 @@
 ﻿using Electron2D.Rendering.Shaders;
-using Electron2D.UserInterface;
+using Electron2D.UI;
 using FreeTypeSharp.Native;
 using System.Drawing;
 using System.Numerics;
@@ -72,30 +72,18 @@ namespace Electron2D.Rendering.Text
         public TextAlignment VerticalAlignment { get; set; }
         public TextAlignmentMode AlignmentMode { get; set; }
         public TextOverflowMode OverflowMode { get; set; }
-        public Color TextColor
-        {
-            get
-            {
-                return Material.MainColor;
-            }
-            set
-            {
-                Material.MainColor = value;
-            }
-        }
-        public Color OutlineColor { get; set; }
-        public Transform Transform { get; set; }
-        public Vector2 Anchor
+        public Vector2 Position { get; set; }
+        public Vector2 Pivot
         {
             get => _anchor;
             set => _anchor = value;
         }
         private Vector2 _anchor;
-        private Vector2 _position => new Vector2(
-            (Transform.Position.X - Bounds.Width / 2f) + (Bounds.Width / 2f * -_anchor.X),
-            (Transform.Position.Y - Bounds.Height / 2f) + (Bounds.Height / 2f * -_anchor.Y)
+        private Vector2 _offsetPosition => new Vector2(
+            (Position.X - Bounds.Width / 2f) + (Bounds.Width / 2f * -_anchor.X),
+            (Position.Y - Bounds.Height / 2f) + (Bounds.Height / 2f * -_anchor.Y)
         );
-        public Rectangle Bounds
+        public Rect Bounds
         {
             get
             {
@@ -107,7 +95,7 @@ namespace Electron2D.Rendering.Text
                 UpdateTextFormatting(Text);
             }
         }
-        private Rectangle _bounds;
+        private Rect _bounds;
         private Shader _shader;
         private List<Iterator> _iterators = new List<Iterator>();
         private List<int> _lineOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
@@ -115,27 +103,26 @@ namespace Electron2D.Rendering.Text
         private float _totalYHeight;
         private float _firstLineMaxHeight = 0;
         private float _lastLineMinHeight = 0;
+        private bool _setMatrices;
 
-        public unsafe TextRenderer(Transform transform, FontGlyphStore fontGlyphStore, Shader shader, string text,
-            Vector2 bounds, Color textColor, Color outlineColor,
-            TextAlignment horizontalAlignment = TextAlignment.Left,
+        public unsafe TextRenderer(Vector2 position, FontGlyphStore fontGlyphStore, Shader shader, string text,
+            Vector2 bounds, TextAlignment horizontalAlignment = TextAlignment.Left,
             TextAlignment verticalAlignment = TextAlignment.Top,
             TextAlignmentMode alignmentMode = TextAlignmentMode.Baseline,
             TextOverflowMode overflowMode = TextOverflowMode.Word,
-            bool useUnscaledProjectionMatrix = true)
-            : base(transform, Material.Create(shader, new Texture2D(fontGlyphStore.TextureHandle, fontGlyphStore.TextureAtlasWidth, fontGlyphStore.Arguments.FontSize)))
+            bool useUnscaledProjectionMatrix = true, bool setMatrices = true)
+            : base(Material.Create(shader, new Texture2D(fontGlyphStore.TextureHandle, fontGlyphStore.TextureAtlasWidth, fontGlyphStore.Arguments.FontSize)))
         {
             _shader = shader;
             FontGlyphStore = fontGlyphStore;
-            Transform = transform;
-            TextColor = textColor;
-            OutlineColor = outlineColor;
-            Bounds = new Rectangle(0, 0, (int)bounds.X, (int)bounds.Y);
+            Position = position;
+            Bounds = new Rect(0, 0, (int)bounds.X, (int)bounds.Y);
             HorizontalAlignment = horizontalAlignment;
             VerticalAlignment = verticalAlignment;
             AlignmentMode = alignmentMode;
             OverflowMode = overflowMode;
             UseUnscaledProjectionMatrix = useUnscaledProjectionMatrix;
+            _setMatrices = setMatrices;
 
             // This must be the last thing initialized, as it will reformat the text
             Text = text;
@@ -150,7 +137,7 @@ namespace Electron2D.Rendering.Text
         public int GetCaretIndexFromVirtualPosition(Vector2 virtualPosition)
         {
             if (_formattedText.Length == 0) return 0;
-            virtualPosition -= Transform.Position;
+            virtualPosition -= Position;
             int offset = -1;
             int xpos = GetXOffset(0);
             int ypos = GetYOffset();
@@ -222,7 +209,7 @@ namespace Electron2D.Rendering.Text
                 {
                     ypos += FontGlyphStore.Ascent / 2;
                 }
-                return new Vector2(GetXOffset(0), ypos) + _position;
+                return new Vector2(GetXOffset(0), ypos) + _offsetPosition;
             }
             if(index <= _formattedText.Length && index >= 0)
             {
@@ -259,7 +246,7 @@ namespace Electron2D.Rendering.Text
                     }
                 }
 
-                return new Vector2(xpos, ypos) + _position;
+                return new Vector2(xpos, ypos) + _offsetPosition;
             }
             else
             {
@@ -321,7 +308,7 @@ namespace Electron2D.Rendering.Text
                 }
 
                 _formattedText = unformattedText;
-                _lineOffsets.Add(Bounds.Width - (int)stringSize);
+                _lineOffsets.Add((int)Bounds.Width - (int)stringSize);
                 skipNewlines = true;
             }
 
@@ -360,7 +347,7 @@ namespace Electron2D.Rendering.Text
                         _x = Bounds.X;
                         _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                         newlineCount++;
-                        _lineOffsets.Add(Bounds.Width + Bounds.X - (int)_x);
+                        _lineOffsets.Add((int)(Bounds.Width + Bounds.X - _x));
 
                         // Reset minimum height since a new line was created
                         minHeight = 0;
@@ -402,7 +389,7 @@ namespace Electron2D.Rendering.Text
                 if (outsideBoundsFlag && !skipNewlines)
                 {
                     newlineCount++;
-                    _lineOffsets.Add(Bounds.Width - (int)(_x - wordLength));
+                    _lineOffsets.Add((int)(Bounds.Width - _x - wordLength));
                     _x = wordLength;
                     _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                     minHeight = 0;
@@ -413,7 +400,7 @@ namespace Electron2D.Rendering.Text
                 if (w == words.Length - 1)
                 {
                     // If this is the last word
-                    _lineOffsets.Add(Bounds.Width - (int)_x);
+                    _lineOffsets.Add((int)(Bounds.Width - _x));
                 }
                 wordLength = 0;
 
@@ -588,15 +575,14 @@ namespace Electron2D.Rendering.Text
 
         protected override void BeforeRender()
         {
+            if (!_setMatrices) return;
+
             Material.Shader.SetMatrix4x4("uiMatrix", UseUnscaledProjectionMatrix ? UICanvas.Instance.UIModelMatrix
                 : Matrix4x4.Identity);
 
-            Material.Shader.SetMatrix4x4("model", Matrix4x4.CreateScale(Transform.Scale.X, Transform.Scale.Y, 1f)
-                * Transform.GetRotationMatrix() * (UseUnscaledProjectionMatrix ? Matrix4x4.Identity
+            Material.Shader.SetMatrix4x4("model", (UseUnscaledProjectionMatrix ? Matrix4x4.Identity
                 : Matrix4x4.CreateReflection(new Plane(new Vector3(0, 1, 0), 0)))
-                * Matrix4x4.CreateTranslation(_position.X, _position.Y, 0));
-
-            Material.Shader.SetColor("outlineColor", OutlineColor);
+                * Matrix4x4.CreateTranslation(_offsetPosition.X, _offsetPosition.Y, 0));
         }
     }
 }
