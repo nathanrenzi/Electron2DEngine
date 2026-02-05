@@ -66,14 +66,96 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _anchor = Vector2.Zero;
-        public Border Margin { get; set; }
-        public Border Padding { get; set; }
-        public Vector2 MinSize { get; set; } = Vector2.Zero;
-        public Vector2 MaxSize { get; set; } = new Vector2(float.MaxValue, float.MaxValue);
+        public Border Margin
+        {
+            get => _margin;
+            set
+            {
+                _margin = value;
+                InvalidateMeasure();
+                UpdateMesh();
+            }
+        }
+        private Border _margin;
+        public Border Padding
+        {
+            get => _padding;
+            set
+            {
+                _padding = value;
+                InvalidateMeasure();
+                UpdateMesh();
+            }
+        }
+        private Border _padding;
+        public Vector2 MinSize
+        {
+            get => _minSize;
+            set
+            {
+                if(_minSize != value)
+                {
+                    _minSize = value;
+                    InvalidateMeasure();
+                    UpdateMesh();
+                }
+            }
+        }
+        private Vector2 _minSize = Vector2.Zero;
+        public Vector2 MaxSize
+        {
+            get => _maxSize;
+            set
+            {
+                if(_maxSize != value)
+                {
+                    _maxSize = value;
+                    InvalidateMeasure();
+                    UpdateMesh();
+                }
+            }
+        }
+        private Vector2 _maxSize = new Vector2(float.MaxValue, float.MaxValue);
         public float ExtraInteractionPixels { get; set; }
-        public bool Visible { get; set; } = true;
+        public bool Visible
+        {
+            get => _visible;
+            set
+            {
+                if(_visible != value)
+                {
+                    _visible = value;
+                    UIEvent evt = new UIEvent()
+                    {
+                        Type = value ? UIEventType.GainVisibility : UIEventType.LoseVisibility,
+                        Target = this,
+                        Phase = EventPhase.Target
+                    };
+                    RaiseEvent(evt);
+                }
+            }
+        }
+        private bool _visible = true;
         public bool Enabled { get; set; } = true;
-        public bool Interactable { get; set; } = true;
+        public bool Interactable
+        {
+            get => _interactable;
+            set
+            {
+                if(_interactable != value)
+                {
+                    _interactable = value;
+                    UIEvent evt = new UIEvent()
+                    {
+                        Type = value ? UIEventType.GainInteractability : UIEventType.LoseInteractability,
+                        Target = this,
+                        Phase = EventPhase.Target
+                    };
+                    RaiseEvent(evt);
+                }
+            }
+        }
+        private bool _interactable = true;
         public bool Focused { get; internal set; }
         public bool IsMeasureValid { get; private set; }
         public bool IsArrangeValid { get; private set; }
@@ -85,12 +167,13 @@ namespace Electron2D.UI
         public int UIRenderLayer { get; private set; }
         public bool UseScreenPosition { get; set; } = true;
         public bool IgnorePostProcessing { get; private set; }
+        public bool CanAddChildren { get; protected set; }
         private bool _useMeshRenderer;
         private CursorType _hoverCursorType = CursorType.Arrow;
 
         private Dictionary<UIEventType, List<Action<UIEvent>>> _eventHandlers = new Dictionary<UIEventType, List<Action<UIEvent>>>();
 
-        public UIElement(int sizeX, int sizeY, int uiRenderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true, bool useMeshRenderer = true)
+        public UIElement(int sizeX, int sizeY, int uiRenderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true, bool useMeshRenderer = true, bool canAddChildren = true)
         {
             _position = Vector2.Zero;
             _size = new Vector2(sizeX, sizeY);
@@ -99,6 +182,7 @@ namespace Electron2D.UI
             UIRenderLayer = uiRenderLayer;
             UseScreenPosition = useScreenPosition;
             IgnorePostProcessing = ignorePostProcessing;
+            CanAddChildren = canAddChildren;
             _useMeshRenderer = useMeshRenderer;
 
             if (_useMeshRenderer)
@@ -113,6 +197,7 @@ namespace Electron2D.UI
 
         public void AddChild(UIElement child)
         {
+            if (!CanAddChildren) return;
             if (child.Parent != null)
                 child.Parent.RemoveChild(child);
 
