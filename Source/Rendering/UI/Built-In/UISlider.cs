@@ -101,7 +101,7 @@ namespace Electron2D.UI
         {
             Rect rect = GetVirtualRect();
             Handle.Pivot = new Vector2(0.5f, 0.5f);
-            Handle.Position = new Vector2(rect.X + _handleEndPadding + (rect.Width - _handleEndPadding * 2) * Value01, rect.Y + rect.Height / 2f);
+            Handle.Position = new Vector2((int)(rect.X + _handleEndPadding + (rect.Width - _handleEndPadding * 2) * Value01), (int)(rect.Y + rect.Height / 2f));
         }
 
         public override void Render()
