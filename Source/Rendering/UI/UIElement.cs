@@ -164,22 +164,22 @@ namespace Electron2D.UI
         private List<IConstraint> _constraints = new List<IConstraint>();
 
         public MeshRenderer Renderer { get; protected set; }
-        public int UIRenderLayer { get; private set; }
+        public int RenderLayer { get; private set; }
         public bool UseScreenPosition { get; set; } = true;
-        public bool IgnorePostProcessing { get; private set; }
+        public bool IgnorePostProcessing { get; }
         public bool CanAddChildren { get; protected set; }
         private bool _useMeshRenderer;
         private CursorType _hoverCursorType = CursorType.Arrow;
 
         private Dictionary<UIEventType, List<Action<UIEvent>>> _eventHandlers = new Dictionary<UIEventType, List<Action<UIEvent>>>();
 
-        public UIElement(int sizeX, int sizeY, int uiRenderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true, bool useMeshRenderer = true, bool canAddChildren = true)
+        public UIElement(int sizeX, int sizeY, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true, bool useMeshRenderer = true, bool canAddChildren = true)
         {
             _position = Vector2.Zero;
             _size = new Vector2(sizeX, sizeY);
             DesiredSize = Vector2.Zero;
 
-            UIRenderLayer = uiRenderLayer;
+            RenderLayer = renderLayer;
             UseScreenPosition = useScreenPosition;
             IgnorePostProcessing = ignorePostProcessing;
             CanAddChildren = canAddChildren;
@@ -526,9 +526,6 @@ namespace Electron2D.UI
                 child.Render();
             }
         }
-
-        public int GetRenderLayer() => UIRenderLayer + (int)RenderLayer.Interface;
-        public bool ShouldIgnorePostProcessing() => IgnorePostProcessing;
 
         public void Focus()
         {

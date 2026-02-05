@@ -5,8 +5,8 @@
     /// </summary>
     public interface IRenderable : IDisposable
     {
-        public int GetRenderLayer();
         public void Render();
-        public bool ShouldIgnorePostProcessing();
+        public int RenderLayer { get; }
+        public bool IgnorePostProcessing { get; }
     }
 }

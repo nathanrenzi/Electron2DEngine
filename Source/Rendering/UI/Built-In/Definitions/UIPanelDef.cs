@@ -41,19 +41,19 @@ namespace Electron2D.UI
         public static UIPanelDef SlicedFromTexture(ITexture texture, Border borderUV, int borderPixelSize)
             => new UIPanelDef(UIPanelType.Sliced, null, null, texture, borderUV, borderPixelSize);
 
-        public UIElement Create(int sizeX, int sizeY, int uiRenderLayer, bool useScreenPosition, bool ignorePostProcessing)
+        public UIElement Create(int sizeX, int sizeY, int renderLayer, bool useScreenPosition, bool ignorePostProcessing)
         {
             return Type switch
             {
                 UIPanelType.Sliced => Material != null ? new UISlicedPanel(Material, BorderUV, BorderPixelSize,
-                    sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing) : Texture != null ?
+                    sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing) : Texture != null ?
                     new UISlicedPanel(Texture, BorderUV, BorderPixelSize,
-                    sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing)
+                    sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing)
                     : throw new InvalidOperationException("A Material or Texture is needed to create a UISlicedPanel."),
 
-                _ => Material != null ? new UIPanel(Material, sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing)
-                    : Texture != null ? new UIPanel(Texture, sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing)
-                    : Color.HasValue ? new UIPanel(Color.Value, sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing)
+                _ => Material != null ? new UIPanel(Material, sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing)
+                    : Texture != null ? new UIPanel(Texture, sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing)
+                    : Color.HasValue ? new UIPanel(Color.Value, sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing)
                     : throw new InvalidOperationException("A Material, Texture, or Color is needed to create a UIPanel.")
             };
         }

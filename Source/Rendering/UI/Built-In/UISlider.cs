@@ -58,20 +58,20 @@ namespace Electron2D.UI
         private Border _foregroundMargin;
 
         public UISlider(UISliderStyle style, int sizeX = 0, int sizeY = 0,
-            int uiRenderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing, false, true)
+            int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
+            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, false, true)
         {
-            Background = style.BackgroundDef.Create(sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing);
+            Background = style.BackgroundDef.Create(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing);
             Background.Margin = style.BackgroundMargin;
             AddChild(Background);
 
             _handleEndPadding = style.HandleEndPadding;
-            Foreground = style.ForegroundDef.Create(sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing);
+            Foreground = style.ForegroundDef.Create(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing);
             _foregroundMargin = style.ForegroundMargin;
             Foreground.Margin = _foregroundMargin;
             AddChild(Foreground);
 
-            Handle = style.HandleDef.Create((int)style.HandleSize.X, (int)style.HandleSize.Y, uiRenderLayer, useScreenPosition, ignorePostProcessing);
+            Handle = style.HandleDef.Create((int)style.HandleSize.X, (int)style.HandleSize.Y, renderLayer, useScreenPosition, ignorePostProcessing);
             AddEventListener(UIEventType.GainVisibility, (evt) => Handle.Visible = true);
             AddEventListener(UIEventType.LoseVisibility, (evt) => Handle.Visible = false);
             AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));

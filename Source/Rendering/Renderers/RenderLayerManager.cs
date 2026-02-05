@@ -19,7 +19,7 @@
         /// <param name="newRenderLayer">Used for reordering. The new render layer of the IRenderable being reordered.</param>
         public static void OrderRenderable(IRenderable renderable, bool reorder = false, int oldRenderLayer = -1, int newRenderLayer = -1)
         {
-            SortedList<int, List<IRenderable>> orderedList = renderable.ShouldIgnorePostProcessing() ?
+            SortedList<int, List<IRenderable>> orderedList = renderable.IgnorePostProcessing ?
                 _orderedLayerListIgnorePostProcessing : _orderedLayerList;
 
             // Removing the old render layer if the IRenderable is reordering itself instead of initializing
@@ -34,7 +34,7 @@
                 }
             }
 
-            int renderOrder = reorder ? newRenderLayer : renderable.GetRenderLayer();
+            int renderOrder = reorder ? newRenderLayer : renderable.RenderLayer;
             // If true, the render layer was not in the sorted list yet so it is added
             if (!orderedList.TryAdd(renderOrder, new List<IRenderable> { renderable }))
             {
@@ -51,12 +51,12 @@
         /// <param name="renderable">The IRenderable to remove</param>
         public static void RemoveRenderable(IRenderable renderable)
         {
-            SortedList<int, List<IRenderable>> orderedList = renderable.ShouldIgnorePostProcessing() ?
+            SortedList<int, List<IRenderable>> orderedList = renderable.IgnorePostProcessing ?
                 _orderedLayerListIgnorePostProcessing : _orderedLayerList;
 
             // Removing the object from the render order dictionary
             List<IRenderable> list;
-            if (orderedList.TryGetValue(renderable.GetRenderLayer(), out list))
+            if (orderedList.TryGetValue(renderable.RenderLayer, out list))
             {
                 list.Remove(renderable);
             }

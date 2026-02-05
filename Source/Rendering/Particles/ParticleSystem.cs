@@ -46,10 +46,10 @@ namespace Electron2D
         public float NoiseSpeed { get; private set; } = 0;
         public float NoiseFrequency { get; private set; } = 1;
         private bool _noiseEnabled;
+        public bool IgnorePostProcessing { get; }
         public MeshRenderer Renderer { get; private set; }
 
         #region Private Fields
-        private bool _ignorePostProcessing;
         private float[] _vertices;
         private uint[] _indices;
         private Transform _transform;
@@ -76,7 +76,7 @@ namespace Electron2D
             MaxParticles = maxParticles;
             RenderLayer = renderLayer;
             _material = material;
-            _ignorePostProcessing = ignorePostProcessing;
+            IgnorePostProcessing = ignorePostProcessing;
 
             _fakeTransform = new Transform();
 
@@ -691,11 +691,6 @@ namespace Electron2D
             Engine.Game.SetBlendingMode(BlendMode);
             Renderer.Render();
             Engine.Game.SetBlendingMode(BlendMode.Interpolative);
-        }
-
-        public bool ShouldIgnorePostProcessing()
-        {
-            return _ignorePostProcessing;
         }
     }
 

@@ -6,7 +6,8 @@ namespace Electron2D
     {
         public Transform Transform { get; private set; }
         public SpriteRenderer Renderer { get; private set; }
-        public int RenderLayer;
+        public int RenderLayer { get; }
+        public bool IgnorePostProcessing { get; } = false;
 
         /// <param name="material">The material to use for the sprite. This includes the textures.</param>
         /// <param name="spritesPerSecond">The number of sprite switches per second.</param>
@@ -61,16 +62,9 @@ namespace Electron2D
         public void PreviousSprite() { Renderer.PreviousSprite(); }
         public void SetSpriteAnimationSpeed(float spritesPerSecond) { Renderer.SpriteAnimationSpeed = spritesPerSecond; }
 
-        public int GetRenderLayer() => RenderLayer;
-
         public void Render()
         {
             Renderer.Render();
-        }
-
-        public bool ShouldIgnorePostProcessing()
-        {
-            return false;
         }
     }
 }

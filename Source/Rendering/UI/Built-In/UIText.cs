@@ -42,9 +42,9 @@ namespace Electron2D.UI
         private TextRenderer _renderer;
         private FontGlyphStore fgh;
 
-        public UIText(string text, FontArguments fontArguments, int sizeX = 0, int sizeY = 0, int uiRenderLayer = 0,
+        public UIText(string text, FontArguments fontArguments, int sizeX = 0, int sizeY = 0, int renderLayer = 0,
             bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing, false, false)
+            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, false, false)
         {
             fgh = ResourceManager.Instance.LoadFont(fontArguments.FontFile, fontArguments.FontSize, fontArguments.FontScale, 0);
             _renderer = new TextRenderer(Position, fgh, GlobalShaders.DefaultText, text, Size,

@@ -20,7 +20,8 @@ namespace Electron2D
         public Dictionary<Vector2, bool> CollisionFixtureUpdates { get; set; } = new();
         public Transform Transform { get; private set; }
         public int TilePixelSize { get; set; }
-        public int RenderLayer;
+        public int RenderLayer { get; }
+        public bool IgnorePostProcessing { get; } = false;
 
         private int _realTilePixelSize
         {
@@ -340,19 +341,12 @@ namespace Electron2D
         private int ToIndex(int x, int y) => x + y * SizeX;
         private Vector2 FromIndex(int index) => new Vector2(index % SizeX, index / SizeX);
 
-        public int GetRenderLayer() => RenderLayer;
-
         public void Render()
         {
             foreach (var m in _meshDataDictionary)
             {
                 m.Value.Renderer.Render();
             }
-        }
-
-        public bool ShouldIgnorePostProcessing()
-        {
-            return false;
         }
     }
 }
