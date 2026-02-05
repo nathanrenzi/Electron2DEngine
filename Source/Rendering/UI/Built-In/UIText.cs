@@ -1,9 +1,10 @@
-﻿using Electron2D.Rendering.Shaders;
+﻿using Electron2D.Management;
+using Electron2D.Rendering.Shaders;
 using Electron2D.Rendering.Text;
 
 namespace Electron2D.UI
 {
-    public class UIText : UIElement
+    public sealed class UIText : UIElement
     {
         public string Text
         {
@@ -43,7 +44,7 @@ namespace Electron2D.UI
 
         public UIText(string text, FontArguments fontArguments, int sizeX = 0, int sizeY = 0, int uiRenderLayer = 0,
             bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing, false)
+            : base(sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing, false, false)
         {
             fgh = ResourceManager.Instance.LoadFont(fontArguments.FontFile, fontArguments.FontSize, fontArguments.FontScale, 0);
             _renderer = new TextRenderer(Position, fgh, GlobalShaders.DefaultText, text, Size,

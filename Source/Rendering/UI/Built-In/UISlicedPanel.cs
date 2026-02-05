@@ -5,7 +5,7 @@ namespace Electron2D.UI
     /// <summary>
     /// A UI Component that can procedurally stretch a texture along it's borders, maintaining the same scale at any size.
     /// </summary>
-    public class UISlicedPanel : UIElement
+    public sealed class UISlicedPanel : UIElement
     {
         private float[] _vertices = new float[36 * 4];
 
