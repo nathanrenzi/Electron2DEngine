@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace Electron2D.UI
 {
-    public class UIPanel : UIElement
+    public sealed class UIPanel : UIElement
     {
         private float[] _vertices = new float[16];
         private static readonly uint[] _indices =
