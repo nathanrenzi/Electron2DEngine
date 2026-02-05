@@ -261,7 +261,7 @@ namespace Electron2D.UI
                             _focusedElement = hitElement;
                             hitElement.RaiseEvent(new UIEvent
                             {
-                                Type = UIEventType.Focus,
+                                Type = UIEventType.GainFocus,
                                 Target = hitElement,
                                 Phase = EventPhase.Target
                             });

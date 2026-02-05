@@ -13,7 +13,11 @@
         Drag,
         DragEnd,
 
-        Focus,
-        LoseFocus
+        GainFocus,
+        LoseFocus,
+        GainVisibility,
+        LoseVisibility,
+        GainInteractability,
+        LoseInteractability
     }
 }
