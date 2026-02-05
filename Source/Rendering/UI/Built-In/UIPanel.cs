@@ -12,24 +12,24 @@ namespace Electron2D.UI
             3, 2, 1
         };
 
-        public UIPanel(ITexture texture, int sizeX = 0, int sizeY = 0, int uiRenderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing, true)
+        public UIPanel(ITexture texture, int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
+            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true)
         {
             Renderer.Material.MainTexture = texture;
             UpdateMesh();
             Renderer.SetVertexArrays(_vertices, _indices);
         }
 
-        public UIPanel(Color color, int sizeX = 0, int sizeY = 0, int uiRenderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing, true)
+        public UIPanel(Color color, int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
+            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true)
         {
             SetColor(color);
             UpdateMesh();
             Renderer.SetVertexArrays(_vertices, _indices);
         }
 
-        public UIPanel(Material material, int sizeX = 0, int sizeY = 0, int uiRenderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, uiRenderLayer, useScreenPosition, ignorePostProcessing, true)
+        public UIPanel(Material material, int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
+            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true)
         {
             Renderer.SetMaterial(material);
             UpdateMesh();
