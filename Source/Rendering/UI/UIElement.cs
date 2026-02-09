@@ -265,12 +265,12 @@ namespace Electron2D.UI
         /// </summary>
         /// <param name="sizeX">The initial width of the element.</param>
         /// <param name="sizeY">The initial height of the element.</param>
-        /// <param name="renderLayer">The rendering layer order (default: 0).</param>
-        /// <param name="useScreenPosition">Whether to use screen-space positioning (default: true).</param>
-        /// <param name="ignorePostProcessing">Whether to ignore post-processing effects (default: true).</param>
-        /// <param name="useMeshRenderer">Whether to create a mesh renderer for this element (default: true).</param>
-        /// <param name="canAddChildren">Whether this element can have children (default: true).</param>
-        public UIElement(int sizeX, int sizeY, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true, bool useMeshRenderer = true, bool canAddChildren = true)
+        /// <param name="renderLayer">The rendering layer order.</param>
+        /// <param name="useScreenPosition">Whether to use screen-space positioning.</param>
+        /// <param name="ignorePostProcessing">Whether to ignore post-processing effects.</param>
+        /// <param name="useMeshRenderer">Whether to create a mesh renderer for this element.</param>
+        /// <param name="canAddChildren">Whether this element can have children.</param>
+        public UIElement(int sizeX, int sizeY, int renderLayer, bool useScreenPosition, bool ignorePostProcessing, bool useMeshRenderer, bool canAddChildren)
         {
             _position = Vector2.Zero;
             _size = new Vector2(sizeX, sizeY);

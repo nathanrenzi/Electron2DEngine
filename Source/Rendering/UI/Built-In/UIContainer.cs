@@ -3,7 +3,7 @@
     public sealed class UIContainer : UIElement
     {
         public UIContainer(int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true)
-            : base(sizeX, sizeY, renderLayer, useScreenPosition, true, false)
+            : base(sizeX, sizeY, renderLayer, useScreenPosition, true, false, true)
         { }
 
         public override void UpdateMesh() { }
