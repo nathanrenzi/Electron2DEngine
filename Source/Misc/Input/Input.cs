@@ -31,6 +31,7 @@ namespace Electron2D
         private static bool _lockKeyInput = false;
         private static Dictionary<uint, Dictionary<object, bool>> _lockPriorityDictionary = new();
         private static List<int> _connectedGamepads = new List<int>();
+        private static Dictionary<KeyCode, int> _keyIndexCache = new();
 
         public static void AddListener(IKeyListener listener)
         {
@@ -126,6 +127,17 @@ namespace Electron2D
                 KEYS[i] = false;
             }
 
+            for (int i = 0; i < MOUSE.Length; i++)
+            {
+                MOUSE[i] = InputState.Release;
+                MOUSE_LAST[i] = InputState.Release;
+            }
+
+            for (int i = 0; i < _keyValues.Length; i++)
+            {
+                _keyIndexCache[_keyValues[i]] = i;
+            }
+
             _scrollCallback = new MouseCallback(ScrollCallback);
             Glfw.SetScrollCallback(Display.Window, _scrollCallback);
 
@@ -150,9 +162,17 @@ namespace Electron2D
 
         private static void CharCallback(Window window, uint charCode)
         {
-            for(int i = 0; i < _keyListeners.Count; i++)
+            var evt = new KeyEvent
             {
-                _keyListeners[i].KeyPressed((char)charCode);
+                Type = KeyEventType.Character,
+                Character = (char)charCode,
+                KeyCode = KeyCode.Unknown,
+                IsPressed = true
+            };
+
+            for (int i = 0; i < _keyListeners.Count; i++)
+            {
+                _keyListeners[i].OnKeyEvent(evt);
             }
         }
 
@@ -222,29 +242,49 @@ namespace Electron2D
                 Glfw.GetGamepadState(gamepad, out GAMEPADSTATES[gamepad]);
             }
 
-            // Looping through every key to see if it is being pressed or released
             for (int i = 0; i < _totalKeyCount; i++)
             {
-                if ((int)_keyValues[i] == -1) continue; // Passing Unknown (-1) into the GetKey function causes an error
+                if ((int)_keyValues[i] == -1) continue;
                 KEYS[i] = Glfw.GetKey(Display.Window, (Keys)_keyValues[i]) == InputState.Press;
-                if (!char.IsAscii((char)_keyValues[i]))
+
+                // Only notify for special (non-character) keys
+                if (IsSpecialKey(_keyValues[i]))
                 {
+                    // Key pressed
                     if (KEYS[i] && !KEYS_LAST[i])
                     {
+                        var evt = new KeyEvent
+                        {
+                            Type = KeyEventType.SpecialKey,
+                            KeyCode = _keyValues[i],
+                            Character = null,
+                            IsPressed = true
+                        };
+
                         for (int x = 0; x < _keyListeners.Count; x++)
                         {
-                            _keyListeners[x].KeyPressed((char)_keyValues[i]);
+                            _keyListeners[x].OnKeyEvent(evt);
                         }
                     }
-                    else if(!KEYS[i] && KEYS_LAST[i])
+                    // Key released
+                    else if (!KEYS[i] && KEYS_LAST[i])
                     {
+                        var evt = new KeyEvent
+                        {
+                            Type = KeyEventType.SpecialKey,
+                            KeyCode = _keyValues[i],
+                            Character = null,
+                            IsPressed = false
+                        };
+
                         for (int x = 0; x < _keyListeners.Count; x++)
                         {
-                            _keyListeners[x].KeyNonAlphaReleased((char)_keyValues[i]);
+                            _keyListeners[x].OnKeyEvent(evt);
                         }
                     }
                 }
             }
+
             for (int i = 0; i < MOUSE.Length; i++)
             {
                 // Mouse presses
@@ -253,6 +293,11 @@ namespace Electron2D
 
             _scrollCallbackFrame = false;
             _mouseCallbackFrame = false;
+        }
+
+        private static bool IsSpecialKey(KeyCode key)
+        {
+            return key >= KeyCode.Escape;
         }
 
         public static bool GetMouseButtonDown(MouseButton button)
@@ -296,15 +341,7 @@ namespace Electron2D
 
         private static int GetKeyIndex(KeyCode key)
         {
-            for (int i = 0; i < _keyValues.Length; i++)
-            {
-                if (_keyValues[i] == key)
-                {
-                    return i;
-                }
-            }
-
-            return -1;
+            return _keyIndexCache.TryGetValue(key, out int index) ? index : -1;
         }
 
         public static void SetJoystickDeadzone(float deadzone)
