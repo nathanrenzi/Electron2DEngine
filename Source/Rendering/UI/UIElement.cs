@@ -8,9 +8,19 @@ namespace Electron2D.UI
 {
     public abstract class UIElement : IRenderable
     {
+        /// <summary>
+        /// Gets the parent UIElement of this element in the UI hierarchy.
+        /// </summary>
         public UIElement Parent { get; private set; }
         private List<UIElement> _children = new List<UIElement>();
+        /// <summary>
+        /// Gets a read-only collection of child UIElements.
+        /// </summary>
         public IReadOnlyList<UIElement> Children => _children;
+        /// <summary>
+        /// Gets or sets the position of this element relative to its parent.
+        /// Setting this property invalidates arrangement.
+        /// </summary>
         public Vector2 Position
         {
             get => _position;
@@ -24,6 +34,10 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _position;
+        /// <summary>
+        /// Gets or sets the size of this element.
+        /// Setting this property invalidates measurement and updates the mesh.
+        /// </summary>
         public Vector2 Size
         {
             get => _size;
@@ -38,7 +52,15 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _size;
+        /// <summary>
+        /// Gets the desired size calculated during the measure pass.
+        /// </summary>
         public Vector2 DesiredSize { get; private set; }
+        /// <summary>
+        /// Gets or sets the pivot point for this element, expressed as a normalized value (0-1).
+        /// The pivot determines the origin point for positioning and transformations.
+        /// Setting this property invalidates arrangement and updates the mesh.
+        /// </summary>
         public Vector2 Pivot
         {
             get => _pivot;
@@ -53,6 +75,11 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _pivot = Vector2.Zero;
+        /// <summary>
+        /// Gets or sets the anchor point within the parent element, expressed as a normalized value (0-1).
+        /// The anchor determines where this element is positioned within its parent's bounds.
+        /// Setting this property invalidates arrangement.
+        /// </summary>
         public Vector2 Anchor
         {
             get => _anchor;
@@ -66,6 +93,10 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _anchor = Vector2.Zero;
+        /// <summary>
+        /// Gets or sets the margin (outer spacing) around this element.
+        /// Setting this property invalidates measurement and updates the mesh.
+        /// </summary>
         public Border Margin
         {
             get => _margin;
@@ -77,6 +108,10 @@ namespace Electron2D.UI
             }
         }
         private Border _margin;
+        /// <summary>
+        /// Gets or sets the padding (inner spacing) within this element.
+        /// Setting this property invalidates measurement and updates the mesh.
+        /// </summary>
         public Border Padding
         {
             get => _padding;
@@ -88,6 +123,10 @@ namespace Electron2D.UI
             }
         }
         private Border _padding;
+        /// <summary>
+        /// Gets or sets the minimum size constraints for this element.
+        /// Setting this property invalidates measurement and updates the mesh.
+        /// </summary>
         public Vector2 MinSize
         {
             get => _minSize;
@@ -102,6 +141,10 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _minSize = Vector2.Zero;
+        /// <summary>
+        /// Gets or sets the maximum size constraints for this element.
+        /// Setting this property invalidates measurement and updates the mesh.
+        /// </summary>
         public Vector2 MaxSize
         {
             get => _maxSize;
@@ -116,7 +159,15 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _maxSize = new Vector2(float.MaxValue, float.MaxValue);
+        /// <summary>
+        /// Gets or sets additional pixels to extend the interaction area beyond the visual bounds.
+        /// Useful for making small UI elements easier to click.
+        /// </summary>
         public float ExtraInteractionPixels { get; set; }
+        /// <summary>
+        /// Gets or sets whether this element is visible.
+        /// When visibility changes, GainVisibility or LoseVisibility events are raised.
+        /// </summary>
         public bool Visible
         {
             get => _visible;
@@ -136,7 +187,14 @@ namespace Electron2D.UI
             }
         }
         private bool _visible = true;
+        /// <summary>
+        /// Gets or sets whether this element is enabled.
+        /// </summary>
         public bool Enabled { get; set; } = true;
+        /// <summary>
+        /// Gets or sets whether this element can be interacted with.
+        /// When interactability changes, GainInteractability or LoseInteractability events are raised.
+        /// </summary>
         public bool Interactable
         {
             get => _interactable;
@@ -156,23 +214,62 @@ namespace Electron2D.UI
             }
         }
         private bool _interactable = true;
+        /// <summary>
+        /// Gets whether this element currently has focus.
+        /// </summary>
         public bool Focused { get; internal set; }
+        /// <summary>
+        /// Gets whether the measure pass results are still valid.
+        /// </summary>
         public bool IsMeasureValid { get; private set; }
+        /// <summary>
+        /// Gets whether the arrange pass results are still valid.
+        /// </summary>
         public bool IsArrangeValid { get; private set; }
 
+
+        /// <summary>
+        /// Gets or sets the layout strategy used to position and size child elements.
+        /// </summary>
         public ILayout Layout { get; set; }
         private List<IConstraint> _constraints = new List<IConstraint>();
 
+        /// <summary>
+        /// Gets the mesh renderer used to draw this element (if it exists).
+        /// </summary>
         public MeshRenderer Renderer { get; protected set; }
+        /// <summary>
+        /// Gets the rendering layer order for this element.
+        /// </summary>
         public int RenderLayer { get; private set; }
+        /// <summary>
+        /// Gets or sets whether to use screen-space positioning for rendering.
+        /// </summary>
         public bool UseScreenPosition { get; set; } = true;
+        /// <summary>
+        /// Gets whether this element ignores post-processing effects.
+        /// </summary>
         public bool IgnorePostProcessing { get; }
+        /// <summary>
+        /// Gets whether this element can have children added to it.
+        /// </summary>
         public bool CanAddChildren { get; protected set; }
         private bool _useMeshRenderer;
         private CursorType _hoverCursorType = CursorType.Arrow;
 
         private Dictionary<UIEventType, List<Action<UIEvent>>> _eventHandlers = new Dictionary<UIEventType, List<Action<UIEvent>>>();
 
+
+        /// <summary>
+        /// Initializes a new instance of the UIElement class.
+        /// </summary>
+        /// <param name="sizeX">The initial width of the element.</param>
+        /// <param name="sizeY">The initial height of the element.</param>
+        /// <param name="renderLayer">The rendering layer order (default: 0).</param>
+        /// <param name="useScreenPosition">Whether to use screen-space positioning (default: true).</param>
+        /// <param name="ignorePostProcessing">Whether to ignore post-processing effects (default: true).</param>
+        /// <param name="useMeshRenderer">Whether to create a mesh renderer for this element (default: true).</param>
+        /// <param name="canAddChildren">Whether this element can have children (default: true).</param>
         public UIElement(int sizeX, int sizeY, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true, bool useMeshRenderer = true, bool canAddChildren = true)
         {
             _position = Vector2.Zero;
@@ -195,6 +292,11 @@ namespace Electron2D.UI
             RenderLayerManager.OrderRenderable(this);
         }
 
+        /// <summary>
+        /// Adds a child element to this element.
+        /// If the child already has a parent, it will be removed from that parent first.
+        /// </summary>
+        /// <param name="child">The child element to add.</param>
         public void AddChild(UIElement child)
         {
             if (!CanAddChildren) return;
@@ -207,6 +309,10 @@ namespace Electron2D.UI
             InvalidateMeasure();
         }
 
+        /// <summary>
+        /// Removes a child element from this element.
+        /// </summary>
+        /// <param name="child">The child element to remove.</param>
         public void RemoveChild(UIElement child)
         {
             if (_children.Remove(child))
@@ -217,16 +323,25 @@ namespace Electron2D.UI
             }
         }
 
+        /// <summary>
+        /// Removes all child elements from this element.
+        /// </summary>
         public void ClearChildren()
         {
             foreach (var child in _children)
             {
+                RenderLayerManager.OrderRenderable(child);
                 child.Parent = null;
             }
             _children.Clear();
             InvalidateMeasure();
         }
 
+
+        /// <summary>
+        /// Invalidates the measure pass, forcing a recalculation of desired size.
+        /// This also invalidates the arrange pass and propagates up to the parent.
+        /// </summary>
         public void InvalidateMeasure()
         {
             if (!IsMeasureValid) return;
@@ -237,6 +352,9 @@ namespace Electron2D.UI
             Parent?.InvalidateMeasure();
         }
 
+        /// <summary>
+        /// Invalidates the arrange pass, forcing a recalculation of final layout.
+        /// </summary>
         public void InvalidateArrange()
         {
             if (!IsArrangeValid) return;
@@ -246,6 +364,8 @@ namespace Electron2D.UI
         /// <summary>
         /// Measure pass. Calculate desired size given available space.
         /// </summary>
+        /// <param name="availableSize">The available space provided by the parent.</param>
+        /// <returns>The desired size of this element including margins.</returns>
         public Vector2 Measure(Vector2 availableSize)
         {
             if (!Visible)
@@ -284,6 +404,11 @@ namespace Electron2D.UI
             return DesiredSize;
         }
 
+        /// <summary>
+        /// Core measure logic for this element. Override to customize measurement behavior.
+        /// </summary>
+        /// <param name="availableSize">The available space after margins have been subtracted.</param>
+        /// <returns>The desired size before margins are added.</returns>
         protected virtual Vector2 MeasureCore(Vector2 availableSize)
         {
             availableSize = new Vector2(
@@ -306,8 +431,9 @@ namespace Electron2D.UI
         }
 
         /// <summary>
-        /// Arrange pass. Assign final positions and sizes.
+        /// Arrange pass. Assign final positions and sizes to this element and its children.
         /// </summary>
+        /// <param name="finalRect">The final rectangle allocated to this element by its parent.</param>
         public void Arrange(Rect finalRect)
         {
             if (!Visible)
@@ -352,6 +478,11 @@ namespace Electron2D.UI
             IsArrangeValid = true;
         }
 
+
+        /// <summary>
+        /// Core arrange logic for this element. Override to customize arrangement behavior.
+        /// </summary>
+        /// <param name="finalRect">The final rectangle after margins have been applied.</param>
         protected virtual void ArrangeCore(Rect finalRect)
         {
             Rect childRect = new Rect(
@@ -378,24 +509,41 @@ namespace Electron2D.UI
             );
         }
 
+
+        /// <summary>
+        /// Adds a constraint that will be applied to this element during arrangement.
+        /// </summary>
+        /// <param name="constrant">The constraint to add.</param>
         public void AddConstraint(IConstraint constrant)
         {
             _constraints.Add(constrant);
             InvalidateArrange();
         }
 
+        /// <summary>
+        /// Removes a previously added constraint.
+        /// </summary>
+        /// <param name="constraint">The constraint to remove.</param>
         public void RemoveConstraint(IConstraint constraint)
         {
             _constraints.Remove(constraint);
             InvalidateArrange();
         }
 
+        /// <summary>
+        /// Removes all constraints from this element.
+        /// </summary>
         public void ClearConstraints()
         {
             _constraints.Clear(); 
             InvalidateArrange();
         }
 
+        /// <summary>
+        /// Registers an event handler for a specific UI event type.
+        /// </summary>
+        /// <param name="type">The type of event to listen for.</param>
+        /// <param name="handler">The handler to invoke when the event occurs.</param>
         public void AddEventListener(UIEventType type, Action<UIEvent> handler)
         {
             if (!_eventHandlers.ContainsKey(type))
@@ -404,12 +552,22 @@ namespace Electron2D.UI
             _eventHandlers[type].Add(handler);
         }
 
+        /// <summary>
+        /// Unregisters a previously registered event handler.
+        /// </summary>
+        /// <param name="type">The type of event.</param>
+        /// <param name="handler">The handler to remove.</param>
         public void RemoveEventListener(UIEventType type, Action<UIEvent> handler)
         {
             if (_eventHandlers.ContainsKey(type))
                 _eventHandlers[type].Remove(handler);
         }
 
+        /// <summary>
+        /// Raises a UI event on this element, invoking all registered handlers.
+        /// The event may bubble up to parent elements if not stopped.
+        /// </summary>
+        /// <param name="evt">The event to raise.</param>
         public void RaiseEvent(UIEvent evt)
         {
             evt.Current = this;
@@ -447,9 +605,13 @@ namespace Electron2D.UI
             }
         }
 
-        public Rect GetCanvasBounds()
+        /// <summary>
+        /// Gets the bounding rectangle of this element in virtual coordinates, including extra interaction pixels.
+        /// </summary>
+        /// <returns>The bounding rectangle in virtual canvas space, including extra interaction pixels.</returns>
+        public Rect GetInteractionBounds()
         {
-            Vector2 pos = GetCanvasPosition();
+            Vector2 pos = GetVirtualPosition();
 
             Vector2 pivotOffset = new Vector2(
                 -Pivot.X * Size.X,
@@ -464,6 +626,32 @@ namespace Electron2D.UI
             );
         }
 
+        /// <summary>
+        /// Gets the bounding rectangle of this element in virtual coordinates.
+        /// </summary>
+        /// <returns>The bounding rectangle in virtual canvas space.</returns>
+        public Rect GetVirtualBounds()
+        {
+            Vector2 pos = GetVirtualPosition();
+
+            Vector2 pivotOffset = new Vector2(
+                -Pivot.X * Size.X,
+                -Pivot.Y * Size.Y
+            );
+
+            return new Rect(
+                pos.X + pivotOffset.X,
+                pos.Y + pivotOffset.Y,
+                Size.X,
+                Size.Y
+            );
+        }
+
+
+        /// <summary>
+        /// Gets the bounding rectangle of this element in local (element-relative) virtual coordinates.
+        /// </summary>
+        /// <returns>The local bounding rectangle.</returns>
         public Rect GetLocalBounds()
         {
             Vector2 pivotOffset = new Vector2(
@@ -472,21 +660,25 @@ namespace Electron2D.UI
             );
 
             return new Rect(
-                pivotOffset.X - ExtraInteractionPixels,
-                pivotOffset.Y - ExtraInteractionPixels,
-                Size.X + ExtraInteractionPixels * 2,
-                Size.Y + ExtraInteractionPixels * 2
+                pivotOffset.X,
+                pivotOffset.Y,
+                Size.X,
+                Size.Y
             );
         }
 
-        public Vector2 GetCanvasPosition()
+        /// <summary>
+        /// Gets the position of this element in virtual coordinates.
+        /// </summary>
+        /// <returns>The virtual position on the canvas.</returns>
+        public Vector2 GetVirtualPosition()
         {
             if (Parent == null)
             {
                 return Position;
             }
 
-            Vector2 parentVirtualPos = Parent.GetCanvasPosition();
+            Vector2 parentVirtualPos = Parent.GetVirtualPosition();
             Vector2 parentPivotOffset = new Vector2(
                 -Parent.Pivot.X * Parent.Size.X,
                 -Parent.Pivot.Y * Parent.Size.Y
@@ -496,20 +688,33 @@ namespace Electron2D.UI
             return parentTopLeft + Position;
         }
 
+        /// <summary>
+        /// Tests whether a point in virtual coordinates intersects with this element's bounds.
+        /// Returns false if the element is not visible, enabled, or interactable.
+        /// </summary>
+        /// <param name="virtualPoint">The point to test in virtual coordinates.</param>
+        /// <returns>True if the point is within this element's bounds, otherwise false.</returns>
         public bool HitTest(Vector2 virtualPoint)
         {
             if (!Visible || !Enabled || !Interactable)
                 return false;
 
-            Rect rect = GetCanvasBounds();
+            Rect rect = GetInteractionBounds();
             return virtualPoint.X >= rect.X &&
                    virtualPoint.X <= rect.X + rect.Width &&
                    virtualPoint.Y >= rect.Y &&
                    virtualPoint.Y <= rect.Y + rect.Height;
         }
 
+        /// <summary>
+        /// Updates the mesh geometry for this element. Must be implemented by derived classes.
+        /// </summary>
         public abstract void UpdateMesh();
 
+        /// <summary>
+        /// Sets the color of this element's material.
+        /// </summary>
+        /// <param name="color">The color to apply.</param>
         public virtual void SetColor(Color color)
         {
             if (Renderer != null)
@@ -518,18 +723,25 @@ namespace Electron2D.UI
             }
         }
 
+        /// <summary>
+        /// Sets the cursor type to display when the mouse hovers over this element.
+        /// </summary>
+        /// <param name="type">The cursor type to use on hover.</param>
         public void SetHoverCursorType(CursorType type)
         {
             _hoverCursorType = type;
         }
 
+        /// <summary>
+        /// Renders this element and all of its children.
+        /// </summary>
         public virtual void Render()
         {
             if (!Visible) return;
 
             if (Renderer != null)
             {
-                Vector2 pos = GetCanvasPosition();
+                Vector2 pos = GetVirtualPosition();
                 Renderer.GetMaterial().Shader.SetMatrix4x4("model", Matrix4x4.CreateTranslation(pos.X, pos.Y, 0));
                 Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix",
                     UseScreenPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
@@ -542,12 +754,19 @@ namespace Electron2D.UI
             }
         }
 
+        /// <summary>
+        /// Gives focus to this element, making it the active element for keyboard input.
+        /// </summary>
         public void Focus()
         {
             UICanvas.Instance?.Focus(this);
             Focused = true;
         }
 
+
+        /// <summary>
+        /// Removes focus from this element.
+        /// </summary>
         public void Unfocus()
         {
             UICanvas.Instance?.Unfocus(this);
@@ -571,6 +790,10 @@ namespace Electron2D.UI
             GC.SuppressFinalize(this);
         }
 
+
+        /// <summary>
+        /// Called when this element is being disposed. Override to add custom cleanup logic.
+        /// </summary>
         protected virtual void OnDispose() { }
 
         ~UIElement()
