@@ -2,7 +2,6 @@
 {
     public interface IKeyListener
     {
-        public void KeyPressed(char code);
-        public void KeyNonAlphaReleased(char code);
+        public void OnKeyEvent(KeyEvent keyEvent);
     }
 }
