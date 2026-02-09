@@ -13,7 +13,7 @@ namespace Electron2D.UI
         };
 
         public UIPanel(ITexture texture, int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true)
+            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true, true)
         {
             Renderer.Material.MainTexture = texture;
             UpdateMesh();
@@ -21,7 +21,7 @@ namespace Electron2D.UI
         }
 
         public UIPanel(Color color, int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true)
+            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true, true)
         {
             SetColor(color);
             UpdateMesh();
@@ -29,7 +29,7 @@ namespace Electron2D.UI
         }
 
         public UIPanel(Material material, int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true)
+            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true, true)
         {
             Renderer.SetMaterial(material);
             UpdateMesh();
