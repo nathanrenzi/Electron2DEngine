@@ -84,10 +84,11 @@ namespace Electron2D.UI
         public override void UpdateMesh()
         {
             // The positions of the outer vertices
-            float L1 = -Pivot.X * Size.X;
-            float R1 = L1 + Size.X;
-            float T1 = -Pivot.Y * Size.Y;
-            float B1 = T1 + Size.Y;
+            Rect rect = GetLocalBounds();
+            float L1 = rect.X;
+            float R1 = rect.X + rect.Width;
+            float T1 = rect.Y;
+            float B1 = rect.Y + rect.Height;
 
             // Scaling border to prevent overlap
             float width = R1 - L1;

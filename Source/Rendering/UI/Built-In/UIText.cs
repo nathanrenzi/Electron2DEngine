@@ -56,7 +56,7 @@ namespace Electron2D.UI
         {
             _renderer.Position = Position;
             _renderer.Pivot = Pivot;
-            _renderer.Bounds = new Rect(0, 0, Size.X, Size.Y);
+            _renderer.Bounds = GetLocalBounds();
             _renderer.UpdateMesh();
         }
 
