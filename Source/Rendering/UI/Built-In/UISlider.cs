@@ -89,7 +89,7 @@ namespace Electron2D.UI
 
         private void OnDrag(Vector2 mouseVirtualPosition)
         {
-            Rect rect = GetCanvasBounds();
+            Rect rect = GetVirtualBounds();
             float value01 = MathEx.Clamp01((mouseVirtualPosition.X - (rect.X + _handleEndPadding)) / (rect.Width - _handleEndPadding * 2));
             Value = value01 * (MaxValue - MinValue) + MinValue;
         }
@@ -106,7 +106,7 @@ namespace Electron2D.UI
 
         public override void UpdateMesh()
         {
-            Rect rect = GetCanvasBounds();
+            Rect rect = GetVirtualBounds();
             Handle.Pivot = new Vector2(0.5f, 0.5f);
             Handle.Position = new Vector2((int)(rect.X + _handleEndPadding + (rect.Width - _handleEndPadding * 2) * Value01), (int)(rect.Y + rect.Height / 2f));
         }
