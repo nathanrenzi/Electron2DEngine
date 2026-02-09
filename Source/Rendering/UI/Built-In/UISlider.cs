@@ -24,7 +24,7 @@ namespace Electron2D.UI
                 }
             }
         }
-        private float _minValue = 0;
+        private float _minValue;
         public float MaxValue
         {
             get => _maxValue;
@@ -38,7 +38,7 @@ namespace Electron2D.UI
                 }
             }
         }
-        private float _maxValue = 1;
+        private float _maxValue;
         public float Value
         {
             get => _value;
@@ -52,15 +52,20 @@ namespace Electron2D.UI
                 }
             }
         }
-        private float _value = 0;
+        private float _value;
         public float Value01 => MathEx.Clamp01((Value - MinValue) / (MaxValue - MinValue));
         private int _handleEndPadding;
         private Border _foregroundMargin;
 
-        public UISlider(UISliderStyle style, int sizeX = 0, int sizeY = 0,
-            int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
+        public UISlider(UISliderStyle style, float value = 0, float minValue = 0, float maxValue = 1,
+            int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true,
+            bool ignorePostProcessing = true)
             : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, false, true)
         {
+            _value = value;
+            _minValue = minValue;
+            _maxValue = maxValue;
+
             Background = style.BackgroundDef.Create(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing);
             Background.Margin = style.BackgroundMargin;
             Background.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
