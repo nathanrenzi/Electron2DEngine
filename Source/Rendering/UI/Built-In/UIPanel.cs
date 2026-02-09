@@ -38,10 +38,11 @@ namespace Electron2D.UI
 
         public override void UpdateMesh()
         {
-            float left = -Pivot.X * Size.X;
-            float right = left + Size.X;
-            float top = -Pivot.Y * Size.Y;
-            float bottom = top + Size.Y;
+            Rect rect = GetLocalBounds();
+            float left = rect.X;
+            float right = rect.X + rect.Width;
+            float top = rect.Y;
+            float bottom = rect.Y + rect.Height;
 
             // Top Left
             _vertices[0] = left;

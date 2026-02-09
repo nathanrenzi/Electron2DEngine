@@ -19,7 +19,7 @@ namespace Electron2D.UI
                 if(value != _minValue)
                 {
                     _minValue = value;
-                    UpdateValue();
+                    UpdateValue(true);
                     UpdateMesh();
                 }
             }
@@ -33,7 +33,7 @@ namespace Electron2D.UI
                 if (value != _maxValue)
                 {
                     _maxValue = value;
-                    UpdateValue();
+                    UpdateValue(true);
                     UpdateMesh();
                 }
             }
@@ -47,7 +47,7 @@ namespace Electron2D.UI
                 if (value != _value)
                 {
                     _value = value;
-                    UpdateValue();
+                    UpdateValue(true);
                     UpdateMesh();
                 }
             }
@@ -63,12 +63,14 @@ namespace Electron2D.UI
         {
             Background = style.BackgroundDef.Create(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing);
             Background.Margin = style.BackgroundMargin;
+            Background.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
             AddChild(Background);
 
             _handleEndPadding = style.HandleEndPadding;
             Foreground = style.ForegroundDef.Create(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing);
             _foregroundMargin = style.ForegroundMargin;
             Foreground.Margin = _foregroundMargin;
+            Foreground.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
             AddChild(Foreground);
 
             Handle = style.HandleDef.Create((int)style.HandleSize.X, (int)style.HandleSize.Y, renderLayer, useScreenPosition, ignorePostProcessing);
@@ -79,27 +81,32 @@ namespace Electron2D.UI
             RenderLayerManager.RemoveRenderable(Handle);
 
             UpdateMesh();
+            UpdateValue(false);
 
             CanAddChildren = false;
+            Interactable = false;
         }
 
         private void OnDrag(Vector2 mouseVirtualPosition)
         {
-            Rect rect = GetVirtualRect();
+            Rect rect = GetCanvasBounds();
             float value01 = MathEx.Clamp01((mouseVirtualPosition.X - (rect.X + _handleEndPadding)) / (rect.Width - _handleEndPadding * 2));
             Value = value01 * (MaxValue - MinValue) + MinValue;
         }
 
-        private void UpdateValue()
+        private void UpdateValue(bool invokeEvents)
         {
-            OnValueChanged?.Invoke(Value);
-            OnValueChanged01?.Invoke(Value01);
+            if(invokeEvents)
+            {
+                OnValueChanged?.Invoke(Value);
+                OnValueChanged01?.Invoke(Value01);
+            }
             Foreground.Margin = new Border(0, _foregroundMargin.Top, MathEx.Clamp(Size.X * (1 - Value01), 0, Size.X), _foregroundMargin.Bottom);
         }
 
         public override void UpdateMesh()
         {
-            Rect rect = GetVirtualRect();
+            Rect rect = GetCanvasBounds();
             Handle.Pivot = new Vector2(0.5f, 0.5f);
             Handle.Position = new Vector2((int)(rect.X + _handleEndPadding + (rect.Width - _handleEndPadding * 2) * Value01), (int)(rect.Y + rect.Height / 2f));
         }

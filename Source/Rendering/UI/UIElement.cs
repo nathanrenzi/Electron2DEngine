@@ -447,9 +447,9 @@ namespace Electron2D.UI
             }
         }
 
-        public Rect GetVirtualRect()
+        public Rect GetCanvasBounds()
         {
-            Vector2 pos = GetVirtualPosition();
+            Vector2 pos = GetCanvasPosition();
 
             Vector2 pivotOffset = new Vector2(
                 -Pivot.X * Size.X,
@@ -464,14 +464,29 @@ namespace Electron2D.UI
             );
         }
 
-        public Vector2 GetVirtualPosition()
+        public Rect GetLocalBounds()
+        {
+            Vector2 pivotOffset = new Vector2(
+                -Pivot.X * Size.X,
+                -Pivot.Y * Size.Y
+            );
+
+            return new Rect(
+                pivotOffset.X - ExtraInteractionPixels,
+                pivotOffset.Y - ExtraInteractionPixels,
+                Size.X + ExtraInteractionPixels * 2,
+                Size.Y + ExtraInteractionPixels * 2
+            );
+        }
+
+        public Vector2 GetCanvasPosition()
         {
             if (Parent == null)
             {
                 return Position;
             }
 
-            Vector2 parentVirtualPos = Parent.GetVirtualPosition();
+            Vector2 parentVirtualPos = Parent.GetCanvasPosition();
             Vector2 parentPivotOffset = new Vector2(
                 -Parent.Pivot.X * Parent.Size.X,
                 -Parent.Pivot.Y * Parent.Size.Y
@@ -486,7 +501,7 @@ namespace Electron2D.UI
             if (!Visible || !Enabled || !Interactable)
                 return false;
 
-            Rect rect = GetVirtualRect();
+            Rect rect = GetCanvasBounds();
             return virtualPoint.X >= rect.X &&
                    virtualPoint.X <= rect.X + rect.Width &&
                    virtualPoint.Y >= rect.Y &&
@@ -514,7 +529,7 @@ namespace Electron2D.UI
 
             if (Renderer != null)
             {
-                Vector2 pos = UICanvas.Instance.VirtualToScreen(GetVirtualPosition());
+                Vector2 pos = GetCanvasPosition();
                 Renderer.GetMaterial().Shader.SetMatrix4x4("model", Matrix4x4.CreateTranslation(pos.X, pos.Y, 0));
                 Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix",
                     UseScreenPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
