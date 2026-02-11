@@ -119,8 +119,7 @@ namespace Electron2D.UI
             {
                 if(!root.IsMeasureValid)
                 {
-                    Vector2 availableSize = _scalingMode == UIScalingMode.VirtualResolution ? _virtualResolution : Display.WindowSize;
-                    root.Measure(availableSize);
+                    root.Measure(root.Size);
                 }
 
                 if(!root.IsArrangeValid)

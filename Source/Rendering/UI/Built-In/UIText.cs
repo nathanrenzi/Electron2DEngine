@@ -1,68 +1,395 @@
-﻿using Electron2D.Management;
+﻿using Electron2D.Rendering;
 using Electron2D.Rendering.Shaders;
 using Electron2D.Rendering.Text;
+using FreeTypeSharp.Native;
+using System.Numerics;
+using System.Text;
+using System.Text.RegularExpressions;
+using static FreeTypeSharp.Native.FT;
 
 namespace Electron2D.UI
 {
     public sealed class UIText : UIElement
     {
+        private struct TextLine
+        {
+            public string Text;
+            public Vector2 Size;
+        }
+
         public string Text
         {
-            get
-            {
-                return _renderer.Text;
-            }
+            get => _text;
             set
             {
-                _renderer.Text = value;
-                InvalidateMeasure();
+                if (_text != value)
+                {
+                    _text = value;
+                    InvalidateMeasure();
+                }
             }
         }
+        private string _text;
         public TextAlignment HorizontalAlignment
         {
-            get { return _renderer.HorizontalAlignment; }
-            set { _renderer.HorizontalAlignment = value; }
+            get => _horizontalAlignment;
+            set
+            {
+                if(_horizontalAlignment != value)
+                {
+                    _horizontalAlignment = value;
+                    UpdateMesh();
+                }
+            }
         }
+        private TextAlignment _horizontalAlignment;
         public TextAlignment VerticalAlignment
         {
-            get { return _renderer.VerticalAlignment; }
-            set { _renderer.VerticalAlignment = value; }
+            get => _verticalAlignment;
+            set
+            {
+                if (_verticalAlignment != value)
+                {
+                    _verticalAlignment = value;
+                    UpdateMesh();
+                }
+            }
         }
-        public TextAlignmentMode AlignmentMode
-        {
-            get { return _renderer.AlignmentMode; }
-            set { _renderer.AlignmentMode = value; }
-        }
+        private TextAlignment _verticalAlignment;
+        public TextAlignmentMode AlignmentMode { get; set; } // TODO
         public TextOverflowMode OverflowMode
         {
-            get { return _renderer.OverflowMode; }
-            set { _renderer.OverflowMode = value; }
+            get => _overflowMode;
+            set
+            {
+                if(_overflowMode != value)
+                {
+                    _overflowMode = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private TextOverflowMode _overflowMode;
+        public float LineHeightMultiplier
+        {
+            get => _lineHeightMultiplier;
+            set
+            {
+                if(_lineHeightMultiplier != value)
+                {
+                    _lineHeightMultiplier = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private float _lineHeightMultiplier;
+        public FontGlyphStore FontGlyphStore { get; set; }
+
+        private List<TextLine> _measuredTextLines = new List<TextLine>();
+        private List<(Vector2, int)> _characterStartPositions = new();
+
+        public UIText(UITextStyle style, string text, int sizeX = 0, int sizeY = 0, int renderLayer = 0,
+            bool useScreenPosition = true, bool ignorePostProcessing = true, Shader? customTextShader = null)
+            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true, false)
+        {
+            FontGlyphStore = ResourceManager.Instance.LoadFont(style.FontArguments.FontFile,
+                style.FontArguments.FontSize, style.FontArguments.FontScale, 0);
+
+            _text = text;
+            HorizontalAlignment = style.HorizontalAlignment;
+            VerticalAlignment = style.VerticalAlignment;
+            AlignmentMode = style.AlignmentMode;
+            OverflowMode = style.OverflowMode;
+            LineHeightMultiplier = style.LineHeightMultiplier;
+
+            Material mat = Material.Create(customTextShader != null ? customTextShader : GlobalShaders.DefaultText,
+                new Texture2D(FontGlyphStore.TextureHandle, FontGlyphStore.TextureAtlasWidth, FontGlyphStore.Arguments.FontSize));
+            Renderer.SetMaterial(mat);
         }
 
-        private TextRenderer _renderer;
-        private FontGlyphStore fgh;
-
-        public UIText(string text, FontArguments fontArguments, int sizeX = 0, int sizeY = 0, int renderLayer = 0,
-            bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, false, false)
+        protected override Vector2 MeasureCore(Vector2 availableSize)
         {
-            fgh = ResourceManager.Instance.LoadFont(fontArguments.FontFile, fontArguments.FontSize, fontArguments.FontScale, 0);
-            _renderer = new TextRenderer(Position, fgh, GlobalShaders.DefaultText, text, Size,
-                TextAlignment.Left, TextAlignment.Top, TextAlignmentMode.Baseline, TextOverflowMode.Word, useScreenPosition, false);
-            Renderer = _renderer;
+            availableSize = new Vector2(
+                Math.Max(0, availableSize.X - Padding.Left - Padding.Right),
+                Math.Max(0, availableSize.Y - Padding.Top - Padding.Bottom)
+            );
+
+            Vector2 size = Vector2.Zero;
+
+            _measuredTextLines.Clear();
+            if(string.IsNullOrEmpty(Text)) return MinSize;
+
+            string normalized = Regex.Replace(Text, @"\s", " ");
+            string[] parts = null;
+            switch (OverflowMode)
+            {
+                case TextOverflowMode.Word:
+                    parts = Regex.Split(normalized, @"( +)");
+                    break;
+                case TextOverflowMode.Character:
+                    parts = normalized.ToCharArray().Select(x => x.ToString()).ToArray();
+                    break;
+                default:
+                    parts = [normalized];
+                    break;
+            }
+
+            StringBuilder lineBuilder = new();
+            float totalSizeX = 0;
+            float totalSizeY = 0;
+            float currentSizeX = 0;
+            float maxSizeY = 0;
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                string token = parts[i];
+                Vector2 tokenSize = MeasureString(token);
+
+                bool isFirstTokenInLine = currentSizeX == 0;
+
+                if (!isFirstTokenInLine && currentSizeX + tokenSize.X > availableSize.X)
+                {
+                    _measuredTextLines.Add(new TextLine()
+                    {
+                        Text = lineBuilder.ToString(),
+                        Size = new Vector2(currentSizeX, maxSizeY)
+                    });
+
+                    lineBuilder.Clear();
+                    totalSizeX += currentSizeX;
+                    currentSizeX = 0;
+                    totalSizeY += maxSizeY;
+                    totalSizeY += FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+                    maxSizeY = 0;
+                }
+
+                lineBuilder.Append(token);
+                currentSizeX += tokenSize.X;
+                maxSizeY = MathF.Max(maxSizeY, tokenSize.Y);
+            }
+
+            if (lineBuilder.Length > 0)
+            {
+                _measuredTextLines.Add(new TextLine()
+                {
+                    Text = lineBuilder.ToString(),
+                    Size = new Vector2(currentSizeX, maxSizeY)
+                });
+
+                totalSizeX += currentSizeX;
+                totalSizeY += maxSizeY;
+            }
+
+            return new Vector2(
+                totalSizeX + Padding.Left + Padding.Right,
+                totalSizeY + Padding.Top + Padding.Bottom
+            );
+        }
+
+        private Vector2 MeasureString(string text)
+        {
+            Vector2 size = Vector2.Zero;
+            uint previousIndex = 0;
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                Character character = FontGlyphStore.Characters[text[i]];
+                uint charIndex = FT_Get_Char_Index(FontGlyphStore.Face, text[i]);
+
+                size.X += character.Advance;
+                size.Y = MathF.Max(character.Bearing.Y, size.Y);
+
+                if(FontGlyphStore.UseKerning &&
+                    FT_Get_Kerning(FontGlyphStore.Face, previousIndex, charIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                {
+                    size.X += delta.x;
+                }
+
+                previousIndex = charIndex;
+            }
+
+            return size;
         }
 
         public override void UpdateMesh()
         {
-            _renderer.Position = Position;
-            _renderer.Pivot = Pivot;
-            _renderer.Bounds = GetLocalBounds();
-            _renderer.UpdateMesh();
+            _characterStartPositions.Clear();
+            List<float[]> tempVertexArrays = new List<float[]>();
+            List<uint> tempIndices = new List<uint>();
+
+            if (_measuredTextLines.Count == 0)
+            {
+                tempVertexArrays.Add([-10000, -10000, 0, 0]);
+                tempVertexArrays.Add([-10000, -10000, 0, 0]);
+                tempVertexArrays.Add([-10000, -10000, 0, 0]);
+                tempIndices.Add(0);
+                tempIndices.Add(1);
+                tempIndices.Add(2);
+            }
+            else
+            {
+                Rect rect = GetLocalBounds();
+                float totalHeight = (_measuredTextLines.Count * FontGlyphStore.Arguments.FontSize)
+                    + (MathF.Max(_measuredTextLines.Count - 1, 0) * FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+                for (int i = 0; i < _measuredTextLines.Count; i++)
+                {
+                    TextLine line = _measuredTextLines[i];
+                    float xPos = rect.X;
+                    float yPos = rect.Y + (i * FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+
+                    switch(VerticalAlignment)
+                    {
+                        case TextAlignment.Top:
+                            yPos += FontGlyphStore.Arguments.FontSize;
+                            break;
+                        case TextAlignment.Center:
+                            yPos += FontGlyphStore.Arguments.FontSize + (rect.Height - totalHeight) / 2f;
+                            break;
+                        case TextAlignment.Bottom:
+                            yPos += rect.Height;
+                            break;
+                    }
+
+                    switch(HorizontalAlignment)
+                    {
+                        case TextAlignment.Center:
+                            xPos += (rect.Width - line.Size.X) / 2f;
+                            break;
+                        case TextAlignment.Right:
+                            xPos += rect.Width - line.Size.X;
+                            break;
+                    }
+
+                    if (i == 0) _characterStartPositions.Add((new Vector2(xPos, yPos), i));
+
+                    uint previousIndex = 0;
+                    uint charIndex = 0;
+
+                    for (int k = 0; k < line.Text.Length; k++)
+                    {
+                        Character character = FontGlyphStore.Characters[line.Text[k]];
+                        charIndex = FT_Get_Char_Index(FontGlyphStore.Face, line.Text[k]);
+
+                        if(FontGlyphStore.UseKerning)
+                        {
+                            if(FT_Get_Kerning(FontGlyphStore.Face, previousIndex, charIndex,
+                                (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                            {
+                                xPos += delta.x;
+                            }
+                        }
+
+                        float xVertex = xPos + character.Bearing.X;
+                        float yVertex = yPos - character.Bearing.Y;
+                        Vector2 snapped = UICanvas.Instance.VirtualToScreen(new Vector2(xVertex, yVertex));
+                        snapped.X = MathF.Floor(snapped.X);
+                        snapped.Y = MathF.Floor(snapped.Y);
+                        Vector2 corrected = UICanvas.Instance.ScreenToVirtual(snapped);
+                        xVertex = corrected.X;
+                        yVertex = corrected.Y;
+
+                        float w = character.Size.X;
+                        float h = character.Size.Y;
+
+                        float L = character.UVX.X;
+                        float R = character.UVX.Y;
+                        float T = character.UVY.X;
+                        float B = character.UVY.Y;
+
+                        uint count = (uint)tempVertexArrays.Count;
+                        tempVertexArrays.Add([xVertex, yVertex, L, T]);
+                        tempVertexArrays.Add([xVertex + w, yVertex, R, T]);
+                        tempVertexArrays.Add([xVertex + w, yVertex + h, R, B]);
+                        tempVertexArrays.Add([xVertex, yVertex + h, L, B]);
+                        tempIndices.Add(count + 0);
+                        tempIndices.Add(count + 1);
+                        tempIndices.Add(count + 2);
+                        tempIndices.Add(count + 0);
+                        tempIndices.Add(count + 2);
+                        tempIndices.Add(count + 3);
+
+                        xPos += character.Advance;
+
+                        previousIndex = charIndex;
+
+                        _characterStartPositions.Add((new Vector2(xPos, yPos), i));
+                    }
+                }
+            }
+
+            List<float> tempVertices = new List<float>();
+            for (int i = 0; i < tempVertexArrays.Count; i++)
+            {
+                for (int z = 0; z < tempVertexArrays[i].Length; z++)
+                {
+                    tempVertices.Add(tempVertexArrays[i][z]);
+                }
+            }
+
+            Renderer.SetVertexArrays(tempVertices.ToArray(), tempIndices.ToArray(), !Renderer.IsLoaded, Renderer.IsLoaded);
+        }
+
+        public Vector2 GetCharacterPositionAt(int index)
+        {
+            if(index < 0 || index >= _characterStartPositions.Count)
+            {
+                return GetVirtualPosition();
+            }
+
+            return _characterStartPositions[index].Item1 + GetVirtualPosition();
+        }
+
+        public int GetCharacterIndexAt(Vector2 virtualPos)
+        {
+            if (_characterStartPositions.Count == 0) return 0;
+
+            Vector2 localPos = virtualPos - GetVirtualPosition();
+
+            float lineHeight = FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+
+            for (int i = 0; i < _characterStartPositions.Count - 1; i++)
+            {
+                (Vector2 startPos, int lineIndex) = _characterStartPositions[i];
+                (Vector2 endPos, int endLineIndex) = _characterStartPositions[i + 1];
+
+                float lineTop = startPos.Y - FontGlyphStore.Arguments.FontSize;
+                float lineBottom = startPos.Y;
+
+                bool onThisLine = localPos.Y >= lineTop && localPos.Y <= lineBottom;
+                if (!onThisLine) continue;
+
+                if (lineIndex != endLineIndex)
+                {
+                    float charMidX = startPos.X + (endPos.X - startPos.X) / 2f;
+                    return localPos.X >= charMidX ? i + 1 : i;
+                }
+                else
+                {
+                    if (localPos.X >= startPos.X && localPos.X < endPos.X)
+                    {
+                        float charMidX = startPos.X + (endPos.X - startPos.X) / 2f;
+                        return localPos.X >= charMidX ? i + 1 : i;
+                    }
+                }
+            }
+
+            if (_characterStartPositions.Count > 0)
+            {
+                (Vector2 lastPos, int lastLine) = _characterStartPositions[^1];
+                float lineTop = lastPos.Y - FontGlyphStore.Arguments.FontSize;
+
+                if (localPos.Y >= lineTop && localPos.Y <= lastPos.Y && localPos.X >= lastPos.X)
+                {
+                    return _characterStartPositions.Count - 1;
+                }
+            }
+
+            return 0;
         }
 
         protected override void OnDispose()
         {
-            fgh = null;
+            FontGlyphStore = null;
         }
     }
 }
