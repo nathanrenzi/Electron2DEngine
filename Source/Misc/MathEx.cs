@@ -9,6 +9,11 @@ namespace Electron2D
             return MathF.Max(_min, MathF.Min(_value, _max));
         }
 
+        public static int Clamp(int _value, int _min, int _max)
+        {
+            return (int)(MathF.Max(_min, MathF.Min(_value, _max)));
+        }
+
         public static float Clamp01(float _value)
         {
             return Clamp(_value, 0, 1);
