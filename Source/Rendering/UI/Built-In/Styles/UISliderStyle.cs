@@ -4,15 +4,15 @@ namespace Electron2D.UI
 {
     public sealed class UISliderStyle
     {
-        public UIPanelDef BackgroundDef;
-        public UIPanelDef ForegroundDef;
-        public UIPanelDef HandleDef;
+        public UIPanelDef BackgroundDef { get; }
+        public UIPanelDef ForegroundDef { get; }
+        public UIPanelDef HandleDef { get; }
 
-        public Border BackgroundMargin;
-        public Border ForegroundMargin;
+        public Border BackgroundMargin { get; }
+        public Border ForegroundMargin { get; }
 
-        public Vector2 HandleSize;
-        public int HandleEndPadding;
+        public Vector2 HandleSize { get; }
+        public int HandleEndPadding { get; }
 
         public UISliderStyle(UIPanelDef backgroundDef, UIPanelDef foregroundDef,
             UIPanelDef handleDef, Vector2 handleSize, Border? backgroundMargin = null,
