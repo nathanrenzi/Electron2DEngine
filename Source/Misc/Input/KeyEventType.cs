@@ -3,6 +3,6 @@
     public enum KeyEventType
     {
         Character,
-        SpecialKey
+        Key
     }
 }
