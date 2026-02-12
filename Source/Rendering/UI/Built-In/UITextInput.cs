@@ -1,6 +1,7 @@
 ﻿using Electron2D.Misc.Input;
 using Electron2D.Rendering;
 using Electron2D.Rendering.Shaders;
+using GLFW;
 using System.Drawing;
 using System.Numerics;
 using System.Text;
@@ -276,6 +277,16 @@ namespace Electron2D.UI
                         if (_isControlPressed)
                         {
                             // Select all
+                        }
+                        break;
+
+                    case KeyCode.V:
+                        if (_isControlPressed)
+                        {
+                            string clipboardString = Glfw.GetClipboardString(Display.Window);
+                            _builder.Insert(_caretIndex, clipboardString);
+                            UpdateText(_builder.ToString());
+                            _caretIndex = (int)MathF.Min(_caretIndex + clipboardString.Length, Text.Length);
                         }
                         break;
 
