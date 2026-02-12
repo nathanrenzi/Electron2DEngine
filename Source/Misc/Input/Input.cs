@@ -247,40 +247,36 @@ namespace Electron2D
                 if ((int)_keyValues[i] == -1) continue;
                 KEYS[i] = Glfw.GetKey(Display.Window, (Keys)_keyValues[i]) == InputState.Press;
 
-                // Only notify for special (non-character) keys
-                if (IsSpecialKey(_keyValues[i]))
+                // Key pressed
+                if (KEYS[i] && !KEYS_LAST[i])
                 {
-                    // Key pressed
-                    if (KEYS[i] && !KEYS_LAST[i])
+                    var evt = new KeyEvent
                     {
-                        var evt = new KeyEvent
-                        {
-                            Type = KeyEventType.SpecialKey,
-                            KeyCode = _keyValues[i],
-                            Character = null,
-                            IsPressed = true
-                        };
+                        Type = KeyEventType.Key,
+                        KeyCode = _keyValues[i],
+                        Character = char.TryParse(_keyValues[i].ToString(), out char c) ? c : null,
+                        IsPressed = true
+                    };
 
-                        for (int x = 0; x < _keyListeners.Count; x++)
-                        {
-                            _keyListeners[x].OnKeyEvent(evt);
-                        }
+                    for (int x = 0; x < _keyListeners.Count; x++)
+                    {
+                        _keyListeners[x].OnKeyEvent(evt);
                     }
-                    // Key released
-                    else if (!KEYS[i] && KEYS_LAST[i])
+                }
+                // Key released
+                else if (!KEYS[i] && KEYS_LAST[i])
+                {
+                    var evt = new KeyEvent
                     {
-                        var evt = new KeyEvent
-                        {
-                            Type = KeyEventType.SpecialKey,
-                            KeyCode = _keyValues[i],
-                            Character = null,
-                            IsPressed = false
-                        };
+                        Type = KeyEventType.Key,
+                        KeyCode = _keyValues[i],
+                        Character = char.TryParse(_keyValues[i].ToString(), out char c) ? c : null,
+                        IsPressed = false
+                    };
 
-                        for (int x = 0; x < _keyListeners.Count; x++)
-                        {
-                            _keyListeners[x].OnKeyEvent(evt);
-                        }
+                    for (int x = 0; x < _keyListeners.Count; x++)
+                    {
+                        _keyListeners[x].OnKeyEvent(evt);
                     }
                 }
             }
