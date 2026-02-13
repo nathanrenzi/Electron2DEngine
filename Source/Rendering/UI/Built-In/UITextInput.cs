@@ -13,8 +13,9 @@ namespace Electron2D.UI
         private const float REPEAT_DELAY = 0.4f;
         private const float REPEAT_RATE = 0.035f;
 
-        public event Action<string> OnTextUpdated;
-        public event Action<string> OnTextSubmitted;
+        public event Action<string> OnTextUpdate;
+        public event Action OnTextUpdateFailed;
+        public event Action<string> OnTextSubmit;
 
         public UIElement Background { get; }
         public UIText TextElement { get; }
@@ -27,8 +28,17 @@ namespace Electron2D.UI
             }
             set
             {
-                _text = value;
-                UpdateValue();
+                if(_text != value)
+                {
+                    if (MaxCharacterCount > -1 && value.Length > MaxCharacterCount)
+                        _text = value.Substring(0, MaxCharacterCount);
+                    else
+                        _text = value;
+                    _builder.Clear();
+                    _builder.Append(_text);
+                    _caretIndex = Math.Min(_caretIndex, _text.Length);
+                    UpdateTextElement();
+                }
             }
         }
         private string _text;
@@ -41,7 +51,7 @@ namespace Electron2D.UI
             set
             {
                 _promptText = value;
-                UpdateValue();
+                UpdateTextElement();
             }
         }
         private string _promptText;
@@ -51,7 +61,7 @@ namespace Electron2D.UI
             set
             {
                 _textColor = value;
-                UpdateValue();
+                UpdateTextElement();
             }
         }
         private Color _textColor;
@@ -61,11 +71,33 @@ namespace Electron2D.UI
             set
             {
                 _promptTextColor = value;
-                UpdateValue();
+                UpdateTextElement();
+                if (string.IsNullOrEmpty(_text))
+                    UpdateCaret();
             }
         }
         private Color _promptTextColor;
-        public int MaxCharacterCount { get; set; }
+        public int MaxCharacterCount
+        {
+            get => _maxCharacterCount;
+            set
+            {
+                if(value != _maxCharacterCount)
+                {
+                    _maxCharacterCount = value;
+                    if (_maxCharacterCount > -1 && _text.Length > _maxCharacterCount)
+                    {
+                        _text = _text.Substring(0, _maxCharacterCount);
+                        _builder.Clear();
+                        _builder.Append(_text);
+                        _caretIndex = Math.Min(_caretIndex, _text.Length);
+                        UpdateTextElement();
+                        UpdateCaret();
+                    }
+                }
+            }
+        }
+        private int _maxCharacterCount;
         public int MaxLineCount { get; set; }
 
         private KeyCode _holdingKey = KeyCode.Unknown;
@@ -126,10 +158,10 @@ namespace Electron2D.UI
             });
 
             CanAddChildren = false;
-            SetHoverCursorType(GLFW.CursorType.Beam);
+            SetHoverCursorType(CursorType.Beam);
             UpdateText(text);
             UpdateMesh();
-            UpdateValue();
+            UpdateTextElement();
 
             Input.AddListener(this);
 
@@ -159,11 +191,14 @@ namespace Electron2D.UI
 
         private void UpdateCaret()
         {
-            CaretPanel.Position = TextElement.GetCharacterPositionAt(_caretIndex);
-            CaretPanel.Renderer.Material.Shader.SetFloat("startTime", Time.GameTime);
+            if(CaretPanel != null)
+            {
+                CaretPanel.Position = TextElement.GetCharacterPositionAt(_caretIndex);
+                CaretPanel.Renderer.Material.Shader.SetFloat("startTime", Time.GameTime);
+            }
         }
 
-        private void UpdateValue()
+        private void UpdateTextElement()
         {
             if(string.IsNullOrEmpty(Text))
             {
@@ -249,6 +284,11 @@ namespace Electron2D.UI
 
             if (keyEvent.Type == KeyEventType.Character && keyEvent.Character.HasValue)
             {
+                if (MaxCharacterCount > -1 && Text.Length >= MaxCharacterCount)
+                {
+                    OnTextUpdateFailed?.Invoke();
+                    return;
+                }
                 _builder.Insert(_caretIndex, keyEvent.Character.Value);
                 UpdateText(_builder.ToString());
                 _caretIndex = (int)MathF.Min(_caretIndex + 1, Text.Length);
@@ -259,7 +299,7 @@ namespace Electron2D.UI
                 switch (keyEvent.KeyCode)
                 {
                     case KeyCode.Enter:
-                        OnTextSubmitted?.Invoke(_builder.ToString());
+                        OnTextSubmit?.Invoke(_builder.ToString());
                         Unfocus();
                         break;
 
@@ -284,9 +324,16 @@ namespace Electron2D.UI
                         if (_isControlPressed)
                         {
                             string clipboardString = Glfw.GetClipboardString(Display.Window);
+                            if (MaxCharacterCount > -1 && Text.Length + clipboardString.Length > MaxCharacterCount)
+                            {
+                                int difference = MaxCharacterCount - Text.Length;
+                                clipboardString = clipboardString.Substring(0, difference);
+                                OnTextUpdateFailed?.Invoke();
+                            }
                             _builder.Insert(_caretIndex, clipboardString);
                             UpdateText(_builder.ToString());
-                            _caretIndex = (int)MathF.Min(_caretIndex + clipboardString.Length, Text.Length);
+                            _caretIndex = _caretIndex + clipboardString.Length;
+                            UpdateCaret();
                         }
                         break;
 
@@ -368,7 +415,7 @@ namespace Electron2D.UI
         {
             _words.Clear();
             Text = text;
-            OnTextUpdated?.Invoke(text);
+            OnTextUpdate?.Invoke(text);
             int start = 0;
 
             for (int i = 0; i < text.Length; i++)
@@ -377,7 +424,7 @@ namespace Electron2D.UI
                 {
                     if (i > start)
                     {
-                        _words.Add((text.Substring(start, i - start), start));
+                        _words.Add((text.Substring(start, i - start), i));
                     }
                     start = i + 1;
                 }
@@ -385,7 +432,7 @@ namespace Electron2D.UI
 
             if (start < text.Length)
             {
-                _words.Add((text.Substring(start, text.Length - start), start));
+                _words.Add((text.Substring(start, text.Length - start), text.Length));
             }
         }
 
