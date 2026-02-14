@@ -58,27 +58,42 @@ namespace Electron2D.UI
         private Border _foregroundMargin;
 
         public UISlider(UISliderStyle style, float value = 0, float minValue = 0, float maxValue = 1,
-            int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true,
-            bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, false, true)
+            UIElementArgs? arguments = null) : base(arguments, false, true)
         {
             _value = value;
             _minValue = minValue;
             _maxValue = maxValue;
 
-            Background = style.BackgroundDef.Create(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing);
+            Background = style.BackgroundDef.Create(arguments);
             Background.Margin = style.BackgroundMargin;
             Background.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
             AddChild(Background);
 
             _handleEndPadding = style.HandleEndPadding;
-            Foreground = style.ForegroundDef.Create(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing);
+            Foreground = style.ForegroundDef.Create(arguments);
             _foregroundMargin = style.ForegroundMargin;
             Foreground.Margin = _foregroundMargin;
             Foreground.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
             AddChild(Foreground);
 
-            Handle = style.HandleDef.Create((int)style.HandleSize.X, (int)style.HandleSize.Y, renderLayer, useScreenPosition, ignorePostProcessing);
+            if(!arguments.HasValue)
+            {
+                arguments = new UIElementArgs()
+                {
+                    SizeX = (int)style.HandleSize.X,
+                    SizeY = (int)style.HandleSize.Y
+                };
+            }
+            else
+            {
+                arguments = new UIElementArgs(arguments.Value)
+                {
+                    SizeX = (int)style.HandleSize.X,
+                    SizeY = (int)style.HandleSize.Y
+                };
+            }
+
+                Handle = style.HandleDef.Create(arguments);
             AddEventListener(UIEventType.GainVisibility, (evt) => Handle.Visible = true);
             AddEventListener(UIEventType.LoseVisibility, (evt) => Handle.Visible = false);
             AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
