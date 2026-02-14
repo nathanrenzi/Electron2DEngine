@@ -15,7 +15,7 @@ namespace Electron2D
         private Dictionary<string, Texture2DArray> textureArrayCache = new Dictionary<string, Texture2DArray>();
         private Dictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
         private Dictionary<uint, Texture2D> textureHandleCache = new Dictionary<uint, Texture2D>();
-        private Dictionary<FontArguments, FontGlyphStore> fontCache = new Dictionary<FontArguments, FontGlyphStore>();
+        private Dictionary<FontArgs, FontGlyphStore> fontCache = new Dictionary<FontArgs, FontGlyphStore>();
 
         public static ResourceManager Instance
         {
@@ -264,7 +264,7 @@ namespace Electron2D
                 return null;
 
             string[] s = fontFile.Split('/');
-            FontArguments args = new FontArguments() { FontFile = s[s.Length - 1], FontSize = fontSize,
+            FontArgs args = new FontArgs() { FontFile = s[s.Length - 1], FontSize = fontSize,
                 FontScale = fontScale, OutlineWidth = outlineSize };
             fontCache.TryGetValue(args, out var value);
             if (value is not null)

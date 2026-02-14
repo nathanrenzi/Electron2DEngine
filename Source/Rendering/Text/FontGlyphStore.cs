@@ -10,7 +10,7 @@ namespace Electron2D.Rendering.Text
         public int TextureAtlasWidth { get; private set; }
         public int TextureAtlasHeight { get; private set; }
         public Dictionary<char, Character> Characters { get; } = new Dictionary<char, Character>();
-        public FontArguments Arguments { get; }
+        public FontArgs Arguments { get; }
         public FreeTypeLibrary Library { get; }
         public IntPtr Face { get; }
         public bool UseKerning { get; }
@@ -27,7 +27,7 @@ namespace Electron2D.Rendering.Text
             Face = face;
             UseKerning = useKerning;
 
-            Arguments = new FontArguments() { FontSize = fontSize, FontFile = fontFile };
+            Arguments = new FontArgs() { FontSize = fontSize, FontFile = fontFile };
         }
 
         public void AddCharacter(char code, Character character)
