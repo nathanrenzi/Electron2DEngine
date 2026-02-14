@@ -88,9 +88,8 @@ namespace Electron2D.UI
         private List<TextLine> _measuredTextLines = new List<TextLine>();
         private List<(Vector2, int)> _characterStartPositions = new();
 
-        public UIText(UITextStyle style, string text, int sizeX = 0, int sizeY = 0, int renderLayer = 0,
-            bool useScreenPosition = true, bool ignorePostProcessing = true, Shader? customTextShader = null)
-            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true, false)
+        public UIText(UITextStyle style, string text, UIElementArgs? arguments = null)
+            : base(arguments, true, false)
         {
             FontGlyphStore = ResourceManager.Instance.LoadFont(style.FontArguments.FontFile,
                 style.FontArguments.FontSize, style.FontArguments.FontScale, 0);
@@ -102,7 +101,7 @@ namespace Electron2D.UI
             OverflowMode = style.OverflowMode;
             LineHeightMultiplier = style.LineHeightMultiplier;
 
-            Material mat = Material.Create(customTextShader != null ? customTextShader : GlobalShaders.DefaultText,
+            Material mat = Material.Create(style.CustomShader ?? GlobalShaders.DefaultText,
                 new Texture2D(FontGlyphStore.TextureHandle, FontGlyphStore.TextureAtlasWidth, FontGlyphStore.Arguments.FontSize));
             Renderer.SetMaterial(mat);
         }

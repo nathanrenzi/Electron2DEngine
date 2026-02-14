@@ -270,15 +270,20 @@ namespace Electron2D.UI
         /// <param name="ignorePostProcessing">Whether to ignore post-processing effects.</param>
         /// <param name="useMeshRenderer">Whether to create a mesh renderer for this element.</param>
         /// <param name="canAddChildren">Whether this element can have children.</param>
-        public UIElement(int sizeX, int sizeY, int renderLayer, bool useScreenPosition, bool ignorePostProcessing, bool useMeshRenderer, bool canAddChildren)
+        public UIElement(UIElementArgs? arguments, bool useMeshRenderer, bool canAddChildren)
         {
+            if(!arguments.HasValue)
+            {
+                arguments = new UIElementArgs();
+            }
+
             _position = Vector2.Zero;
-            _size = new Vector2(sizeX, sizeY);
+            _size = new Vector2(arguments.Value.SizeX, arguments.Value.SizeY);
             DesiredSize = Vector2.Zero;
 
-            RenderLayer = renderLayer;
-            UseScreenPosition = useScreenPosition;
-            IgnorePostProcessing = ignorePostProcessing;
+            RenderLayer = arguments.Value.RenderLayer;
+            UseScreenPosition = arguments.Value.UseScreenPosition;
+            IgnorePostProcessing = arguments.Value.IgnorePostProcessing;
             CanAddChildren = canAddChildren;
             _useMeshRenderer = useMeshRenderer;
 

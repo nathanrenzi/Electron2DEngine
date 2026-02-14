@@ -112,29 +112,45 @@ namespace Electron2D.UI
         private StringBuilder _builder = new();
 
         public UITextInput(UITextInputStyle style, string text, string promptText = "", int maxCharacterCount = -1,
-            int maxLineCount = -1, int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true,
-            bool ignorePostProcessing = true) : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, false, true)
+            int maxLineCount = -1, UIElementArgs? arguments = null) : base(arguments, false, true)
         {
             _builder.Append(text);
             _promptText = promptText;
             MaxCharacterCount = maxCharacterCount;
             MaxLineCount = maxLineCount;
 
-            Background = style.BackgroundDef.Create(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing);
+            Background = style.BackgroundDef.Create(arguments);
             Background.Padding = style.TextAreaPadding;
             Background.Interactable = false;
             AddChild(Background);
 
-            TextElement = new UIText(style.TextStyle, Text, sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing);
+            TextElement = new UIText(style.TextStyle, Text, arguments: arguments);
             TextElement.Interactable = false;
             Background.AddChild(TextElement);
 
             TextColor = style.TextColor;
             PromptTextColor = style.PromptTextColor;
 
-            CaretPanel = style.CaretDef != null ? style.CaretDef.Create(style.CaretWidth, style.TextStyle.FontArguments.FontSize, renderLayer, useScreenPosition, ignorePostProcessing)
-                : new UIPanel(Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")), _globalUniformTags: ["time"])),
-                style.CaretWidth, style.TextStyle.FontArguments.FontSize, renderLayer, useScreenPosition, ignorePostProcessing);
+            if(!arguments.HasValue)
+            {
+                arguments = new UIElementArgs()
+                {
+                    SizeX = style.CaretWidth,
+                    SizeY = style.TextStyle.FontArguments.FontSize
+                };
+            }
+            else
+            {
+                arguments = new UIElementArgs(arguments.Value)
+                {
+                    SizeX = style.CaretWidth,
+                    SizeY = style.TextStyle.FontArguments.FontSize
+                };
+            }
+
+            CaretPanel = style.CaretDef != null ? style.CaretDef.Create(arguments)
+                : new UIPanel(Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")),
+                _globalUniformTags: ["time"])), arguments);
             CaretPanel.Interactable = false;
             CaretPanel.Pivot = new Vector2(0, 0.9f);
             RenderLayerManager.RemoveRenderable(CaretPanel);

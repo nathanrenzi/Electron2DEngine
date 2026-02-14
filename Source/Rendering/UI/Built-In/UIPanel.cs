@@ -12,24 +12,21 @@ namespace Electron2D.UI
             3, 2, 1
         };
 
-        public UIPanel(ITexture texture, int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true, true)
+        public UIPanel(ITexture texture, UIElementArgs? arguments = null) : base(arguments, true, true)
         {
             Renderer.Material.MainTexture = texture;
             UpdateMesh();
             Renderer.SetVertexArrays(_vertices, _indices);
         }
 
-        public UIPanel(Color color, int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true, true)
+        public UIPanel(Color color, UIElementArgs? arguments = null) : base(arguments, true, true)
         {
             SetColor(color);
             UpdateMesh();
             Renderer.SetVertexArrays(_vertices, _indices);
         }
 
-        public UIPanel(Material material, int sizeX = 0, int sizeY = 0, int renderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
-            : base(sizeX, sizeY, renderLayer, useScreenPosition, ignorePostProcessing, true, true)
+        public UIPanel(Material material, UIElementArgs? arguments = null) : base(arguments, true, true)
         {
             Renderer.SetMaterial(material);
             UpdateMesh();
