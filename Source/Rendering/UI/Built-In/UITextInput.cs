@@ -112,7 +112,7 @@ namespace Electron2D.UI
         private StringBuilder _builder = new();
 
         public UITextInput(UITextInputStyle style, string text, string promptText = "", int maxCharacterCount = -1,
-            int maxLineCount = -1, UIElementArgs? arguments = null) : base(arguments, false, true)
+            int maxLineCount = -1, UIRenderArgs? arguments = null) : base(arguments, false, true)
         {
             _builder.Append(text);
             _promptText = promptText;
@@ -131,26 +131,10 @@ namespace Electron2D.UI
             TextColor = style.TextColor;
             PromptTextColor = style.PromptTextColor;
 
-            if(!arguments.HasValue)
-            {
-                arguments = new UIElementArgs()
-                {
-                    SizeX = style.CaretWidth,
-                    SizeY = style.TextStyle.FontArguments.FontSize
-                };
-            }
-            else
-            {
-                arguments = new UIElementArgs(arguments.Value)
-                {
-                    SizeX = style.CaretWidth,
-                    SizeY = style.TextStyle.FontArguments.FontSize
-                };
-            }
-
             CaretPanel = style.CaretDef != null ? style.CaretDef.Create(arguments)
                 : new UIPanel(Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")),
                 _globalUniformTags: ["time"])), arguments);
+            CaretPanel.Size = new Vector2(style.CaretWidth, style.TextStyle.FontArguments.FontSize);
             CaretPanel.Interactable = false;
             CaretPanel.Pivot = new Vector2(0, 0.9f);
             RenderLayerManager.RemoveRenderable(CaretPanel);

@@ -270,15 +270,14 @@ namespace Electron2D.UI
         /// <param name="ignorePostProcessing">Whether to ignore post-processing effects.</param>
         /// <param name="useMeshRenderer">Whether to create a mesh renderer for this element.</param>
         /// <param name="canAddChildren">Whether this element can have children.</param>
-        public UIElement(UIElementArgs? arguments, bool useMeshRenderer, bool canAddChildren)
+        public UIElement(UIRenderArgs? arguments, bool useMeshRenderer, bool canAddChildren)
         {
             if(!arguments.HasValue)
             {
-                arguments = new UIElementArgs();
+                arguments = new UIRenderArgs();
             }
 
             _position = Vector2.Zero;
-            _size = new Vector2(arguments.Value.SizeX, arguments.Value.SizeY);
             DesiredSize = Vector2.Zero;
 
             RenderLayer = arguments.Value.RenderLayer;
@@ -776,6 +775,29 @@ namespace Electron2D.UI
         {
             UICanvas.Instance?.Unfocus(this);
             Focused = false;
+        }
+
+        /// <summary>
+        /// Sets the size and position of this element without triggering redundant layout passes.
+        /// Prefer this over setting Size and Position individually when changing both.
+        /// </summary>
+        public void SetTransform(Vector2 size, Vector2 position)
+        {
+            bool sizeChanged = _size != size;
+            bool posChanged = _position != position;
+
+            if (sizeChanged)
+            {
+                _size = size;
+                _position = position;
+                InvalidateMeasure();
+                UpdateMesh();
+            }
+            else if (posChanged)
+            {
+                _position = position;
+                InvalidateArrange();
+            }
         }
 
         public void Dispose()

@@ -51,7 +51,7 @@ namespace Electron2D.UI
         private int _borderPixelSize;
         private int _stride = 4;
 
-        public UISlicedPanel(ITexture texture, Border borderUV, int borderPixelSize, UIElementArgs? arguments = null)
+        public UISlicedPanel(ITexture texture, Border borderUV, int borderPixelSize, UIRenderArgs? arguments = null)
             : base(arguments, true, true)
         {
             _left = borderUV.Left;
@@ -66,7 +66,7 @@ namespace Electron2D.UI
             Renderer.SetVertexArrays(_vertices, _indices);
         }
 
-        public UISlicedPanel(Material material, Border borderUV, int borderPixelSize, UIElementArgs? arguments = null)
+        public UISlicedPanel(Material material, Border borderUV, int borderPixelSize, UIRenderArgs? arguments = null)
             : base(arguments, true, true)
         {
             _left = borderUV.Left;

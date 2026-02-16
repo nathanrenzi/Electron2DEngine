@@ -88,7 +88,7 @@ namespace Electron2D.UI
         private List<TextLine> _measuredTextLines = new List<TextLine>();
         private List<(Vector2, int)> _characterStartPositions = new();
 
-        public UIText(UITextStyle style, string text, UIElementArgs? arguments = null)
+        public UIText(UITextStyle style, string text, UIRenderArgs? arguments = null)
             : base(arguments, true, false)
         {
             FontGlyphStore = ResourceManager.Instance.LoadFont(style.FontArguments.FontFile,
