@@ -58,7 +58,7 @@ namespace Electron2D.UI
         private Border _foregroundMargin;
 
         public UISlider(UISliderStyle style, float value = 0, float minValue = 0, float maxValue = 1,
-            UIElementArgs? arguments = null) : base(arguments, false, true)
+            UIRenderArgs? arguments = null) : base(arguments, false, true)
         {
             _value = value;
             _minValue = minValue;
@@ -76,24 +76,8 @@ namespace Electron2D.UI
             Foreground.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
             AddChild(Foreground);
 
-            if(!arguments.HasValue)
-            {
-                arguments = new UIElementArgs()
-                {
-                    SizeX = (int)style.HandleSize.X,
-                    SizeY = (int)style.HandleSize.Y
-                };
-            }
-            else
-            {
-                arguments = new UIElementArgs(arguments.Value)
-                {
-                    SizeX = (int)style.HandleSize.X,
-                    SizeY = (int)style.HandleSize.Y
-                };
-            }
-
-                Handle = style.HandleDef.Create(arguments);
+            Handle = style.HandleDef.Create(arguments);
+            Handle.Size = style.HandleSize;
             AddEventListener(UIEventType.GainVisibility, (evt) => Handle.Visible = true);
             AddEventListener(UIEventType.LoseVisibility, (evt) => Handle.Visible = false);
             AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));

@@ -41,7 +41,7 @@ namespace Electron2D.UI
         public static UIPanelDef SlicedFromTexture(ITexture texture, Border borderUV, int borderPixelSize)
             => new UIPanelDef(UIPanelType.Sliced, null, null, texture, borderUV, borderPixelSize);
 
-        public UIElement Create(UIElementArgs? arguments = null)
+        public UIElement Create(UIRenderArgs? arguments = null)
         {
             return Type switch
             {
