@@ -182,6 +182,8 @@ namespace Electron2D.UI
                     }
                 }
             };
+
+            Size = new Vector2(100, 20);
         }
 
         public override void UpdateMesh()

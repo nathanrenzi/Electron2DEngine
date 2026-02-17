@@ -84,11 +84,12 @@ namespace Electron2D.UI
             Handle.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
             RenderLayerManager.RemoveRenderable(Handle);
 
-            UpdateMesh();
-            UpdateValue(false);
-
             CanAddChildren = false;
             Interactable = false;
+            Size = new Vector2(100, 20);
+
+            UpdateMesh();
+            UpdateValue(false);
         }
 
         private void OnDrag(Vector2 mouseVirtualPosition)
