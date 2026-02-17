@@ -30,9 +30,12 @@ uniform float time = 0;
 uniform float startTime = 0;
 uniform sampler2D mainTextureSampler;
 
+const float CARET_BLINK_SPEED = 2.0;
+const float CARET_BLINK_SHARPNESS = 0.2;
+
 float getAlpha()
 {
-    return pow(sin(3.14159265 * ((time - startTime + 0.2) - floor(time - startTime)) * 2), 0.1);
+    return pow(sin(3.14159265 * ((time - startTime + 0.2) - floor(time - startTime)) * CARET_BLINK_SPEED), CARET_BLINK_SHARPNESS);
 }
 
 void main()

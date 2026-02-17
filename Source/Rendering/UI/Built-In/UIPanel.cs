@@ -1,5 +1,6 @@
 ﻿using Electron2D.Rendering;
 using System.Drawing;
+using System.Numerics;
 
 namespace Electron2D.UI
 {
@@ -15,22 +16,26 @@ namespace Electron2D.UI
         public UIPanel(ITexture texture, UIRenderArgs? arguments = null) : base(arguments, true, true)
         {
             Renderer.Material.MainTexture = texture;
-            UpdateMesh();
-            Renderer.SetVertexArrays(_vertices, _indices);
+            Initialize();
         }
 
         public UIPanel(Color color, UIRenderArgs? arguments = null) : base(arguments, true, true)
         {
             SetColor(color);
-            UpdateMesh();
-            Renderer.SetVertexArrays(_vertices, _indices);
+            Initialize();
         }
 
         public UIPanel(Material material, UIRenderArgs? arguments = null) : base(arguments, true, true)
         {
             Renderer.SetMaterial(material);
+            Initialize();
+        }
+
+        private void Initialize()
+        {
             UpdateMesh();
             Renderer.SetVertexArrays(_vertices, _indices);
+            Size = new Vector2(100);
         }
 
         public override void UpdateMesh()

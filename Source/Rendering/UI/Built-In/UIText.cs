@@ -85,6 +85,8 @@ namespace Electron2D.UI
         private float _lineHeightMultiplier;
         public FontGlyphStore FontGlyphStore { get; set; }
 
+        private float _totalSizeX = 0;
+        private float _totalSizeY = 0;
         private List<TextLine> _measuredTextLines = new List<TextLine>();
         private List<(Vector2, int)> _characterStartPositions = new();
 
@@ -104,10 +106,14 @@ namespace Electron2D.UI
             Material mat = Material.Create(style.CustomShader ?? GlobalShaders.DefaultText,
                 new Texture2D(FontGlyphStore.TextureHandle, FontGlyphStore.TextureAtlasWidth, FontGlyphStore.Arguments.FontSize));
             Renderer.SetMaterial(mat);
+            Size = new Vector2(100, 20);
         }
 
         protected override Vector2 MeasureCore(Vector2 availableSize)
         {
+            _totalSizeX = 0;
+            _totalSizeY = 0;
+
             availableSize = new Vector2(
                 Math.Max(0, availableSize.X - Padding.Left - Padding.Right),
                 Math.Max(0, availableSize.Y - Padding.Top - Padding.Bottom)
@@ -134,8 +140,6 @@ namespace Electron2D.UI
             }
 
             StringBuilder lineBuilder = new();
-            float totalSizeX = 0;
-            float totalSizeY = 0;
             float currentSizeX = 0;
             float maxSizeY = 0;
 
@@ -155,10 +159,8 @@ namespace Electron2D.UI
                     });
 
                     lineBuilder.Clear();
-                    totalSizeX += currentSizeX;
+                    _totalSizeX = MathF.Max(currentSizeX, _totalSizeX);
                     currentSizeX = 0;
-                    totalSizeY += maxSizeY;
-                    totalSizeY += FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
                     maxSizeY = 0;
                 }
 
@@ -174,14 +176,15 @@ namespace Electron2D.UI
                     Text = lineBuilder.ToString(),
                     Size = new Vector2(currentSizeX, maxSizeY)
                 });
-
-                totalSizeX += currentSizeX;
-                totalSizeY += maxSizeY;
             }
 
+            _totalSizeX = MathF.Max(currentSizeX, _totalSizeX);
+            _totalSizeY = FontGlyphStore.Ascent
+                + (_measuredTextLines.Count - 1) * (FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+
             return new Vector2(
-                totalSizeX + Padding.Left + Padding.Right,
-                totalSizeY + Padding.Top + Padding.Bottom
+                _totalSizeX + Padding.Left + Padding.Right,
+                _totalSizeY + Padding.Top + Padding.Bottom
             );
         }
 
@@ -228,24 +231,23 @@ namespace Electron2D.UI
             else
             {
                 Rect rect = GetLocalBounds();
-                float totalHeight = (_measuredTextLines.Count * FontGlyphStore.Arguments.FontSize)
-                    + (MathF.Max(_measuredTextLines.Count - 1, 0) * FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
                 for (int i = 0; i < _measuredTextLines.Count; i++)
                 {
                     TextLine line = _measuredTextLines[i];
                     float xPos = rect.X;
-                    float yPos = rect.Y + (i * FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+                    float yPos = rect.Y;
+                    float lineOffset = i * FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
 
-                    switch(VerticalAlignment)
+                    switch (VerticalAlignment)
                     {
                         case TextAlignment.Top:
-                            yPos += FontGlyphStore.Arguments.FontSize;
+                            yPos += FontGlyphStore.Ascent + lineOffset;
                             break;
                         case TextAlignment.Center:
-                            yPos += FontGlyphStore.Arguments.FontSize + (rect.Height - totalHeight) / 2f;
+                            yPos += FontGlyphStore.Ascent + (rect.Height - _totalSizeY) / 2f + lineOffset;
                             break;
                         case TextAlignment.Bottom:
-                            yPos += rect.Height;
+                            yPos += rect.Height - _totalSizeY + FontGlyphStore.Ascent + lineOffset;
                             break;
                     }
 

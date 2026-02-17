@@ -13,12 +13,12 @@ namespace Electron2D.UI
         public Border TextAreaPadding { get; }
 
 
-        public UITextInputStyle(UITextStyle textStyle, UIPanelDef backgroundDef, Color textColor, Border? textAreaPadding = null,
+        public UITextInputStyle(UITextStyle textStyle, UIPanelDef backgroundDef, Border? textAreaPadding = null,
             Color? promptTextColor = null, UIPanelDef? caretDef = null, int caretWidth = 1)
         {
             TextStyle = textStyle;
             BackgroundDef = backgroundDef;
-            TextColor = textColor;
+            TextColor = textStyle.Color;
             TextAreaPadding = textAreaPadding ?? new Border(0);
             PromptTextColor = promptTextColor ?? Color.White;
             CaretDef = caretDef;
