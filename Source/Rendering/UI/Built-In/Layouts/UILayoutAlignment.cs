@@ -1,6 +1,6 @@
 ﻿namespace Electron2D.UI
 {
-    public enum LayoutAlignment
+    public enum UILayoutAlignment
     {
         Start,
         Center,

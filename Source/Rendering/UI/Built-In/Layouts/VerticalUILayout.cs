@@ -2,7 +2,7 @@
 
 namespace Electron2D.UI
 {
-    public sealed class VerticalLayout : LinearLayout
+    public sealed class VerticalUILayout : LinearUILayout
     {
         protected override float GetMain(Vector2 v) => v.Y;
         protected override float GetCross(Vector2 v) => v.X;

@@ -231,7 +231,7 @@ namespace Electron2D.UI
         /// <summary>
         /// Gets or sets the layout strategy used to position and size child elements.
         /// </summary>
-        public ILayout Layout { get; set; }
+        public UILayout Layout { get; set; }
         private List<IConstraint> _constraints = new List<IConstraint>();
 
         /// <summary>
@@ -458,7 +458,7 @@ namespace Electron2D.UI
 
             _size = new Vector2(finalRect.Width, finalRect.Height);
 
-            if(Parent != null)
+            if (Parent != null)
             {
                 _position = new Vector2(finalRect.X, finalRect.Y);
             }
