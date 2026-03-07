@@ -22,5 +22,10 @@
             Right = right;
             Bottom = bottom;
         }
+
+        public override string ToString()
+        {
+            return $"(L: {Left}, T: {Top}, R: {Right}, B: {Bottom})";
+        }
     }
 }
