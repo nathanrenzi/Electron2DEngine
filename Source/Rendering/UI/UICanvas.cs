@@ -47,10 +47,8 @@ namespace Electron2D.UI
             {
                 _allElements.Add(element);
 
-                if (element.Parent == null && !_rootElements.Contains(element))
-                {
+                if (element.Parent == null)
                     _rootElements.Add(element);
-                }
             }
         }
 
@@ -58,6 +56,17 @@ namespace Electron2D.UI
         {
             _allElements.Remove(element);
             _rootElements.Remove(element);
+        }
+
+        public void OnElementParented(UIElement element)
+        {
+            _rootElements.Remove(element);
+        }
+
+        public void OnElementUnparented(UIElement element)
+        {
+            if (!_rootElements.Contains(element))
+                _rootElements.Add(element);
         }
 
         private void OnWindowResized()
@@ -133,6 +142,13 @@ namespace Electron2D.UI
         {
             UpdateLayout();
             ProcessInput();
+            if(Input.GetKeyDown(KeyCode.V))
+            {
+                foreach (var item in _allElements)
+                {
+                    Debug.Log($"{item.GetType().Name}: {item.GetInteractionBounds()}");
+                }
+            }
         }
 
         private void ProcessInput()
@@ -360,7 +376,7 @@ namespace Electron2D.UI
             }
         }
 
-        private UIElement HitTestTopMost(Vector2 mousePos)
+        private UIElement? HitTestTopMost(Vector2 mousePos)
         {
             // Test all root elements and their children (in reverse order, last = top)
             for (int i = _rootElements.Count - 1; i >= 0; i--)
@@ -371,7 +387,7 @@ namespace Electron2D.UI
             return null;
         }
 
-        private UIElement HitTestRecursive(UIElement element, Vector2 position)
+        private UIElement? HitTestRecursive(UIElement element, Vector2 position)
         {
             if (!element.Visible || !element.Enabled) return null;
             for (int i = element.Children.Count - 1; i >= 0; i--)

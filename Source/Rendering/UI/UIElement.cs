@@ -310,6 +310,7 @@ namespace Electron2D.UI
             RenderLayerManager.RemoveRenderable(child);
             _children.Add(child);
             child.Parent = this;
+            UICanvas.Instance.OnElementParented(child);
             InvalidateMeasure();
         }
 
@@ -323,6 +324,7 @@ namespace Electron2D.UI
             {
                 RenderLayerManager.OrderRenderable(child);
                 child.Parent = null;
+                UICanvas.Instance.OnElementUnparented(child);
                 InvalidateMeasure();
             }
         }
@@ -335,6 +337,7 @@ namespace Electron2D.UI
             foreach (var child in _children)
             {
                 RenderLayerManager.OrderRenderable(child);
+                UICanvas.Instance.RegisterUIElement(child);
                 child.Parent = null;
             }
             _children.Clear();
@@ -741,7 +744,7 @@ namespace Electron2D.UI
         /// </summary>
         public virtual void Render()
         {
-            if (!Visible) return;
+            if (!Visible || !Enabled) return;
 
             if (Renderer != null)
             {
