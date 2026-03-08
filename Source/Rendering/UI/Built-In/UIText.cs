@@ -103,7 +103,7 @@ namespace Electron2D.UI
             OverflowMode = style.OverflowMode;
             LineHeightMultiplier = style.LineHeightMultiplier;
 
-            Material mat = Material.Create(style.CustomShader ?? GlobalShaders.DefaultText,
+            Material mat = Material.Create(style.CustomShader ?? GlobalShaders.DefaultText, style.Color,
                 new Texture2D(FontGlyphStore.TextureHandle, FontGlyphStore.TextureAtlasWidth, FontGlyphStore.Arguments.FontSize));
             Renderer.SetMaterial(mat);
             Size = new Vector2(100, 20);
