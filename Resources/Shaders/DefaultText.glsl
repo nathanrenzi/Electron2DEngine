@@ -26,8 +26,7 @@ uniform sampler2D mainTextureSampler;
 
 void main()
 {
-    vec4 textC = vec4(1.0, 1.0, 1.0, texture(mainTextureSampler, texCoord).r);
-    vec4 outlineC = vec4(1.0, 1.0, 1.0, texture(mainTextureSampler, texCoord).g);
-    //FragColor = (textC * mainColor) + (outlineC * outlineColor);
-    FragColor = (textC * mainColor);
+    float textA = texture(mainTextureSampler, texCoord).r;
+    float outlineA = texture(mainTextureSampler, texCoord).g;
+    FragColor = vec4(mainColor.rgb, textA * mainColor.a); // + vec4(outlineColor.rgb, outlineA * outlineColor.a)
 }
