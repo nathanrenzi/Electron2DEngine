@@ -77,7 +77,7 @@ namespace Electron2D.UI
             AddChild(Foreground);
 
             Handle = style.HandleDef.Create(arguments);
-            Handle.Size = style.HandleSize;
+            Handle.ExplicitSize = style.HandleSize;
             AddEventListener(UIEventType.GainVisibility, (evt) => Handle.Visible = true);
             AddEventListener(UIEventType.LoseVisibility, (evt) => Handle.Visible = false);
             AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
@@ -86,7 +86,6 @@ namespace Electron2D.UI
 
             CanAddChildren = false;
             Interactable = false;
-            Size = new Vector2(100, 20);
 
             UpdateMesh();
             UpdateValue(false);

@@ -69,7 +69,6 @@ namespace Electron2D.UI
             AddChild(TextElement);
             SetupEvents();
             CanAddChildren = false;
-            Size = new Vector2(60, 20);
         }
 
         public UIButton(UIPanelDef iconDef, Vector2 iconSize,
@@ -87,7 +86,6 @@ namespace Electron2D.UI
             AddChild(Icon);
             SetupEvents();
             CanAddChildren = false;
-            Size = new Vector2(60, 20);
         }
 
         private void SetupBackground(UIPanelDef? backgroundDef, UIRenderArgs? arguments)

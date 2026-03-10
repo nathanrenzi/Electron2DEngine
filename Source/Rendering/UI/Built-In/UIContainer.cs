@@ -4,7 +4,7 @@ namespace Electron2D.UI
 {
     public sealed class UIContainer : UIElement
     {
-        public UIContainer(UIRenderArgs? arguments = null) : base(arguments, false, true) { Size = new Vector2(100); }
+        public UIContainer(UIRenderArgs? arguments = null) : base(arguments, false, true) { }
         public override void UpdateMesh() { }
     }
 }

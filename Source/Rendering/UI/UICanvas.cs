@@ -124,16 +124,17 @@ namespace Electron2D.UI
 
         public void UpdateLayout()
         {
+            Vector2 canvasSize = ScreenToVirtual(Display.WindowSize);
             foreach (var root in _rootElements)
             {
-                if(!root.IsMeasureValid)
+                if (!root.IsMeasureValid)
                 {
-                    root.Measure(root.Size);
+                    root.Measure(canvasSize);
                 }
 
-                if(!root.IsArrangeValid)
+                if (!root.IsArrangeValid)
                 {
-                    root.Arrange(new Rect(0, 0, root.Size.X, root.Size.Y));
+                    root.Arrange(new Rect(0, 0, root.DesiredSize.X, root.DesiredSize.Y));
                 }
             }
         }
@@ -142,13 +143,6 @@ namespace Electron2D.UI
         {
             UpdateLayout();
             ProcessInput();
-            if(Input.GetKeyDown(KeyCode.V))
-            {
-                foreach (var item in _allElements)
-                {
-                    Debug.Log($"{item.GetType().Name}: {item.GetInteractionBounds()}");
-                }
-            }
         }
 
         private void ProcessInput()

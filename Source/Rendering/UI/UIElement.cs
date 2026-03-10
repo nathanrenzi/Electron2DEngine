@@ -35,27 +35,32 @@ namespace Electron2D.UI
         }
         private Vector2 _position;
         /// <summary>
-        /// Gets or sets the size of this element.
-        /// Setting this property invalidates measurement and updates the mesh.
+        /// Gets the actual size calculated during the arrange pass.
         /// </summary>
-        public Vector2 Size
+        public Vector2 Size { get; private set; }
+        /// <summary>
+        /// Gets the desired size calculated during the measure pass.
+        /// </summary>
+        public Vector2 DesiredSize { get; private set; }
+        /// <summary>
+        /// Gets or sets an explicit size for this element, overriding content-driven sizing during the measure pass.
+        /// When set, the element will always report this as its desired size, bypassing layout and child measurement.
+        /// Set to null to return to content-driven sizing.
+        /// </summary>
+        public Vector2? ExplicitSize
         {
-            get => _size;
+            get => _explicitSize;
             set
             {
-                if (_size != value)
+                if (_explicitSize != value)
                 {
-                    _size = value;
+                    _explicitSize = value;
                     InvalidateMeasure();
                     UpdateMesh();
                 }
             }
         }
-        private Vector2 _size;
-        /// <summary>
-        /// Gets the desired size calculated during the measure pass.
-        /// </summary>
-        public Vector2 DesiredSize { get; private set; }
+        private Vector2? _explicitSize;
         /// <summary>
         /// Gets or sets the pivot point for this element, expressed as a normalized value (0-1).
         /// The pivot determines the origin point for positioning and transformations.
@@ -397,6 +402,11 @@ namespace Electron2D.UI
                 desiredSize = MeasureCore(availableSize);
             }
 
+            if (_explicitSize.HasValue)
+            {
+                desiredSize = _explicitSize.Value;
+            }
+
             desiredSize = new Vector2(
                 Math.Clamp(desiredSize.X, MinSize.X, MaxSize.X),
                 Math.Clamp(desiredSize.Y, MinSize.Y, MaxSize.Y)
@@ -459,7 +469,7 @@ namespace Electron2D.UI
             finalRect.Width = Math.Clamp(finalRect.Width, MinSize.X, MaxSize.X);
             finalRect.Height = Math.Clamp(finalRect.Height, MinSize.Y, MaxSize.Y);
 
-            _size = new Vector2(finalRect.Width, finalRect.Height);
+            Size = new Vector2(finalRect.Width, finalRect.Height);
 
             if (Parent != null)
             {
@@ -484,7 +494,6 @@ namespace Electron2D.UI
 
             IsArrangeValid = true;
         }
-
 
         /// <summary>
         /// Core arrange logic for this element. Override to customize arrangement behavior.
@@ -748,7 +757,9 @@ namespace Electron2D.UI
 
             if (Renderer != null)
             {
-                Vector2 pos = GetVirtualPosition();
+                Vector2 pos = UICanvas.Instance.VirtualToScreen(GetVirtualPosition());
+                pos = new Vector2(MathF.Round(pos.X), MathF.Round(pos.Y));
+                pos = UICanvas.Instance.ScreenToVirtual(pos);
                 Renderer.GetMaterial().Shader.SetMatrix4x4("model", Matrix4x4.CreateTranslation(pos.X, pos.Y, 0));
                 Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix",
                     UseScreenPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
@@ -781,17 +792,17 @@ namespace Electron2D.UI
         }
 
         /// <summary>
-        /// Sets the size and position of this element without triggering redundant layout passes.
+        /// Sets the explicit size and position of this element without triggering redundant layout passes.
         /// Prefer this over setting Size and Position individually when changing both.
         /// </summary>
-        public void SetTransform(Vector2 size, Vector2 position)
+        public void SetTransform(Vector2 explicitSize, Vector2 position)
         {
-            bool sizeChanged = _size != size;
+            bool sizeChanged = ExplicitSize != explicitSize;
             bool posChanged = _position != position;
 
             if (sizeChanged)
             {
-                _size = size;
+                ExplicitSize = explicitSize;
                 _position = position;
                 InvalidateMeasure();
                 UpdateMesh();

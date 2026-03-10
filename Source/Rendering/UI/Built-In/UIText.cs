@@ -106,7 +106,6 @@ namespace Electron2D.UI
             Material mat = Material.Create(style.CustomShader ?? GlobalShaders.DefaultText, style.Color,
                 new Texture2D(FontGlyphStore.TextureHandle, FontGlyphStore.TextureAtlasWidth, FontGlyphStore.Arguments.FontSize));
             Renderer.SetMaterial(mat);
-            Size = new Vector2(100, 20);
         }
 
         protected override Vector2 MeasureCore(Vector2 availableSize)
@@ -122,7 +121,10 @@ namespace Electron2D.UI
             Vector2 size = Vector2.Zero;
 
             _measuredTextLines.Clear();
-            if(string.IsNullOrEmpty(Text)) return MinSize;
+            if (string.IsNullOrEmpty(Text)) return new Vector2(
+                MinSize.X + Padding.Left + Padding.Right,
+                MinSize.Y + Padding.Top + Padding.Bottom
+            );
 
             string normalized = Regex.Replace(Text, @"\s", " ");
             string[] parts = null;

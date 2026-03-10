@@ -134,9 +134,12 @@ namespace Electron2D.UI
             CaretPanel = style.CaretDef != null ? style.CaretDef.Create(arguments)
                 : new UIPanel(Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")),
                 _globalUniformTags: ["time"])), arguments);
-            CaretPanel.Size = new Vector2(style.CaretWidth, style.TextStyle.FontArguments.FontSize);
+            Vector2 caretSize = new Vector2(style.CaretWidth, style.TextStyle.FontArguments.FontSize);
+            CaretPanel.ExplicitSize = caretSize;
             CaretPanel.Interactable = false;
-            CaretPanel.Pivot = new Vector2(0, 0.9f);
+            CaretPanel.Pivot = new Vector2(0, (float)TextElement.FontGlyphStore.Ascent / style.TextStyle.FontArguments.FontSize);
+            CaretPanel.Measure(caretSize);
+            CaretPanel.Arrange(new Rect(0, 0, caretSize.X, caretSize.Y));
             RenderLayerManager.RemoveRenderable(CaretPanel);
 
             AddEventListener(UIEventType.MouseDown, (evt) =>
@@ -182,8 +185,6 @@ namespace Electron2D.UI
                     }
                 }
             };
-
-            Size = new Vector2(100, 20);
         }
 
         public override void UpdateMesh()
