@@ -8,14 +8,54 @@ namespace Electron2D.UI
         public UIElement? Icon { get; private set; }
         public UIText? TextElement { get; private set; }
         public UIElement Background { get; private set; }
-        public Color NormalBackgroundColor { get; set; }
-        public Color HoverBackgroundColor { get; set; }
-        public Color PressedBackgroundColor { get; set; }
-        public Color DisabledBackgroundColor { get; set; }
-        public Color NormalForegroundColor { get; set; }
-        public Color HoverForegroundColor { get; set; }
-        public Color PressedForegroundColor { get; set; }
-        public Color DisabledForegroundColor { get; set; }
+        public Color NormalBackgroundColor
+        {
+            get => _normalBackgroundColor;
+            set { _normalBackgroundColor = value; UpdateColors(); }
+        }
+        public Color HoverBackgroundColor
+        {
+            get => _hoverBackgroundColor;
+            set { _hoverBackgroundColor = value; UpdateColors(); }
+        }
+        public Color PressedBackgroundColor
+        {
+            get => _pressedBackgroundColor;
+            set { _pressedBackgroundColor = value; UpdateColors(); }
+        }
+        public Color DisabledBackgroundColor
+        {
+            get => _disabledBackgroundColor;
+            set { _disabledBackgroundColor = value; UpdateColors(); }
+        }
+        public Color NormalForegroundColor
+        {
+            get => _normalForegroundColor;
+            set { _normalForegroundColor = value; UpdateColors(); }
+        }
+        public Color HoverForegroundColor
+        {
+            get => _hoverForegroundColor;
+            set { _hoverForegroundColor = value; UpdateColors(); }
+        }
+        public Color PressedForegroundColor
+        {
+            get => _pressedForegroundColor;
+            set { _pressedForegroundColor = value; UpdateColors(); }
+        }
+        public Color DisabledForegroundColor
+        {
+            get => _disabledForegroundColor;
+            set { _disabledForegroundColor = value; UpdateColors(); }
+        }
+        private Color _normalBackgroundColor;
+        private Color _hoverBackgroundColor;
+        private Color _pressedBackgroundColor;
+        private Color _disabledBackgroundColor;
+        private Color _normalForegroundColor;
+        private Color _hoverForegroundColor;
+        private Color _pressedForegroundColor;
+        private Color _disabledForegroundColor;
         private bool _isHovered = false;
         private bool _isPressed = false;
 
@@ -58,67 +98,76 @@ namespace Electron2D.UI
             Background.Interactable = false;
             AddChild(Background);
 
-            NormalBackgroundColor = Background.Renderer?.Material?.MainColor ?? Color.White;
-            HoverBackgroundColor = NormalBackgroundColor;
-            PressedBackgroundColor = NormalBackgroundColor;
-            DisabledBackgroundColor = NormalBackgroundColor;
+            Color c = Background.Renderer?.Material?.MainColor ?? Color.White;
+            _normalBackgroundColor = c;
+            _hoverBackgroundColor = c;
+            _pressedBackgroundColor = c;
+            _disabledBackgroundColor = c;
         }
 
         private void SetupForeground(Color normalColor)
         {
-            NormalForegroundColor = normalColor;
-            HoverForegroundColor = normalColor;
-            PressedForegroundColor = normalColor;
-            DisabledForegroundColor = normalColor;
+            _normalForegroundColor = normalColor;
+            _hoverForegroundColor = normalColor;
+            _pressedForegroundColor = normalColor;
+            _disabledForegroundColor = normalColor;
+        }
+
+        public void UpdateColors()
+        {
+            Color bg, fg;
+
+            if (!Interactable)
+            {
+                bg = _disabledBackgroundColor;
+                fg = _disabledForegroundColor;
+            }
+            else if (_isPressed)
+            {
+                bg = _pressedBackgroundColor;
+                fg = _pressedForegroundColor;
+            }
+            else if (_isHovered)
+            {
+                bg = _hoverBackgroundColor;
+                fg = _hoverForegroundColor;
+            }
+            else
+            {
+                bg = _normalBackgroundColor;
+                fg = _normalForegroundColor;
+            }
+
+            Background.SetColor(bg);
+            TextElement?.SetColor(fg);
+            Icon?.SetColor(fg);
         }
 
         private void SetupEvents()
         {
             AddEventListener(UIEventType.MouseDown, evt =>
             {
-                if (Interactable)
-                {
-                    Background.SetColor(PressedBackgroundColor);
-                    TextElement?.SetColor(PressedForegroundColor);
-                    Icon?.SetColor(PressedForegroundColor);
-                }
                 _isPressed = true;
+                UpdateColors();
             });
             AddEventListener(UIEventType.MouseUp, evt =>
             {
-                Background.SetColor(Interactable ? _isHovered ? HoverBackgroundColor : NormalBackgroundColor : DisabledBackgroundColor);
-
-                Color foregroundColor = Interactable ? _isHovered ? HoverForegroundColor : NormalForegroundColor : DisabledForegroundColor;
-                TextElement?.SetColor(foregroundColor);
-                Icon?.SetColor(foregroundColor);
-
                 _isPressed = false;
+                UpdateColors();
             });
             AddEventListener(UIEventType.MouseEnter, evt =>
             {
-                if (!_isPressed)
-                {
-                    Background.SetColor(HoverBackgroundColor);
-                    TextElement?.SetColor(HoverForegroundColor);
-                    Icon?.SetColor(HoverForegroundColor);
-                }
                 _isHovered = true;
+                if (!_isPressed) UpdateColors();
             });
             AddEventListener(UIEventType.MouseLeave, evt =>
             {
-                if (!_isPressed)
-                {
-                    Background.SetColor(NormalBackgroundColor);
-                    TextElement?.SetColor(NormalForegroundColor);
-                    Icon?.SetColor(NormalForegroundColor);
-                }
                 _isHovered = false;
+                if (!_isPressed) UpdateColors();
             });
             AddEventListener(UIEventType.LoseInteractability, evt =>
             {
-                Background.SetColor(DisabledBackgroundColor);
-                TextElement?.SetColor(DisabledForegroundColor);
-                Icon?.SetColor(DisabledForegroundColor);
+                UpdateColors();
             });
         }
 
