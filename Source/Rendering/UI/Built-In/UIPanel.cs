@@ -35,7 +35,6 @@ namespace Electron2D.UI
         {
             UpdateMesh();
             Renderer.SetVertexArrays(_vertices, _indices);
-            Size = new Vector2(100);
         }
 
         public override void UpdateMesh()
