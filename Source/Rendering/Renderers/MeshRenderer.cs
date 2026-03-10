@@ -69,9 +69,12 @@ namespace Electron2D.Rendering
         public void Dispose()
         {
             Engine.Game.UnregisterGameClass(this);
-            VertexBuffer.Dispose();
-            VertexArray.Dispose();
-            IndexBuffer.Dispose();
+            if(IsLoaded)
+            {
+                VertexBuffer.Dispose();
+                VertexArray.Dispose();
+                IndexBuffer.Dispose();
+            }
             GC.SuppressFinalize(this);
         }
 
