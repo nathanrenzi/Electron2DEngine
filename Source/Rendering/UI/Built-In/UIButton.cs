@@ -26,7 +26,7 @@ namespace Electron2D.UI
             SetupForeground(textStyle.Color);
             TextElement = new UIText(textStyle, text, arguments);
             TextElement.Interactable = false;
-            Background!.AddChild(TextElement);
+            AddChild(TextElement);
             SetupEvents();
             CanAddChildren = false;
             Size = new Vector2(60, 20);
@@ -34,14 +34,17 @@ namespace Electron2D.UI
 
         public UIButton(UIPanelDef iconDef, Vector2 iconSize,
             UIPanelDef? backgroundDef = null, UIRenderArgs? arguments = null)
-            : base(arguments, true, false)
+            : base(arguments, false, true)
         {
             SetupBackground(backgroundDef, arguments);
             SetupForeground(iconDef.Color ?? Color.White);
-            Icon = iconDef.Create(new UIRenderArgs(arguments ?? default));
-            Icon.Size = iconSize;
+            Icon = iconDef.Create(arguments);
+            Icon.MinSize = iconSize;
+            Icon.MaxSize = iconSize;
             Icon.Interactable = false;
-            Background!.AddChild(Icon);
+            Icon.Pivot = new Vector2(0.5f, 0.5f);
+            Icon.Anchor = new Vector2(0.5f, 0.5f);
+            AddChild(Icon);
             SetupEvents();
             CanAddChildren = false;
             Size = new Vector2(60, 20);
@@ -119,27 +122,8 @@ namespace Electron2D.UI
             });
         }
 
+        public override void UpdateMesh() { }
+
         // TODO: Add combined icon + text button constructor
-
-        public override void UpdateMesh()
-        {
-            if (Icon != null)
-            {
-                Rect rect = GetVirtualBounds();
-                Icon.Pivot = new Vector2(0.5f, 0.5f);
-                Icon.Position = new Vector2(rect.X + rect.Width / 2f, rect.Y + rect.Height / 2f);
-            }
-        }
-
-        public override void Render()
-        {
-            base.Render();
-            Icon?.Render();
-        }
-
-        protected override void OnDispose()
-        {
-            Icon?.Dispose();
-        }
     }
 }
