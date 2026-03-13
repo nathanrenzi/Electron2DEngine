@@ -41,7 +41,7 @@ namespace Electron2D.UI
                 }
             }
         }
-        private string _text;
+        private string _text = "";
         public string PromptText
         {
             get
