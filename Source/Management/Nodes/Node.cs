@@ -195,7 +195,9 @@ namespace Electron2D
             foreach (var element in _uiElements)
             {
                 element.Enabled = true;
+                element.InvalidateMeasure();
             }
+            UICanvas.Instance.UpdateLayout(); // Temporary fix to force re-enabled elements to immediately recalculate
             foreach (var cls in _gameClasses)
             {
                 if (cls is Node sg)
