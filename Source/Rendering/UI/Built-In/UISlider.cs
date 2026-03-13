@@ -66,14 +66,13 @@ namespace Electron2D.UI
 
             Background = style.BackgroundDef.Create(arguments);
             Background.Margin = style.BackgroundMargin;
-            Background.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
+            Background.Interactable = false;
             AddChild(Background);
 
             _handleEndPadding = style.HandleEndPadding;
             Foreground = style.ForegroundDef.Create(arguments);
             _foregroundMargin = style.ForegroundMargin;
-            Foreground.Margin = _foregroundMargin;
-            Foreground.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
+            Foreground.Interactable = false;
             AddChild(Foreground);
 
             Handle = style.HandleDef.Create(arguments);
@@ -85,10 +84,8 @@ namespace Electron2D.UI
             RenderLayerManager.RemoveRenderable(Handle);
 
             CanAddChildren = false;
-            Interactable = false;
 
             UpdateMesh();
-            UpdateValue(false);
         }
 
         private void OnDrag(Vector2 mouseVirtualPosition)
@@ -105,7 +102,9 @@ namespace Electron2D.UI
                 OnValueChanged?.Invoke(Value);
                 OnValueChanged01?.Invoke(Value01);
             }
-            Foreground.Margin = new Border(0, _foregroundMargin.Top, MathEx.Clamp(Size.X * (1 - Value01), 0, Size.X), _foregroundMargin.Bottom);
+            Foreground.Margin = new Border(_foregroundMargin.Left, _foregroundMargin.Top,
+                MathEx.Clamp(Size.X * (1 - Value01) - _handleEndPadding, _foregroundMargin.Right, Size.X),
+                _foregroundMargin.Bottom);
         }
 
         public override void UpdateMesh()
@@ -113,6 +112,7 @@ namespace Electron2D.UI
             Rect rect = GetVirtualBounds();
             Handle.Pivot = new Vector2(0.5f, 0.5f);
             Handle.Position = new Vector2((int)(rect.X + _handleEndPadding + (rect.Width - _handleEndPadding * 2) * Value01), (int)(rect.Y + rect.Height / 2f));
+            UpdateValue(false);
         }
 
         public override void Render()
