@@ -50,7 +50,12 @@
                 Debug.LogError("AudioStream is null, cannot set!");
                 return;
             }
-
+            if (!Stream.WaveFormat.Equals(stream.WaveFormat))
+            {
+                Debug.LogError("Cannot set audio stream. WaveFormat does not match the WaveFormat of the current stream." +
+                    "Check the sample rate and other settings to make sure they match.");
+                return;
+            }
             bool shouldPlay = PlaybackState == PlaybackState.Playing;
             if (shouldPlay) Stop();
 
