@@ -8,6 +8,7 @@ namespace Electron2D.UI
         public event Action<float> OnUIScaleChanged;
         public Matrix4x4 UIModelMatrix { get; private set; }
         public Matrix4x4 UIModelMatrixInverse { get; private set; }
+        public Vector2 VirtualResolution { get; private set; }
         public float Scale => UIModelMatrix.M11;
 
         private List<UIElement> _rootElements = new List<UIElement>();
@@ -17,7 +18,6 @@ namespace Electron2D.UI
         private UIElement _draggedElement = null;
 
         private UIScalingMode _scalingMode;
-        private Vector2 _virtualResolution;
         private bool _maintainAspect;
 
         private Vector2 _lastMousePosition;
@@ -32,7 +32,7 @@ namespace Electron2D.UI
             Instance = this;
 
             _scalingMode = ProjectSettings.UISettings.ScalingMode;
-            _virtualResolution = ProjectSettings.UISettings.VirtualResolution;
+            VirtualResolution = ProjectSettings.UISettings.VirtualResolution;
             _maintainAspect = ProjectSettings.UISettings.MaintainAspect;
 
             UpdateScaling();
@@ -88,8 +88,9 @@ namespace Electron2D.UI
             }
             else
             {
-                float scaleX = Display.WindowSize.X / _virtualResolution.X;
-                float scaleY = Display.WindowSize.Y / _virtualResolution.Y;
+                VirtualResolution = ProjectSettings.UISettings.VirtualResolution;
+                float scaleX = Display.WindowSize.X / VirtualResolution.X;
+                float scaleY = Display.WindowSize.Y / VirtualResolution.Y;
 
                 if (_maintainAspect)
                 {
@@ -97,8 +98,8 @@ namespace Electron2D.UI
                     scaleX = scaleY = uniformScale;
                 }
 
-                float offsetX = (Display.WindowSize.X - _virtualResolution.X * scaleX) / 2f;
-                float offsetY = (Display.WindowSize.Y - _virtualResolution.Y * scaleY) / 2f;
+                float offsetX = (Display.WindowSize.X - VirtualResolution.X * scaleX) / 2f;
+                float offsetY = (Display.WindowSize.Y - VirtualResolution.Y * scaleY) / 2f;
 
                 UIModelMatrix = Matrix4x4.CreateScale(scaleX, scaleY, 1f) *
                     Matrix4x4.CreateTranslation(offsetX, offsetY, 0f);
