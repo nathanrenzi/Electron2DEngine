@@ -103,7 +103,7 @@ namespace Electron2D.UI
                 OnValueChanged01?.Invoke(Value01);
             }
             Foreground.Margin = new Border(_foregroundMargin.Left, _foregroundMargin.Top,
-                MathEx.Clamp(Size.X * (1 - Value01) - _handleEndPadding, _foregroundMargin.Right, Size.X),
+                MathEx.Clamp(Size.X * (1 - Value01), _foregroundMargin.Right, Size.X),
                 _foregroundMargin.Bottom);
         }
 
