@@ -71,6 +71,12 @@
                 Debug.LogError("AudioClip is null, cannot set!");
                 return;
             }
+            if(!Stream.WaveFormat.Equals(clip.WaveFormat))
+            {
+                Debug.LogError("Cannot set audio clip. WaveFormat does not match the WaveFormat of the stream." +
+                    "Check the sample rate and other settings to make sure they match.");
+                return;
+            }
             AudioClip = clip;
             bool shouldPlay = false;
             if(PlaybackState == PlaybackState.Playing)
