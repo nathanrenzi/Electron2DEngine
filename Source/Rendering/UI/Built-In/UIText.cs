@@ -284,12 +284,16 @@ namespace Electron2D.UI
 
                         float xVertex = xPos + character.Bearing.X;
                         float yVertex = yPos - character.Bearing.Y;
-                        Vector2 snapped = UICanvas.Instance.VirtualToScreen(new Vector2(xVertex, yVertex));
-                        snapped.X = MathF.Floor(snapped.X);
-                        snapped.Y = MathF.Floor(snapped.Y);
-                        snapped = UICanvas.Instance.ScreenToVirtual(snapped);
-                        xVertex = snapped.X;
-                        yVertex = snapped.Y;
+
+                        if(UseScreenPosition)
+                        {
+                            Vector2 snapped = UICanvas.Instance.VirtualToScreen(new Vector2(xVertex, yVertex));
+                            snapped.X = MathF.Floor(snapped.X);
+                            snapped.Y = MathF.Floor(snapped.Y);
+                            snapped = UICanvas.Instance.ScreenToVirtual(snapped);
+                            xVertex = snapped.X;
+                            yVertex = snapped.Y;
+                        }
 
                         float w = character.Size.X;
                         float h = character.Size.Y;
