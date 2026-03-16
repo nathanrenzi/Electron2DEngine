@@ -287,9 +287,9 @@ namespace Electron2D.UI
                         Vector2 snapped = UICanvas.Instance.VirtualToScreen(new Vector2(xVertex, yVertex));
                         snapped.X = MathF.Floor(snapped.X);
                         snapped.Y = MathF.Floor(snapped.Y);
-                        Vector2 corrected = UICanvas.Instance.ScreenToVirtual(snapped);
-                        xVertex = corrected.X;
-                        yVertex = corrected.Y;
+                        snapped = UICanvas.Instance.ScreenToVirtual(snapped);
+                        xVertex = snapped.X;
+                        yVertex = snapped.Y;
 
                         float w = character.Size.X;
                         float h = character.Size.Y;

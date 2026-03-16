@@ -760,7 +760,9 @@ namespace Electron2D.UI
                 Vector2 pos = UICanvas.Instance.VirtualToScreen(GetVirtualPosition());
                 pos = new Vector2(MathF.Round(pos.X), MathF.Round(pos.Y));
                 pos = UICanvas.Instance.ScreenToVirtual(pos);
-                Renderer.GetMaterial().Shader.SetMatrix4x4("model", Matrix4x4.CreateTranslation(pos.X, pos.Y, 0));
+                Renderer.GetMaterial().Shader.SetMatrix4x4("model", UseScreenPosition
+                    ? Matrix4x4.CreateTranslation(pos.X, pos.Y, 0)
+                    : Matrix4x4.CreateScale(1f, -1f, 1f) * Matrix4x4.CreateTranslation(pos.X, -pos.Y, 0));
                 Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix",
                     UseScreenPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
                 Renderer.Render();
