@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using Electron2D.Rendering;
+using System.Numerics;
 
 namespace Electron2D.UI
 {
@@ -121,6 +122,17 @@ namespace Electron2D.UI
         {
             Vector4 r = Vector4.Transform(new Vector4(position, 0, 1), UIModelMatrixInverse);
             return new Vector2(r.X, r.Y);
+        }
+
+        public Vector2 ScreenToWorld(Vector2 position)
+        {
+            Vector2 centered = new Vector2(
+                position.X - Display.WindowSize.X * 0.5f,
+                (Display.WindowSize.Y * 0.5f) - position.Y
+            );
+            centered /= Camera2D.Main.Zoom;
+
+            return centered + Camera2D.Main.Transform.Position;
         }
 
         public void UpdateLayout()
@@ -376,7 +388,18 @@ namespace Electron2D.UI
             // Test all root elements and their children (in reverse order, last = top)
             for (int i = _rootElements.Count - 1; i >= 0; i--)
             {
-                var hit = HitTestRecursive(_rootElements[i], mousePos);
+                UIElement element = _rootElements[i];
+                Vector2 pos;
+                if(element.UseWorldPosition)
+                {
+                    pos = ScreenToWorld(VirtualToScreen(mousePos));
+                    pos.Y = -pos.Y;
+                }
+                else
+                {
+                    pos = mousePos;
+                }
+                var hit = HitTestRecursive(element, pos);
                 if (hit != null) return hit;
             }
             return null;

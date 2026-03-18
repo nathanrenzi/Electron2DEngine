@@ -285,7 +285,7 @@ namespace Electron2D.UI
                         float xVertex = xPos + character.Bearing.X;
                         float yVertex = yPos - character.Bearing.Y;
 
-                        if(UseScreenPosition)
+                        if(!UseWorldPosition)
                         {
                             Vector2 snapped = UICanvas.Instance.VirtualToScreen(new Vector2(xVertex, yVertex));
                             snapped.X = MathF.Floor(snapped.X);

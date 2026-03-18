@@ -248,9 +248,25 @@ namespace Electron2D.UI
         /// </summary>
         public int RenderLayer { get; private set; }
         /// <summary>
-        /// Gets or sets whether to use screen-space positioning for rendering.
+        /// Gets or sets whether to use world-space for rendering. This value propogates to children.
         /// </summary>
-        public bool UseScreenPosition { get; set; } = true;
+        public bool UseWorldPosition
+        {
+            get => _useWorldPosition;
+            private set
+            {
+                if(_useWorldPosition != value)
+                {
+                    _useWorldPosition = value;
+                    if (Renderer != null) Renderer.UseUnscaledProjectionMatrix = !value;
+                    for (int i = 0; i < _children.Count; i++)
+                    {
+                        _children[i].UseWorldPosition = value;
+                    }
+                }
+            }
+        }
+        private bool _useWorldPosition;
         /// <summary>
         /// Gets whether this element ignores post-processing effects.
         /// </summary>
@@ -271,7 +287,7 @@ namespace Electron2D.UI
         /// <param name="sizeX">The initial width of the element.</param>
         /// <param name="sizeY">The initial height of the element.</param>
         /// <param name="renderLayer">The rendering layer order.</param>
-        /// <param name="useScreenPosition">Whether to use screen-space positioning.</param>
+        /// <param name="useWorldPosition">Whether to use screen-space positioning.</param>
         /// <param name="ignorePostProcessing">Whether to ignore post-processing effects.</param>
         /// <param name="useMeshRenderer">Whether to create a mesh renderer for this element.</param>
         /// <param name="canAddChildren">Whether this element can have children.</param>
@@ -286,7 +302,7 @@ namespace Electron2D.UI
             DesiredSize = Vector2.Zero;
 
             RenderLayer = arguments.Value.RenderLayer;
-            UseScreenPosition = arguments.Value.UseScreenPosition;
+            _useWorldPosition = arguments.Value.UseWorldPosition;
             IgnorePostProcessing = arguments.Value.IgnorePostProcessing;
             CanAddChildren = canAddChildren;
             _useMeshRenderer = useMeshRenderer;
@@ -294,7 +310,7 @@ namespace Electron2D.UI
             if (_useMeshRenderer)
             {
                 Renderer = new MeshRenderer(Material.Create(GlobalShaders.DefaultInterface));
-                Renderer.UseUnscaledProjectionMatrix = UseScreenPosition;
+                Renderer.UseUnscaledProjectionMatrix = !UseWorldPosition;
             }
 
             UICanvas.Instance?.RegisterUIElement(this);
@@ -315,6 +331,7 @@ namespace Electron2D.UI
             RenderLayerManager.RemoveRenderable(child);
             _children.Add(child);
             child.Parent = this;
+            child.UseWorldPosition = _useWorldPosition;
             UICanvas.Instance.OnElementParented(child);
             InvalidateMeasure();
         }
@@ -691,7 +708,7 @@ namespace Electron2D.UI
         {
             if (Parent == null)
             {
-                return Position;
+                return new Vector2(_position.X, UseWorldPosition ? -_position.Y : _position.Y);
             }
 
             Vector2 parentVirtualPos = Parent.GetVirtualPosition();
@@ -701,7 +718,7 @@ namespace Electron2D.UI
             );
             Vector2 parentTopLeft = parentVirtualPos + parentPivotOffset;
 
-            return parentTopLeft + Position;
+            return parentTopLeft + _position;
         }
 
         /// <summary>
@@ -757,14 +774,22 @@ namespace Electron2D.UI
 
             if (Renderer != null)
             {
-                Vector2 pos = UICanvas.Instance.VirtualToScreen(GetVirtualPosition());
-                pos = new Vector2(MathF.Round(pos.X), MathF.Round(pos.Y));
-                pos = UICanvas.Instance.ScreenToVirtual(pos);
-                Renderer.GetMaterial().Shader.SetMatrix4x4("model", UseScreenPosition
-                    ? Matrix4x4.CreateTranslation(pos.X, pos.Y, 0)
-                    : Matrix4x4.CreateScale(1f, -1f, 1f) * Matrix4x4.CreateTranslation(pos.X, -pos.Y, 0));
+                Vector2 pos;
+                if (!UseWorldPosition)
+                {
+                    pos = UICanvas.Instance.VirtualToScreen(GetVirtualPosition());
+                    pos = new Vector2(MathF.Round(pos.X), MathF.Round(pos.Y));
+                    pos = UICanvas.Instance.ScreenToVirtual(pos);
+                }
+                else
+                {
+                    pos = GetVirtualPosition();
+                }
+
+                Renderer.GetMaterial().Shader.SetMatrix4x4("model", !UseWorldPosition ? Matrix4x4.CreateTranslation(pos.X, pos.Y, 0)
+                    : Matrix4x4.CreateTranslation(pos.X, -pos.Y, 0) * Matrix4x4.CreateReflection(new Plane(0, 1, 0, pos.Y)));
                 Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix",
-                    UseScreenPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
+                    !UseWorldPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
                 Renderer.Render();
             }
 
