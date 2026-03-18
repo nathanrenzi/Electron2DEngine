@@ -3,20 +3,20 @@
     public struct UIRenderArgs
     {
         public int RenderLayer;
-        public bool UseScreenPosition;
+        public bool UseWorldPosition;
         public bool IgnorePostProcessing;
 
         public UIRenderArgs()
         {
             RenderLayer = 0;
-            UseScreenPosition = true;
+            UseWorldPosition = false;
             IgnorePostProcessing = true;
         }
 
         public UIRenderArgs(UIRenderArgs argsToCopy)
         {
             RenderLayer = argsToCopy.RenderLayer;
-            UseScreenPosition = argsToCopy.UseScreenPosition;
+            UseWorldPosition = argsToCopy.UseWorldPosition;
             IgnorePostProcessing = argsToCopy.IgnorePostProcessing;
         }
     }
