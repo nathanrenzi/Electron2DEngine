@@ -3,6 +3,7 @@ using Electron2D.Rendering.Shaders;
 using GLFW;
 using System.Drawing;
 using System.Numerics;
+using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.UI
 {
@@ -275,6 +276,7 @@ namespace Electron2D.UI
         /// Gets whether this element can have children added to it.
         /// </summary>
         public bool CanAddChildren { get; protected set; }
+        public bool Mask { get; }
         private bool _useMeshRenderer;
         private CursorType _hoverCursorType = CursorType.Arrow;
 
@@ -305,12 +307,16 @@ namespace Electron2D.UI
             _useWorldPosition = arguments.Value.UseWorldPosition;
             IgnorePostProcessing = arguments.Value.IgnorePostProcessing;
             CanAddChildren = canAddChildren;
+            Mask = arguments.Value.Mask;
             _useMeshRenderer = useMeshRenderer;
 
             if (_useMeshRenderer)
             {
-                Renderer = new MeshRenderer(Material.Create(GlobalShaders.DefaultInterface));
-                Renderer.UseUnscaledProjectionMatrix = !UseWorldPosition;
+                Renderer = new MeshRenderer(Material.Create(GlobalShaders.DefaultInterface))
+                {
+                    UseUnscaledProjectionMatrix = !UseWorldPosition,
+                    UseStencilBuffer = true
+                };
             }
 
             UICanvas.Instance?.RegisterUIElement(this);
@@ -768,10 +774,40 @@ namespace Electron2D.UI
         /// <summary>
         /// Renders this element and all of its children.
         /// </summary>
-        public virtual void Render()
+        public void Render()
+        {
+            Render(0);
+        }
+
+        public virtual void Render(int stencil)
         {
             if (!Visible || !Enabled) return;
 
+            if (Mask)
+            {
+                // Push - increment stencil
+                glColorMask(false, false, false, false);
+                RenderSelf(stencil, MaskWriteMode.Push);
+                glColorMask(true, true, true, true);
+
+                // Draw self and children clipped to the mask
+                RenderSelf(stencil + 1);
+                RenderChildren(stencil + 1);
+
+                // Pop - decrement stencil
+                glColorMask(false, false, false, false);
+                RenderSelf(stencil, MaskWriteMode.Pop);
+                glColorMask(true, true, true, true);
+            }
+            else
+            {
+                RenderSelf(stencil);
+                RenderChildren(stencil);
+            }
+        }
+
+        protected void RenderSelf(int stencil, MaskWriteMode maskMode = MaskWriteMode.None)
+        {
             if (Renderer != null)
             {
                 Vector2 pos;
@@ -786,16 +822,47 @@ namespace Electron2D.UI
                     pos = GetVirtualPosition();
                 }
 
+                switch (maskMode)
+                {
+                    case MaskWriteMode.Push:
+                        Renderer.StencilFunction = GL_EQUAL;
+                        Renderer.StencilReference = stencil;
+                        Renderer.StencilMask = 0xFF;
+                        Renderer.StencilFunctionMask = 0xFF;
+                        Renderer.StencilFail = GL_KEEP;
+                        Renderer.StencilPass = GL_INCR;
+                        break;
+                    case MaskWriteMode.Pop:
+                        Renderer.StencilFunction = GL_EQUAL;
+                        Renderer.StencilReference = stencil + 1;
+                        Renderer.StencilMask = 0xFF;
+                        Renderer.StencilFunctionMask = 0xFF;
+                        Renderer.StencilFail = GL_KEEP;
+                        Renderer.StencilPass = GL_DECR;
+                        break;
+                    default:
+                        Renderer.StencilFunction = GL_EQUAL;
+                        Renderer.StencilReference = stencil;
+                        Renderer.StencilMask = 0x00;
+                        Renderer.StencilFunctionMask = 0xFF;
+                        Renderer.StencilFail = GL_KEEP;
+                        Renderer.StencilPass = GL_KEEP;
+                        break;
+                }
+
                 Renderer.GetMaterial().Shader.SetMatrix4x4("model", !UseWorldPosition ? Matrix4x4.CreateTranslation(pos.X, pos.Y, 0)
                     : Matrix4x4.CreateTranslation(pos.X, -pos.Y, 0) * Matrix4x4.CreateReflection(new Plane(0, 1, 0, pos.Y)));
                 Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix",
                     !UseWorldPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
                 Renderer.Render();
             }
+        }
 
+        protected void RenderChildren(int stencil)
+        {
             foreach (var child in _children)
             {
-                child.Render();
+                child.Render(stencil);
             }
         }
 
@@ -867,6 +934,13 @@ namespace Electron2D.UI
         ~UIElement()
         {
             Dispose();
+        }
+
+        public enum MaskWriteMode
+        {
+            None,
+            Push,
+            Pop
         }
     }
 }

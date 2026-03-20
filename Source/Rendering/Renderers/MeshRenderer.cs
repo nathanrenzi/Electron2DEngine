@@ -18,6 +18,7 @@ namespace Electron2D.Rendering
         public SharedResource<Material> Material { get; protected set; }
         public int RenderLayer { get; protected set; }
         public Action OnBeforeRender { get; set; }
+        public Action OnAfterRender { get; set; }
 
         private Transform? _transform;
 
@@ -196,17 +197,15 @@ namespace Electron2D.Rendering
 
             if (UseStencilBuffer)
             {
-                //https://learnopengl.com/Advanced-OpenGL/Stencil-testing
                 if (StencilPreClearBuffer)
                     glClear(GL_STENCIL_BUFFER_BIT);
 
-                glStencilOp(StencilFail, StencilPass, StencilPass);
-                glStencilFunc(StencilFunction, StencilReference, StencilMask);
+                glStencilOp(StencilFail, GL_KEEP, StencilPass);
+                glStencilFunc(StencilFunction, StencilReference, StencilFunctionMask);
                 glStencilMask(StencilMask);
             }
             else
             {
-                // Don't update the buffer
                 glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
                 glStencilFunc(GL_ALWAYS, 0, 0xFF);
                 glStencilMask(0x00);
@@ -225,6 +224,7 @@ namespace Electron2D.Rendering
             BeforeRender();
             OnBeforeRender?.Invoke();
             glDrawElements(GL_TRIANGLES, UseCustomIndexRenderCount ? CustomIndexRenderCount : Indices.Length, GL_UNSIGNED_INT, (void*)0);
+            OnAfterRender?.Invoke();
         }
 
         protected virtual void BeforeRender() { }
