@@ -408,13 +408,19 @@ namespace Electron2D.UI
         private UIElement? HitTestRecursive(UIElement element, Vector2 position)
         {
             if (!element.Visible || !element.Enabled) return null;
-            for (int i = element.Children.Count - 1; i >= 0; i--)
+
+            bool hitSelf = element.HitTest(position);
+
+            if (!element.Mask || hitSelf)
             {
-                var hit = HitTestRecursive(element.Children[i], position);
-                if (hit != null) return hit;
+                for (int i = element.Children.Count - 1; i >= 0; i--)
+                {
+                    var hit = HitTestRecursive(element.Children[i], position);
+                    if (hit != null) return hit;
+                }
             }
 
-            if (element.Interactable && element.HitTest(position))
+            if (element.Interactable && hitSelf)
                 return element;
 
             return null;

@@ -439,10 +439,10 @@ namespace Electron2D.UI
             }
         }
 
-        public override void Render()
+        public override void Render(int stencil)
         {
-            base.Render();
-            CaretPanel.Render();
+            base.Render(stencil);
+            CaretPanel.Render(stencil);
         }
 
         protected override void OnDispose()

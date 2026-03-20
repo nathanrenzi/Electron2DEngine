@@ -79,6 +79,8 @@ namespace Electron2D.UI
             Handle.ExplicitSize = style.HandleSize;
             AddEventListener(UIEventType.GainVisibility, (evt) => Handle.Visible = true);
             AddEventListener(UIEventType.LoseVisibility, (evt) => Handle.Visible = false);
+            AddEventListener(UIEventType.GainInteractability, (evt) => Handle.Interactable = true);
+            AddEventListener(UIEventType.LoseInteractability, (evt) => Handle.Interactable = false);
             AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
             Handle.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
             RenderLayerManager.RemoveRenderable(Handle);
@@ -115,10 +117,10 @@ namespace Electron2D.UI
             UpdateValue(false);
         }
 
-        public override void Render()
+        public override void Render(int stencil)
         {
-            base.Render();
-            Handle.Render();
+            base.Render(stencil);
+            Handle.Render(stencil);
         }
 
         protected override void OnDispose()
