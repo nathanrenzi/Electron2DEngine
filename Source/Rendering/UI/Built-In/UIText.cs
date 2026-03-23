@@ -56,7 +56,6 @@ namespace Electron2D.UI
             }
         }
         private TextAlignment _verticalAlignment;
-        public TextAlignmentMode AlignmentMode { get; set; } // TODO
         public TextOverflowMode OverflowMode
         {
             get => _overflowMode;
@@ -99,7 +98,6 @@ namespace Electron2D.UI
             _text = text;
             HorizontalAlignment = style.HorizontalAlignment;
             VerticalAlignment = style.VerticalAlignment;
-            AlignmentMode = style.AlignmentMode;
             OverflowMode = style.OverflowMode;
             LineHeightMultiplier = style.LineHeightMultiplier;
 
