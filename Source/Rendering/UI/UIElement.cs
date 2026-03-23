@@ -489,6 +489,12 @@ namespace Electron2D.UI
                 Math.Max(0, finalRect.Height - Margin.Top - Margin.Bottom)
             );
 
+            if (_explicitSize.HasValue)
+            {
+                finalRect.Width = _explicitSize.Value.X;
+                finalRect.Height = _explicitSize.Value.Y;
+            }
+
             finalRect.Width = Math.Clamp(finalRect.Width, MinSize.X, MaxSize.X);
             finalRect.Height = Math.Clamp(finalRect.Height, MinSize.Y, MaxSize.Y);
 
