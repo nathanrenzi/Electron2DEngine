@@ -91,6 +91,12 @@ namespace Electron2D.UI
             foreach (var child in parent.Children)
             {
                 if (!child.Visible) continue;
+                if (child.IgnoreLayout)
+                {
+                    // Measure but don't contribute to size
+                    child.Measure(innerSize);
+                    continue;
+                }
 
                 float availableCross = CrossAxisAlignment == UILayoutAlignment.Stretch
                     ? GetCross(innerSize)
@@ -131,7 +137,7 @@ namespace Electron2D.UI
             List<UIElement> children = new List<UIElement>();
             foreach (var child in parent.Children)
             {
-                if (!child.Visible) continue;
+                if (!child.Visible || child.IgnoreLayout) continue;
                 children.Add(child);
             }
 
@@ -203,6 +209,14 @@ namespace Electron2D.UI
                 child.Arrange(CalculateAnchoredRect(child, new Rect(childPos.X, childPos.Y, childSize.X, childSize.Y)));
 
                 currentMain += slotMain + spacing;
+            }
+
+            foreach (var child in parent.Children)
+            {
+                if (!child.Visible || !child.IgnoreLayout) continue;
+                child.Measure(new Vector2(innerRect.Width, innerRect.Height));
+                child.Arrange(new Rect(child.Position.X, child.Position.Y,
+                    child.DesiredSize.X, child.DesiredSize.Y));
             }
         }
 
