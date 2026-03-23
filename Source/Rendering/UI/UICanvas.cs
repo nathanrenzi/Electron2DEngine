@@ -154,8 +154,8 @@ namespace Electron2D.UI
 
         private void Update()
         {
-            UpdateLayout();
             ProcessInput();
+            UpdateLayout();
         }
 
         private void ProcessInput()

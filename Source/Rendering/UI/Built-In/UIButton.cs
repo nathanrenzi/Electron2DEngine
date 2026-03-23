@@ -60,20 +60,21 @@ namespace Electron2D.UI
         private bool _isPressed = false;
 
         public UIButton(UITextStyle textStyle, string text, UIPanelDef? backgroundDef = null,
-            UIRenderArgs? arguments = null) : base(arguments, false, true)
+            UIRenderArgs? arguments = null) : base(arguments, false)
         {
             SetupBackground(backgroundDef, arguments);
             SetupForeground(textStyle.Color);
-            TextElement = new UIText(textStyle, text, arguments);
-            TextElement.Interactable = false;
+            TextElement = new UIText(textStyle, text, arguments)
+            {
+                Interactable = false
+            };
             AddChild(TextElement);
             SetupEvents();
-            CanAddChildren = false;
         }
 
         public UIButton(UIPanelDef iconDef, Vector2 iconSize,
             UIPanelDef? backgroundDef = null, UIRenderArgs? arguments = null)
-            : base(arguments, false, true)
+            : base(arguments, false)
         {
             SetupBackground(backgroundDef, arguments);
             SetupForeground(iconDef.Color ?? Color.White);
@@ -85,7 +86,6 @@ namespace Electron2D.UI
             Icon.Anchor = new Vector2(0.5f, 0.5f);
             AddChild(Icon);
             SetupEvents();
-            CanAddChildren = false;
         }
 
         private void SetupBackground(UIPanelDef? backgroundDef, UIRenderArgs? arguments)
