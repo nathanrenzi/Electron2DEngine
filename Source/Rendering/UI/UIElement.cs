@@ -232,7 +232,10 @@ namespace Electron2D.UI
         /// Gets whether the arrange pass results are still valid.
         /// </summary>
         public bool IsArrangeValid { get; private set; }
-
+        /// <summary>
+        /// Gets or sets whether this element ignores the layout of its parent element.
+        /// </summary>
+        public bool IgnoreLayout { get; set; }
 
         /// <summary>
         /// Gets or sets the layout strategy used to position and size child elements.
@@ -460,6 +463,12 @@ namespace Electron2D.UI
             foreach (var child in _children)
             {
                 if (!child.Visible) continue;
+                if (child.IgnoreLayout)
+                {
+                    // Measure but don't contribute to size
+                    child.Measure(availableSize);
+                    continue;
+                }
                 var childDesired = child.Measure(availableSize);
                 maxChildSize = Vector2.Max(maxChildSize, childDesired);
             }
@@ -539,8 +548,17 @@ namespace Electron2D.UI
 
             foreach (var child in _children)
             {
-                if (!child.Visible) continue;
+                if (!child.Visible || child.IgnoreLayout) continue;
                 child.Arrange(CalculateAnchoredRect(child, childRect));
+            }
+
+            // For children with IgnoreLayout = true
+            foreach (var child in _children)
+            {
+                if (!child.Visible || !child.IgnoreLayout) continue;
+                child.Measure(new Vector2(finalRect.Width, finalRect.Height));
+                child.Arrange(new Rect(child.Position.X, child.Position.Y,
+                    child.DesiredSize.X, child.DesiredSize.Y));
             }
         }
 
