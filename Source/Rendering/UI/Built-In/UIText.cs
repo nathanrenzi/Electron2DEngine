@@ -90,7 +90,7 @@ namespace Electron2D.UI
         private List<(Vector2, int)> _characterStartPositions = new();
 
         public UIText(UITextStyle style, string text, UIRenderArgs? arguments = null)
-            : base(arguments, true, false)
+            : base(arguments, true)
         {
             FontGlyphStore = ResourceManager.Instance.LoadFont(style.FontArguments.FontFile,
                 style.FontArguments.FontSize, style.FontArguments.FontScale, 0);
@@ -268,8 +268,9 @@ namespace Electron2D.UI
 
                     for (int k = 0; k < line.Text.Length; k++)
                     {
-                        Character character = FontGlyphStore.Characters[line.Text[k]];
-                        charIndex = FT_Get_Char_Index(FontGlyphStore.Face, line.Text[k]);
+                        char c = line.Text[k];
+                        Character character = FontGlyphStore.Characters[c];
+                        charIndex = FT_Get_Char_Index(FontGlyphStore.Face, c);
 
                         if(FontGlyphStore.UseKerning)
                         {
@@ -313,11 +314,12 @@ namespace Electron2D.UI
                         tempIndices.Add(count + 2);
                         tempIndices.Add(count + 3);
 
+                        _characterStartPositions.Add((new Vector2(character.Size.X <= 0 ? xPos + character.Advance
+                            : xVertex + w, yPos), i));
+
                         xPos += character.Advance;
 
                         previousIndex = charIndex;
-
-                        _characterStartPositions.Add((new Vector2(xPos, yPos), i));
                     }
                 }
             }
@@ -338,10 +340,10 @@ namespace Electron2D.UI
         {
             if(index < 0 || index >= _characterStartPositions.Count)
             {
-                return GetVirtualPosition();
+                return Vector2.Zero;
             }
 
-            return _characterStartPositions[index].Item1 + GetVirtualPosition();
+            return _characterStartPositions[index].Item1;
         }
 
         public int GetCharacterIndexAt(Vector2 virtualPos)
@@ -360,7 +362,7 @@ namespace Electron2D.UI
                 float lineTop = startPos.Y - FontGlyphStore.Arguments.FontSize;
                 float lineBottom = startPos.Y;
 
-                bool onThisLine = localPos.Y >= lineTop && localPos.Y <= lineBottom;
+                bool onThisLine = (lineIndex == 0 || localPos.Y >= lineTop) && localPos.Y <= lineBottom;
                 if (!onThisLine) continue;
 
                 if (lineIndex != endLineIndex)
@@ -378,18 +380,19 @@ namespace Electron2D.UI
                 }
             }
 
-            if (_characterStartPositions.Count > 0)
+            int endIndex = Math.Max(_characterStartPositions.Count - 1, 0);
+            if (_characterStartPositions.Count > 0 && localPos.X > _characterStartPositions[endIndex].Item1.X)
             {
-                (Vector2 lastPos, int lastLine) = _characterStartPositions[^1];
-                float lineTop = lastPos.Y - FontGlyphStore.Arguments.FontSize;
-
-                if (localPos.Y >= lineTop && localPos.Y <= lastPos.Y && localPos.X >= lastPos.X)
-                {
-                    return _characterStartPositions.Count - 1;
-                }
+                return endIndex;
             }
-
-            return 0;
+            else if(localPos.X < 0 || localPos.Y < 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return endIndex;
+            }
         }
 
         protected override void OnDispose()

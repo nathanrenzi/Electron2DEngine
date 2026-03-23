@@ -13,19 +13,19 @@ namespace Electron2D.UI
             3, 2, 1
         };
 
-        public UIPanel(ITexture texture, UIRenderArgs? arguments = null) : base(arguments, true, true)
+        public UIPanel(ITexture texture, UIRenderArgs? arguments = null) : base(arguments, true)
         {
             Renderer.Material.MainTexture = texture;
             Initialize();
         }
 
-        public UIPanel(Color color, UIRenderArgs? arguments = null) : base(arguments, true, true)
+        public UIPanel(Color color, UIRenderArgs? arguments = null) : base(arguments, true)
         {
             SetColor(color);
             Initialize();
         }
 
-        public UIPanel(Material material, UIRenderArgs? arguments = null) : base(arguments, true, true)
+        public UIPanel(Material material, UIRenderArgs? arguments = null) : base(arguments, true)
         {
             Renderer.SetMaterial(material);
             Initialize();

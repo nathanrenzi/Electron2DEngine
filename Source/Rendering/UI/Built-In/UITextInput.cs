@@ -112,9 +112,8 @@ namespace Electron2D.UI
         private StringBuilder _builder = new();
 
         public UITextInput(UITextInputStyle style, string text, string promptText = "", int maxCharacterCount = -1,
-            int maxLineCount = -1, UIRenderArgs? arguments = null) : base(arguments, false, true)
+            int maxLineCount = -1, UIRenderArgs? arguments = null) : base(arguments, false)
         {
-            _builder.Append(text);
             _promptText = promptText;
             MaxCharacterCount = maxCharacterCount;
             MaxLineCount = maxLineCount;
@@ -124,23 +123,32 @@ namespace Electron2D.UI
             Background.Interactable = false;
             AddChild(Background);
 
-            TextElement = new UIText(style.TextStyle, Text, arguments: arguments);
-            TextElement.Interactable = false;
+            TextElement = new UIText(style.TextStyle, text, arguments: arguments)
+            {
+                Interactable = false
+            };
             Background.AddChild(TextElement);
-
             TextColor = style.TextColor;
             PromptTextColor = style.PromptTextColor;
+            SetHoverCursorType(CursorType.Beam);
 
+            Vector2 caretSize = UICanvas.Instance.VirtualToScreen(new Vector2(style.CaretWidth,
+                style.TextStyle.FontArguments.FontSize));
+            caretSize = new Vector2(MathF.Round(caretSize.X), MathF.Round(caretSize.Y));
+            caretSize = UICanvas.Instance.ScreenToVirtual(caretSize);
             CaretPanel = style.CaretDef != null ? style.CaretDef.Create(arguments)
-                : new UIPanel(Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")),
+                : new UIPanel(Material.Create(new Shader(Shader.ParseShader(
+                ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")),
                 _globalUniformTags: ["time"])), arguments);
-            Vector2 caretSize = new Vector2(style.CaretWidth, style.TextStyle.FontArguments.FontSize);
+            CaretPanel.IgnoreLayout = true;
             CaretPanel.ExplicitSize = caretSize;
             CaretPanel.Interactable = false;
             CaretPanel.Pivot = new Vector2(0, (float)TextElement.FontGlyphStore.Ascent / style.TextStyle.FontArguments.FontSize);
-            CaretPanel.Measure(caretSize);
-            CaretPanel.Arrange(new Rect(0, 0, caretSize.X, caretSize.Y));
-            RenderLayerManager.RemoveRenderable(CaretPanel);
+            CaretPanel.Visible = Focused;
+            TextElement.AddChild(CaretPanel);
+            TextElement.OnLayoutComplete += UpdateCaret;
+
+            UpdateText(text);
 
             AddEventListener(UIEventType.MouseDown, (evt) =>
             {
@@ -160,21 +168,13 @@ namespace Electron2D.UI
                 Input.UnlockKeyInput(this, 1);
             });
 
-            CanAddChildren = false;
-            SetHoverCursorType(CursorType.Beam);
-            UpdateText(text);
-            UpdateMesh();
-            UpdateTextElement();
-
             Input.AddListener(this);
-
-            CaretPanel.Visible = Focused;
 
             Engine.Game.LateUpdateEvent += () =>
             {
-                if(_holdingKey != KeyCode.Unknown)
+                if (_holdingKey != KeyCode.Unknown)
                 {
-                    if(Time.GameTime - _startHoldingTime >= REPEAT_DELAY)
+                    if (Time.GameTime - _startHoldingTime >= REPEAT_DELAY)
                     {
                         _currentHoldingTime += Time.DeltaTime;
                         if (_currentHoldingTime >= REPEAT_RATE)
@@ -185,11 +185,6 @@ namespace Electron2D.UI
                     }
                 }
             };
-        }
-
-        public override void UpdateMesh()
-        {
-            UpdateCaret();
         }
 
         private void UpdateCaret()
@@ -260,7 +255,6 @@ namespace Electron2D.UI
                         _caretIndex--;
                     }
                     UpdateText(_builder.ToString());
-                    UpdateCaret();
                     break;
 
                 case KeyCode.Delete:
@@ -276,7 +270,6 @@ namespace Electron2D.UI
                         _builder.Remove(_caretIndex, 1);
                     }
                     UpdateText(_builder.ToString());
-                    UpdateCaret();
                     break;
             }
         }
@@ -293,9 +286,9 @@ namespace Electron2D.UI
                     return;
                 }
                 _builder.Insert(_caretIndex, keyEvent.Character.Value);
-                UpdateText(_builder.ToString());
-                _caretIndex = (int)MathF.Min(_caretIndex + 1, Text.Length);
-                UpdateCaret();
+                string text = _builder.ToString();
+                _caretIndex = (int)MathF.Min(_caretIndex + 1, text.Length);
+                UpdateText(text);
             }
             else if(keyEvent.IsPressed)
             {
@@ -334,9 +327,8 @@ namespace Electron2D.UI
                                 OnTextUpdateFailed?.Invoke();
                             }
                             _builder.Insert(_caretIndex, clipboardString);
-                            UpdateText(_builder.ToString());
                             _caretIndex = _caretIndex + clipboardString.Length;
-                            UpdateCaret();
+                            UpdateText(_builder.ToString());
                         }
                         break;
 
@@ -439,15 +431,6 @@ namespace Electron2D.UI
             }
         }
 
-        public override void Render(int stencil)
-        {
-            base.Render(stencil);
-            CaretPanel.Render(stencil);
-        }
-
-        protected override void OnDispose()
-        {
-            CaretPanel.Dispose();
-        }
+        public override void UpdateMesh() { }
     }
 }

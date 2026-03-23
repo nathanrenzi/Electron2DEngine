@@ -10,6 +10,11 @@ namespace Electron2D.UI
     public abstract class UIElement : IRenderable
     {
         /// <summary>
+        /// Invoked after the UIElement has completed both measure and arrange passes.
+        /// </summary>
+        public event Action OnLayoutComplete;
+
+        /// <summary>
         /// Gets the parent UIElement of this element in the UI hierarchy.
         /// </summary>
         public UIElement Parent { get; private set; }
@@ -189,6 +194,12 @@ namespace Electron2D.UI
                         Phase = EventPhase.Target
                     };
                     RaiseEvent(evt);
+                    if (value)
+                    {
+                        IsMeasureValid = false;
+                        IsArrangeValid = false;
+                        Parent?.InvalidateMeasure();
+                    }
                 }
             }
         }
@@ -221,6 +232,23 @@ namespace Electron2D.UI
         }
         private bool _interactable = true;
         /// <summary>
+        /// Gets or sets whether this element ignores the layout of its parent element.
+        /// </summary>
+        public bool IgnoreLayout
+        {
+            get => _ignoreLayout;
+            set
+            {
+                if (_ignoreLayout != value)
+                {
+                    _ignoreLayout = value;
+                    InvalidateMeasure();
+                    UpdateMesh();
+                }
+            }
+        }
+        private bool _ignoreLayout;
+        /// <summary>
         /// Gets whether this element currently has focus.
         /// </summary>
         public bool Focused { get; internal set; }
@@ -232,11 +260,6 @@ namespace Electron2D.UI
         /// Gets whether the arrange pass results are still valid.
         /// </summary>
         public bool IsArrangeValid { get; private set; }
-        /// <summary>
-        /// Gets or sets whether this element ignores the layout of its parent element.
-        /// </summary>
-        public bool IgnoreLayout { get; set; }
-
         /// <summary>
         /// Gets or sets the layout strategy used to position and size child elements.
         /// </summary>
@@ -278,7 +301,7 @@ namespace Electron2D.UI
         /// <summary>
         /// Gets whether this element can have children added to it.
         /// </summary>
-        public bool CanAddChildren { get; protected set; }
+        public bool CanAddChildren { get; set; } = true;
         public bool Mask { get; }
         private bool _useMeshRenderer;
         private CursorType _hoverCursorType = CursorType.Arrow;
@@ -289,14 +312,9 @@ namespace Electron2D.UI
         /// <summary>
         /// Initializes a new instance of the UIElement class.
         /// </summary>
-        /// <param name="sizeX">The initial width of the element.</param>
-        /// <param name="sizeY">The initial height of the element.</param>
-        /// <param name="renderLayer">The rendering layer order.</param>
-        /// <param name="useWorldPosition">Whether to use screen-space positioning.</param>
-        /// <param name="ignorePostProcessing">Whether to ignore post-processing effects.</param>
+        /// <param name="arguments">Optional rendering arguments.</param>
         /// <param name="useMeshRenderer">Whether to create a mesh renderer for this element.</param>
-        /// <param name="canAddChildren">Whether this element can have children.</param>
-        public UIElement(UIRenderArgs? arguments, bool useMeshRenderer, bool canAddChildren)
+        public UIElement(UIRenderArgs? arguments, bool useMeshRenderer)
         {
             if(!arguments.HasValue)
             {
@@ -309,7 +327,6 @@ namespace Electron2D.UI
             RenderLayer = arguments.Value.RenderLayer;
             _useWorldPosition = arguments.Value.UseWorldPosition;
             IgnorePostProcessing = arguments.Value.IgnorePostProcessing;
-            CanAddChildren = canAddChildren;
             Mask = arguments.Value.Mask;
             _useMeshRenderer = useMeshRenderer;
 
@@ -529,6 +546,7 @@ namespace Electron2D.UI
             }
 
             UpdateMesh();
+            OnLayoutComplete?.Invoke();
 
             IsArrangeValid = true;
         }
@@ -556,7 +574,6 @@ namespace Electron2D.UI
             foreach (var child in _children)
             {
                 if (!child.Visible || !child.IgnoreLayout) continue;
-                child.Measure(new Vector2(finalRect.Width, finalRect.Height));
                 child.Arrange(new Rect(child.Position.X, child.Position.Y,
                     child.DesiredSize.X, child.DesiredSize.Y));
             }

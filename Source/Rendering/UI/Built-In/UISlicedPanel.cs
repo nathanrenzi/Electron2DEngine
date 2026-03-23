@@ -52,7 +52,7 @@ namespace Electron2D.UI
         private int _stride = 4;
 
         public UISlicedPanel(ITexture texture, Border borderUV, int borderPixelSize, UIRenderArgs? arguments = null)
-            : base(arguments, true, true)
+            : base(arguments, true)
         {
             _left = borderUV.Left;
             _right = borderUV.Right;
@@ -67,7 +67,7 @@ namespace Electron2D.UI
         }
 
         public UISlicedPanel(Material material, Border borderUV, int borderPixelSize, UIRenderArgs? arguments = null)
-            : base(arguments, true, true)
+            : base(arguments, true)
         {
             _left = borderUV.Left;
             _right = borderUV.Right;

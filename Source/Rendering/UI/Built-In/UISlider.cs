@@ -55,10 +55,9 @@ namespace Electron2D.UI
         private float _value;
         public float Value01 => MathEx.Clamp01((Value - MinValue) / (MaxValue - MinValue));
         private int _handleEndPadding;
-        private Border _foregroundMargin;
 
         public UISlider(UISliderStyle style, float value = 0, float minValue = 0, float maxValue = 1,
-            UIRenderArgs? arguments = null) : base(arguments, false, true)
+            UIRenderArgs? arguments = null) : base(arguments, false)
         {
             _value = value;
             _minValue = minValue;
@@ -71,11 +70,13 @@ namespace Electron2D.UI
 
             _handleEndPadding = style.HandleEndPadding;
             Foreground = style.ForegroundDef.Create(arguments);
-            _foregroundMargin = style.ForegroundMargin;
+            Foreground.Margin = new Border(style.ForegroundMargin.Left, style.ForegroundMargin.Top,
+                style.ForegroundMargin.Right, style.ForegroundMargin.Bottom);
             Foreground.Interactable = false;
             AddChild(Foreground);
 
             Handle = style.HandleDef.Create(arguments);
+            Handle.IgnoreLayout = true;
             Handle.ExplicitSize = style.HandleSize;
             AddEventListener(UIEventType.GainVisibility, (evt) => Handle.Visible = true);
             AddEventListener(UIEventType.LoseVisibility, (evt) => Handle.Visible = false);
@@ -83,9 +84,7 @@ namespace Electron2D.UI
             AddEventListener(UIEventType.LoseInteractability, (evt) => Handle.Interactable = false);
             AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
             Handle.AddEventListener(UIEventType.Drag, (evt) => OnDrag(evt.MousePosition));
-            RenderLayerManager.RemoveRenderable(Handle);
-
-            CanAddChildren = false;
+            AddChild(Handle);
 
             UpdateMesh();
         }
@@ -99,34 +98,21 @@ namespace Electron2D.UI
 
         private void UpdateValue(bool invokeEvents)
         {
-            if(invokeEvents)
+            Foreground.ExplicitSize = new Vector2(MathEx.Clamp(_handleEndPadding + (Size.X - _handleEndPadding * 2) * Value01,
+                0, Size.X), Size.Y - Foreground.Margin.Top - Foreground.Margin.Bottom);
+            if (invokeEvents)
             {
                 OnValueChanged?.Invoke(Value);
                 OnValueChanged01?.Invoke(Value01);
             }
-            Foreground.Margin = new Border(_foregroundMargin.Left, _foregroundMargin.Top,
-                MathEx.Clamp(Size.X * (1 - Value01), _foregroundMargin.Right, Size.X),
-                _foregroundMargin.Bottom);
         }
 
         public override void UpdateMesh()
         {
             Rect rect = GetVirtualBounds();
             Handle.Pivot = new Vector2(0.5f, 0.5f);
-            Handle.Position = new Vector2((int)(rect.X + _handleEndPadding + (rect.Width - _handleEndPadding * 2) * Value01), (int)(rect.Y + rect.Height / 2f));
+            Handle.Position = new Vector2((int)(_handleEndPadding + (rect.Width - _handleEndPadding * 2) * Value01), (int)(rect.Height / 2f));
             UpdateValue(false);
-        }
-
-        public override void Render(int stencil)
-        {
-            base.Render(stencil);
-            Handle.Render(stencil);
-        }
-
-        protected override void OnDispose()
-        {
-            Handle.Dispose();
-            Handle = null;
         }
     }
 }
