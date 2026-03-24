@@ -198,14 +198,14 @@ namespace Electron2D.UI
                 Character character = FontGlyphStore.Characters[text[i]];
                 uint charIndex = FT_Get_Char_Index(FontGlyphStore.Face, text[i]);
 
-                size.X += character.Advance;
-                size.Y = MathF.Max(character.Bearing.Y, size.Y);
-
-                if(FontGlyphStore.UseKerning &&
+                if(i > 0 && FontGlyphStore.UseKerning &&
                     FT_Get_Kerning(FontGlyphStore.Face, previousIndex, charIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
                 {
-                    size.X += delta.x;
+                    size.X += delta.x >> 6;
                 }
+
+                size.X += character.Advance;
+                size.Y = MathF.Max(character.Bearing.Y, size.Y);
 
                 previousIndex = charIndex;
             }
@@ -277,7 +277,7 @@ namespace Electron2D.UI
                             if(FT_Get_Kerning(FontGlyphStore.Face, previousIndex, charIndex,
                                 (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
                             {
-                                xPos += delta.x;
+                                xPos += delta.x >> 6;
                             }
                         }
 
