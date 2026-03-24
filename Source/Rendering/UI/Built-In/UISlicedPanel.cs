@@ -3,45 +3,52 @@
 namespace Electron2D.UI
 {
     /// <summary>
-    /// A UI Component that can procedurally stretch a texture along it's borders, maintaining the same scale at any size.
+    /// A <see cref="UIElement"/> that renders a 9-sliced panel, procedurally stretching a texture's edges and corners
+    /// to maintain consistent border scale at any size.
     /// </summary>
     public sealed class UISlicedPanel : UIElement
     {
-        private float[] _vertices = new float[36 * 4];
+        private float[] _vertices = new float[16 * 4];
 
-        private static float[] _defaultUV = new float[36 * 2];
+        private float[] _defaultUV = new float[16 * 2];
 
         private static readonly uint[] _indices =
         {
-            // Corners
-            1, 0, 3,
-            1, 2, 3,
-
-            5, 4, 7,
-            5, 7, 6,
-
-            9, 8, 11,
-            9, 11, 10,
-
-            13, 12, 15,
-            13, 15, 14,
-
-            // Sides
-            17, 16, 19,
-            17, 19, 18,
-
-            21, 20, 23,
-            21, 23, 22,
-
-            25, 24, 27,
-            25, 27, 26,
-
-            29, 28, 31,
-            29, 31, 30,
-
+            // TL corner
+             1,  0,  4,
+             1,  4,  5,
+ 
+            // TR corner
+             3,  2,  6,
+             3,  6,  7,
+ 
+            // BL corner
+             9,  8, 12,
+             9, 12, 13,
+ 
+            // BR corner
+            11, 10, 14,
+            11, 14, 15,
+ 
+            // Top side
+             2,  1,  5,
+             2,  5,  6,
+ 
+            // Right side
+             7,  6, 10,
+             7, 10, 11,
+ 
+            // Bottom side
+            10,  9, 13,
+            10, 13, 14,
+ 
+            // Left side
+             5,  4,  8,
+             5,  8,  9,
+ 
             // Middle
-            33, 32, 35,
-            33, 35, 34
+             6,  5,  9,
+             6,  9, 10,
         };
 
         private float _left;
@@ -58,7 +65,7 @@ namespace Electron2D.UI
             _right = borderUV.Right;
             _top = borderUV.Top;
             _bottom = borderUV.Bottom;
-            _borderPixelSize = borderPixelSize * 2;
+            _borderPixelSize = borderPixelSize;
 
             UpdateMesh();
 
@@ -73,7 +80,7 @@ namespace Electron2D.UI
             _right = borderUV.Right;
             _top = borderUV.Top;
             _bottom = borderUV.Bottom;
-            _borderPixelSize = borderPixelSize * 2;
+            _borderPixelSize = borderPixelSize;
 
             UpdateMesh();
 
@@ -97,54 +104,39 @@ namespace Electron2D.UI
             float scale = Math.Min(1f, maxTotalBorder / (_borderPixelSize * 2f));
             float border = _borderPixelSize * scale;
 
-            // The positions of the padding
+            // The positions of the inner border
             float L2 = L1 + border;
             float R2 = R1 - border;
             float T2 = T1 + border;
             float B2 = B1 - border;
 
-            // Creating the UV coordinates for the non-0 and non-1 UV values that should be the same regardless of the size of UI
+            // UV coordinates for the border seams
             float LU = Math.Clamp(_left, 0, 1f);
             float RU = 1 - Math.Clamp(_right, 0, 1f);
-            float TV = Math.Clamp(_top, 0, 1f);
-            float BV = 1 - Math.Clamp(_bottom, 0, 1f);
+            float TV = 1 - Math.Clamp(_top, 0, 1f);
+            float BV = Math.Clamp(_bottom, 0, 1f);
 
+            // 4x4 grid of vertices, row by row:
+            //  0  1  2  3    (y = T1)
+            //  4  5  6  7    (y = T2)
+            //  8  9 10 11    (y = B2)
+            // 12 13 14 15    (y = B1)
             SetVertex(0, L1, T1, 0, 1);
             SetVertex(1, L2, T1, LU, 1);
-            SetVertex(2, L2, T2, LU, TV);
-            SetVertex(3, L1, T2, 0, TV);
-            SetVertex(4, R2, T1, RU, 1);
-            SetVertex(5, R1, T1, 1, 1);
-            SetVertex(6, R1, T2, 1, TV);
-            SetVertex(7, R2, T2, RU, TV);
-            SetVertex(8, R2, B2, RU, BV);
-            SetVertex(9, R1, B2, 1, BV);
-            SetVertex(10, R1, B1, 1, 0);
-            SetVertex(11, R2, B1, RU, 0);
-            SetVertex(12, L1, B2, 0, BV);
-            SetVertex(13, L2, B2, LU, BV);
-            SetVertex(14, L2, B1, LU, 0);
-            SetVertex(15, L1, B1, 0, 0);
-            SetVertex(16, L2, T1, LU, 1);
-            SetVertex(17, R2, T1, RU, 1);
-            SetVertex(18, R2, T2, RU, TV);
-            SetVertex(19, L2, T2, LU, TV);
-            SetVertex(20, R2, T2, RU, TV);
-            SetVertex(21, R1, T2, 1, TV);
-            SetVertex(22, R1, B2, 1, BV);
-            SetVertex(23, R2, B2, RU, BV);
-            SetVertex(24, L2, B2, LU, BV);
-            SetVertex(25, R2, B2, RU, BV);
-            SetVertex(26, R2, B1, RU, 0);
-            SetVertex(27, L2, B1, LU, 0);
-            SetVertex(28, L1, T2, 0, TV);
-            SetVertex(29, L2, T2, LU, TV);
-            SetVertex(30, L2, B2, LU, BV);
-            SetVertex(31, L1, B2, 0, BV);
-            SetVertex(32, L2, T2, LU, TV);
-            SetVertex(33, R2, T2, RU, TV);
-            SetVertex(34, R2, B2, RU, BV);
-            SetVertex(35, L2, B2, LU, BV);
+            SetVertex(2, R2, T1, RU, 1);
+            SetVertex(3, R1, T1, 1, 1);
+            SetVertex(4, L1, T2, 0, TV);
+            SetVertex(5, L2, T2, LU, TV);
+            SetVertex(6, R2, T2, RU, TV);
+            SetVertex(7, R1, T2, 1, TV);
+            SetVertex(8, L1, B2, 0, BV);
+            SetVertex(9, L2, B2, LU, BV);
+            SetVertex(10, R2, B2, RU, BV);
+            SetVertex(11, R1, B2, 1, BV);
+            SetVertex(12, L1, B1, 0, 0);
+            SetVertex(13, L2, B1, LU, 0);
+            SetVertex(14, R2, B1, RU, 0);
+            SetVertex(15, R1, B1, 1, 0);
 
             InitializeDefaultUVArray();
 
