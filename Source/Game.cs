@@ -111,7 +111,7 @@ namespace Electron2D
             Debug.Log("Starting initialization...");
             Engine.Initialize(this);
             Display.Initialize();
-            Settings = Settings.LoadSettingsFile();
+            Settings = Settings.Load();
             Cursor.Initialize();
             AudioSystem.Initialize(Settings.AudioMasterVolume);
 
