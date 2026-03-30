@@ -73,7 +73,7 @@ namespace Electron2D
             AudioMasterVolume = json.AudioMasterVolume;
         }
 
-        public static Settings LoadSettingsFile()
+        public static Settings Load()
         {
             string json;
             bool setDisplaySettings = false;
@@ -119,11 +119,11 @@ namespace Electron2D
             }
 
             Settings s = new Settings(settingsJson);
-            s.WriteToJson();
+            s.Save();
             return s;
         }
 
-        private void WriteToJson()
+        public void Save()
         {
             SettingsJson settingsJson = new SettingsJson((int)Monitor.UserPointer, WindowWidth, WindowHeight, WindowMode,
                 Vsync, AntialiasingMode, RefreshRate, AudioMasterVolume);
