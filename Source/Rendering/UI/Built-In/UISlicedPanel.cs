@@ -1,4 +1,5 @@
 ﻿using Electron2D.Rendering;
+using System.Numerics;
 
 namespace Electron2D.UI
 {
@@ -111,32 +112,39 @@ namespace Electron2D.UI
             float B2 = B1 - border;
 
             // UV coordinates for the border seams
-            float LU = Math.Clamp(_left, 0, 1f);
-            float RU = 1 - Math.Clamp(_right, 0, 1f);
-            float TV = 1 - Math.Clamp(_top, 0, 1f);
-            float BV = Math.Clamp(_bottom, 0, 1f);
+            Vector2 texSize = Renderer.Material.MainTexture.GetSize();
+            float offsetTexelU = 0.1f / texSize.X;
+            float offsetTexelV = 0.1f / texSize.Y;
+            float LU = Math.Clamp(_left, 0, 1f) + offsetTexelU;
+            float RU = 1 - Math.Clamp(_right, 0, 1f) - offsetTexelU;
+            float TV = 1 - Math.Clamp(_top, 0, 1f) - offsetTexelV;
+            float BV = Math.Clamp(_bottom, 0, 1f) + offsetTexelV;
+            float U0 = offsetTexelU;
+            float U1 = 1 - offsetTexelU;
+            float V0 = offsetTexelV;
+            float V1 = 1 - offsetTexelV;
 
             // 4x4 grid of vertices, row by row:
             //  0  1  2  3    (y = T1)
             //  4  5  6  7    (y = T2)
             //  8  9 10 11    (y = B2)
             // 12 13 14 15    (y = B1)
-            SetVertex(0, L1, T1, 0, 1);
-            SetVertex(1, L2, T1, LU, 1);
-            SetVertex(2, R2, T1, RU, 1);
-            SetVertex(3, R1, T1, 1, 1);
-            SetVertex(4, L1, T2, 0, TV);
+            SetVertex(0, L1, T1, U0, V1);
+            SetVertex(1, L2, T1, LU, V1);
+            SetVertex(2, R2, T1, RU, V1);
+            SetVertex(3, R1, T1, U1, V1);
+            SetVertex(4, L1, T2, U0, TV);
             SetVertex(5, L2, T2, LU, TV);
             SetVertex(6, R2, T2, RU, TV);
-            SetVertex(7, R1, T2, 1, TV);
-            SetVertex(8, L1, B2, 0, BV);
+            SetVertex(7, R1, T2, U1, TV);
+            SetVertex(8, L1, B2, U0, BV);
             SetVertex(9, L2, B2, LU, BV);
             SetVertex(10, R2, B2, RU, BV);
-            SetVertex(11, R1, B2, 1, BV);
-            SetVertex(12, L1, B1, 0, 0);
-            SetVertex(13, L2, B1, LU, 0);
-            SetVertex(14, R2, B1, RU, 0);
-            SetVertex(15, R1, B1, 1, 0);
+            SetVertex(11, R1, B2, U1, BV);
+            SetVertex(12, L1, B1, U0, V0);
+            SetVertex(13, L2, B1, LU, V0);
+            SetVertex(14, R2, B1, RU, V0);
+            SetVertex(15, R1, B1, U1, V0);
 
             InitializeDefaultUVArray();
 
