@@ -6,6 +6,7 @@
         public bool UseWorldPosition;
         public bool IgnorePostProcessing;
         public bool Mask;
+        public bool SnapToPixels;
 
         public UIRenderArgs()
         {
@@ -13,6 +14,7 @@
             UseWorldPosition = false;
             IgnorePostProcessing = true;
             Mask = false;
+            SnapToPixels = true;
         }
 
         public UIRenderArgs(UIRenderArgs argsToCopy)
@@ -21,6 +23,7 @@
             UseWorldPosition = argsToCopy.UseWorldPosition;
             IgnorePostProcessing = argsToCopy.IgnorePostProcessing;
             Mask = argsToCopy.Mask;
+            SnapToPixels = argsToCopy.SnapToPixels;
         }
     }
 }
