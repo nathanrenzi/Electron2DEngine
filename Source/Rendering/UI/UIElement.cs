@@ -299,6 +299,10 @@ namespace Electron2D.UI
         /// </summary>
         public bool IgnorePostProcessing { get; }
         /// <summary>
+        /// Gets or sets whether to snap this element to screen pixels. Only considered when not using world space.
+        /// </summary>
+        public bool SnapToPixels { get; set; }
+        /// <summary>
         /// Gets whether this element can have children added to it.
         /// </summary>
         public bool CanAddChildren { get; set; } = true;
@@ -328,6 +332,7 @@ namespace Electron2D.UI
             _useWorldPosition = arguments.Value.UseWorldPosition;
             IgnorePostProcessing = arguments.Value.IgnorePostProcessing;
             Mask = arguments.Value.Mask;
+            SnapToPixels = arguments.Value.SnapToPixels;
             _useMeshRenderer = useMeshRenderer;
 
             if (_useMeshRenderer)
@@ -851,16 +856,12 @@ namespace Electron2D.UI
         {
             if (Renderer != null)
             {
-                Vector2 pos;
-                if (!UseWorldPosition)
+                Vector2 pos = GetVirtualPosition();
+                if (SnapToPixels && !UseWorldPosition)
                 {
-                    pos = UICanvas.Instance.VirtualToScreen(GetVirtualPosition());
+                    pos = UICanvas.Instance.VirtualToScreen(pos);
                     pos = new Vector2(MathF.Round(pos.X), MathF.Round(pos.Y));
                     pos = UICanvas.Instance.ScreenToVirtual(pos);
-                }
-                else
-                {
-                    pos = GetVirtualPosition();
                 }
 
                 switch (maskMode)
