@@ -29,7 +29,7 @@ namespace Electron2D.Audio
             _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channelCount));
             _mixer.ReadFully = true;
             _masterVolumeSampleProvider = new VolumeSampleProvider(_mixer);
-            MasterVolume = MathEx.Clamp(masterVolume, 0, 2);
+            MasterVolume = masterVolume;
             _outputDevice.Init(_masterVolumeSampleProvider);
             _outputDevice.Play();
         }
