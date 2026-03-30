@@ -155,6 +155,29 @@ namespace Electron2D.UI
             float totalSpacing = children.Count > 1 ? spacing * (children.Count - 1) : 0;
             float totalMain = totalDesiredMain + totalSpacing;
 
+            // Two-pass stretch calculation
+            float fixedMain = 0f;
+            int flexCount = 0;
+
+            if (MainAxisAlignment == UILayoutAlignment.Stretch)
+            {
+                foreach (var child in children)
+                {
+                    float desired = GetMain(child.DesiredSize);
+                    bool isFixed = child.ExplicitSize.HasValue
+                        || (child.MinSize != Vector2.Zero && GetMain(child.MinSize) >= desired)
+                        || (GetMain(child.MaxSize) <= desired);
+
+                    if (isFixed)
+                        fixedMain += desired;
+                    else
+                        flexCount++;
+                }
+            }
+
+            float availableForFlex = Math.Max(0, innerMain - totalSpacing - fixedMain);
+            float stretchMainPerFlex = flexCount > 0 ? availableForFlex / flexCount : 0f;
+
             float mainStart = GetMain(new Vector2(innerRect.X, innerRect.Y));
             switch (MainAxisAlignment)
             {
@@ -167,18 +190,24 @@ namespace Electron2D.UI
             }
 
             float crossStart = GetCross(new Vector2(innerRect.X, innerRect.Y));
-
-            float stretchMainPerChild = MainAxisAlignment == UILayoutAlignment.Stretch && children.Count > 0
-                ? Math.Max(0, (innerMain - totalSpacing) / children.Count)
-                : 0;
-
             float currentMain = mainStart;
 
             foreach (var child in children)
             {
-                float slotMain = MainAxisAlignment == UILayoutAlignment.Stretch
-                    ? stretchMainPerChild
-                    : GetMain(child.DesiredSize);
+                float slotMain;
+                if (MainAxisAlignment == UILayoutAlignment.Stretch)
+                {
+                    float desired = GetMain(child.DesiredSize);
+                    bool isFixed = child.ExplicitSize.HasValue
+                        || (child.MinSize != Vector2.Zero && GetMain(child.MinSize) >= desired)
+                        || (GetMain(child.MaxSize) <= desired);
+
+                    slotMain = isFixed ? desired : stretchMainPerFlex;
+                }
+                else
+                {
+                    slotMain = GetMain(child.DesiredSize);
+                }
 
                 float slotCross;
                 float slotCrossOffset;
