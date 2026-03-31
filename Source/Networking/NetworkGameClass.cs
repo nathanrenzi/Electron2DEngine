@@ -9,8 +9,8 @@ namespace Electron2D.Networking
     /// sends update data to the server, which is then received and interpreted by all other clients.
     /// <see cref="ToJson()"/> is called by a message from the server, requesting the current
     /// state of the game class so that a connecting client can properly initialize their object. Any
-    /// subclasses of <see cref="NetworkGameClass"/> must call <see cref="Network.RegisterNetworkGameClass"/>
-    /// in the <see cref="Game.Initialize"/> method to be properly instantiated over the network.
+    /// subclasses of <see cref="NetworkGameClass"/> must implement <see cref="INetworkFactory"/>
+    /// to be automatically discovered and registered when <see cref="Network.RegisterAll"/> is called.
     /// </summary>
     public abstract class NetworkGameClass : IGameClass
     {
@@ -19,6 +19,8 @@ namespace Electron2D.Networking
             public Type ExpectedType;
             public Action<NetworkGameClass> Callback;
         }
+
+        private static readonly Dictionary<Type, int> _registerIDs = new();
 
         public string NetworkID { get; private set; } = string.Empty;
         public ushort OwnerID { get; private set; } = ushort.MaxValue;
@@ -70,6 +72,16 @@ namespace Electron2D.Networking
         }
         public virtual void FixedUpdate() { }
         public virtual void Update() { }
+
+        internal static void AssignRegisterID(Type type, int id)
+        {
+            _registerIDs[type] = id;
+        }
+
+        /// <summary>
+        /// Returns the register ID assigned to this class during <see cref="Network.RegisterAll"/>.
+        /// </summary>
+        protected internal int GetRegisterID() => _registerIDs[GetType()];
 
         /// <summary>
         /// Sends a request to the server to spawn this object.
@@ -265,7 +277,7 @@ namespace Electron2D.Networking
         /// so that players joining after object has been created are up to date.
         /// </summary>
         /// <param name="json">The json that is used to create the network class.</param>
-        protected abstract void SetJson(string json);
+        protected internal abstract void SetJson(string json);
         /// <summary>
         /// Should get the current state of the network class in json format.
         /// </summary>
@@ -277,12 +289,6 @@ namespace Electron2D.Networking
         /// <param name="type">The type of data received.</param>
         /// <param name="json">The update data in json format.</param>
         protected internal virtual void ReceiveData(ushort type, string json) { }
-        /// <summary>
-        /// Returns the register ID of the class. The register ID must be set by passing the value returned
-        /// from <see cref="Network.RegisterNetworkGameClass"/> into a static method in each subclass.
-        /// </summary>
-        /// <returns></returns>
-        protected internal abstract int GetRegisterID();
         /// <summary>
         /// Called when the server initializes the network game class.
         /// </summary>

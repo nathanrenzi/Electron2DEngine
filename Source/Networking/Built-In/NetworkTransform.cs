@@ -7,7 +7,7 @@ namespace Electron2D.Networking
     /// <summary>
     /// Replicates a Transform object over the network. Uses <see cref="NetworkGameClass"/>.
     /// </summary>
-    public class NetworkTransform : NetworkGameClass
+    public class NetworkTransform : NetworkGameClass, INetworkFactory
     {
         [Serializable]
         private class NetworkTransformInitializationJson
@@ -19,9 +19,7 @@ namespace Electron2D.Networking
             public NetworkValueSettings RotationNetworkSettings;
             public NetworkValueSettings ScaleNetworkSettings;
         }
-
-        private static int _registerID;
-        public static NetworkTransform FactoryMethod(string json)
+        public static NetworkGameClass FactoryMethod(string json)
         {
             NetworkTransform networkTransform = new NetworkTransform(new Transform());
             networkTransform.SetJson(json);
@@ -200,9 +198,6 @@ namespace Electron2D.Networking
             }
         }
 
-        public static void SetRegisterID(int registerID) => _registerID = registerID;
-        protected internal override int GetRegisterID() => _registerID;
-
         /// <summary>
         /// Manually sends a position update.
         /// </summary>
@@ -318,7 +313,7 @@ namespace Electron2D.Networking
             return JsonConvert.SerializeObject(initJson);
         }
 
-        protected override void SetJson(string json)
+        protected internal override void SetJson(string json)
         {
             NetworkTransformInitializationJson initJson = JsonConvert.DeserializeObject<NetworkTransformInitializationJson>(json);
             PositionNetworkSettings = initJson.PositionNetworkSettings;

@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Electron2D.Networking
 {
-    public class NetworkAudioInstance : NetworkGameClass
+    public class NetworkAudioInstance : NetworkGameClass, INetworkFactory
     {
         [Serializable]
         private class NetworkAudioInstanceInitializationJson
@@ -20,9 +20,7 @@ namespace Electron2D.Networking
             public float StartStopVolumeFadeTime;
             public List<string> Effects;
         }
-
-        private static int _registerID;
-        public static NetworkAudioInstance FactoryMethod(string json)
+        public static NetworkGameClass FactoryMethod(string json)
         {
             NetworkAudioInstance networkAudioInstance = new NetworkAudioInstance();
             networkAudioInstance.SetJson(json);
@@ -106,9 +104,6 @@ namespace Electron2D.Networking
 
         public override void FixedUpdate() { }
         public override void Update() { }
-
-        public static void SetRegisterID(int registerID) => _registerID = registerID;
-        protected internal override int GetRegisterID() => _registerID;
 
         protected internal override void OnDespawned()
         {
@@ -276,7 +271,7 @@ namespace Electron2D.Networking
             return JsonConvert.SerializeObject(json);
         }
 
-        protected override void SetJson(string json)
+        protected internal override void SetJson(string json)
         {
             NetworkAudioInstanceInitializationJson data = JsonConvert.DeserializeObject<NetworkAudioInstanceInitializationJson>(json);
             _audioInstance = new AudioInstance(ResourceManager.Instance.LoadAudioClip(data.AudioClipFilePath), data.Volume, data.Pitch, data.IsLoop, data.StartStopVolumeFadeTime);
