@@ -200,6 +200,7 @@ namespace Electron2D
             // Initializing physics thread
             PhysicsThread.Start();
 
+            Network.RegisterAll();
 
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);

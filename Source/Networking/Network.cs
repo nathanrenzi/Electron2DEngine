@@ -2,6 +2,7 @@
 using Riptide.Utils;
 using Electron2D.Networking.Core;
 using Steamworks;
+using System.Reflection;
 
 namespace Electron2D.Networking
 {
@@ -110,12 +111,7 @@ namespace Electron2D.Networking
             Engine.Game.RegisterGameClass(this);
         }
 
-        /// <summary>
-        /// Registers the factory method of a NetworkGameClass subclass so that they can be created at runtime.
-        /// </summary>
-        /// <param name="factoryMethod">A static method that creates the NetworkGameClass.</param>
-        /// <returns>The register ID of the class. This must be assigned to a register value in each subclass.</returns>
-        public static int RegisterNetworkGameClass(CreateNetworkGameClass factoryMethod)
+        private static int RegisterNetworkGameClass(CreateNetworkGameClass factoryMethod)
         {
             if (!NetworkGameClassRegister.Contains(factoryMethod))
             {
@@ -124,6 +120,56 @@ namespace Electron2D.Networking
             }
 
             return -1;
+        }
+
+        public static void RegisterAll()
+        {
+            var allTypes = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !a.FullName.StartsWith("System") && !a.FullName.StartsWith("Microsoft"))
+                .SelectMany(a =>
+                {
+                    try { return a.GetTypes(); }
+                    catch (ReflectionTypeLoadException e)
+                    {
+                        return e.Types.Where(t => t != null)!;
+                    }
+                })
+                .Where(t => t.IsClass && !t.IsAbstract)
+                .ToList();
+
+            // Sorted by FullName to ensure deterministic ID assignment across runs
+            var networkGameClasses = allTypes
+                .Where(t => typeof(NetworkGameClass).IsAssignableFrom(t))
+                .OrderBy(t => t.FullName)
+                .ToList();
+
+            var networkServices = allTypes
+                .Where(t => typeof(NetworkService).IsAssignableFrom(t))
+                .ToList();
+
+            foreach (var type in networkGameClasses)
+            {
+                if (!typeof(INetworkFactory).IsAssignableFrom(type))
+                {
+                    Debug.LogWarning($"[Network] {type.FullName} is a NetworkGameClass but does not implement INetworkFactory");
+                    continue;
+                }
+
+                var method = type.GetMethod("FactoryMethod", BindingFlags.Static | BindingFlags.Public)
+                    ?? throw new InvalidOperationException(
+                        $"{type.FullName} must implement INetworkFactory to be registered.");
+                var del = (CreateNetworkGameClass)Delegate.CreateDelegate(typeof(CreateNetworkGameClass), method);
+                int id = RegisterNetworkGameClass(del);
+                NetworkGameClass.AssignRegisterID(type, id);
+                Debug.Log($"[Network] NetworkGameClass registered: {type.FullName} => ID {id}");
+            }
+
+            foreach (var type in networkServices)
+            {
+                Instance.Client.Services.Register(type);
+                Instance.Server.Services.Register(type);
+                Debug.Log($"[Network] NetworkService registered: {type.FullName}");
+            }
         }
 
         public void Update()

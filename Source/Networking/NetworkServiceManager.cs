@@ -12,11 +12,13 @@ namespace Electron2D.Networking
             _isServer = isServer;
         }
 
-        public void Register<T>() where T : NetworkService
+        public void Register(Type type)
         {
-            T service = (T)Activator.CreateInstance(typeof(T), args: _isServer)!;
-            _services.Add(typeof(T), service);
+            var service = (NetworkService)Activator.CreateInstance(type, args: _isServer)!;
+            _services.Add(type, service);
         }
+
+        public bool HasService<T>() where T : NetworkService => _services.ContainsKey(typeof(T));
 
         public T Get<T>() where T : NetworkService
         {
