@@ -424,16 +424,13 @@ namespace Electron2D.Networking.Core
         }
         private void HandleDisconnected(object? sender, DisconnectedEventArgs e)
         {
+            bool notifyServer = e.Reason != DisconnectReason.ServerStopped
+                             && e.Reason != DisconnectReason.Kicked
+                             && e.Reason != DisconnectReason.TimedOut;
+
             foreach (var pair in NetworkGameClasses)
             {
-                if(!pair.Value.IsOwner)
-                {
-                    pair.Value.MarkDispose();
-                }
-                else
-                {
-                    pair.Value.Despawn(true);
-                }
+                pair.Value.Despawn(!notifyServer ? false : !pair.Value.IsOwner ? false : true);
             }
             NetworkGameClasses.Clear();
             _syncingNetworkGameClasses.Clear();

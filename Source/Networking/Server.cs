@@ -160,7 +160,7 @@ namespace Electron2D.Networking.Core
             _networkGameClassOwners.Clear();
             _serverPassword = "";
             _hostAssigned = false;
-            _hostID = 0;
+            _hostID = 1;
         }
 
         #region Handlers
