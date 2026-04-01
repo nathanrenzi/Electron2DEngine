@@ -86,6 +86,7 @@ namespace Electron2D.UI
             {
                 UIModelMatrix = Matrix4x4.Identity;
                 UIModelMatrixInverse = Matrix4x4.Identity;
+                VirtualResolution = Display.WindowSize;
             }
             else
             {
