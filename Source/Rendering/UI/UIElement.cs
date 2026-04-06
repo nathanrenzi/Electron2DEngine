@@ -337,7 +337,7 @@ namespace Electron2D.UI
 
             if (_useMeshRenderer)
             {
-                Renderer = new MeshRenderer(Material.Create(GlobalShaders.DefaultInterface))
+                Renderer = new MeshRenderer(Material.Create(GlobalShaders.Interface))
                 {
                     UseUnscaledProjectionMatrix = !UseWorldPosition,
                     UseStencilBuffer = true

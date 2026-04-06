@@ -2,34 +2,34 @@
 {
     public static class GlobalShaders
     {
-        public static SharedResource<Shader> DefaultTexturedVertex { get; private set; }
-        public static SharedResource<Shader> DefaultTexture { get; private set; }
-        public static SharedResource<Shader> DefaultTextureArray { get; private set; }
-        public static SharedResource<Shader> DefaultInterface { get; private set; }
-        public static SharedResource<Shader> DefaultVertex { get; private set; }
-        public static SharedResource<Shader> DefaultText { get; private set; }
-        public static SharedResource<Shader> DefaultLit { get; private set; }
+        public static SharedResource<Shader> TexturedVertex { get; private set; }
+        public static SharedResource<Shader> Texture { get; private set; }
+        public static SharedResource<Shader> TextureArray { get; private set; }
+        public static SharedResource<Shader> Interface { get; private set; }
+        public static SharedResource<Shader> Vertex { get; private set; }
+        public static SharedResource<Shader> Text { get; private set; }
+        public static SharedResource<Shader> Lit { get; private set; }
 
         internal static void Initialize()
         {
-            DefaultTexturedVertex = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultTexturedVertex.glsl")), true));
-            DefaultTexture = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultTexture.glsl")), true));
-            DefaultTextureArray = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultTextureArray.glsl")), true));
-            DefaultInterface = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultInterface.glsl")), true));
-            DefaultVertex = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultVertex.glsl")), true));
-            DefaultText = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultText.glsl")), true));
-            DefaultLit = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultLit.glsl")), true, new string[] { "lights" }));
+            TexturedVertex = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/TexturedVertex.glsl")), true));
+            Texture = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/Texture.glsl")), true));
+            TextureArray = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/TextureArray.glsl")), true));
+            Interface = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/Interface.glsl")), true));
+            Vertex = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/Vertex.glsl")), true));
+            Text = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/Text.glsl")), true));
+            Lit = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/Lit.glsl")), true, new string[] { "lights" }));
         }
 
         internal static void Shutdown()
         {
-            DefaultTexturedVertex.Release();
-            DefaultTexture.Release();
-            DefaultTextureArray.Release();
-            DefaultInterface.Release();
-            DefaultVertex.Release();
-            DefaultText.Release();
-            DefaultLit.Release();
+            TexturedVertex.Release();
+            Texture.Release();
+            TextureArray.Release();
+            Interface.Release();
+            Vertex.Release();
+            Text.Release();
+            Lit.Release();
         }
     }
 }

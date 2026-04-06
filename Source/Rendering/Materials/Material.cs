@@ -77,7 +77,7 @@ namespace Electron2D.Rendering
 
         public static Material Create(Color color)
         {
-            return Create(GlobalShaders.DefaultTexture, color);
+            return Create(GlobalShaders.Texture, color);
         }
 
         public static Material CreateCircle(SharedResource<Shader> shader, Color color)
@@ -90,12 +90,12 @@ namespace Electron2D.Rendering
 
         public static Material CreateCircle(Color color)
         {
-            return CreateCircle(GlobalShaders.DefaultTexture, color);
+            return CreateCircle(GlobalShaders.Texture, color);
         }
 
         public static Material CreateCircle(Color color, bool forInterface = false)
         {
-            return CreateCircle(forInterface ? GlobalShaders.DefaultInterface : GlobalShaders.DefaultTexture, color);
+            return CreateCircle(forInterface ? GlobalShaders.Interface : GlobalShaders.Texture, color);
         }
 
         public static Material CreateLit(Color mainColor, SharedResource<Texture2D> mainTexture = null,
