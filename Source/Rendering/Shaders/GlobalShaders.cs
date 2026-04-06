@@ -2,12 +2,12 @@
 {
     public class GlobalShaders
     {
-        public static Shader DefaultTexturedVertex { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultTexturedVertex.glsl")), true);
-        public static Shader DefaultTexture { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultTexture.glsl")), true);
-        public static Shader DefaultTextureArray { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultTextureArray.glsl")), true);
-        public static Shader DefaultInterface { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultInterface.glsl")), true);
-        public static Shader DefaultVertex { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultVertex.glsl")), true);
-        public static Shader DefaultText { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultText.glsl")), true);
-        public static Shader DefaultLit { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultLit.glsl")), true, new string[] {"lights"});
+        public static Shader TexturedVertex { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/TexturedVertex.glsl")), true);
+        public static Shader Texture { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/Texture.glsl")), true);
+        public static Shader TextureArray { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/TextureArray.glsl")), true);
+        public static Shader Interface { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/Interface.glsl")), true);
+        public static Shader Vertex { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/Vertex.glsl")), true);
+        public static Shader Text { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/Text.glsl")), true);
+        public static Shader Lit { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/Lit.glsl")), true, ["lights"]);
     }
 }

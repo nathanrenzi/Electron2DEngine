@@ -39,7 +39,7 @@ namespace Electron2D.Rendering
 
         public static unsafe void Render(Texture2D _texture, int _alpha)
         {
-            Shader shader = GlobalShaders.DefaultInterface;
+            Shader shader = GlobalShaders.Interface;
             shader.Use();
             shader.SetColor("mainColor", Color.FromArgb(_alpha, Color.White));
             shader.SetMatrix4x4("model", Matrix4x4.Identity);
