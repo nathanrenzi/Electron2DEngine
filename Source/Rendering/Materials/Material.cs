@@ -79,7 +79,7 @@ namespace Electron2D.Rendering
         }
         public static Material Create(Color color)
         {
-            return Create(GlobalShaders.DefaultTexture, color);
+            return Create(GlobalShaders.Texture, color);
         }
         public static Material CreateCircle(Shader shader, Color color)
         {
@@ -87,22 +87,22 @@ namespace Electron2D.Rendering
         }
         public static Material CreateCircle(Color color)
         {
-            return CreateCircle(GlobalShaders.DefaultTexture, color);
+            return CreateCircle(GlobalShaders.Texture, color);
         }
         public static Material CreateCircle(Color color, bool forInterface = false)
         {
-            return CreateCircle(forInterface ? GlobalShaders.DefaultInterface : GlobalShaders.DefaultTexture, color);
+            return CreateCircle(forInterface ? GlobalShaders.Interface : GlobalShaders.Texture, color);
         }
         public static Material CreateLit(Color mainColor, ITexture mainTexture = null, ITexture normalTexture = null,
             bool useLinearFiltering = false, float normalScale = 1)
         {
-            Shader shader = GlobalShaders.DefaultLit;
+            Shader shader = GlobalShaders.Lit;
             Material material = Create(shader, mainColor, mainTexture, normalTexture, useLinearFiltering, normalScale);
             return material;
         }
         public static Material CreateLit(ITexture mainTexture, ITexture normalTexture = null, bool useLinearFiltering = false, float normalScale = 1)
         {
-            Shader shader = GlobalShaders.DefaultLit;
+            Shader shader = GlobalShaders.Lit;
             Material material = Create(shader, Color.White, mainTexture, normalTexture, useLinearFiltering, normalScale);
             return material;
         }
