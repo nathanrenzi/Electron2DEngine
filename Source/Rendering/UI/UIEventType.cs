@@ -6,6 +6,7 @@
         MouseUp,
         MouseEnter,
         MouseLeave,
+        MouseScroll,
 
         Click,
 

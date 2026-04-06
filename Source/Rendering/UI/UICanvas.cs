@@ -197,6 +197,19 @@ namespace Electron2D.UI
                 _hoveredElement = hitElement;
             }
 
+            if (Input.ScrollDelta != 0 && hitElement != null)
+            {
+                var scrollEvt = new UIEvent
+                {
+                    Type = UIEventType.MouseScroll,
+                    Target = hitElement,
+                    Phase = EventPhase.Bubble,
+                    MousePosition = mousePosVirtual,
+                    MouseScrollDelta = Input.ScrollDelta
+                };
+                hitElement.RaiseEvent(scrollEvt);
+            }
+
             if (_draggedElement != null)
             {
                 var dragEvt = new UIEvent

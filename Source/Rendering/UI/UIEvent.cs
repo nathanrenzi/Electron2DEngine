@@ -12,6 +12,7 @@ namespace Electron2D.UI
 
         public Vector2 MousePosition { get; set; }
         public Vector2 MouseDelta { get; set; }
+        public float MouseScrollDelta { get; set; }
         public MouseButton MouseButton { get; set; }
 
         public void StopPropagation()
