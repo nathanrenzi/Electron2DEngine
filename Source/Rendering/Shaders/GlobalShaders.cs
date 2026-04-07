@@ -9,5 +9,6 @@
         public static Shader Vertex { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/Vertex.glsl")), true);
         public static Shader Text { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/Text.glsl")), true);
         public static Shader Lit { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/Lit.glsl")), true, ["lights"]);
+        public static Shader StencilOnly { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/StencilOnly.glsl")), true);
     }
 }

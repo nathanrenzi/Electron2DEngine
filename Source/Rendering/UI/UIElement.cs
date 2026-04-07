@@ -898,6 +898,11 @@ namespace Electron2D.UI
                     !UseWorldPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
                 Renderer.Render();
             }
+            else if (Mask && (maskMode == MaskWriteMode.Push || maskMode == MaskWriteMode.Pop))
+            {
+                // Using UICanvas to render the mask if Renderer == null
+                UICanvas.Instance.RenderMask(this, stencil, maskMode);
+            }
         }
 
         protected void RenderChildren(int stencil)
