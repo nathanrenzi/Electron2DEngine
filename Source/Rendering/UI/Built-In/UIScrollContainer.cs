@@ -1,0 +1,131 @@
+﻿using System.Numerics;
+
+namespace Electron2D.UI
+{
+    public class UIScrollContainer : UIElement
+    {
+        public float ScrollSpeed { get; set; } = 100f;
+        public bool CanScrollX { get; set; } = true;
+        public bool CanScrollY { get; set; } = true;
+        public ScrollContentSizing ContentSizingX { get; set; } = ScrollContentSizing.None;
+        public ScrollContentSizing ContentSizingY { get; set; } = ScrollContentSizing.None;
+        public Vector2 ScrollOffset { get; private set; }
+        public Vector2 MaxScrollOffset { get; private set; }
+        public UIContainer Content { get; }
+
+        public UIScrollContainer(UIRenderArgs? arguments = null)
+            : base(arguments.HasValue ? new UIRenderArgs(arguments.Value) { Mask = true } : new UIRenderArgs() { Mask = true }, false)
+        {
+            Content = new UIContainer(arguments)
+            {
+                IgnoreLayout = true,
+                Anchor = Vector2.Zero,
+                Pivot = Vector2.Zero
+            };
+
+            AddChild(Content);
+            AddEventListener(UIEventType.MouseScroll, OnMouseScroll);
+        }
+
+        protected override Vector2 MeasureCore(Vector2 availableSize)
+        {
+            availableSize = new Vector2(
+                Math.Max(0, availableSize.X - Padding.Left - Padding.Right),
+                Math.Max(0, availableSize.Y - Padding.Top - Padding.Bottom)
+            );
+
+            Vector2 contentConstraint = new Vector2(
+                CanScrollX ? float.PositiveInfinity : availableSize.X,
+                CanScrollY ? float.PositiveInfinity : availableSize.Y
+            );
+
+            Content.Measure(contentConstraint);
+            Vector2 contentSize = Content.DesiredSize;
+
+            float x = ContentSizingX switch
+            {
+                ScrollContentSizing.Match => availableSize.X,
+                ScrollContentSizing.Min => Math.Max(contentSize.X, availableSize.X),
+                _ => contentSize.X
+            };
+
+            float y = ContentSizingY switch
+            {
+                ScrollContentSizing.Match => availableSize.Y,
+                ScrollContentSizing.Min => Math.Max(contentSize.Y, availableSize.Y),
+                _ => contentSize.Y
+            };
+
+            return new Vector2(
+                x + Padding.Left + Padding.Right,
+                y + Padding.Top + Padding.Bottom
+            );
+        }
+
+        protected override void ArrangeCore(Rect finalRect)
+        {
+            Rect childRect = new Rect(
+                Padding.Left,
+                Padding.Top,
+                Math.Max(0, finalRect.Width - Padding.Left - Padding.Right),
+                Math.Max(0, finalRect.Height - Padding.Top - Padding.Bottom)
+            );
+
+            Vector2 contentSize = Content.DesiredSize;
+
+            float x = ContentSizingX switch
+            {
+                ScrollContentSizing.Match => Size.X,
+                ScrollContentSizing.Min => Math.Max(contentSize.X, Size.X),
+                _ => contentSize.X
+            };
+
+            float y = ContentSizingY switch
+            {
+                ScrollContentSizing.Match => Size.Y,
+                ScrollContentSizing.Min => Math.Max(contentSize.Y, Size.Y),
+                _ => contentSize.Y
+            };
+
+            MaxScrollOffset = new Vector2(
+                CanScrollX ? Math.Max(0, x - Size.X) : 0,
+                CanScrollY ? Math.Max(0, y - Size.Y) : 0
+            );
+
+            ScrollOffset = new Vector2(
+                Math.Clamp(ScrollOffset.X, 0, MaxScrollOffset.X),
+                Math.Clamp(ScrollOffset.Y, 0, MaxScrollOffset.Y)
+            );
+
+            Rect contentRect = new Rect(
+                childRect.X - ScrollOffset.X,
+                childRect.Y - ScrollOffset.Y,
+                x,
+                y
+            );
+
+            Content.Arrange(contentRect);
+        }
+
+        private void OnMouseScroll(UIEvent evt)
+        {
+            Vector2 delta = new Vector2(
+                CanScrollX ? -evt.MouseScrollDelta * ScrollSpeed : 0,
+                CanScrollY ? -evt.MouseScrollDelta * ScrollSpeed : 0
+            );
+
+            SetScrollOffset(ScrollOffset + delta);
+        }
+
+        public void SetScrollOffset(Vector2 offset)
+        {
+            ScrollOffset = new Vector2(
+                Math.Clamp(offset.X, 0, MaxScrollOffset.X),
+                Math.Clamp(offset.Y, 0, MaxScrollOffset.Y)
+            );
+            InvalidateMeasure();
+        }
+
+        public override void UpdateMesh() { }
+    }
+}
