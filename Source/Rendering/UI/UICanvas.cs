@@ -1,5 +1,7 @@
 ﻿using Electron2D.Rendering;
+using Electron2D.Rendering.Shaders;
 using System.Numerics;
+using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.UI
 {
@@ -17,6 +19,9 @@ namespace Electron2D.UI
         private UIElement _focusedElement = null;
         private UIElement _hoveredElement = null;
         private UIElement _draggedElement = null;
+
+        private MeshRenderer _maskRenderer;
+        private MeshRenderer _maskRendererWorld;
 
         private UIScalingMode _scalingMode;
         private bool _maintainAspect;
@@ -40,6 +45,32 @@ namespace Electron2D.UI
 
             Engine.Game.LateUpdateEvent += Update;
             Display.OnWindowResize += OnWindowResized;
+
+            float[] vertices = {
+                0f, 0f, 0f, 0f,
+                1f, 0f, 1f, 0f,
+                1f, 1f, 1f, 1f,
+                0f, 1f, 0f, 1f
+            };
+
+            uint[] indices = {
+                0, 1, 2,
+                2, 3, 0
+            };
+
+            _maskRenderer = new MeshRenderer(Material.Create(GlobalShaders.StencilOnly))
+            {
+                UseUnscaledProjectionMatrix = true,
+                UseStencilBuffer = true
+            };
+            _maskRenderer.SetVertexArrays(vertices, indices);
+
+            _maskRendererWorld = new MeshRenderer(Material.Create(GlobalShaders.StencilOnly))
+            {
+                UseUnscaledProjectionMatrix = false,
+                UseStencilBuffer = true
+            };
+            _maskRendererWorld.SetVertexArrays(vertices, indices);
         }
 
         public void RegisterUIElement(UIElement element)
@@ -57,6 +88,45 @@ namespace Electron2D.UI
         {
             _allElements.Remove(element);
             _rootElements.Remove(element);
+        }
+
+        public void RenderMask(UIElement element, int stencil, UIElement.MaskWriteMode maskMode)
+        {
+            MeshRenderer renderer = element.UseWorldPosition ? _maskRendererWorld : _maskRenderer;
+
+            Vector2 pos = element.GetVirtualPosition();
+            Vector2 pivotOffset = new Vector2(-element.Pivot.X * element.Size.X, -element.Pivot.Y * element.Size.Y);
+            pos += pivotOffset;
+
+            switch (maskMode)
+            {
+                case UIElement.MaskWriteMode.Push:
+                    renderer.StencilFunction = GL_EQUAL;
+                    renderer.StencilReference = stencil;
+                    renderer.StencilMask = 0xFF;
+                    renderer.StencilFunctionMask = 0xFF;
+                    renderer.StencilFail = GL_KEEP;
+                    renderer.StencilPass = GL_INCR;
+                    break;
+                case UIElement.MaskWriteMode.Pop:
+                    renderer.StencilFunction = GL_EQUAL;
+                    renderer.StencilReference = stencil + 1;
+                    renderer.StencilMask = 0xFF;
+                    renderer.StencilFunctionMask = 0xFF;
+                    renderer.StencilFail = GL_KEEP;
+                    renderer.StencilPass = GL_DECR;
+                    break;
+            }
+
+            renderer.GetMaterial().Shader.SetMatrix4x4("model",
+                !element.UseWorldPosition
+                    ? Matrix4x4.CreateScale(element.Size.X, element.Size.Y, 1f) * Matrix4x4.CreateTranslation(pos.X, pos.Y, 0f)
+                    : Matrix4x4.CreateScale(element.Size.X, element.Size.Y, 1f) * Matrix4x4.CreateTranslation(pos.X, -pos.Y, 0f)
+                        * Matrix4x4.CreateReflection(new Plane(0, 1, 0, pos.Y)));
+            renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix",
+                !element.UseWorldPosition ? UIModelMatrix : Matrix4x4.Identity);
+
+            renderer.Render();
         }
 
         public void OnElementParented(UIElement element)
