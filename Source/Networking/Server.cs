@@ -18,6 +18,7 @@ namespace Electron2D.Networking.Core
         public event Action<ushort> ClientConnected;
         public event Action<ushort> ClientDisconnected;
 
+        private List<Func<Connection, ValidationResult>> _connectionValidators = new();
         private Queue<(BuiltInMessageType, object, ushort)> _messageQueue = new();
         private Dictionary<uint, List<NetworkGameClassData>> _syncingClientSnapshots = new();
         private Dictionary<string, ushort> _networkGameClassOwners = new();
@@ -414,24 +415,49 @@ namespace Electron2D.Networking.Core
             }
             _networkGameClassesToRemove.Clear();
         }
+
+        /// <summary>
+        /// Adds a connection validator to the server. Connecting clients must pass all validators before
+        /// they are allowed to connect.
+        /// </summary>
+        public void AddConnectionValidator(Func<Connection, ValidationResult> validator)
+        {
+            if(!_connectionValidators.Contains(validator))
+            {
+                _connectionValidators.Add(validator);
+            }
+        }
+
+        /// <summary>
+        /// Removes a connection validator from the server.
+        /// </summary>
+        /// <param name="validator"></param>
+        /// <returns>true if validator is successfully removed.</returns>
+        public bool RemoveConnectionValidator(Func<Connection, ValidationResult> validator)
+        {
+            return _connectionValidators.Remove(validator);
+        }
+
         private void ValidateConnection(Connection pendingConnection, Message connectMessage)
         {
             string password = connectMessage.GetString();
-            if (_serverPassword != "")
+            if (_serverPassword != "" && !_serverPassword.Equals(password))
             {
-                if (_serverPassword.Equals(password))
+                RiptideServer.Reject(pendingConnection, Message.Create().AddString("Incorrect password."));
+                return;
+            }
+
+            for (int i = 0; i < _connectionValidators.Count; i++)
+            {
+                ValidationResult result = _connectionValidators[i].Invoke(pendingConnection);
+                if (!result.Success)
                 {
-                    RiptideServer.Accept(pendingConnection);
-                }
-                else
-                {
-                    RiptideServer.Reject(pendingConnection, Message.Create().AddString("Incorrect password."));
+                    RiptideServer.Reject(pendingConnection, Message.Create().AddString(result.FailureReason));
+                    return;
                 }
             }
-            else
-            {
-                RiptideServer.Accept(pendingConnection);
-            }
+
+            RiptideServer.Accept(pendingConnection);
         }
     }
 }
