@@ -17,7 +17,7 @@ namespace Electron2D.Networking.Core
         public bool IsConnecting => RiptideClient.IsConnecting;
 
         public event Action NetworkGameClassesLoaded;
-        public event Action<RejectReason> ConnectionFailed;
+        public event Action<RejectReason, string?> ConnectionFailed;
         public event Action ConnectionSuccessful;
         public event Action<DisconnectReason> Disconnected;
         public event Action<ushort> ClientConnected;
@@ -416,7 +416,14 @@ namespace Electron2D.Networking.Core
         }
         private void HandleConnectionFailed(object? sender, ConnectionFailedEventArgs e)
         {
-            ConnectionFailed?.Invoke(e.Reason);
+            string? message = null;
+            try
+            {
+                if (e.Message != null && e.Message.UnreadBits > 0)
+                    message = e.Message.GetString();
+            } catch { }
+            Debug.Log($"(CLIENT): Connection failed. Reason: {(e.Reason == RejectReason.Custom ? message : e.Reason)}");
+            ConnectionFailed?.Invoke(e.Reason, message);
         }
         private void HandleConnected(object? sender, EventArgs e)
         {
