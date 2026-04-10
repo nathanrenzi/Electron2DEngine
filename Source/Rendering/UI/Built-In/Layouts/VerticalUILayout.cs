@@ -2,6 +2,9 @@
 
 namespace Electron2D.UI
 {
+    /// <summary>
+    /// A <see cref="LinearUILayout"/> that arranges children horizontally.
+    /// </summary>
     public sealed class VerticalUILayout : LinearUILayout
     {
         protected override float GetMain(Vector2 v) => v.Y;
