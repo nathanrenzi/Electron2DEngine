@@ -5,7 +5,7 @@ using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.UI
 {
-    public class UICanvas
+    public sealed class UICanvas
     {
         public static UICanvas Instance { get; private set; }
         public event Action<float> OnUIScaleChanged;

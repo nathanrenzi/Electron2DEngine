@@ -8,7 +8,7 @@ namespace Electron2D.UI
         VirtualResolution
     }
 
-    public class UISettings
+    public sealed class UISettings
     {
         public UIScalingMode ScalingMode = UIScalingMode.VirtualResolution;
         public Vector2 VirtualResolution = new Vector2(1920, 1080);
