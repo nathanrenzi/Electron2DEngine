@@ -2,7 +2,7 @@
 
 namespace Electron2D.UI
 {
-    public class UIEvent
+    public sealed class UIEvent
     {
         public UIEventType Type { get; set; }
         public UIElement Target { get; set; }

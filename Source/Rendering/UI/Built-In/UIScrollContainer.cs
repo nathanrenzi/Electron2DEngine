@@ -2,9 +2,9 @@
 
 namespace Electron2D.UI
 {
-    public class UIScrollContainer : UIElement
+    public sealed class UIScrollContainer : UIElement
     {
-        public float ScrollSpeed { get; set; } = 100f;
+        public float ScrollSpeed { get; set; } = 200f;
         public bool CanScrollX { get; set; } = true;
         public bool CanScrollY { get; set; } = true;
         public ScrollContentSizing ContentSizingX { get; set; } = ScrollContentSizing.None;
@@ -87,15 +87,20 @@ namespace Electron2D.UI
                 _ => contentSize.Y
             };
 
+            bool snapToEndX = ScrollOffset.X == MaxScrollOffset.X;
+            bool snapToEndY = ScrollOffset.Y == MaxScrollOffset.Y;
+
             MaxScrollOffset = new Vector2(
                 CanScrollX ? Math.Max(0, x - Size.X) : 0,
                 CanScrollY ? Math.Max(0, y - Size.Y) : 0
             );
 
-            ScrollOffset = new Vector2(
-                Math.Clamp(ScrollOffset.X, 0, MaxScrollOffset.X),
-                Math.Clamp(ScrollOffset.Y, 0, MaxScrollOffset.Y)
-            );
+            float scrollOffsetX = snapToEndX ? MaxScrollOffset.X
+                : Math.Clamp(ScrollOffset.X, 0, MaxScrollOffset.X);
+            float scrollOffsetY = snapToEndY ? MaxScrollOffset.Y
+                : Math.Clamp(ScrollOffset.Y, 0, MaxScrollOffset.Y);
+
+            ScrollOffset = new Vector2(scrollOffsetX, scrollOffsetY);
 
             Rect contentRect = new Rect(
                 childRect.X - ScrollOffset.X,
