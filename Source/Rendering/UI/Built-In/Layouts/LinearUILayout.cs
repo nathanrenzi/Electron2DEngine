@@ -2,8 +2,16 @@
 
 namespace Electron2D.UI
 {
+    /// <summary>
+    /// A base class for UI layouts that arrange children along a single primary axis
+    /// (main axis) with alignment control on both the main and cross axes.
+    /// </summary>
     public abstract class LinearUILayout : UILayout
     {
+        /// <summary>
+        /// Gets or sets the fixed spacing in pixels between consecutive children.
+        /// Ignored when <see cref="SpaceBetween"/> is <see langword="true"/>.
+        /// </summary>
         public float Spacing
         {
             get => _spacing;
@@ -18,6 +26,14 @@ namespace Electron2D.UI
         }
         private float _spacing;
 
+
+        /// <summary>
+        /// Gets or sets how children are aligned along the main axis.
+        /// </summary>
+        /// <remarks>
+        /// When set to <see cref="UILayoutAlignment.Stretch"/>, children without an explicit
+        /// size are expanded to fill the available main-axis space equally.
+        /// </remarks>
         public UILayoutAlignment MainAxisAlignment
         {
             get => _mainAxisAlignment;
@@ -32,6 +48,14 @@ namespace Electron2D.UI
         }
         private UILayoutAlignment _mainAxisAlignment;
 
+
+        /// <summary>
+        /// Gets or sets how children are aligned along the cross axis.
+        /// </summary>
+        /// <remarks>
+        /// When set to <see cref="UILayoutAlignment.Stretch"/>, children are expanded to
+        /// fill the full cross-axis extent of the layout.
+        /// </remarks>
         public UILayoutAlignment CrossAxisAlignment
         {
             get => _crossAxisAlignment;
@@ -46,6 +70,10 @@ namespace Electron2D.UI
         }
         private UILayoutAlignment _crossAxisAlignment;
 
+        /// <summary>
+        /// Gets or sets whether spacing between children is distributed evenly across
+        /// the available main-axis space, ignoring the <see cref="Spacing"/> value.
+        /// </summary>
         public bool SpaceBetween
         {
             get => _spaceBetween;
@@ -60,6 +88,9 @@ namespace Electron2D.UI
         }
         private bool _spaceBetween;
 
+        /// <summary>
+        /// Gets or sets whether children are arranged in reverse order along the main axis.
+        /// </summary>
         public bool ReverseOrder
         {
             get => _reverseOrder;
@@ -74,8 +105,19 @@ namespace Electron2D.UI
         }
         private bool _reverseOrder;
 
+        /// <summary>
+        /// Extracts the main-axis component from a vector.
+        /// </summary>
         protected abstract float GetMain(Vector2 v);
+
+        /// <summary>
+        /// Extracts the cross-axis component from a vector.
+        /// </summary>
         protected abstract float GetCross(Vector2 v);
+
+        /// <summary>
+        /// Constructs a vector from separate main/cross-axis values.
+        /// </summary>
         protected abstract Vector2 MakeVector(float main, float cross);
 
         internal override Vector2 Measure(UIElement parent, Vector2 availableSize)
