@@ -10,14 +10,15 @@ namespace Electron2D.Rendering
         public int Width { get; set; }
         public int Height { get; set; }
         public int Layers { get; set; }
+        public bool NonColor { get; }
         public int GetTextureLayers() => Layers;
 
-        public Texture2DArray(uint _handle, int _width, int _height, int _layers)
+        public Texture2DArray(uint handle, int width, int height, int layers, bool nonColor)
         {
-            Handle = _handle;
-            Width = _width;
-            Height = _height;
-            Layers = _layers;
+            Handle = handle;
+            Width = width;
+            Height = height;
+            Layers = layers;
         }
 
         ~Texture2DArray()
@@ -58,7 +59,6 @@ namespace Electron2D.Rendering
             if (!_disposed)
             {
                 glDeleteTexture(Handle);
-                ResourceManager.Instance.RemoveTextureArray(this);
                 _disposed = true;
             }
         }

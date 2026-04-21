@@ -1,5 +1,4 @@
-﻿using Electron2D.Management;
-using static Electron2D.OpenGL.GL;
+﻿using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.Rendering
 {

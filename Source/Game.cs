@@ -1,11 +1,10 @@
-﻿using Box2D.NetStandard.Common;
-using Electron2D.Audio;
-using Electron2D.Management;
+﻿using Electron2D.Audio;
 using Electron2D.Misc;
 using Electron2D.Networking;
 using Electron2D.PhysicsBox2D;
 using Electron2D.Rendering;
 using Electron2D.Rendering.PostProcessing;
+using Electron2D.Rendering.Shaders;
 using Electron2D.UserInterface;
 using GLFW;
 using System.Drawing;
@@ -143,20 +142,23 @@ namespace Electron2D
             ApplyBlendingMode();
             // -----------
 
+            GlobalShaders.Initialize();
+            Material.Initialize();
+
             #region Splashscreen
             if (ProjectSettings.ShowElectron2DSplashscreen)
             {
                 // Displaying splashscreen
                 Debug.Log("Displaying splashscreen...");
                 Splashscreen.Initialize();
-                Texture2D splashscreenTexture = TextureFactory.Load(ResourceManager.GetEngineResourcePath("Textures/Electron2DSplashscreen.png"), false);
+                SharedResource<Texture2D> splashscreenTexture = Resources.GetTexture(Resources.GetEngineResourcePath("Textures/Electron2DSplashscreen.png"), false);
                 float splashscreenStartTime = (float)Glfw.Time;
                 float splashscreenDisplayTime = 4f;
                 float fadeTimePercentage = 0.3f;
                 float bufferTime = 0.5f;
                 float currentTime = -bufferTime;
                 bool hasPlayedAudio = false;
-                AudioInstance splashscreenAudio = AudioSystem.CreateInstance(ResourceManager.GetEngineResourcePath("Audio/Electron2DRiff.mp3"), volume: 0.3f);
+                AudioInstance splashscreenAudio = AudioSystem.CreateInstance(Resources.GetEngineResourcePath("Audio/Electron2DRiff.mp3"), volume: 0.3f);
                 while (!Glfw.WindowShouldClose(Display.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
                 {
                     Input.ProcessInput(); // Letting the window know the program is responding
@@ -190,7 +192,7 @@ namespace Electron2D
                 }
                 splashscreenAudio?.Dispose();
                 Splashscreen.Dispose();
-                splashscreenTexture.Dispose();
+                splashscreenTexture.Release();
                 Debug.Log("Splashscreen ended");
             }
             #endregion
@@ -200,7 +202,6 @@ namespace Electron2D
 
             // Initializing built-in network game classes
             NetworkTransform.SetRegisterID(Network.RegisterNetworkGameClass(NetworkTransform.FactoryMethod));
-            NetworkAudioInstance.SetRegisterID(Network.RegisterNetworkGameClass(NetworkAudioInstance.FactoryMethod));
 
             ShaderGlobalUniforms.RegisterGlobalUniform("lights", LightManager.Instance);
             ShaderGlobalUniforms.RegisterGlobalUniform("time", TimeUniform.Instance);
@@ -375,7 +376,10 @@ namespace Electron2D
             PhysicsCancellationToken.Cancel();
             PhysicsThread.Join();
             PhysicsCancellationToken.Dispose();
-            AudioSystem.Dispose();
+            Material.Shutdown();
+            GlobalShaders.Shutdown();
+            AudioSystem.Shutdown();
+            Resources.Shutdown();
             Debug.CloseLogFile();
             if (terminateGlfw)
             {

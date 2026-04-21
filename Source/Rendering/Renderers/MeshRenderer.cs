@@ -164,7 +164,7 @@ namespace Electron2D.Rendering
         {
             if (!Enabled) return;
             if (!HasVertexData) return;
-            if (!IsLoaded || Material.Shader.Compiled == false) return;
+            if (!IsLoaded || Material.Shader.Value.Compiled == false) return;
 
             if (IsVertexDirty)
             {
@@ -199,8 +199,8 @@ namespace Electron2D.Rendering
             }
 
             Material.Use();
-            Material.Shader.SetMatrix4x4("model", _transform.GetScaleMatrix() * _transform.GetRotationMatrix() * _transform.GetPositionMatrix());
-            Material.Shader.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.Main.GetUnscaledProjectionMatrix() : Camera2D.Main.GetViewProjectionMatrix());
+            Material.Shader.Value.SetMatrix4x4("model", _transform.GetScaleMatrix() * _transform.GetRotationMatrix() * _transform.GetPositionMatrix());
+            Material.Shader.Value.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.Main.GetUnscaledProjectionMatrix() : Camera2D.Main.GetViewProjectionMatrix());
 
             VertexArray.Bind();
             IndexBuffer.Bind();

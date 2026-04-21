@@ -56,7 +56,7 @@ namespace Electron2D.Rendering.Text
             }
         }
 
-        public FontGlyphStore FontGlyphStore { get; set; }
+        public SharedResource<FontGlyphStore> FontGlyphStore { get; set; }
         public string Text
         {
             get { return _text; }
@@ -108,7 +108,7 @@ namespace Electron2D.Rendering.Text
             }
         }
         private Rectangle _bounds;
-        private Shader _shader;
+        private SharedResource<Shader> _shader;
         private List<Iterator> _iterators = new List<Iterator>();
         private List<int> _lineOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
         private string _formattedText;
@@ -116,17 +116,19 @@ namespace Electron2D.Rendering.Text
         private float _firstLineMaxHeight = 0;
         private float _lastLineMinHeight = 0;
 
-        public unsafe TextRenderer(Transform transform, FontGlyphStore fontGlyphStore, Shader shader, string text,
+        public unsafe TextRenderer(Transform transform, SharedResource<FontGlyphStore> fontGlyphStore, SharedResource<Shader> shader, string text,
             Vector2 bounds, Color textColor, Color outlineColor,
             TextAlignment horizontalAlignment = TextAlignment.Left,
             TextAlignment verticalAlignment = TextAlignment.Top,
             TextAlignmentMode alignmentMode = TextAlignmentMode.Baseline,
             TextOverflowMode overflowMode = TextOverflowMode.Word,
             bool useUnscaledProjectionMatrix = true)
-            : base(transform, Material.Create(shader, new Texture2D(fontGlyphStore.TextureHandle, fontGlyphStore.TextureAtlasWidth, fontGlyphStore.Arguments.FontSize)))
+            : base(transform, Material.Create(shader, SharedResource<Texture2D>.Create(
+                new Texture2D(fontGlyphStore.Value.TextureHandle, fontGlyphStore.Value.TextureAtlasWidth,
+                fontGlyphStore.Value.Arguments.FontSize, null, false))))
         {
-            _shader = shader;
-            FontGlyphStore = fontGlyphStore;
+            _shader = shader.AddRef();
+            FontGlyphStore = fontGlyphStore.AddRef();
             Transform = transform;
             TextColor = textColor;
             OutlineColor = outlineColor;
@@ -164,23 +166,23 @@ namespace Electron2D.Rendering.Text
             {
                 if (VerticalAlignment == TextAlignment.Top)
                 {
-                    ypos += FontGlyphStore.Arguments.FontSize;
+                    ypos += FontGlyphStore.Value.Arguments.FontSize;
                 }
                 else if (VerticalAlignment == TextAlignment.Center)
                 {
-                    ypos += FontGlyphStore.Ascent / 2;
+                    ypos += FontGlyphStore.Value.Ascent / 2;
                 }
             }
 
             for (int i = 1; i < _formattedText.Length; i++)
             {
-                Character ch = FontGlyphStore.Characters[_formattedText[i + offset]];
+                Character ch = FontGlyphStore.Value.Characters[_formattedText[i + offset]];
 
                 if (_formattedText[i + offset] == '\n')
                 {
                     newlineCount++;
                     xpos = GetXOffset(newlineCount);
-                    ypos += (int)(FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+                    ypos += (int)(FontGlyphStore.Value.Arguments.FontSize * LineHeightMultiplier);
                 }
                 else
                 {
@@ -188,7 +190,7 @@ namespace Electron2D.Rendering.Text
                 }
 
                 int lineTop = ypos;
-                int lineBottom = ypos - (int)(FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+                int lineBottom = ypos - (int)(FontGlyphStore.Value.Arguments.FontSize * LineHeightMultiplier);
                 bool onThisLine = virtualPosition.Y >= lineBottom && virtualPosition.Y < lineTop;
                 if (onThisLine)
                 {
@@ -216,11 +218,11 @@ namespace Electron2D.Rendering.Text
                 int ypos = GetYOffset();
                 if (VerticalAlignment == TextAlignment.Top)
                 {
-                    ypos += FontGlyphStore.Arguments.FontSize;
+                    ypos += FontGlyphStore.Value.Arguments.FontSize;
                 }
                 else if (VerticalAlignment == TextAlignment.Center)
                 {
-                    ypos += FontGlyphStore.Ascent / 2;
+                    ypos += FontGlyphStore.Value.Ascent / 2;
                 }
                 return new Vector2(GetXOffset(0), ypos) + _position;
             }
@@ -235,23 +237,23 @@ namespace Electron2D.Rendering.Text
                 {
                     if (VerticalAlignment == TextAlignment.Top)
                     {
-                        ypos += FontGlyphStore.Arguments.FontSize;
+                        ypos += FontGlyphStore.Value.Arguments.FontSize;
                     }
                     else if (VerticalAlignment == TextAlignment.Center)
                     {
-                        ypos += FontGlyphStore.Ascent / 2;
+                        ypos += FontGlyphStore.Value.Ascent / 2;
                     }
                 }
 
                 for (int i = 1; i <= index; i++)
                 {
-                    Character ch = FontGlyphStore.Characters[_formattedText[i + offset]];
+                    Character ch = FontGlyphStore.Value.Characters[_formattedText[i + offset]];
 
                     if (_formattedText[i + offset] == '\n')
                     {
                         newlineCount++;
                         xpos = GetXOffset(newlineCount);
-                        ypos += (int)(FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+                        ypos += (int)(FontGlyphStore.Value.Arguments.FontSize * LineHeightMultiplier);
                     }
                     else
                     {
@@ -297,13 +299,13 @@ namespace Electron2D.Rendering.Text
                     // Skipping newline characters, rich text is not supported
                     if (unformattedText[i] == '\n') continue;
 
-                    Character ch = FontGlyphStore.Characters[unformattedText[i]];
-                    g = FT_Get_Char_Index(FontGlyphStore.Face, unformattedText[i]);
+                    Character ch = FontGlyphStore.Value.Characters[unformattedText[i]];
+                    g = FT_Get_Char_Index(FontGlyphStore.Value.Face, unformattedText[i]);
 
                     // Kerning
-                    if (FontGlyphStore.UseKerning)
+                    if (FontGlyphStore.Value.UseKerning)
                     {
-                        if (FT_Get_Kerning(FontGlyphStore.Face, p, g, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                        if (FT_Get_Kerning(FontGlyphStore.Value.Face, p, g, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
                         {
                             long* temp = (long*)delta.x;
                             long res = *temp;
@@ -311,7 +313,7 @@ namespace Electron2D.Rendering.Text
                         }
                         else
                         {
-                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontFile}");
+                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Value.Arguments.FontFile}");
                         }
                     }
 
@@ -339,11 +341,11 @@ namespace Electron2D.Rendering.Text
             for (int w = 0; w < words.Length; w++)
             {
                 bool outsideBoundsFlag = false;
-                previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
+                previousIndex = FT_Get_Char_Index(FontGlyphStore.Value.Face, ' ');
                 for (int i = 0; i < words[w].Length; i++)
                 {
-                    Character ch = FontGlyphStore.Characters[words[w][i]];
-                    glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, words[w][i]);
+                    Character ch = FontGlyphStore.Value.Characters[words[w][i]];
+                    glyphIndex = FT_Get_Char_Index(FontGlyphStore.Value.Face, words[w][i]);
 
                     // If first line, record tallest character
                     if (newlineCount == 0)
@@ -358,7 +360,7 @@ namespace Electron2D.Rendering.Text
                     if (words[w] == "\n")
                     {
                         _x = Bounds.X;
-                        _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+                        _y -= FontGlyphStore.Value.Arguments.FontSize * LineHeightMultiplier;
                         newlineCount++;
                         _lineOffsets.Add(Bounds.Width + Bounds.X - (int)_x);
 
@@ -368,9 +370,9 @@ namespace Electron2D.Rendering.Text
                     }
 
                     // Kerning
-                    if (FontGlyphStore.UseKerning)
+                    if (FontGlyphStore.Value.UseKerning)
                     {
-                        if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                        if (FT_Get_Kerning(FontGlyphStore.Value.Face, previousIndex, glyphIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
                         {
                             // 26.6 fixed-point to float pixels
                             float kx = delta.x / 64f;
@@ -378,7 +380,7 @@ namespace Electron2D.Rendering.Text
                         }
                         else
                         {
-                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontFile}");
+                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Value.Arguments.FontFile}");
                         }
                     }
 
@@ -404,7 +406,7 @@ namespace Electron2D.Rendering.Text
                     newlineCount++;
                     _lineOffsets.Add(Bounds.Width - (int)(_x - wordLength));
                     _x = wordLength;
-                    _y -= FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+                    _y -= FontGlyphStore.Value.Arguments.FontSize * LineHeightMultiplier;
                     minHeight = 0;
                     builder.Append('\n');
                 }
@@ -480,7 +482,7 @@ namespace Electron2D.Rendering.Text
             int x = GetXOffset(0);
             float _x = x;
             float _y = GetYOffset();
-            uint previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
+            uint previousIndex = FT_Get_Char_Index(FontGlyphStore.Value.Face, ' ');
             uint glyphIndex = 0;
             int newlineCount = 0;
 
@@ -488,11 +490,11 @@ namespace Electron2D.Rendering.Text
             {
                 if(VerticalAlignment == TextAlignment.Top)
                 {
-                    _y += FontGlyphStore.Arguments.FontSize;
+                    _y += FontGlyphStore.Value.Arguments.FontSize;
                 }
                 else if(VerticalAlignment == TextAlignment.Center)
                 {
-                    _y += FontGlyphStore.Ascent / 2f;
+                    _y += FontGlyphStore.Value.Ascent / 2f;
                 }
             }
 
@@ -500,8 +502,8 @@ namespace Electron2D.Rendering.Text
             {
                 for (int i = 0; i < _formattedText.Length; i++)
                 {
-                    Character ch = FontGlyphStore.Characters[_formattedText[i]];
-                    glyphIndex = FT_Get_Char_Index(FontGlyphStore.Face, _formattedText[i]);
+                    Character ch = FontGlyphStore.Value.Characters[_formattedText[i]];
+                    glyphIndex = FT_Get_Char_Index(FontGlyphStore.Value.Face, _formattedText[i]);
 
                     // If word is a newline character, handle it separately
                     if (_formattedText[i] == '\n')
@@ -509,15 +511,15 @@ namespace Electron2D.Rendering.Text
                         newlineCount++;
                         _x = GetXOffset(newlineCount);
                         // If the newline is the first character, it is meant to offset the first line, so use one as the multiplier
-                        _y += FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
-                        previousIndex = FT_Get_Char_Index(FontGlyphStore.Face, ' ');
+                        _y += FontGlyphStore.Value.Arguments.FontSize * LineHeightMultiplier;
+                        previousIndex = FT_Get_Char_Index(FontGlyphStore.Value.Face, ' ');
                         continue;
                     }
 
                     // Kerning
-                    if (FontGlyphStore.UseKerning)
+                    if (FontGlyphStore.Value.UseKerning)
                     {
-                        if (FT_Get_Kerning(FontGlyphStore.Face, previousIndex, glyphIndex,
+                        if (FT_Get_Kerning(FontGlyphStore.Value.Face, previousIndex, glyphIndex,
                             (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
                         {
                             float kx = delta.x / 64f;
@@ -525,7 +527,7 @@ namespace Electron2D.Rendering.Text
                         }
                         else
                         {
-                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Arguments.FontFile}");
+                            Debug.LogError($"FREETYPE: Unable to get kerning for font {FontGlyphStore.Value.Arguments.FontFile}");
                         }
                     }
 
@@ -588,15 +590,15 @@ namespace Electron2D.Rendering.Text
 
         protected override void BeforeRender()
         {
-            Material.Shader.SetMatrix4x4("uiMatrix", UseUnscaledProjectionMatrix ? UICanvas.Instance.UIModelMatrix
+            Material.Shader.Value.SetMatrix4x4("uiMatrix", UseUnscaledProjectionMatrix ? UICanvas.Instance.UIModelMatrix
                 : Matrix4x4.Identity);
 
-            Material.Shader.SetMatrix4x4("model", Matrix4x4.CreateScale(Transform.Scale.X, Transform.Scale.Y, 1f)
+            Material.Shader.Value.SetMatrix4x4("model", Matrix4x4.CreateScale(Transform.Scale.X, Transform.Scale.Y, 1f)
                 * Transform.GetRotationMatrix() * (UseUnscaledProjectionMatrix ? Matrix4x4.Identity
                 : Matrix4x4.CreateReflection(new Plane(new Vector3(0, 1, 0), 0)))
                 * Matrix4x4.CreateTranslation(_position.X, _position.Y, 0));
 
-            Material.Shader.SetColor("outlineColor", OutlineColor);
+            Material.Shader.Value.SetColor("outlineColor", OutlineColor);
         }
     }
 }

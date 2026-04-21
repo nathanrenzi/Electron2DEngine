@@ -1,13 +1,35 @@
 ﻿namespace Electron2D.Rendering.Shaders
 {
-    public class GlobalShaders
+    public static class GlobalShaders
     {
-        public static Shader DefaultTexturedVertex { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultTexturedVertex.glsl")), true);
-        public static Shader DefaultTexture { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultTexture.glsl")), true);
-        public static Shader DefaultTextureArray { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultTextureArray.glsl")), true);
-        public static Shader DefaultInterface { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultInterface.glsl")), true);
-        public static Shader DefaultVertex { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultVertex.glsl")), true);
-        public static Shader DefaultText { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultText.glsl")), true);
-        public static Shader DefaultLit { get; private set; } = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/DefaultLit.glsl")), true, new string[] {"lights"});
+        public static SharedResource<Shader> DefaultTexturedVertex { get; private set; }
+        public static SharedResource<Shader> DefaultTexture { get; private set; }
+        public static SharedResource<Shader> DefaultTextureArray { get; private set; }
+        public static SharedResource<Shader> DefaultInterface { get; private set; }
+        public static SharedResource<Shader> DefaultVertex { get; private set; }
+        public static SharedResource<Shader> DefaultText { get; private set; }
+        public static SharedResource<Shader> DefaultLit { get; private set; }
+
+        internal static void Initialize()
+        {
+            DefaultTexturedVertex = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultTexturedVertex.glsl")), true));
+            DefaultTexture = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultTexture.glsl")), true));
+            DefaultTextureArray = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultTextureArray.glsl")), true));
+            DefaultInterface = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultInterface.glsl")), true));
+            DefaultVertex = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultVertex.glsl")), true));
+            DefaultText = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultText.glsl")), true));
+            DefaultLit = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/DefaultLit.glsl")), true, new string[] { "lights" }));
+        }
+
+        internal static void Shutdown()
+        {
+            DefaultTexturedVertex.Release();
+            DefaultTexture.Release();
+            DefaultTextureArray.Release();
+            DefaultInterface.Release();
+            DefaultVertex.Release();
+            DefaultText.Release();
+            DefaultLit.Release();
+        }
     }
 }

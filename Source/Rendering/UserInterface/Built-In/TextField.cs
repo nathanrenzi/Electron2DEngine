@@ -207,6 +207,7 @@ namespace Electron2D.UserInterface
         private TextRenderer.Iterator _iterator;
         private StringBuilder _builder;
         private Material _caretMaterial;
+        private SharedResource<Shader> _caretShader;
         private char _holdingChar;
         private float _holdingCharTime = 0;
         private float _holdingRepeatTime = 0;
@@ -260,8 +261,10 @@ namespace Electron2D.UserInterface
             _textLabel.Interactable = false;
             _backgroundPanel.LayoutGroup.AddToLayout(_textLabel);
             _builder = new StringBuilder(Text);
+            _caretShader = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/CaretBlink.glsl")),
+                true, ["time"]));
             _caretMaterial = def.CaretMaterial == null ? 
-                Material.Create(new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")), true, ["time"]))
+                Material.Create(_caretShader)
                 : def.CaretMaterial;
             _caretPanel = new Panel(_caretMaterial, uiRenderLayer, _caretWidth, def.TextFontArguments.FontSize, useScreenPosition, ignorePostProcessing);
             _caretPanel.Visible = false;
@@ -320,7 +323,7 @@ namespace Electron2D.UserInterface
             screen.Y = MathF.Floor(screen.Y);
             position = UICanvas.Instance.ScreenToVirtual(screen);
             _caretPanel.Transform.Position = position;
-            _caretMaterial.Shader.SetFloat("startTime", Time.GameTime);
+            _caretMaterial.Shader.Value.SetFloat("startTime", Time.GameTime);
         }
 
         private new void OnClick()
@@ -505,6 +508,7 @@ namespace Electron2D.UserInterface
 
         protected override void OnDispose()
         {
+            _caretShader.Release();
             _backgroundPanel.Dispose();
             _textLabel.Dispose();
             _caretPanel.Dispose();

@@ -359,7 +359,7 @@ namespace Electron2D
         {
             if (IsWorldSpace)
             {
-                Renderer.Material.Shader.SetMatrix4x4("model", _fakeTransform.GetScaleMatrix() * _fakeTransform.GetRotationMatrix() * _transform.GetPositionMatrix());
+                Renderer.Material.Shader.Value.SetMatrix4x4("model", _fakeTransform.GetScaleMatrix() * _fakeTransform.GetRotationMatrix() * _transform.GetPositionMatrix());
             }
         }
         #endregion

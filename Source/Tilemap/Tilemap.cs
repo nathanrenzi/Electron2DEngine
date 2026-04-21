@@ -3,7 +3,6 @@ using Box2D.NetStandard.Dynamics.Bodies;
 using Box2D.NetStandard.Dynamics.Fixtures;
 using Electron2D.PhysicsBox2D;
 using Electron2D.Rendering;
-using Newtonsoft.Json;
 using System.Numerics;
 
 namespace Electron2D
@@ -22,15 +21,9 @@ namespace Electron2D
         public int TilePixelSize { get; set; }
         public int RenderLayer;
 
-        private int _realTilePixelSize
-        {
-            get
-            {
-                return TilePixelSize * 2; // Compensating for Transform 0.5x scaling
-            }
-        }
+        private int _realTilePixelSize => TilePixelSize * 2;
 
-        private Dictionary<Material, TileMesh> _meshDataDictionary = new Dictionary<Material, TileMesh>();
+        private Dictionary<Material, TileMesh> _meshDataDictionary = new();
         private Random _random;
         private int _seed;
         private bool _isDirty = false;
@@ -50,87 +43,45 @@ namespace Electron2D
             _random = new Random(_seed);
             Transform = new Transform();
 
-            // Add renderer for each new material
             for (int i = 0; i < Data.Length; i++)
             {
                 if (Data[i].Material == null) continue;
                 if (!_meshDataDictionary.ContainsKey(Data[i].Material))
-                {
                     _meshDataDictionary.Add(Data[i].Material, new TileMesh(Transform, Data[i].Material));
-                }
             }
 
             TileRotations = new byte[Tiles.Length];
             for (int i = 0; i < Tiles.Length; i++)
-            {
                 TileRotations[i] = (byte)_random.Next(0, 4);
-            }
 
             _isDirty = true;
             _isColliderDirty = true;
 
             RenderLayerManager.OrderRenderable(this);
-            Engine.Game.UnregisterGameClass(this);
+            Engine.Game.RegisterGameClass(this);
         }
 
-        /// <summary>
-        /// Creates a <see cref="Tilemap"/> set up for rendering with one shared material.
-        /// </summary>
-        /// <param name="tilePixelSize">The pixel size of each tile on the screen (Does not have anything to
-        ///  do with the pixel size of the material's texture.)</param>
-        /// <param name="sizeX">The size of the Tilemap on the X axis.</param>
-        /// <param name="sizeY">The size of the Tilemap on the Y axis.</param>
-        /// <param name="cloneArrays">Whether the input arrays should be cloned before storing
-        ///  to prevent data overwriting. Note: If the input arrays are being used for multiple tilemaps with shared
-        ///   materials, ensure that this is enabled.</param>
-        /// <returns></returns>
         public static Tilemap CreateSharedMaterial(Material material, TileData[] data, int[] tileArray, int tilePixelSize,
             int sizeX, int sizeY, int renderLayer = -1, bool cloneArrays = true)
         {
-            TileData[] d = data;
-            int[] tiles = tileArray;
-            if (cloneArrays)
-            {
-                d = (TileData[])data.Clone();
-                tiles = (int[])tileArray.Clone();
-            }
-            else
-            {
+            TileData[] d = cloneArrays ? (TileData[])data.Clone() : data;
+            int[] tiles = cloneArrays ? (int[])tileArray.Clone() : tileArray;
+
+            if (!cloneArrays)
                 Debug.LogWarning("Tilemap with shared material is being created without cloning input arrays.");
-            }
+
             for (int i = 0; i < d.Length; i++)
-            {
                 d[i].Material = material;
-            }
+
             return new Tilemap(d, tiles, tilePixelSize, sizeX, sizeY, renderLayer);
         }
 
-        /// <summary>
-        /// Creates a <see cref="Tilemap"/> set up for rendering with multiple materials, and multiple renderers.
-        /// </summary>
-        /// <param name="tilePixelSize">The pixel size of each tile on the screen (Does not have anything to
-        ///  do with the pixel size of the material's texture.)</param>
-        /// <param name="sizeX">The size of the Tilemap on the X axis.</param>
-        /// <param name="sizeY">The size of the Tilemap on the Y axis.</param>
-        /// <param name="cloneArrays">Whether the input arrays should be cloned before storing
-        ///  to prevent data overwriting.</param>
-        /// <returns></returns>
         public static Tilemap CreateMultiMaterial(TileData[] data, int[] tileArray, int tilePixelSize,
             int sizeX, int sizeY, int renderLayer = -1, bool cloneArrays = true)
         {
-            TileData[] d = data;
-            int[] tiles = tileArray;
-            if (cloneArrays)
-            {
-                d = (TileData[])data.Clone();
-                tiles = (int[])tileArray.Clone();
-            }
+            TileData[] d = cloneArrays ? (TileData[])data.Clone() : data;
+            int[] tiles = cloneArrays ? (int[])tileArray.Clone() : tileArray;
             return new Tilemap(d, tiles, tilePixelSize, sizeX, sizeY, renderLayer);
-        }
-
-        ~Tilemap()
-        {
-            Dispose();
         }
 
         public void Update() { RegenerateEntireMesh(); }
@@ -141,18 +92,10 @@ namespace Electron2D
         {
             RenderLayerManager.RemoveRenderable(this);
             Engine.Game.UnregisterGameClass(this);
-            GC.SuppressFinalize(this);
         }
 
-        public string ToJson()
-        {
-            throw new NotImplementedException();
-        }
-
-        public static Tilemap FromJson(string json)
-        {
-            throw new NotImplementedException();
-        }
+        public string ToJson() => throw new NotImplementedException();
+        public static Tilemap FromJson(string json) => throw new NotImplementedException();
 
         private void RegenerateEntireMesh()
         {
@@ -162,15 +105,15 @@ namespace Electron2D
 
             for (int i = 0; i < Tiles.Length; i++)
             {
-                if (Tiles[i] == -1) continue; // If the tile is empty (-1), skip
+                if (Tiles[i] == -1) continue;
                 TileData data = Data[Tiles[i]];
                 TileMesh mesh = _meshDataDictionary[data.Material];
+                Texture2D mainTexture = data.Material.MainTexture.Value;
 
                 Vector2 pos = FromIndex(i);
                 float xPos = pos.X * _realTilePixelSize;
                 float yPos = pos.Y * _realTilePixelSize;
 
-                // Finding tile and its 8 neighbors
                 int[] neighbors = new int[9];
                 for (int y = -1; y < 2; y++)
                 {
@@ -180,78 +123,46 @@ namespace Electron2D
                         if (tileIndex < Tiles.Length && tileIndex >= 0)
                         {
                             int neighborXPos = (i % SizeX) + x;
-                            if(neighborXPos < 0 || neighborXPos >= SizeX)
-                            {
-                                // This neighbor tile is on another y-level, so mark it as blank instead
-                                neighbors[(x + 1) + ((y + 1) * 3)] = -1;
-                            }
-                            else
-                            {
-                                // Check the actual tile
-                                neighbors[(x + 1) + ((y + 1) * 3)] = Tiles[tileIndex];
-                            }
+                            neighbors[(x + 1) + ((y + 1) * 3)] = (neighborXPos < 0 || neighborXPos >= SizeX)
+                                ? -1
+                                : Tiles[tileIndex];
                         }
                         else
                         {
-                            // Index outside of tile array length
-                            neighbors[(x+1) + ((y+1) * 3)] = -1;
+                            neighbors[(x + 1) + ((y + 1) * 3)] = -1;
                         }
                     }
                 }
 
-                for (int a = 0; a < 4; a++) // Each vertex in the quad
+                for (int a = 0; a < 4; a++)
                 {
-                    float xMod = 0;
-                    float yMod = 0;
-                    switch (a)
-                    {
-                        case 0:
-                            xMod = _realTilePixelSize;
-                            yMod = _realTilePixelSize;
-                            break;
-                        case 1:
-                            xMod = 0;
-                            yMod = _realTilePixelSize;
-                            break;
-                        case 2:
-                            xMod = 0;
-                            yMod = 0;
-                            break;
-                        case 3:
-                            xMod = _realTilePixelSize;
-                            yMod = 0;
-                            break;
-                    }
+                    float xMod = (a == 0 || a == 3) ? _realTilePixelSize : 0;
+                    float yMod = (a == 0 || a == 1) ? _realTilePixelSize : 0;
 
-                    // Vertices
-                    mesh.Vertices.Add(xPos + xMod); // X
-                    mesh.Vertices.Add(yPos + yMod); // Y
+                    mesh.Vertices.Add(xPos + xMod);
+                    mesh.Vertices.Add(yPos + yMod);
 
-                    // UV
                     float u = xMod / _realTilePixelSize;
                     float v = yMod / _realTilePixelSize;
                     Vector2 newUV;
-                    if(data.Ruleset != null)
+                    if (data.Ruleset != null)
                     {
                         newUV = data.Ruleset.CheckRulesetGetVertexUV(neighbors, new Vector2(u, v));
                     }
                     else
                     {
-                        newUV = Spritesheets.spritesheets.ContainsKey(data.Material.MainTexture) ?
-                            Spritesheets.GetVertexUV(data.Material.MainTexture,
-                            data.SpriteColumn, data.SpriteRow, new Vector2(u, v)) :
-                            new Vector2(u, v);
+                        newUV = Spritesheets.spritesheets.ContainsKey(mainTexture)
+                            ? Spritesheets.GetVertexUV(mainTexture, data.SpriteColumn, data.SpriteRow, new Vector2(u, v))
+                            : new Vector2(u, v);
+
                         if (data.AllowRandomRotation)
-                        {
                             newUV = RotateUV(newUV, TileRotations[i] * 90);
-                        }
                     }
 
-                    mesh.Vertices.Add(newUV.X); // U
-                    mesh.Vertices.Add(newUV.Y); // V
+                    mesh.Vertices.Add(newUV.X);
+                    mesh.Vertices.Add(newUV.Y);
                 }
 
-                // Indices
                 int vertices = mesh.Vertices.Count / 4 - 4;
                 mesh.Indices.Add((uint)(vertices + 0));
                 mesh.Indices.Add((uint)(vertices + 1));
@@ -291,19 +202,14 @@ namespace Electron2D
                     PolygonShape shape = new PolygonShape();
                     shape.SetAsBox(TilePixelSize / Physics.WorldScalar, TilePixelSize / Physics.WorldScalar, fixturePosition, 0);
                     fdef.shape = shape;
+
                     if (CollisionBody == 999999999)
                     {
-                        // Body is not initialized
-                        BodyDef bodyDef = new BodyDef()
-                        {
-                            position = Transform.Position / Physics.WorldScalar
-                        };
+                        BodyDef bodyDef = new BodyDef() { position = Transform.Position / Physics.WorldScalar };
                         CollisionBody = Physics.CreatePhysicsBody(bodyDef, fdef, new MassData(), true);
                     }
-                    if(body == null)
-                    {
-                        body = Physics.GetBody(CollisionBody);
-                    }
+
+                    body ??= Physics.GetBody(CollisionBody);
                     CollisionFixtures.Add(localPosition, body.CreateFixture(fdef));
                 }
                 else
@@ -329,30 +235,23 @@ namespace Electron2D
             int index = ToIndex(x, y);
             int currentTile = Tiles[index];
             if (!(Data[currentTile].IsCollider && Data[tileID].IsCollider))
-            {
                 _isColliderDirty = true;
-            }
-            Tiles[ToIndex(x, y)] = tileID;
+            Tiles[index] = tileID;
             _isDirty = true;
         }
+
         public int GetTileID(int x, int y) => Tiles[ToIndex(x, y)];
         public TileData GetTileData(int x, int y) => Data[GetTileID(x, y)];
         private int ToIndex(int x, int y) => x + y * SizeX;
         private Vector2 FromIndex(int index) => new Vector2(index % SizeX, index / SizeX);
-
         public int GetRenderLayer() => RenderLayer;
 
         public void Render()
         {
             foreach (var m in _meshDataDictionary)
-            {
                 m.Value.Renderer.Render();
-            }
         }
 
-        public bool ShouldIgnorePostProcessing()
-        {
-            return false;
-        }
+        public bool ShouldIgnorePostProcessing() => false;
     }
 }

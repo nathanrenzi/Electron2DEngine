@@ -9,7 +9,7 @@ namespace Electron2D.Rendering.PostProcessing
 
         public FXAAPostProcess()
         {
-            _shader = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/PostProcessing/FXAA.glsl")), true);
+            _shader = new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/PostProcessing/FXAA.glsl")), true);
         }
 
         public int PostProcess(int signal, FrameBuffer readBuffer)

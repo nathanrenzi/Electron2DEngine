@@ -54,7 +54,7 @@ namespace Electron2D.Rendering.PostProcessing
             if (_initialized) return;
             _initialized = true;
 
-            _shader = new Shader(Shader.ParseShader(ResourceManager.GetEngineResourcePath("Shaders/PostProcessing/DefaultPostProcessing.glsl")), true);
+            _shader = new Shader(Shader.ParseShader(Resources.GetEngineResourcePath("Shaders/PostProcessing/DefaultPostProcessing.glsl")), true);
 
             bool useHDR = ProjectSettings.UseHDRFrameBuffers;
             _renderBuffer = new FrameBuffer();

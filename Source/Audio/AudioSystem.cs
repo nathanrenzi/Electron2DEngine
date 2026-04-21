@@ -49,7 +49,7 @@ namespace Electron2D.Audio
             throw new NotImplementedException("Not yet implemented this channel count conversion");
         }
 
-        public static void Dispose()
+        public static void Shutdown()
         {
             _mixer.RemoveAllMixerInputs();
             _outputDevice.Stop();

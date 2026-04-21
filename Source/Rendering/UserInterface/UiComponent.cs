@@ -343,7 +343,7 @@ namespace Electron2D.UserInterface
             }
             if (Visible && UsingMeshRenderer)
             {
-                Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix", UseScreenPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
+                Renderer.GetMaterial().Shader.Value.SetMatrix4x4("uiMatrix", UseScreenPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
                 Renderer.Render();
             }
         }

@@ -1,61 +1,58 @@
-﻿using Electron2D.Rendering;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using static Electron2D.OpenGL.GL;
 
-namespace Electron2D.Management
+namespace Electron2D.Rendering
 {
     public static class TextureFactory
     {
-        public static Texture2D Load(string _textureName, bool _nonColor)
+        public static Texture2D Load(string filePath, bool nonColor)
         {
-            if (!File.Exists(_textureName))
+            if (!File.Exists(filePath))
             {
-                Debug.LogError($"File [ {_textureName} ] does not exist!");
-                return null;
+                throw new FileNotFoundException(filePath);
             }
 
             uint handle = glGenTexture();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, handle);
 
-            using var image = new Bitmap(_textureName);
+            using var image = new Bitmap(filePath);
             image.RotateFlip(RotateFlipType.RotateNoneFlipY);
             var data = image.LockBits(
                 new Rectangle(0, 0, image.Width, image.Height),
                 ImageLockMode.ReadOnly,
                 PixelFormat.Format32bppArgb);
    
-            glTexImage2D(GL_TEXTURE_2D, 0, _nonColor ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
+            glTexImage2D(GL_TEXTURE_2D, 0, nonColor ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             image.UnlockBits(data);
 
-            return new Texture2D(handle, image.Width, image.Height);
+            return new Texture2D(handle, image.Width, image.Height, filePath, nonColor);
         }
 
-        public static Texture2DArray LoadArray(string _textureName, int _layers, bool _nonColor)
+        public static Texture2DArray LoadArray(string filePath, int layers, bool nonColor)
         {
-            if (!File.Exists(_textureName))
+            if (!File.Exists(filePath))
             {
-                Debug.LogError($"File [ {_textureName} ] does not exist!");
-                return null;
+                throw new FileNotFoundException(filePath);
             }
 
             uint handle = glGenTexture();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
 
-            using var image = new Bitmap(_textureName);
+            using var image = new Bitmap(filePath);
             image.RotateFlip(RotateFlipType.RotateNoneFlipY);
             var data = image.LockBits(
                 new Rectangle(0, 0, image.Width, image.Height),
                 ImageLockMode.ReadOnly,
                 PixelFormat.Format32bppArgb);
 
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _nonColor ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height/_layers, _layers, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, nonColor ? GL_RGBA : GL_SRGB_ALPHA, image.Width, image.Height/layers, layers, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
 
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -63,15 +60,14 @@ namespace Electron2D.Management
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
             image.UnlockBits(data);
 
-            return new Texture2DArray(handle, image.Width, image.Height/_layers, _layers);
+            return new Texture2DArray(handle, image.Width, image.Height/layers, layers, nonColor);
         }
 
-        public static Texture2DArray LoadArray(string _textureName, int _spriteWidth, int _spriteHeight, bool _nonColor)
+        public static Texture2DArray LoadArray(string filePath, int spriteWidth, int spriteHeight, bool nonColor)
         {
-            if (!File.Exists(_textureName))
+            if (!File.Exists(filePath))
             {
-                Debug.LogError($"File [ {_textureName} ] does not exist!");
-                return null;
+                throw new FileNotFoundException(filePath);
             }
 
             uint handle = glGenTexture();
@@ -79,22 +75,22 @@ namespace Electron2D.Management
             glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
 
             // Spritesheet Image
-            var spritesheetImage = new Bitmap(_textureName);
+            var spritesheetImage = new Bitmap(filePath);
             spritesheetImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
 
-            if (_spriteWidth > spritesheetImage.Width || _spriteHeight > spritesheetImage.Height)
+            if (spriteWidth > spritesheetImage.Width || spriteHeight > spritesheetImage.Height)
             {
-                Debug.LogError($"TEXTURE FACTORY: Incorrect sprite size. Cannot convert spritesheet {_textureName} into texture array" +
-                    $"\nInput Width: {_spriteWidth} Input Height: {_spriteHeight} Texture Full Width: {spritesheetImage.Width} Texture Full Height: {spritesheetImage.Height}");
+                Debug.LogError($"TEXTURE FACTORY: Incorrect sprite size. Cannot convert spritesheet {filePath} into texture array" +
+                    $"\nInput Width: {spriteWidth} Input Height: {spriteHeight} Texture Full Width: {spritesheetImage.Width} Texture Full Height: {spritesheetImage.Height}");
                 return null;
             }
 
             // Calculating # of loops
-            int horizontalLoops = (int)MathF.Floor(spritesheetImage.Width / (float)_spriteWidth);
-            int verticalLoops = (int)MathF.Floor(spritesheetImage.Height / (float)_spriteHeight);
+            int horizontalLoops = (int)MathF.Floor(spritesheetImage.Width / (float)spriteWidth);
+            int verticalLoops = (int)MathF.Floor(spritesheetImage.Height / (float)spriteHeight);
 
             // Creating texture array in memory
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _nonColor ? GL_RGBA : GL_SRGB_ALPHA, _spriteWidth, _spriteHeight, horizontalLoops*verticalLoops, 0, GL_BGRA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, nonColor ? GL_RGBA : GL_SRGB_ALPHA, spriteWidth, spriteHeight, horizontalLoops*verticalLoops, 0, GL_BGRA, GL_UNSIGNED_BYTE, IntPtr.Zero);
 
             // Subbing in data from the spritesheet
             for (int y = 0; y < verticalLoops; y++)
@@ -102,7 +98,7 @@ namespace Electron2D.Management
                 for (int x = 0; x < horizontalLoops; x++)
                 {
                     // Cloning each sprite from spritesheet into a bitmap
-                    Bitmap b = spritesheetImage.Clone(new Rectangle(x * _spriteWidth, y * _spriteHeight, _spriteWidth, _spriteHeight), spritesheetImage.PixelFormat);
+                    Bitmap b = spritesheetImage.Clone(new Rectangle(x * spriteWidth, y * spriteHeight, spriteWidth, spriteHeight), spritesheetImage.PixelFormat);
                     var data = b.LockBits(
                         new Rectangle(0, 0, b.Width, b.Height),
                         ImageLockMode.ReadOnly,
@@ -122,15 +118,17 @@ namespace Electron2D.Management
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-            return new Texture2DArray(handle, _spriteWidth, _spriteHeight, horizontalLoops * verticalLoops);
+            return new Texture2DArray(handle, spriteWidth, spriteHeight, horizontalLoops * verticalLoops, nonColor);
         }
 
-        public static Texture2DArray LoadArray(string[] _textureNames, bool _nonColor)
+        public static Texture2DArray LoadArray(string[] filePaths, bool nonColor)
         {
-            if (!File.Exists(_textureNames[0]))
+            foreach (var path in filePaths)
             {
-                Debug.LogError($"File [ {_textureNames[0]} ] does not exist!");
-                return null;
+                if (!File.Exists(path))
+                {
+                    throw new FileNotFoundException(path);
+                }
             }
 
             uint handle = glGenTexture();
@@ -138,19 +136,19 @@ namespace Electron2D.Management
             glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
 
             // First image
-            using var firstImage = new Bitmap(_textureNames[0]);
+            using var firstImage = new Bitmap(filePaths[0]);
             firstImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
             var firstData = firstImage.LockBits(
                 new Rectangle(0, 0, firstImage.Width, firstImage.Height),
                 ImageLockMode.ReadOnly,
                 PixelFormat.Format32bppArgb);
 
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, _nonColor ? GL_RGBA : GL_SRGB_ALPHA, firstImage.Width, firstImage.Height, _textureNames.Length, 0, GL_BGRA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, nonColor ? GL_RGBA : GL_SRGB_ALPHA, firstImage.Width, firstImage.Height, filePaths.Length, 0, GL_BGRA, GL_UNSIGNED_BYTE, IntPtr.Zero);
             glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, firstImage.Width, firstImage.Height, 1, GL_BGRA, GL_UNSIGNED_BYTE, firstData.Scan0);
 
-            for (int i = 1; i < _textureNames.Length; i++)
+            for (int i = 1; i < filePaths.Length; i++)
             {
-                using var image = new Bitmap(_textureNames[0]);
+                using var image = new Bitmap(filePaths[0]);
                 image.RotateFlip(RotateFlipType.RotateNoneFlipY);
                 var data = image.LockBits(
                     new Rectangle(0, 0, firstImage.Width, firstImage.Height),
@@ -159,7 +157,7 @@ namespace Electron2D.Management
 
                 if(image.Width != firstImage.Width || image.Height != firstImage.Height)
                 {
-                    Debug.LogError($"TEXTURE FACTORY: Cannot load image {_textureNames[i]}, size is not the same as the first image in the array.");
+                    Debug.LogError($"TEXTURE FACTORY: Cannot load image {filePaths[i]}, size is not the same as the first image in the array.");
                     continue;
                 }
 
@@ -174,28 +172,28 @@ namespace Electron2D.Management
             glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
             firstImage.UnlockBits(firstData);
 
-            return new Texture2DArray(handle, firstImage.Width, firstImage.Height, _textureNames.Length);
+            return new Texture2DArray(handle, firstImage.Width, firstImage.Height, filePaths.Length, nonColor);
         }
 
-        public static unsafe Texture2D Create(int _width, int _height)
+        public static unsafe Texture2D Create(int width, int height)
         {
-            return Create(_width, _height, GL_RGBA, GL_RGBA, GL_NEAREST, GL_REPEAT);
+            return Create(width, height, GL_RGBA, GL_RGBA, GL_NEAREST, GL_REPEAT);
         }
 
-        public static unsafe Texture2D Create(int _width, int _height, int _glColorInternalFormat,
-            int _glColorFormat, int _glTextureFilterSetting, int _glTextureWrapSetting)
+        public static unsafe Texture2D Create(int width, int height, int glColorInternalFormat,
+            int glColorFormat, int glTextureFilterSetting, int glTextureWrapSetting)
         {
             uint handle = glGenTexture();
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, handle);
-            glTexImage2D(GL_TEXTURE_2D, 0, _glColorInternalFormat, _width, _height, 0, _glColorFormat, GL_UNSIGNED_BYTE, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, glColorInternalFormat, width, height, 0, glColorFormat, GL_UNSIGNED_BYTE, NULL);
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, _glTextureFilterSetting);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, _glTextureFilterSetting);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, _glTextureWrapSetting);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, _glTextureWrapSetting);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glTextureFilterSetting);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glTextureFilterSetting);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTextureWrapSetting);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTextureWrapSetting);
 
-            return new Texture2D(handle, _width, _height);
+            return new Texture2D(handle, width, height, null, glColorInternalFormat != GL_SRGB_ALPHA);
         }
     }
 }

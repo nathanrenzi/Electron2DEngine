@@ -78,10 +78,11 @@ namespace Electron2D
                 Glfw.SwapInterval(0);
             }
 
-            if (File.Exists(ResourceManager.GetEngineResourcePath("icon.ico")))
+            if (File.Exists(Resources.GetEngineResourcePath("icon.ico")))
             {
-                Texture2D texture = ResourceManager.Instance.LoadTexture(ResourceManager.GetEngineResourcePath("icon.ico"));
-                SetIcon(texture);
+                SharedResource<Texture2D> icon = Resources.GetTexture(Resources.GetEngineResourcePath("icon.ico"));
+                SetIcon(icon.Value);
+                icon.Release();
             }
 
             SetWindowMode(settings.WindowMode);

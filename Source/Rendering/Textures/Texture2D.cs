@@ -12,15 +12,15 @@ namespace Electron2D.Rendering
         public int Width { get; set; }
         public int Height { get; set; }
         public string FilePath { get; }
-        public bool IsSRGBA { get; }
+        public bool NonColor { get; }
 
-        public Texture2D(uint _handle, int _width, int _height, string _filePath = "", bool _isSRGBA = true)
+        public Texture2D(uint handle, int width, int height, string filePath, bool nonColor)
         {
-            Handle = _handle;
-            Width = _width;
-            Height = _height;
-            FilePath = _filePath;
-            IsSRGBA = _isSRGBA;
+            Handle = handle;
+            Width = width;
+            Height = height;
+            FilePath = filePath;
+            NonColor = nonColor;
         }
 
         ~Texture2D()
@@ -104,7 +104,6 @@ namespace Electron2D.Rendering
                 try
                 {
                     glDeleteTexture(Handle);
-                    ResourceManager.Instance.RemoveTexture(this);
                     _disposed = true;
                 } catch(Exception e)
                 {

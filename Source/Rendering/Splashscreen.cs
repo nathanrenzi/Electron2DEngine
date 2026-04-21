@@ -7,7 +7,7 @@ namespace Electron2D.Rendering
 {
     public static class Splashscreen
     {
-        private static readonly float[] vertices =
+        private static readonly float[] _vertices =
         {
              1f,  1f,       1.0f, 1.0f,
              1f, -1f,       1.0f, 0.0f,
@@ -15,50 +15,53 @@ namespace Electron2D.Rendering
             -1f,  1f,       0.0f, 1.0f,
         };
 
-        private static readonly uint[] indices =
+        private static readonly uint[] _indices =
         {
             0, 1, 3,
             1, 2, 3
         };
 
-        private static VertexBuffer vertexBuffer;
-        private static VertexArray vertexArray;
-        private static IndexBuffer indexBuffer;
-        private static BufferLayout layout;
+        private static VertexBuffer _vertexBuffer;
+        private static VertexArray _vertexArray;
+        private static IndexBuffer _indexBuffer;
+        private static BufferLayout _layout;
+        private static SharedResource<Texture2D> _texture;
 
         public static void Initialize()
         {
-            vertexArray = new VertexArray();
-            vertexBuffer = new VertexBuffer(vertices);
-            indexBuffer = new IndexBuffer(indices);
-            layout = new BufferLayout();
-            layout.Add<float>(2);
-            layout.Add<float>(2);
-            vertexArray.AddBuffer(vertexBuffer, layout);
+            _vertexArray = new VertexArray();
+            _vertexBuffer = new VertexBuffer(_vertices);
+            _indexBuffer = new IndexBuffer(_indices);
+            _layout = new BufferLayout();
+            _layout.Add<float>(2);
+            _layout.Add<float>(2);
+            _vertexArray.AddBuffer(_vertexBuffer, _layout);
         }
 
-        public static unsafe void Render(Texture2D _texture, int _alpha)
+        public static unsafe void Render(SharedResource<Texture2D> texture, int alpha)
         {
-            Shader shader = GlobalShaders.DefaultInterface;
-            shader.Use();
-            shader.SetColor("mainColor", Color.FromArgb(_alpha, Color.White));
-            shader.SetMatrix4x4("model", Matrix4x4.Identity);
-            shader.SetMatrix4x4("uiMatrix", Matrix4x4.Identity);
-            shader.SetMatrix4x4("projection", Matrix4x4.Identity);
+            SharedResource<Shader> shader = GlobalShaders.DefaultInterface.AddRef();
+            shader.Value.Use();
+            shader.Value.SetColor("mainColor", Color.FromArgb(alpha, Color.White));
+            shader.Value.SetMatrix4x4("model", Matrix4x4.Identity);
+            shader.Value.SetMatrix4x4("uiMatrix", Matrix4x4.Identity);
+            shader.Value.SetMatrix4x4("projection", Matrix4x4.Identity);
 
-            _texture.Use(GL_TEXTURE0);
+            _texture = texture.AddRef();
+            _texture.Value.Use(GL_TEXTURE0);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            vertexArray.Bind();
-            indexBuffer.Bind();
-            glDrawElements(GL_TRIANGLES, indices.Length, GL_UNSIGNED_INT, (void*)0);
+            _vertexArray.Bind();
+            _indexBuffer.Bind();
+            glDrawElements(GL_TRIANGLES, _indices.Length, GL_UNSIGNED_INT, (void*)0);
         }
 
         public static void Dispose()
         {
-            vertexBuffer.Dispose();
-            vertexArray.Dispose();
-            indexBuffer.Dispose();
+            _vertexBuffer.Dispose();
+            _vertexArray.Dispose();
+            _indexBuffer.Dispose();
+            _texture.Release();
         }
     }
 }
