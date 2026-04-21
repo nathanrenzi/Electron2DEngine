@@ -4,7 +4,6 @@
     {
         public event Action OnFadeInEnd;
         public event Action OnFadeOutEnd;
-        public AudioClip AudioClip { get; private set; }
         public AudioStream Stream { get; set; }
         public PlaybackState PlaybackState { get; private set; }
         public float StartStopVolumeFadeTime { get; private set; }
@@ -15,99 +14,66 @@
 
         public bool IsLoop
         {
-            get
-            {
-                return Stream.EnableLooping;
-            }
-            set
-            {
-                Stream.EnableLooping = value;
-            }
+            get => Stream.EnableLooping;
+            set => Stream.EnableLooping = value;
         }
 
         private AudioSpatializer _spatializer;
 
-        ~AudioInstance()
+        public AudioInstance(AudioStream stream, float volume, float pitch, bool isLoop, float startStopVolumeFadeTime = 0.001f)
         {
-            Dispose(false);
-        }
-
-        public AudioInstance(AudioClip clip, float volume, float pitch, bool isLoop, float startStopVolumeFadeTime = 0.001f)
-        {
-            AudioClip = clip;
             Volume = volume;
             Pitch = pitch;
-            Stream = clip.GetNewStream(this, false);
+            Stream = stream;
             IsLoop = isLoop;
             StartStopVolumeFadeTime = startStopVolumeFadeTime;
-
-            Stream.OnStreamEnd += Stop;
-            Stream.VolumeFadeSampleProvider.OnFadeInEnd += () => OnFadeInEnd?.Invoke();
-            Stream.VolumeFadeSampleProvider.OnFadeOutEnd += () => OnFadeOutEnd?.Invoke();
-            Stream.SetFadeTime(StartStopVolumeFadeTime);
+            HookStreamEvents();
         }
 
-        /// <summary>
-        /// Called by <see cref="AudioSpatializer"/> to register itself in each <see cref="AudioInstance"/>.
-        /// </summary>
-        /// <param name="spatializer"></param>
         internal void SetSpatializer(AudioSpatializer spatializer)
         {
             _spatializer = spatializer;
+        }
+
+        private void HookStreamEvents()
+        {
             Stream.OnStreamEnd += Stop;
             Stream.VolumeFadeSampleProvider.OnFadeInEnd += () => OnFadeInEnd?.Invoke();
             Stream.VolumeFadeSampleProvider.OnFadeOutEnd += () => OnFadeOutEnd?.Invoke();
             Stream.SetFadeTime(StartStopVolumeFadeTime);
         }
 
-        /// <summary>
-        /// Sets the audio clip.
-        /// </summary>
-        /// <param name="clip"></param>
-        public void SetAudioClip(AudioClip clip)
+        public void SetAudioStream(AudioStream stream)
         {
-            if(clip == null)
+            if (stream == null)
             {
-                Debug.LogError("AudioClip is null, cannot set!");
+                Debug.LogError("AudioStream is null, cannot set!");
                 return;
             }
-            AudioClip = clip;
-            bool shouldPlay = false;
-            if(PlaybackState == PlaybackState.Playing)
-            {
-                Stop();
-                shouldPlay = true;
-            }
-            if(_spatializer == null)
+
+            bool shouldPlay = PlaybackState == PlaybackState.Playing;
+            if (shouldPlay) Stop();
+
+            if (_spatializer == null)
             {
                 Stream.Dispose();
-                Stream = clip.GetNewStream(this, false);
-                Stream.OnStreamEnd += Stop;
-                Stream.VolumeFadeSampleProvider.OnFadeInEnd += () => OnFadeInEnd?.Invoke();
-                Stream.VolumeFadeSampleProvider.OnFadeOutEnd += () => OnFadeOutEnd?.Invoke();
-                Stream.SetFadeTime(StartStopVolumeFadeTime);
-                if (shouldPlay) Play();
+                Stream = stream;
+                HookStreamEvents();
             }
             else
             {
-                // Creates new stream using new clip and the spatializer
+                Stream.Dispose();
+                Stream = stream;
                 AudioSpatializer spatializer = _spatializer;
                 spatializer.RemoveAudioInstance(this);
                 spatializer.AddAudioInstance(this);
-                if (shouldPlay) Play();
             }
+
+            if (shouldPlay) Play();
         }
 
-        /// <summary>
-        /// Retrieves the <see cref="AudioSpatializer"/> this <see cref="AudioInstance"/> is using.
-        /// </summary>
-        /// <returns>An <see cref="AudioSpatializer"/> object, or null if none is assigned.</returns>
         public AudioSpatializer GetSpatializer() => _spatializer;
 
-        /// <summary>
-        /// Adds an audio effect to this audio instance. Must be added before the audio instance is played.
-        /// </summary>
-        /// <param name="effect"></param>
         public void AddEffect(IAudioEffect effect)
         {
             effect.Initialize(Stream.SampleProvider);
@@ -154,18 +120,8 @@
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool freeManaged)
-        {
             _spatializer?.RemoveAudioInstance(this);
-
-            if (freeManaged)
-            {
-                Stream.Dispose();
-            }
+            Stream.Dispose();
         }
     }
 

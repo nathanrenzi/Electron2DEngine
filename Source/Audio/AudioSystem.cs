@@ -3,20 +3,12 @@ using NAudio.Wave;
 
 namespace Electron2D.Audio
 {
-    //https://github.com/naudio/NAudio?tab=readme-ov-file
-
     public static class AudioSystem
     {
         public static float MasterVolume
         {
-            get
-            {
-                return _masterVolumeSampleProvider.Volume;
-            }
-            set
-            {
-                _masterVolumeSampleProvider.Volume = value;
-            }
+            get => _masterVolumeSampleProvider.Volume;
+            set => _masterVolumeSampleProvider.Volume = MathEx.Clamp(value, 0, 2);
         }
 
         private static IWavePlayer _outputDevice;
@@ -29,20 +21,17 @@ namespace Electron2D.Audio
             _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channelCount));
             _mixer.ReadFully = true;
             _masterVolumeSampleProvider = new VolumeSampleProvider(_mixer);
-            MasterVolume = MathEx.Clamp(masterVolume, 0, 2);
+            MasterVolume = masterVolume;
             _outputDevice.Init(_masterVolumeSampleProvider);
             _outputDevice.Play();
         }
 
-        public static AudioInstance CreateInstance(string fileName, float volume = 1, float pitch = 1, bool isLoop = false)
+        public static AudioInstance CreateInstance(string fileName, float volume = 1, float pitch = 1, bool isLoop = false, bool is3D = false)
         {
-            AudioClip clip = ResourceManager.Instance.LoadAudioClip(fileName);
-            return new AudioInstance(clip, volume, pitch, isLoop);
-        }
-
-        public static AudioInstance CreateInstance(AudioClip clip, float volume = 1, float pitch = 1, bool isLoop = false)
-        {
-            return new AudioInstance(clip, volume, pitch, isLoop);
+            var stream = new AudioStream(null, fileName, is3D);
+            var instance = new AudioInstance(stream, volume, pitch, isLoop);
+            stream.SetInstance(instance);
+            return instance;
         }
 
         public static void PlayAudioInstance(AudioInstance audioInstance)
@@ -54,13 +43,9 @@ namespace Electron2D.Audio
         private static ISampleProvider ConvertToRightChannelCount(ISampleProvider input)
         {
             if (input.WaveFormat.Channels == _mixer.WaveFormat.Channels)
-            {
                 return input;
-            }
             if (input.WaveFormat.Channels == 1 && _mixer.WaveFormat.Channels == 2)
-            {
                 return new MonoToStereoSampleProvider(input);
-            }
             throw new NotImplementedException("Not yet implemented this channel count conversion");
         }
 

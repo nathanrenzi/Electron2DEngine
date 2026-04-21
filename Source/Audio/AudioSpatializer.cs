@@ -1,16 +1,17 @@
-﻿using System.Numerics;
+﻿using NAudio.Wave;
+using System.Numerics;
 
 namespace Electron2D.Audio
 {
     public class AudioSpatializer : IGameClass
     {
-        public List<AudioInstance> AudioInstances { get; private set; } = new List<AudioInstance>();
+        public List<AudioInstance> AudioInstances { get; private set; } = new();
         public float MinRange { get; set; } = 100f;
         public float MaxRange { get; set; } = Display.REFERENCE_WINDOW_WIDTH * 0.5f;
         public float PanningSpatializationMultiplier { get; set; } = 1.0f;
         public float VolumeSpatializationMultiplier { get; set; } = 1.0f;
         public bool Is3D { get; }
-        public Curve FalloffCurve { get; set;  }
+        public Curve FalloffCurve { get; set; }
         public float DirectionBasedPanning { get; private set; }
         public float DistanceBasedVolumeMultiplier01 { get; private set; }
 
@@ -20,57 +21,51 @@ namespace Electron2D.Audio
         {
             _transform = transform;
             Is3D = is3D;
-
-            for (int i = 0; i < audioInstances.Length; i++)
-            {
-                AddAudioInstance(audioInstances[i]);
-            }
-
+            foreach (var instance in audioInstances)
+                AddAudioInstance(instance);
             Engine.Game.RegisterGameClass(this);
         }
 
-        public AudioSpatializer(Transform transform, bool _is3D)
+        public AudioSpatializer(Transform transform, bool is3D)
         {
             _transform = transform;
-            Is3D = _is3D;
-
+            Is3D = is3D;
             Engine.Game.RegisterGameClass(this);
         }
 
-        ~AudioSpatializer()
+        public void AddAudioInstance(AudioInstance instance)
         {
-            Dispose();
+            if (AudioInstances.Contains(instance)) return;
+
+            AudioInstances.Add(instance);
+
+            if (Is3D)
+            {
+                float fadeTime = instance.Stream.GetFadeTime();
+                long position = instance.Stream.Position;
+                bool wasPlaying = instance.PlaybackState == PlaybackState.Playing;
+
+                instance.Stream.SetFadeTime(0.0001f);
+                if (wasPlaying) instance.Stop();
+
+                var newStream = new AudioStream(instance, instance.Stream.FileName, true);
+                instance.Stream.Dispose();
+                instance.Stream = newStream;
+                instance.Stream.Position = position;
+                instance.Stream.SetFadeTime(0.0001f);
+
+                if (wasPlaying) instance.Play();
+                instance.Stream.SetFadeTime(fadeTime);
+            }
+
+            instance.SetSpatializer(this);
         }
 
-        public void AddAudioInstance(AudioInstance _audioInstance)
+        public void RemoveAudioInstance(AudioInstance instance)
         {
-            if(!AudioInstances.Contains(_audioInstance))
-            {
-                AudioInstances.Add(_audioInstance);
-                if(Is3D)
-                {
-                    float fadeTime = _audioInstance.Stream.GetFadeTime();
-                    _audioInstance.Stream.SetFadeTime(0.0001f);
-                    _audioInstance.Stop();
-                    long position = _audioInstance.Stream.Position;
-                    _audioInstance.Stream.Dispose();
-                    _audioInstance.Stream = _audioInstance.AudioClip.GetNewStream(_audioInstance, true);
-                    _audioInstance.Stream.Position = position;
-                    _audioInstance.Stream.SetFadeTime(0.0001f);
-                    if(_audioInstance.PlaybackState == PlaybackState.Playing) _audioInstance.Play();
-                    _audioInstance.Stream.SetFadeTime(fadeTime);
-                }
-                _audioInstance.SetSpatializer(this);
-            }
-        }
-
-        public void RemoveAudioInstance(AudioInstance _audioInstance)
-        {
-            if (AudioInstances.Contains(_audioInstance))
-            {
-                AudioInstances.Remove(_audioInstance);
-                _audioInstance.SetSpatializer(null);
-            }
+            if (!AudioInstances.Contains(instance)) return;
+            AudioInstances.Remove(instance);
+            instance.SetSpatializer(null);
         }
 
         public void Update()
