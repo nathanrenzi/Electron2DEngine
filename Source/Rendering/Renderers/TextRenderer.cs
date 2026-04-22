@@ -1,4 +1,5 @@
-﻿using Electron2D.Rendering.Shaders;
+﻿using Electron2D.Rendering;
+using Electron2D.Rendering.Shaders;
 using Electron2D.UserInterface;
 using FreeTypeSharp.Native;
 using System.Drawing;
@@ -76,11 +77,11 @@ namespace Electron2D.Rendering.Text
         {
             get
             {
-                return Material.MainColor;
+                return Material.Value.MainColor;
             }
             set
             {
-                Material.MainColor = value;
+                Material.Value.MainColor = value;
             }
         }
         public Color OutlineColor { get; set; }
@@ -108,7 +109,7 @@ namespace Electron2D.Rendering.Text
             }
         }
         private Rectangle _bounds;
-        private SharedResource<Shader> _shader;
+        private SharedResource<Material> _material;
         private List<Iterator> _iterators = new List<Iterator>();
         private List<int> _lineOffsets = new List<int>(); // Stores the pixel distance between the end of the line and the right bound
         private string _formattedText;
@@ -116,18 +117,18 @@ namespace Electron2D.Rendering.Text
         private float _firstLineMaxHeight = 0;
         private float _lastLineMinHeight = 0;
 
-        public unsafe TextRenderer(Transform transform, SharedResource<FontGlyphStore> fontGlyphStore, SharedResource<Shader> shader, string text,
+        public TextRenderer(Transform transform, SharedResource<FontGlyphStore> fontGlyphStore, SharedResource<Shader> shader, string text,
             Vector2 bounds, Color textColor, Color outlineColor,
             TextAlignment horizontalAlignment = TextAlignment.Left,
             TextAlignment verticalAlignment = TextAlignment.Top,
             TextAlignmentMode alignmentMode = TextAlignmentMode.Baseline,
             TextOverflowMode overflowMode = TextOverflowMode.Word,
             bool useUnscaledProjectionMatrix = true)
-            : base(transform, Material.Create(shader, SharedResource<Texture2D>.Create(
-                new Texture2D(fontGlyphStore.Value.TextureHandle, fontGlyphStore.Value.TextureAtlasWidth,
-                fontGlyphStore.Value.Arguments.FontSize, null, false))))
+            : base(transform, null)
         {
-            _shader = shader.AddRef();
+            Material = SharedResource<Material>.Create(Rendering.Material.Create(shader, SharedResource<Texture2D>.Create(
+                new Texture2D(fontGlyphStore.Value.TextureHandle, fontGlyphStore.Value.TextureAtlasWidth,
+                fontGlyphStore.Value.Arguments.FontSize, null, false))));
             FontGlyphStore = fontGlyphStore.AddRef();
             Transform = transform;
             TextColor = textColor;
@@ -590,15 +591,15 @@ namespace Electron2D.Rendering.Text
 
         protected override void BeforeRender()
         {
-            Material.Shader.Value.SetMatrix4x4("uiMatrix", UseUnscaledProjectionMatrix ? UICanvas.Instance.UIModelMatrix
+            Material.Value.Shader.Value.SetMatrix4x4("uiMatrix", UseUnscaledProjectionMatrix ? UICanvas.Instance.UIModelMatrix
                 : Matrix4x4.Identity);
 
-            Material.Shader.Value.SetMatrix4x4("model", Matrix4x4.CreateScale(Transform.Scale.X, Transform.Scale.Y, 1f)
+            Material.Value.Shader.Value.SetMatrix4x4("model", Matrix4x4.CreateScale(Transform.Scale.X, Transform.Scale.Y, 1f)
                 * Transform.GetRotationMatrix() * (UseUnscaledProjectionMatrix ? Matrix4x4.Identity
                 : Matrix4x4.CreateReflection(new Plane(new Vector3(0, 1, 0), 0)))
                 * Matrix4x4.CreateTranslation(_position.X, _position.Y, 0));
 
-            Material.Shader.Value.SetColor("outlineColor", OutlineColor);
+            Material.Value.Shader.Value.SetColor("outlineColor", OutlineColor);
         }
     }
 }

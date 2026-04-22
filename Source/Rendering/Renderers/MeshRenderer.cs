@@ -14,7 +14,7 @@ namespace Electron2D.Rendering
         public VertexBuffer VertexBuffer { get; protected set; }
         public VertexArray VertexArray { get; protected set; }
         public IndexBuffer IndexBuffer { get; protected set; }
-        public Material Material { get; protected set; }
+        public SharedResource<Material> Material { get; protected set; }
         public int RenderLayer { get; protected set; }
         public Action OnBeforeRender { get; set; }
 
@@ -41,10 +41,10 @@ namespace Electron2D.Rendering
         public uint StencilFunctionMask { get; set; } = 0xFF;
         public bool Enabled { get; set; } = true;
 
-        public MeshRenderer(Transform transform, Material material)
+        public MeshRenderer(Transform transform, SharedResource<Material> material)
         {
             _transform = transform;
-            Material = material;
+            Material = material.AddRef();
 
             Engine.Game.RegisterGameClass(this);
         }
@@ -63,16 +63,18 @@ namespace Electron2D.Rendering
             VertexBuffer.Dispose();
             VertexArray.Dispose();
             IndexBuffer.Dispose();
+            Material.Release();
             GC.SuppressFinalize(this);
         }
 
         #region Materials
-        public void SetMaterial(Material _material)
+        public void SetMaterial(SharedResource<Material> material)
         {
-            Material = _material;
+            Material.Release();
+            Material = material.AddRef();
         }
 
-        public Material GetMaterial() => Material;
+        public SharedResource<Material> GetMaterial() => Material;
         #endregion
 
         #region Vertex Manipulation
@@ -164,7 +166,7 @@ namespace Electron2D.Rendering
         {
             if (!Enabled) return;
             if (!HasVertexData) return;
-            if (!IsLoaded || Material.Shader.Value.Compiled == false) return;
+            if (!IsLoaded || Material.Value.Shader.Value.Compiled == false) return;
 
             if (IsVertexDirty)
             {
@@ -198,9 +200,9 @@ namespace Electron2D.Rendering
                 glStencilMask(0x00);
             }
 
-            Material.Use();
-            Material.Shader.Value.SetMatrix4x4("model", _transform.GetScaleMatrix() * _transform.GetRotationMatrix() * _transform.GetPositionMatrix());
-            Material.Shader.Value.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.Main.GetUnscaledProjectionMatrix() : Camera2D.Main.GetViewProjectionMatrix());
+            Material.Value.Use();
+            Material.Value.Shader.Value.SetMatrix4x4("model", _transform.GetScaleMatrix() * _transform.GetRotationMatrix() * _transform.GetPositionMatrix());
+            Material.Value.Shader.Value.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.Main.GetUnscaledProjectionMatrix() : Camera2D.Main.GetViewProjectionMatrix());
 
             VertexArray.Bind();
             IndexBuffer.Bind();
