@@ -1,5 +1,8 @@
 ﻿namespace Electron2D.UI
 {
+    /// <summary>
+    /// Controls the sizing of content within a <see cref="UIScrollContainer"/>.
+    /// </summary>
     public enum ScrollContentSizing
     {
         /// <summary>Content sizes to its children naturally, no viewport constraint.</summary>
