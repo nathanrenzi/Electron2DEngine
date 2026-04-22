@@ -15,7 +15,7 @@ namespace Electron2D.UserInterface
         public TextAlignmentMode TextAlignmentMode;
         public TextOverflowMode TextOverflowMode;
         public FontArguments TextFontArguments;
-        public Material TextMaterial;
+        public SharedResource<Material> TextMaterial;
         public string Text;
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Electron2D.UserInterface
         /// <param name="sizeY">The size of the field on the Y axis.</param>
         /// <param name="textFontArguments">The font arguments of the text.</param>
         /// <param name="textMaterial">The material of the text.</param>
-        public TextLabelDef(string text, float sizeX, float sizeY, FontArguments textFontArguments, Material textMaterial, 
+        public TextLabelDef(string text, float sizeX, float sizeY, FontArguments textFontArguments, SharedResource<Material> textMaterial, 
             Color textColor, TextAlignment textHorizontalAlignment = TextAlignment.Left, TextAlignment textVerticalAlignment = TextAlignment.Center,
             TextAlignmentMode textAlignmentMode = TextAlignmentMode.Baseline, TextOverflowMode textOverflowMode = TextOverflowMode.Word)
         {

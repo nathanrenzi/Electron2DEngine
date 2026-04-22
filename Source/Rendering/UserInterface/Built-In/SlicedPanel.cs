@@ -53,7 +53,7 @@ namespace Electron2D.UserInterface
 
         /// <param name="sizeX">The starting size on the X axis.</param>
         /// <param name="sizeY">The starting size on the Y axis.</param>
-        public SlicedPanel(SlicedPanelDef def, Material material, int sizeX, int sizeY,
+        public SlicedPanel(SlicedPanelDef def, SharedResource<Material> material, int sizeX, int sizeY,
             int uiRenderLayer = 0, bool useScreenPosition = true, bool ignorePostProcessing = true)
             : base(ignorePostProcessing, uiRenderLayer, sizeX: sizeX, sizeY: sizeY, useScreenPosition: useScreenPosition)
         {

@@ -4,9 +4,9 @@ namespace Electron2D.UserInterface
 {
     public class SliderDef
     {
-        public Material BackgroundMaterial;
-        public Material SliderMaterial;
-        public Material HandleMaterial;
+        public SharedResource<Material> BackgroundMaterial;
+        public SharedResource<Material> SliderMaterial;
+        public SharedResource<Material> HandleMaterial;
 
         public SlicedPanelDef BackgroundPanelDef;
         public SlicedPanelDef SliderPanelDef;
@@ -41,8 +41,8 @@ namespace Electron2D.UserInterface
         /// <param name="forceWholeNumbers">Should the slider snap to whole numbers?</param>
         /// <param name="allowNonHandleValueUpdates">Should clicking the background should change the value of the slider?</param>
         /// <param name="interactable">Should the slider be interactable using the mouse?</param>
-        public SliderDef(Material backgroundMaterial, Material sliderMaterial, Material handleMaterial,
-            int sizeX, int backgroundSizeY, int sliderSizeY, int handleSizeXY,
+        public SliderDef(SharedResource<Material> backgroundMaterial, SharedResource<Material> sliderMaterial,
+            SharedResource<Material> handleMaterial, int sizeX, int backgroundSizeY, int sliderSizeY, int handleSizeXY,
             SlicedPanelDef backgroundPanelDef = null, SlicedPanelDef sliderPanelDef = null, SlicedPanelDef handlePanelDef = null,
             float initialValue = 0, float maxValue = 1, float minValue = 0, int handlePadding = 0, bool forceWholeNumbers = false,
             bool allowNonHandleValueUpdates = true, bool interactable = true)

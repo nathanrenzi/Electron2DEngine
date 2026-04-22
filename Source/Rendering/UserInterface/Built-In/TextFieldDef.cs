@@ -18,9 +18,9 @@ namespace Electron2D.UserInterface
         public TextOverflowMode TextOverflowMode;
         public Vector4 TextAreaPadding;
         public FontArguments TextFontArguments;
-        public Material TextMaterial;
-        public Material BackgroundPanelMaterial;
-        public Material CaretMaterial;
+        public SharedResource<Material> TextMaterial;
+        public SharedResource<Material> BackgroundPanelMaterial;
+        public SharedResource<Material> CaretMaterial;
         public SlicedPanelDef BackgroundPanelDef;
         public string Text;
         public string PromptText;
@@ -43,12 +43,12 @@ namespace Electron2D.UserInterface
         /// <param name="startText">The starting text of the text field.</param>
         /// <param name="promptText">The prompt text displayed behind the user's text when the text field is empty.</param>
         /// <param name="waitForEnterKey">Should the <see cref="TextField.OnTextEntered"/> event be called when the enter key is pressed, or when the text is updated?</param>
-        public TextFieldDef(int caretWidth, int sizeX, int sizeY, Vector4 textAreaPadding, FontArguments textFontArguments, Material textMaterial, 
-            Color textColor, Color promptTextColor, Material backgroundPanelMaterial, string startText, string promptText, int maxCharacterCount,
+        public TextFieldDef(int caretWidth, int sizeX, int sizeY, Vector4 textAreaPadding, FontArguments textFontArguments, SharedResource<Material> textMaterial, 
+            Color textColor, Color promptTextColor, SharedResource<Material> backgroundPanelMaterial, string startText, string promptText, int maxCharacterCount,
             int maxLineCount = 1, TextAlignment textHorizontalAlignment = TextAlignment.Left, TextAlignment textVerticalAlignment = TextAlignment.Center,
             TextAlignmentMode textAlignmentMode = TextAlignmentMode.Baseline, TextOverflowMode textOverflowMode = TextOverflowMode.Word,
             SlicedPanelDef backgroundPanelDef = null, bool waitForEnterKey = false, bool useHoverCursor = true, GLFW.CursorType hoverCursor = GLFW.CursorType.Beam,
-            Material caretMaterial = null)
+            SharedResource<Material> caretMaterial = null)
         {
             CaretWidth = caretWidth;
             SizeX = sizeX;

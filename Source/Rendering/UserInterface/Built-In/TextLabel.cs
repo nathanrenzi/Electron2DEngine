@@ -1,4 +1,5 @@
-﻿using Electron2D.Rendering.Text;
+﻿using Electron2D.Rendering.Shaders;
+using Electron2D.Rendering.Text;
 using System.Drawing;
 using System.Numerics;
 
@@ -57,7 +58,7 @@ namespace Electron2D.UserInterface
             SizeY = def.SizeY;
             _font = Resources.GetFont(def.TextFontArguments.FontFile, def.TextFontArguments.FontSize,
                 def.TextFontArguments.FontScale, def.TextFontArguments.OutlineWidth);
-            Renderer = new TextRenderer(Transform, _font, def.TextMaterial.Shader, def.Text, new Vector2(SizeX, SizeY), def.TextColor, Color.Black,
+            Renderer = new TextRenderer(Transform, _font, def.TextMaterial.Value.Shader, def.Text, new Vector2(SizeX, SizeY), def.TextColor, Color.Black,
                 def.TextHorizontalAlignment, def.TextVerticalAlignment, def.TextAlignmentMode, def.TextOverflowMode, useScreenPosition);
         }
 

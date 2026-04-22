@@ -126,7 +126,9 @@ namespace Electron2D.UserInterface
             UsingMeshRenderer = useMeshRenderer;
             if (UsingMeshRenderer)
             {
-                Renderer = new MeshRenderer(Transform, Material.Create(GlobalShaders.DefaultInterface));
+                SharedResource<Material> mat = SharedResource<Material>.Create(Material.Create(GlobalShaders.DefaultInterface));
+                Renderer = new MeshRenderer(Transform, mat);
+                mat.Release();
             }
             UseScreenPosition = useScreenPosition;
             _registerRenderable = autoRender;
@@ -235,7 +237,7 @@ namespace Electron2D.UserInterface
 
         public virtual void SetColor(Color color)
         {
-            if (UsingMeshRenderer) Renderer.Material.MainColor = color;
+            if (UsingMeshRenderer) Renderer.Material.Value.MainColor = color;
         }
 
         public void SetParentLayoutGroup(LayoutGroup layoutGroup)
@@ -343,7 +345,7 @@ namespace Electron2D.UserInterface
             }
             if (Visible && UsingMeshRenderer)
             {
-                Renderer.GetMaterial().Shader.Value.SetMatrix4x4("uiMatrix", UseScreenPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
+                Renderer.GetMaterial().Value.Shader.Value.SetMatrix4x4("uiMatrix", UseScreenPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
                 Renderer.Render();
             }
         }
