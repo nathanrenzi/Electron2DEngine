@@ -1,9 +1,11 @@
 ﻿using Electron2D.Rendering;
 using System.Drawing;
-using System.Numerics;
 
 namespace Electron2D.UI
 {
+    /// <summary>
+    /// A simple UI element that renders a solid color, texture, or material as a quad.
+    /// </summary>
     public sealed class UIPanel : UIElement
     {
         private float[] _vertices = new float[16];
@@ -13,6 +15,9 @@ namespace Electron2D.UI
             3, 2, 1
         };
 
+        /// <summary>
+        /// Creates a <see cref="UIPanel"/> rendered with a texture.
+        /// </summary>
         public UIPanel(ITexture texture, UIRenderArgs? arguments = null) : base(arguments, true)
         {
             Renderer.Material.MainTexture = texture;

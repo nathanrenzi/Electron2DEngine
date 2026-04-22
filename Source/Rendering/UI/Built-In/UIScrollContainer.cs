@@ -2,16 +2,51 @@
 
 namespace Electron2D.UI
 {
+    /// <summary>
+    /// A UI element that allows its content to be scrolled when it exceeds the available space.
+    /// </summary>
     public sealed class UIScrollContainer : UIElement
     {
+        /// <summary>
+        /// The scroll speed in pixels per scroll tick.
+        /// </summary>
         public float ScrollSpeed { get; set; } = 200f;
+
+        /// <summary>
+        /// Whether the content can be scrolled horizontally.
+        /// </summary>
         public bool CanScrollX { get; set; } = true;
+
+        /// <summary>
+        /// Whether the content can be scrolled vertically.
+        /// </summary>
         public bool CanScrollY { get; set; } = true;
+
+        /// <summary>
+        /// Controls how the content width is sized relative to the container.
+        /// </summary>
         public ScrollContentSizing ContentSizingX { get; set; } = ScrollContentSizing.None;
+
+        /// <summary>
+        /// Controls how the content height is sized relative to the container.
+        /// </summary>
         public ScrollContentSizing ContentSizingY { get; set; } = ScrollContentSizing.None;
+
+        /// <summary>
+        /// The current scroll offset in pixels.
+        /// </summary>
         public Vector2 ScrollOffset { get; private set; }
+
+        /// <summary>
+        /// The maximum scroll offset based on the current content and container size.
+        /// </summary>
         public Vector2 MaxScrollOffset { get; private set; }
+
+        /// <summary>
+        /// The scrollable content container.
+        /// </summary>
         public UIContainer Content { get; }
+
 
         public UIScrollContainer(UIRenderArgs? arguments = null)
             : base(arguments.HasValue ? new UIRenderArgs(arguments.Value) { Mask = true } : new UIRenderArgs() { Mask = true }, false)
@@ -122,6 +157,10 @@ namespace Electron2D.UI
             SetScrollOffset(ScrollOffset + delta);
         }
 
+        /// <summary>
+        /// Sets the scroll offset, clamped to the valid scroll range.
+        /// </summary>
+        /// <param name="offset">The desired scroll offset in pixels.</param>
         public void SetScrollOffset(Vector2 offset)
         {
             ScrollOffset = new Vector2(
