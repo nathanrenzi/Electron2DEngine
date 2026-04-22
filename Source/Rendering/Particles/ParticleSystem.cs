@@ -57,7 +57,6 @@ namespace Electron2D
         private Random _random;
         private int _randomSeed;
         private bool _playOnAwake;
-        private Material _material;
         private FastNoise _noise;
         private int _currentBurstAmount;
         private float _spawnInterval { get { return 1f / EmissionParticlesPerSecond; } }
@@ -67,7 +66,7 @@ namespace Electron2D
         #endregion
 
         public ParticleSystem(Transform transform, bool playOnAwake, bool prewarm, bool isWorldSpace, bool inheritVelocity,
-            int maxParticles, Material material, int renderLayer = 1, int randomSeed = -1, bool ignorePostProcessing = false)
+            int maxParticles, SharedResource<Material> material, int renderLayer = 1, int randomSeed = -1, bool ignorePostProcessing = false)
         {
             _playOnAwake = playOnAwake;
             IsWorldSpace = isWorldSpace;
@@ -75,7 +74,6 @@ namespace Electron2D
             InheritVelocity = inheritVelocity;
             MaxParticles = maxParticles;
             RenderLayer = renderLayer;
-            _material = material;
             _ignorePostProcessing = ignorePostProcessing;
 
             _fakeTransform = new Transform();
@@ -99,7 +97,7 @@ namespace Electron2D
                 Debug.LogError("PARTICLE SYSTEM: Cannot create particle system if entity does not have a Transform component!");
                 return;
             }
-            Renderer = new MeshRenderer(_transform, _material);
+            Renderer = new MeshRenderer(_transform, material);
             Renderer.UseCustomIndexRenderCount = true;
             Renderer.OnBeforeRender += SetModelMatrix;
             BufferLayout layout = new BufferLayout();
@@ -359,7 +357,7 @@ namespace Electron2D
         {
             if (IsWorldSpace)
             {
-                Renderer.Material.Shader.Value.SetMatrix4x4("model", _fakeTransform.GetScaleMatrix() * _fakeTransform.GetRotationMatrix() * _transform.GetPositionMatrix());
+                Renderer.Material.Value.Shader.Value.SetMatrix4x4("model", _fakeTransform.GetScaleMatrix() * _fakeTransform.GetRotationMatrix() * _transform.GetPositionMatrix());
             }
         }
         #endregion
