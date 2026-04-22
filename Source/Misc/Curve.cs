@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Electron2D
 {
-    public class Curve
+    public struct Curve
     {
         public List<Point> Points = new List<Point>();
 

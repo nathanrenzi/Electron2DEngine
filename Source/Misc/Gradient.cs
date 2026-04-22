@@ -2,7 +2,7 @@
 
 namespace Electron2D.Misc
 {
-    public class Gradient
+    public struct Gradient
     {
         public SortedList<float, Color> ColorsSorted { get; } = new SortedList<float, Color>();
 
