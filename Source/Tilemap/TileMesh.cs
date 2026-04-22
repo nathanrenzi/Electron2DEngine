@@ -8,11 +8,11 @@ namespace Electron2D
         public List<uint> Indices;
         public MeshRenderer Renderer;
 
-        public TileMesh(Transform _transform, Material _material)
+        public TileMesh(Transform transform, SharedResource<Material> material)
         {
             Vertices = new List<float>();
             Indices = new List<uint>();
-            Renderer = new MeshRenderer(_transform, _material);
+            Renderer = new MeshRenderer(transform, material);
         }
     }
 }

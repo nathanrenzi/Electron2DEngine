@@ -8,13 +8,13 @@ namespace Electron2D
         public string Name { get; set; }
         public int SpriteColumn { get; set; }
         public int SpriteRow { get; set; }
-        public Material Material { get; set; }
+        public SharedResource<Material> Material { get; set; }
         public bool AllowRandomRotation { get; set; }
         public bool IsCollider { get; private set; } = false;
         public RigidbodyKinematicDef PhysicsSettings { get; private set; }
         public ITilemapRuleset Ruleset { get; set; }
 
-        public TileData(Material _material, string _name, int _spriteColumn = 0,
+        public TileData(SharedResource<Material> _material, string _name, int _spriteColumn = 0,
             int _spriteRow = 0, bool _allowRandomRotation = false,
             ITilemapRuleset _ruleset = null)
         {

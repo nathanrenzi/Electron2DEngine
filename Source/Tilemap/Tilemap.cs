@@ -46,8 +46,8 @@ namespace Electron2D
             for (int i = 0; i < Data.Length; i++)
             {
                 if (Data[i].Material == null) continue;
-                if (!_meshDataDictionary.ContainsKey(Data[i].Material))
-                    _meshDataDictionary.Add(Data[i].Material, new TileMesh(Transform, Data[i].Material));
+                if (!_meshDataDictionary.ContainsKey(Data[i].Material.Value))
+                    _meshDataDictionary.Add(Data[i].Material.Value, new TileMesh(Transform, Data[i].Material));
             }
 
             TileRotations = new byte[Tiles.Length];
@@ -61,7 +61,8 @@ namespace Electron2D
             Engine.Game.RegisterGameClass(this);
         }
 
-        public static Tilemap CreateSharedMaterial(Material material, TileData[] data, int[] tileArray, int tilePixelSize,
+        public static Tilemap CreateSharedMaterial(SharedResource<Material> material, TileData[] data,
+            int[] tileArray, int tilePixelSize,
             int sizeX, int sizeY, int renderLayer = -1, bool cloneArrays = true)
         {
             TileData[] d = cloneArrays ? (TileData[])data.Clone() : data;
@@ -107,8 +108,8 @@ namespace Electron2D
             {
                 if (Tiles[i] == -1) continue;
                 TileData data = Data[Tiles[i]];
-                TileMesh mesh = _meshDataDictionary[data.Material];
-                Texture2D mainTexture = data.Material.MainTexture.Value;
+                TileMesh mesh = _meshDataDictionary[data.Material.Value];
+                Texture2D mainTexture = data.Material.Value.MainTexture.Value;
 
                 Vector2 pos = FromIndex(i);
                 float xPos = pos.X * _realTilePixelSize;
