@@ -119,15 +119,7 @@ namespace Electron2D
                 new Vector2(0, ProjectSettings.PhysicsGravity), true, ProjectSettings.PhysicsVelocityIterations,
                 ProjectSettings.PhysicsPositionIterations));
 
-            try
-            {
-                Initialize();
-            }
-            catch (System.Exception exception)
-            {
-                Debug.LogError($"Unhandled exception while initializing: {exception}");
-                Exit(true);
-            }
+            Initialize();
 
             DefaultCamera = new Camera2D(Vector2.Zero, 1);
             _defaultSpatialListener = new AudioSpatialListener(DefaultCamera.Transform);
@@ -213,15 +205,7 @@ namespace Electron2D
             Debug.Log("Initialization complete");
             Debug.Log("#################### GAME STARTED ####################", ConsoleColor.DarkGreen);
 
-            try
-            {
-                Load();
-            }
-            catch (System.Exception exception)
-            {
-                Debug.LogError($"Unhandled exception while loading: {exception}");
-                Exit(true);
-            }
+            Load();
 
             // Rendering before the game loop prevents a black screen when the window is opened
             GLClear();
@@ -229,71 +213,62 @@ namespace Electron2D
 
             while (!Glfw.WindowShouldClose(Display.Window))
             {
-                try
+                Time.DeltaTime = (float)Glfw.Time - Time.GameTime;
+                Time.GameTime = (float)Glfw.Time;
+                PerformanceTimings.FramesPerSecond = 1 / Time.DeltaTime;
+
+                // Input
+                Input.ProcessInput();
+                // -----------------------
+
+                // Updating
+                double goST = Glfw.Time;
+                Update();
+                ShaderGlobalUniforms.UpdateShaders();
+                _useClassesQueue = true;
+                foreach (IGameClass gameClass in _classes)
                 {
-                    Time.DeltaTime = (float)Glfw.Time - Time.GameTime;
-                    Time.GameTime = (float)Glfw.Time;
-                    PerformanceTimings.FramesPerSecond = 1 / Time.DeltaTime;
+                    gameClass.Update();
+                }
+                _useClassesQueue = false;
+                PopClassesQueue();
+                LateUpdateEvent?.Invoke();
+                PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
+                // --------------------------
 
-                    // Input
-                    Input.ProcessInput();
-                    // -----------------------
-
-                    // Updating
-                    double goST = Glfw.Time;
-                    Update();
-                    ShaderGlobalUniforms.UpdateShaders();
+                // Physics
+                double phyST = Glfw.Time;
+                if (_doFixedUpdate)
+                {
                     _useClassesQueue = true;
                     foreach (IGameClass gameClass in _classes)
                     {
-                        gameClass.Update();
+                        gameClass.FixedUpdate();
                     }
+                    _doFixedUpdate = false;
                     _useClassesQueue = false;
                     PopClassesQueue();
-                    LateUpdateEvent?.Invoke();
-                    PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
-                    // --------------------------
-
-                    // Physics
-                    double phyST = Glfw.Time;
-                    if (_doFixedUpdate)
-                    {
-                        _useClassesQueue = true;
-                        foreach (IGameClass gameClass in _classes)
-                        {
-                            gameClass.FixedUpdate();
-                        }
-                        _doFixedUpdate = false;
-                        _useClassesQueue = false;
-                        PopClassesQueue();
-                    }
-                    PerformanceTimings.PhysicsMilliseconds = (Glfw.Time - phyST) * 1000;
-                    // -------------------------------
-
-
-                    // Rendering
-                    double rendST = Glfw.Time;
-                    ApplyBlendingMode();
-                    GLClear();
-                    double ppST = Glfw.Time;
-                    PostProcessor.Instance.BeforeGameRender();
-                    RenderCall();
-                    PostProcessor.Instance.AfterGameRender();
-                    PostProcessor.Instance.Render();
-                    PerformanceTimings.PostProcessingMilliseconds = (Glfw.Time - ppST) * 1000;
-                    RenderLayerManager.RenderAllLayersIgnorePostProcessing();
-
-                    Glfw.SwapBuffers(Display.Window);
-                    if (ProjectSettings.GraphicsErrorCheckingEnabled) LogErrors();
-                    PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
-                    // -------------------------------
                 }
-                catch (System.Exception exception)
-                {
-                    Debug.LogError($"Unhandled exception: {exception}");
-                    Exit(true);
-                    break;
-                }
+                PerformanceTimings.PhysicsMilliseconds = (Glfw.Time - phyST) * 1000;
+                // -------------------------------
+
+
+                // Rendering
+                double rendST = Glfw.Time;
+                ApplyBlendingMode();
+                GLClear();
+                double ppST = Glfw.Time;
+                PostProcessor.Instance.BeforeGameRender();
+                RenderCall();
+                PostProcessor.Instance.AfterGameRender();
+                PostProcessor.Instance.Render();
+                PerformanceTimings.PostProcessingMilliseconds = (Glfw.Time - ppST) * 1000;
+                RenderLayerManager.RenderAllLayersIgnorePostProcessing();
+
+                Glfw.SwapBuffers(Display.Window);
+                if (ProjectSettings.GraphicsErrorCheckingEnabled) LogErrors();
+                PerformanceTimings.RenderMilliseconds = (Glfw.Time - rendST) * 1000;
+                // -------------------------------
             }
 
             Exit(false);
