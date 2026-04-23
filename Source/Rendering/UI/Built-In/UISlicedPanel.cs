@@ -59,7 +59,7 @@ namespace Electron2D.UI
         private int _borderPixelSize;
         private int _stride = 4;
 
-        public UISlicedPanel(ITexture texture, Border borderUV, int borderPixelSize, UIRenderArgs? arguments = null)
+        public UISlicedPanel(SharedResource<Texture2D> texture, Border borderUV, int borderPixelSize, UIRenderArgs? arguments = null)
             : base(arguments, true)
         {
             _left = borderUV.Left;
@@ -70,11 +70,11 @@ namespace Electron2D.UI
 
             UpdateMesh();
 
-            Renderer.Material.MainTexture = texture;
+            Renderer.Material.Value.SetMainTexture(texture);
             Renderer.SetVertexArrays(_vertices, _indices);
         }
 
-        public UISlicedPanel(Material material, Border borderUV, int borderPixelSize, UIRenderArgs? arguments = null)
+        public UISlicedPanel(SharedResource<Material> material, Border borderUV, int borderPixelSize, UIRenderArgs? arguments = null)
             : base(arguments, true)
         {
             _left = borderUV.Left;
@@ -112,7 +112,7 @@ namespace Electron2D.UI
             float B2 = B1 - border;
 
             // UV coordinates for the border seams
-            Vector2 texSize = Renderer.Material.MainTexture.GetSize();
+            Vector2 texSize = Renderer.Material.Value.MainTexture.Value.GetSize();
             float offsetTexelU = 0.1f / texSize.X;
             float offsetTexelV = 0.1f / texSize.Y;
             float LU = Math.Clamp(_left, 0, 1f) + offsetTexelU;

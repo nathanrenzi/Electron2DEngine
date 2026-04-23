@@ -6,9 +6,7 @@ namespace Electron2D.Rendering.Text
 {
     public class FontGlyphStore : IDisposable
     {
-        public uint TextureHandle { get; private set; }
-        public int TextureAtlasWidth { get; private set; }
-        public int TextureAtlasHeight { get; private set; }
+        public SharedResource<Texture2D> Texture { get; }
         public Dictionary<char, Character> Characters { get; } = new Dictionary<char, Character>();
         public FontArgs Arguments { get; }
         public FreeTypeLibrary Library { get; }
@@ -18,11 +16,9 @@ namespace Electron2D.Rendering.Text
         public int Descent { get; private set; }
         private bool _isDone = false;
 
-        public FontGlyphStore(uint textureHandle, int textureAtlasWidth, int textureAtlasHeight, int fontSize, string fontFile, FreeTypeLibrary library, IntPtr face, bool useKerning)
+        public FontGlyphStore(SharedResource<Texture2D> texture, int fontSize, string fontFile, FreeTypeLibrary library, IntPtr face, bool useKerning)
         {
-            TextureHandle = textureHandle;
-            TextureAtlasWidth = textureAtlasWidth;
-            TextureAtlasHeight = textureAtlasHeight;
+            Texture = texture.AddRef();
             Library = library;
             Face = face;
             UseKerning = useKerning;
@@ -59,7 +55,7 @@ namespace Electron2D.Rendering.Text
         {
             Characters.Clear();
             FT_Done_Face(Face);
-            glDeleteTexture(TextureHandle);
+            Texture.Release();
             Library.Dispose();
         }
     }

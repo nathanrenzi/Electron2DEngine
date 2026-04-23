@@ -136,14 +136,23 @@ namespace Electron2D.UI
                 style.TextStyle.FontArguments.FontSize));
             caretSize = new Vector2(MathF.Round(caretSize.X), MathF.Round(caretSize.Y));
             caretSize = UICanvas.Instance.ScreenToVirtual(caretSize);
-            CaretPanel = style.CaretDef != null ? style.CaretDef.Create(arguments)
-                : new UIPanel(Material.Create(new Shader(Shader.ParseShader(
-                ResourceManager.GetEngineResourcePath("Shaders/CaretBlink.glsl")),
-                _globalUniformTags: ["time"])), arguments);
+            if(style.CaretDef != null)
+            {
+                CaretPanel = style.CaretDef.Create(arguments);
+            }
+            else
+            {
+                SharedResource<Shader> shader = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(
+                    Resources.GetEngineResourcePath("Shaders/CaretBlink.glsl")), globalUniformTags: ["time"]));
+                SharedResource<Material> mat = SharedResource<Material>.Create(Material.Create(shader));
+                CaretPanel = new UIPanel(mat, arguments);
+                shader.Release();
+                mat.Release();
+            }
             CaretPanel.IgnoreLayout = true;
             CaretPanel.ExplicitSize = caretSize;
             CaretPanel.Interactable = false;
-            CaretPanel.Pivot = new Vector2(0, (float)TextElement.FontGlyphStore.Ascent / style.TextStyle.FontArguments.FontSize);
+            CaretPanel.Pivot = new Vector2(0, (float)TextElement.FontGlyphStore.Value.Ascent / style.TextStyle.FontArguments.FontSize);
             CaretPanel.Visible = Focused;
             TextElement.AddChild(CaretPanel);
             TextElement.OnLayoutComplete += UpdateCaret;
@@ -192,7 +201,7 @@ namespace Electron2D.UI
             if(CaretPanel != null)
             {
                 CaretPanel.Position = TextElement.GetCharacterPositionAt(_caretIndex);
-                CaretPanel.Renderer.Material.Shader.SetFloat("startTime", Time.GameTime);
+                CaretPanel.Renderer.Material.Value.Shader.Value.SetFloat("startTime", Time.GameTime);
             }
         }
 

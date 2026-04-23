@@ -337,11 +337,13 @@ namespace Electron2D.UI
 
             if (_useMeshRenderer)
             {
-                Renderer = new MeshRenderer(Material.Create(GlobalShaders.Interface))
+                SharedResource<Material> material = SharedResource<Material>.Create(Material.Create(GlobalShaders.Interface));
+                Renderer = new MeshRenderer(material)
                 {
                     UseUnscaledProjectionMatrix = !UseWorldPosition,
                     UseStencilBuffer = true
                 };
+                material.Release();
             }
 
             UICanvas.Instance?.RegisterUIElement(this);
@@ -802,9 +804,9 @@ namespace Electron2D.UI
         /// <param name="color">The color to apply.</param>
         public virtual void SetColor(Color color)
         {
-            if (Renderer != null)
+            if (Renderer != null && Renderer.Material.IsValid)
             {
-                Renderer.Material.MainColor = color;
+                Renderer.Material.Value.MainColor = color;
             }
         }
 
@@ -892,9 +894,10 @@ namespace Electron2D.UI
                         break;
                 }
 
-                Renderer.GetMaterial().Shader.SetMatrix4x4("model", !UseWorldPosition ? Matrix4x4.CreateTranslation(pos.X, pos.Y, 0)
+                Renderer.GetMaterial().Value.Shader.Value.Use();
+                Renderer.GetMaterial().Value.Shader.Value.SetMatrix4x4("model", !UseWorldPosition ? Matrix4x4.CreateTranslation(pos.X, pos.Y, 0)
                     : Matrix4x4.CreateTranslation(pos.X, -pos.Y, 0) * Matrix4x4.CreateReflection(new Plane(0, 1, 0, pos.Y)));
-                Renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix",
+                Renderer.GetMaterial().Value.Shader.Value.SetMatrix4x4("uiMatrix",
                     !UseWorldPosition ? UICanvas.Instance.UIModelMatrix : Matrix4x4.Identity);
                 Renderer.Render();
             }

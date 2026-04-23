@@ -58,19 +58,21 @@ namespace Electron2D.UI
                 2, 3, 0
             };
 
-            _maskRenderer = new MeshRenderer(Material.Create(GlobalShaders.StencilOnly))
+            SharedResource<Material> stencilMat = SharedResource<Material>.Create(Material.Create(GlobalShaders.StencilOnly));
+            _maskRenderer = new MeshRenderer(stencilMat)
             {
                 UseUnscaledProjectionMatrix = true,
                 UseStencilBuffer = true
             };
             _maskRenderer.SetVertexArrays(vertices, indices);
 
-            _maskRendererWorld = new MeshRenderer(Material.Create(GlobalShaders.StencilOnly))
+            _maskRendererWorld = new MeshRenderer(stencilMat)
             {
                 UseUnscaledProjectionMatrix = false,
                 UseStencilBuffer = true
             };
             _maskRendererWorld.SetVertexArrays(vertices, indices);
+            stencilMat.Release();
         }
 
         public void RegisterUIElement(UIElement element)
@@ -118,12 +120,13 @@ namespace Electron2D.UI
                     break;
             }
 
-            renderer.GetMaterial().Shader.SetMatrix4x4("model",
+            renderer.GetMaterial().Value.Shader.Value.Use();
+            renderer.GetMaterial().Value.Shader.Value.SetMatrix4x4("model",
                 !element.UseWorldPosition
                     ? Matrix4x4.CreateScale(element.Size.X, element.Size.Y, 1f) * Matrix4x4.CreateTranslation(pos.X, pos.Y, 0f)
                     : Matrix4x4.CreateScale(element.Size.X, element.Size.Y, 1f) * Matrix4x4.CreateTranslation(pos.X, -pos.Y, 0f)
                         * Matrix4x4.CreateReflection(new Plane(0, 1, 0, pos.Y)));
-            renderer.GetMaterial().Shader.SetMatrix4x4("uiMatrix",
+            renderer.GetMaterial().Value.Shader.Value.SetMatrix4x4("uiMatrix",
                 !element.UseWorldPosition ? UIModelMatrix : Matrix4x4.Identity);
 
             renderer.Render();

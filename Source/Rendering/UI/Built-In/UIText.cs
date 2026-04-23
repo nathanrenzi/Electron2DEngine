@@ -82,7 +82,7 @@ namespace Electron2D.UI
             }
         }
         private float _lineHeightMultiplier;
-        public FontGlyphStore FontGlyphStore { get; set; }
+        public SharedResource<FontGlyphStore> FontGlyphStore { get; }
 
         private float _totalSizeX = 0;
         private float _totalSizeY = 0;
@@ -92,7 +92,7 @@ namespace Electron2D.UI
         public UIText(UITextStyle style, string text, UIRenderArgs? arguments = null)
             : base(arguments, true)
         {
-            FontGlyphStore = ResourceManager.Instance.LoadFont(style.FontArguments.FontFile,
+            FontGlyphStore = Resources.GetFont(style.FontArguments.FontFile,
                 style.FontArguments.FontSize, style.FontArguments.FontScale, 0);
 
             _text = text;
@@ -101,9 +101,10 @@ namespace Electron2D.UI
             OverflowMode = style.OverflowMode;
             LineHeightMultiplier = style.LineHeightMultiplier;
 
-            Material mat = Material.Create(style.CustomShader ?? GlobalShaders.Text, style.Color,
-                new Texture2D(FontGlyphStore.TextureHandle, FontGlyphStore.TextureAtlasWidth, FontGlyphStore.Arguments.FontSize));
+            SharedResource<Material> mat = SharedResource<Material>.Create(Material.Create(
+                style.CustomShader ?? GlobalShaders.Text, style.Color, FontGlyphStore.Value.Texture));
             Renderer.SetMaterial(mat);
+            mat.Release();
         }
 
         protected override Vector2 MeasureCore(Vector2 availableSize)
@@ -179,8 +180,8 @@ namespace Electron2D.UI
             }
 
             _totalSizeX = MathF.Max(currentSizeX, _totalSizeX);
-            _totalSizeY = FontGlyphStore.Ascent
-                + (_measuredTextLines.Count - 1) * (FontGlyphStore.Arguments.FontSize * LineHeightMultiplier);
+            _totalSizeY = FontGlyphStore.Value.Ascent
+                + (_measuredTextLines.Count - 1) * (FontGlyphStore.Value.Arguments.FontSize * LineHeightMultiplier);
 
             return new Vector2(
                 _totalSizeX + Padding.Left + Padding.Right,
@@ -195,11 +196,11 @@ namespace Electron2D.UI
 
             for (int i = 0; i < text.Length; i++)
             {
-                Character character = FontGlyphStore.Characters[text[i]];
-                uint charIndex = FT_Get_Char_Index(FontGlyphStore.Face, text[i]);
+                Character character = FontGlyphStore.Value.Characters[text[i]];
+                uint charIndex = FT_Get_Char_Index(FontGlyphStore.Value.Face, text[i]);
 
-                if(i > 0 && FontGlyphStore.UseKerning &&
-                    FT_Get_Kerning(FontGlyphStore.Face, previousIndex, charIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
+                if(i > 0 && FontGlyphStore.Value.UseKerning &&
+                    FT_Get_Kerning(FontGlyphStore.Value.Face, previousIndex, charIndex, (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
                 {
                     size.X += delta.x >> 6;
                 }
@@ -236,18 +237,18 @@ namespace Electron2D.UI
                     TextLine line = _measuredTextLines[i];
                     float xPos = rect.X;
                     float yPos = rect.Y;
-                    float lineOffset = i * FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+                    float lineOffset = i * FontGlyphStore.Value.Arguments.FontSize * LineHeightMultiplier;
 
                     switch (VerticalAlignment)
                     {
                         case TextAlignment.Top:
-                            yPos += FontGlyphStore.Ascent + lineOffset;
+                            yPos += FontGlyphStore.Value.Ascent + lineOffset;
                             break;
                         case TextAlignment.Center:
-                            yPos += FontGlyphStore.Ascent + (rect.Height - _totalSizeY) / 2f + lineOffset;
+                            yPos += FontGlyphStore.Value.Ascent + (rect.Height - _totalSizeY) / 2f + lineOffset;
                             break;
                         case TextAlignment.Bottom:
-                            yPos += rect.Height - _totalSizeY + FontGlyphStore.Ascent + lineOffset;
+                            yPos += rect.Height - _totalSizeY + FontGlyphStore.Value.Ascent + lineOffset;
                             break;
                     }
 
@@ -269,12 +270,12 @@ namespace Electron2D.UI
                     for (int k = 0; k < line.Text.Length; k++)
                     {
                         char c = line.Text[k];
-                        Character character = FontGlyphStore.Characters[c];
-                        charIndex = FT_Get_Char_Index(FontGlyphStore.Face, c);
+                        Character character = FontGlyphStore.Value.Characters[c];
+                        charIndex = FT_Get_Char_Index(FontGlyphStore.Value.Face, c);
 
-                        if(FontGlyphStore.UseKerning)
+                        if(FontGlyphStore.Value.UseKerning)
                         {
-                            if(FT_Get_Kerning(FontGlyphStore.Face, previousIndex, charIndex,
+                            if(FT_Get_Kerning(FontGlyphStore.Value.Face, previousIndex, charIndex,
                                 (uint)FT_Kerning_Mode.FT_KERNING_DEFAULT, out FT_Vector delta) == FT_Error.FT_Err_Ok)
                             {
                                 xPos += delta.x >> 6;
@@ -352,14 +353,14 @@ namespace Electron2D.UI
 
             Vector2 localPos = virtualPos - GetVirtualPosition();
 
-            float lineHeight = FontGlyphStore.Arguments.FontSize * LineHeightMultiplier;
+            float lineHeight = FontGlyphStore.Value.Arguments.FontSize * LineHeightMultiplier;
 
             for (int i = 0; i < _characterStartPositions.Count - 1; i++)
             {
                 (Vector2 startPos, int lineIndex) = _characterStartPositions[i];
                 (Vector2 endPos, int endLineIndex) = _characterStartPositions[i + 1];
 
-                float lineTop = startPos.Y - FontGlyphStore.Arguments.FontSize;
+                float lineTop = startPos.Y - FontGlyphStore.Value.Arguments.FontSize;
                 float lineBottom = startPos.Y;
 
                 bool onThisLine = (lineIndex == 0 || localPos.Y >= lineTop) && localPos.Y <= lineBottom;
@@ -397,7 +398,7 @@ namespace Electron2D.UI
 
         protected override void OnDispose()
         {
-            FontGlyphStore = null;
+            FontGlyphStore.Release();
         }
     }
 }

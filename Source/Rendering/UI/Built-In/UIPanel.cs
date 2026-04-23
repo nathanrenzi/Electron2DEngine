@@ -18,9 +18,9 @@ namespace Electron2D.UI
         /// <summary>
         /// Creates a <see cref="UIPanel"/> rendered with a texture.
         /// </summary>
-        public UIPanel(ITexture texture, UIRenderArgs? arguments = null) : base(arguments, true)
+        public UIPanel(SharedResource<Texture2D> texture, UIRenderArgs? arguments = null) : base(arguments, true)
         {
-            Renderer.Material.MainTexture = texture;
+            Renderer.Material.Value.SetMainTexture(texture);
             Initialize();
         }
 
@@ -30,7 +30,7 @@ namespace Electron2D.UI
             Initialize();
         }
 
-        public UIPanel(Material material, UIRenderArgs? arguments = null) : base(arguments, true)
+        public UIPanel(SharedResource<Material> material, UIRenderArgs? arguments = null) : base(arguments, true)
         {
             Renderer.SetMaterial(material);
             Initialize();

@@ -2,7 +2,7 @@
 {
     public struct FontArgs
     {
-        public static readonly FontArgs Default = new FontArgs(ResourceManager.GetEngineResourcePath("Fonts/Roboto-Regular.ttf"), 12);
+        public static readonly FontArgs Default = new FontArgs(Resources.GetEngineResourcePath("Fonts/Roboto-Regular.ttf"), 12);
 
         public string FontFile;
         public int FontSize;

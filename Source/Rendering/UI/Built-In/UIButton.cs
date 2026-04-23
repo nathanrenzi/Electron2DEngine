@@ -155,7 +155,7 @@ namespace Electron2D.UI
             Background.Interactable = false;
             AddChild(Background);
 
-            Color c = Background.Renderer?.Material?.MainColor ?? Color.White;
+            Color c = Background.Renderer?.Material.Value.MainColor ?? Color.White;
             _normalBackgroundColor = c;
             _hoverBackgroundColor = c;
             _pressedBackgroundColor = c;

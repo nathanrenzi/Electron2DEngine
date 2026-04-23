@@ -42,7 +42,7 @@ namespace Electron2D.UI
         /// <summary>
         /// A custom shader used to render the text, or <see langword="null"/> to use the default.
         /// </summary>
-        public Shader? CustomShader { get; }
+        public SharedResource<Shader>? CustomShader { get; }
 
         /// <summary>
         /// Creates a new <see cref="UITextStyle"/>.
@@ -56,7 +56,7 @@ namespace Electron2D.UI
         /// <param name="customShader">A custom shader for rendering the text. Defaults to <see langword="null"/>.</param>
         public UITextStyle(Color color, FontArgs fontArguments, TextAlignment horizontalAlignment = TextAlignment.Left,
             TextAlignment verticalAlignment = TextAlignment.Top, TextOverflowMode overflowMode = TextOverflowMode.Word,
-            float lineHeightMultiplier = 1.35f, Shader? customShader = null)
+            float lineHeightMultiplier = 1.35f, SharedResource<Shader>? customShader = null)
         {
             Color = color;
             FontArguments = fontArguments;

@@ -26,12 +26,12 @@ namespace Electron2D.UI
         /// <summary>
         /// Gets the material used to render this panel, or <see langword="null"/> if not applicable.
         /// </summary>
-        public Material? Material { get; }
+        public SharedResource<Material>? Material { get; }
 
         /// <summary>
         /// Gets the texture used to render this panel, or <see langword="null"/> if not applicable.
         /// </summary>
-        public ITexture? Texture { get; }
+        public SharedResource<Texture2D>? Texture { get; }
 
         /// <summary>
         /// Gets the solid color used to render this panel, or <see langword="null"/> if not applicable.
@@ -50,7 +50,8 @@ namespace Electron2D.UI
         /// </summary>
         public int BorderPixelSize { get; }
 
-        private UIPanelDef(UIPanelType type, Color? color, Material? material, ITexture? texture, Border borderUV, int borderPixelSize)
+        private UIPanelDef(UIPanelType type, Color? color, SharedResource<Material>? material,
+            SharedResource<Texture2D>? texture, Border borderUV, int borderPixelSize)
         {
             Type = type;
             Color = color;
@@ -68,22 +69,22 @@ namespace Electron2D.UI
         /// <summary>
         /// Creates a <see cref="UIPanelType.Panel"/> definition rendered with a material.
         /// </summary>
-        public static UIPanelDef PanelFromMaterial(Material material)
+        public static UIPanelDef PanelFromMaterial(SharedResource<Material> material)
             => new UIPanelDef(UIPanelType.Panel, null, material, null, default, 0);
         /// <summary>
         /// Creates a <see cref="UIPanelType.Panel"/> definition rendered with a texture.
         /// </summary>
-        public static UIPanelDef PanelFromTexture(ITexture texture)
+        public static UIPanelDef PanelFromTexture(SharedResource<Texture2D> texture)
             => new UIPanelDef(UIPanelType.Panel, null, null, texture, default, 0);
         /// <summary>
         /// Creates a <see cref="UIPanelType.Sliced"/> definition rendered with a material.
         /// </summary>
-        public static UIPanelDef SlicedFromMaterial(Material material, Border borderUV, int borderPixelSize)
+        public static UIPanelDef SlicedFromMaterial(SharedResource<Material> material, Border borderUV, int borderPixelSize)
             => new UIPanelDef(UIPanelType.Sliced, null, material, null, borderUV, borderPixelSize);
         /// <summary>
         /// Creates a <see cref="UIPanelType.Sliced"/> definition rendered with a texture.
         /// </summary>
-        public static UIPanelDef SlicedFromTexture(ITexture texture, Border borderUV, int borderPixelSize)
+        public static UIPanelDef SlicedFromTexture(SharedResource<Texture2D> texture, Border borderUV, int borderPixelSize)
             => new UIPanelDef(UIPanelType.Sliced, null, null, texture, borderUV, borderPixelSize);
 
         /// <summary>
