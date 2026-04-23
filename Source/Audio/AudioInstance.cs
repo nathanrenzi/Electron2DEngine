@@ -4,7 +4,7 @@
     {
         public event Action OnFadeInEnd;
         public event Action OnFadeOutEnd;
-        public AudioStream Stream { get; set; }
+        public AudioStream? Stream { get; set; }
         public PlaybackState PlaybackState { get; private set; }
         public float StartStopVolumeFadeTime { get; private set; }
         public float Volume { get; set; }
@@ -14,13 +14,40 @@
 
         public bool IsLoop
         {
-            get => Stream.EnableLooping;
-            set => Stream.EnableLooping = value;
+            get
+            {
+                if (Stream != null)
+                {
+                    return Stream.EnableLooping;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            set
+            {
+                if(Stream != null) Stream.EnableLooping = value;
+            }
         }
 
         private AudioSpatializer _spatializer;
 
-        public AudioInstance(AudioStream stream, float volume, float pitch, bool isLoop, float startStopVolumeFadeTime = 0.001f)
+        public AudioInstance(string fileName, float volume, float pitch, bool isLoop, float startStopVolumeFadeTime = 0.001f)
+        {
+            Volume = volume;
+            Pitch = pitch;
+            if(!File.Exists(fileName))
+            {
+                throw new FileNotFoundException(fileName);
+            }
+            Stream = new AudioStream(this, fileName, _spatializer?.Is3D ?? false);
+            IsLoop = isLoop;
+            StartStopVolumeFadeTime = startStopVolumeFadeTime;
+            HookStreamEvents();
+        }
+
+        public AudioInstance(AudioStream? stream, float volume, float pitch, bool isLoop, float startStopVolumeFadeTime = 0.001f)
         {
             Volume = volume;
             Pitch = pitch;
@@ -37,6 +64,7 @@
 
         private void HookStreamEvents()
         {
+            if (Stream == null) return;
             Stream.OnStreamEnd += Stop;
             Stream.VolumeFadeSampleProvider.OnFadeInEnd += () => OnFadeInEnd?.Invoke();
             Stream.VolumeFadeSampleProvider.OnFadeOutEnd += () => OnFadeOutEnd?.Invoke();
@@ -50,7 +78,7 @@
                 Debug.LogError("AudioStream is null, cannot set!");
                 return;
             }
-            if (!Stream.WaveFormat.Equals(stream.WaveFormat))
+            if (Stream != null && !Stream.WaveFormat.Equals(stream.WaveFormat))
             {
                 Debug.LogError("Cannot set audio stream. WaveFormat does not match the WaveFormat of the current stream." +
                     "Check the sample rate and other settings to make sure they match.");
@@ -59,16 +87,13 @@
             bool shouldPlay = PlaybackState == PlaybackState.Playing;
             if (shouldPlay) Stop();
 
-            if (_spatializer == null)
+            Stream?.Dispose();
+            Stream = stream;
+            Stream.EnableLooping = IsLoop;
+            // re-apply effects
+            HookStreamEvents();
+            if (_spatializer != null)
             {
-                Stream.Dispose();
-                Stream = stream;
-                HookStreamEvents();
-            }
-            else
-            {
-                Stream.Dispose();
-                Stream = stream;
                 AudioSpatializer spatializer = _spatializer;
                 spatializer.RemoveAudioInstance(this);
                 spatializer.AddAudioInstance(this);
@@ -81,6 +106,7 @@
 
         public void AddEffect(IAudioEffect effect)
         {
+            if (Stream == null) return; 
             effect.Initialize(Stream.SampleProvider);
             Stream.SampleProvider = effect;
             Effects.Add(effect);
@@ -88,6 +114,7 @@
 
         public void Play()
         {
+            if (Stream == null) return;
             Stream.SetFadeDirection(1);
             Stream.Position = 0;
             PlaybackState = PlaybackState.Playing;
@@ -96,6 +123,7 @@
 
         public void Play(long position)
         {
+            if (Stream == null) return;
             Stream.SetFadeDirection(1);
             Stream.Position = IsLoop ? position % Stream.Length : Math.Min(position, Stream.Length);
             PlaybackState = PlaybackState.Playing;
@@ -104,6 +132,7 @@
 
         public void Pause()
         {
+            if (Stream == null) return;
             if (PlaybackState == PlaybackState.Stopped) return;
             Stream.SetFadeDirection(-1);
             PlaybackState = PlaybackState.Paused;
@@ -111,6 +140,7 @@
 
         public void Unpause()
         {
+            if (Stream == null) return;
             if (PlaybackState == PlaybackState.Stopped || PlaybackState == PlaybackState.Playing) return;
             Stream.SetFadeDirection(1);
             PlaybackState = PlaybackState.Playing;
@@ -119,6 +149,7 @@
 
         public void Stop()
         {
+            if (Stream == null) return;
             Stream.SetFadeDirection(-1);
             PlaybackState = PlaybackState.Stopped;
         }
@@ -126,7 +157,7 @@
         public void Dispose()
         {
             _spatializer?.RemoveAudioInstance(this);
-            Stream.Dispose();
+            Stream?.Dispose();
         }
     }
 
