@@ -9,9 +9,9 @@ namespace Electron2D.Rendering
         private static SharedResource<Texture2D> _blankTexture = null;
         private static SharedResource<Texture2D> _blankNormal = null;
 
-        public SharedResource<Shader> Shader { get; }
-        public SharedResource<Texture2D> MainTexture { get; }
-        public SharedResource<Texture2D> NormalTexture { get; }
+        public SharedResource<Shader> Shader { get; private set; }
+        public SharedResource<Texture2D> MainTexture { get; private set; }
+        public SharedResource<Texture2D> NormalTexture { get; private set; }
         public float NormalScale { get; set; }
         public Color MainColor { get; set; }
         public bool UsingLinearFiltering { get; }
@@ -36,6 +36,31 @@ namespace Electron2D.Rendering
 
             MainTexture.Value.SetFilteringMode(UsingLinearFiltering);
             NormalTexture.Value.SetFilteringMode(UsingLinearFiltering);
+        }
+
+        public void SetShader(SharedResource<Shader> shader)
+        {
+            Shader.Release();
+            Shader = shader.AddRef();
+            if (!Shader.Value.Compiled)
+            {
+                Shader.Value.Compile();
+                Shader.Value.Use();
+                Shader.Value.SetInt("mainTextureSampler", 0);
+                Shader.Value.SetInt("normalTextureSampler", 1);
+            }
+        }
+
+        public void SetMainTexture(SharedResource<Texture2D> mainTexture)
+        {
+            MainTexture.Release();
+            MainTexture = mainTexture.AddRef();
+        }
+
+        public void SetNormalTexture(SharedResource<Texture2D> normalTexture)
+        {
+            NormalTexture.Release();
+            NormalTexture = normalTexture.AddRef();
         }
 
         public void Dispose()
@@ -101,13 +126,13 @@ namespace Electron2D.Rendering
         public static Material CreateLit(Color mainColor, SharedResource<Texture2D> mainTexture = null,
             SharedResource<Texture2D> normalTexture = null, bool useLinearFiltering = false, float normalScale = 1)
         {
-            return Create(GlobalShaders.DefaultLit, mainColor, mainTexture, normalTexture, useLinearFiltering, normalScale);
+            return Create(GlobalShaders.Lit, mainColor, mainTexture, normalTexture, useLinearFiltering, normalScale);
         }
 
         public static Material CreateLit(SharedResource<Texture2D> mainTexture, SharedResource<Texture2D> normalTexture = null,
             bool useLinearFiltering = false, float normalScale = 1)
         {
-            return Create(GlobalShaders.DefaultLit, Color.White, mainTexture, normalTexture, useLinearFiltering, normalScale);
+            return Create(GlobalShaders.Lit, Color.White, mainTexture, normalTexture, useLinearFiltering, normalScale);
         }
         #endregion
 
