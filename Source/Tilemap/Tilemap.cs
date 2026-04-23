@@ -251,8 +251,9 @@ namespace Electron2D
         public void Render()
         {
             foreach (var m in _meshDataDictionary)
+            {
+                m.Value.Renderer.Render();
             }
-        }
         }
     }
 }
