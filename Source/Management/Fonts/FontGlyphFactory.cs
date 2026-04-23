@@ -1,4 +1,5 @@
-﻿using Electron2D.Rendering.Text;
+﻿using Electron2D.Rendering;
+using Electron2D.Rendering.Text;
 using Electron2D.UI;
 using FreeTypeSharp;
 using FreeTypeSharp.Native;
@@ -78,7 +79,9 @@ namespace Electron2D.Management
                     GL_RED, GL_UNSIGNED_BYTE, (IntPtr)p);
             }
 
-            FontGlyphStore store = new FontGlyphStore(texture, atlasWidth, atlasHeight, fontSize, fontFile, library, face, f.HasKerningFlag);
+            SharedResource<Texture2D> tex = SharedResource<Texture2D>.Create(new Texture2D(texture, atlasWidth, atlasHeight, null, false));
+            FontGlyphStore store = new FontGlyphStore(tex, fontSize, fontFile, library, face, f.HasKerningFlag);
+            tex.Release();
 
             int pos = 0;
             for (uint c = 0; c < 128; c++)
