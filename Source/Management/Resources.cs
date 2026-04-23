@@ -10,7 +10,7 @@ namespace Electron2D
         private static Dictionary<string, SharedResource<Texture2DArray>> textureArrayCache = new();
         private static Dictionary<string, SharedResource<Texture2D>> textureCache = new();
         private static Dictionary<uint, SharedResource<Texture2D>> textureHandleCache = new();
-        private static Dictionary<FontArguments, SharedResource<FontGlyphStore>> fontCache = new();
+        private static Dictionary<FontArgs, SharedResource<FontGlyphStore>> fontCache = new();
 
         internal static void Shutdown()
         {
@@ -109,7 +109,7 @@ namespace Electron2D
             if (!ValidatePath(path)) return null;
 
             string[] s = path.Split('/');
-            FontArguments args = new FontArguments()
+            FontArgs args = new FontArgs()
             {
                 FontFile = s[s.Length - 1],
                 FontSize = fontSize,
