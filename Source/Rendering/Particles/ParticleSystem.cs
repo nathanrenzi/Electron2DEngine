@@ -74,7 +74,7 @@ namespace Electron2D
             InheritVelocity = inheritVelocity;
             MaxParticles = maxParticles;
             RenderLayer = renderLayer;
-            _ignorePostProcessing = ignorePostProcessing;
+            IgnorePostProcessing = ignorePostProcessing;
 
             _fakeTransform = new Transform();
 
