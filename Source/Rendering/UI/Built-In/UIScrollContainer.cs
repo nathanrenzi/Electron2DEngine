@@ -47,8 +47,42 @@ namespace Electron2D.UI
         /// </summary>
         public UIContainer Content { get; }
 
+        /// <summary>
+        /// The background track of the vertical scrollbar, or <see langword="null"/> if not created.
+        /// </summary>
+        public UIElement? VerticalBackground => _verticalBackground;
 
-        public UIScrollContainer(UIRenderArgs? arguments = null)
+        /// <summary>
+        /// The draggable handle of the vertical scrollbar, or <see langword="null"/> if not created.
+        /// </summary>
+        public UIElement? VerticalHandle => _verticalHandle;
+
+        /// <summary>
+        /// The background track of the horizontal scrollbar, or <see langword="null"/> if not created.
+        /// </summary>
+        public UIElement? HorizontalBackground => _horizontalBackground;
+
+        /// <summary>
+        /// The draggable handle of the horizontal scrollbar, or <see langword="null"/> if not created.
+        /// </summary>
+        public UIElement? HorizontalHandle => _horizontalHandle;
+
+        private readonly UIScrollContainerStyle? _style;
+
+        private readonly UIElement? _verticalBackground;
+        private readonly UIElement? _verticalHandle;
+        private readonly UIElement? _horizontalBackground;
+        private readonly UIElement? _horizontalHandle;
+
+        private float _verticalTrackLength;
+        private float _horizontalTrackLength;
+        private float _verticalHandleSize;
+        private float _horizontalHandleSize;
+
+        private Vector2 _dragStartMouse;
+        private Vector2 _dragStartScroll;
+
+        public UIScrollContainer(UIScrollContainerStyle? style = null, UIRenderArgs? arguments = null)
             : base(arguments.HasValue ? new UIRenderArgs(arguments.Value) { Mask = true } : new UIRenderArgs() { Mask = true }, false)
         {
             Content = new UIContainer(arguments)
@@ -59,6 +93,50 @@ namespace Electron2D.UI
             };
 
             AddChild(Content);
+
+            _style = style;
+
+            if(_style != null)
+            {
+                if(_style.VerticalVisibility != ScrollBarVisibility.Never)
+                {
+                    if(_style.BackgroundDef != null)
+                    {
+                        _verticalBackground = _style.BackgroundDef.Create(arguments);
+                        _verticalBackground.Interactable = false;
+                        _verticalBackground.IgnoreLayout = true;
+                        AddChild(_verticalBackground);
+                    }
+
+                    _verticalHandle = _style.HandleDef.Create(arguments);
+                    _verticalHandle.SetHoverCursorType(GLFW.CursorType.Hand);
+                    _verticalHandle.IgnoreLayout = true;
+                    _verticalHandle.AddEventListener(UIEventType.DragStart, OnVerticalHandleDragStart);
+                    _verticalHandle.AddEventListener(UIEventType.Drag, OnVerticalHandleDrag);
+                    _verticalHandle.AddEventListener(UIEventType.DragEnd, OnHandleDragEnd);
+                    AddChild(_verticalHandle);
+                }
+
+                if(_style.HorizontalVisibility != ScrollBarVisibility.Never)
+                {
+                    if(_style.BackgroundDef != null)
+                    {
+                        _horizontalBackground = _style.BackgroundDef.Create(arguments);
+                        _horizontalBackground.Interactable = false;
+                        _horizontalBackground.IgnoreLayout = true;
+                        AddChild(_horizontalBackground);
+                    }
+
+                    _horizontalHandle = _style.HandleDef.Create(arguments);
+                    _horizontalHandle.SetHoverCursorType(GLFW.CursorType.Hand);
+                    _horizontalHandle.IgnoreLayout = true;
+                    _horizontalHandle.AddEventListener(UIEventType.DragStart, OnHorizontalHandleDragStart);
+                    _horizontalHandle.AddEventListener(UIEventType.Drag, OnHorizontalHandleDrag);
+                    _horizontalHandle.AddEventListener(UIEventType.DragEnd, OnHandleDragEnd);
+                    AddChild(_horizontalHandle);
+                }
+            }
+
             AddEventListener(UIEventType.MouseScroll, OnMouseScroll);
         }
 
@@ -145,6 +223,101 @@ namespace Electron2D.UI
             );
 
             Content.Arrange(contentRect);
+
+            Rect scrollBarRect = new Rect(
+                childRect.X + Content.Padding.Left,
+                childRect.Y + Content.Padding.Top,
+                childRect.Width - Content.Padding.Left - Content.Padding.Right,
+                childRect.Height - Content.Padding.Top - Content.Padding.Bottom
+            );
+
+            if (_style != null)
+                ArrangeScrollBars(scrollBarRect);
+        }
+
+        private void ArrangeScrollBars(Rect innerRect)
+        {
+            float thickness = _style!.Thickness;
+
+            if (_verticalHandle != null)
+            {
+                bool visible = _style.VerticalVisibility == ScrollBarVisibility.Always
+                    || MaxScrollOffset.Y > 0;
+
+                _verticalHandle.Visible = visible;
+                if (_verticalBackground != null) _verticalBackground.Visible = visible;
+
+                float trackH = innerRect.Height;
+                float trackX = innerRect.X + innerRect.Width - thickness; ;
+                _verticalTrackLength = trackH;
+                _verticalHandleSize = Math.Max(_style.MinHandleSize, innerRect.Height * (innerRect.Height / (innerRect.Height + MaxScrollOffset.Y)));
+
+                float handleY = MaxScrollOffset.Y > 0
+                    ? (_verticalTrackLength - _verticalHandleSize) * (ScrollOffset.Y / MaxScrollOffset.Y)
+                    : 0f;
+
+                if (_verticalBackground != null)
+                    _verticalBackground.Arrange(new Rect(trackX, innerRect.Y, thickness, trackH));
+
+                _verticalHandle.Arrange(new Rect(trackX, innerRect.Y + handleY, thickness, _verticalHandleSize));
+            }
+
+            if (_horizontalHandle != null)
+            {
+                bool visible = _style.HorizontalVisibility == ScrollBarVisibility.Always
+                    || MaxScrollOffset.X > 0;
+
+                _horizontalHandle.Visible = visible;
+                if (_horizontalBackground != null) _horizontalBackground.Visible = visible;
+
+                float trackW = innerRect.Width;
+                float trackY = innerRect.Y + innerRect.Height - thickness;
+                _horizontalTrackLength = trackW;
+                _horizontalHandleSize = Math.Max(_style.MinHandleSize, innerRect.Width * (innerRect.Width / (innerRect.Width + MaxScrollOffset.X)));
+
+                float handleX = MaxScrollOffset.X > 0
+                    ? (_horizontalTrackLength - _horizontalHandleSize) * (ScrollOffset.X / MaxScrollOffset.X)
+                    : 0f;
+
+                if (_horizontalBackground != null)
+                    _horizontalBackground.Arrange(new Rect(innerRect.X, trackY, trackW, thickness));
+
+                _horizontalHandle.Arrange(new Rect(innerRect.X + handleX, trackY, _horizontalHandleSize, thickness));
+            }
+        }
+
+        private void OnVerticalHandleDragStart(UIEvent evt)
+        {
+            _dragStartMouse = evt.MousePosition;
+            _dragStartScroll = ScrollOffset;
+        }
+
+        private void OnVerticalHandleDrag(UIEvent evt)
+        {
+            float trackLength = _verticalTrackLength - _verticalHandleSize;
+            if (trackLength <= 0) return;
+            float delta = (evt.MousePosition.Y - _dragStartMouse.Y) / trackLength;
+            SetScrollOffset(new Vector2(ScrollOffset.X, _dragStartScroll.Y + delta * MaxScrollOffset.Y));
+        }
+
+        private void OnHorizontalHandleDragStart(UIEvent evt)
+        {
+            _dragStartMouse = evt.MousePosition;
+            _dragStartScroll = ScrollOffset;
+        }
+
+        private void OnHorizontalHandleDrag(UIEvent evt)
+        {
+            float trackLength = _horizontalTrackLength - _horizontalHandleSize;
+            if (trackLength <= 0) return;
+            float delta = (evt.MousePosition.X - _dragStartMouse.X) / trackLength;
+            SetScrollOffset(new Vector2(_dragStartScroll.X + delta * MaxScrollOffset.X, ScrollOffset.Y));
+        }
+
+        private void OnHandleDragEnd(UIEvent evt)
+        {
+            _dragStartMouse = Vector2.Zero;
+            _dragStartScroll = Vector2.Zero;
         }
 
         private void OnMouseScroll(UIEvent evt)
