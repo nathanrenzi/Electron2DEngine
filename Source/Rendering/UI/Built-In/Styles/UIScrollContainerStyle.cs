@@ -36,7 +36,7 @@
         public UIPanelDef HandleDef { get; }
 
         /// <summary>
-        /// The panel definition for the scrollbar background, or null for no background.
+        /// The panel definition for the scrollbar track, or <see langword="null"> for no track.
         /// </summary>
         public UIPanelDef? BackgroundDef { get; }
 
@@ -50,6 +50,15 @@
         /// </summary>
         public float MinHandleSize { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="UIScrollContainerStyle"/>.
+        /// </summary>
+        /// <param name="handleDef">The panel definition for the scrollbar handle.</param>
+        /// <param name="backgroundDef">The panel definition for the scrollbar track, or <see langword="null"/> for no track.</param>
+        /// <param name="thickness">The thickness of the scrollbar in pixels. Defaults to 8.</param>
+        /// <param name="minHandleSize">The minimum length of the handle in pixels. Defaults to 16.</param>
+        /// <param name="verticalVisibility">Controls when the vertical scrollbar is shown. Defaults to <see cref="ScrollBarVisibility.Auto"/>.</param>
+        /// <param name="horizontalVisibility">Controls when the horizontal scrollbar is shown. Defaults to <see cref="ScrollBarVisibility.Auto"/>.</param>
         public UIScrollContainerStyle(UIPanelDef handleDef, UIPanelDef? backgroundDef = null, float thickness = 8f,
             float minHandleSize = 16f, ScrollBarVisibility verticalVisibility = ScrollBarVisibility.Auto,
             ScrollBarVisibility horizontalVisibility = ScrollBarVisibility.Auto)

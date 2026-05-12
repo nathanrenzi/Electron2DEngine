@@ -2,6 +2,9 @@
 
 namespace Electron2D.UI
 {
+    /// <summary>
+    /// Defines the base class for UI layout strategies that control how child elements are measured and arranged.
+    /// </summary>
     public abstract class UILayout
     {
         private List<UIElement> _registeredElements = new List<UIElement>();

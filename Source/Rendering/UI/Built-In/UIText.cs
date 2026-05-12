@@ -9,6 +9,9 @@ using static FreeTypeSharp.Native.FT;
 
 namespace Electron2D.UI
 {
+    /// <summary>
+    /// A UI element that renders text with support for word wrapping, alignment, and overflow modes.
+    /// </summary>
     public sealed class UIText : UIElement
     {
         private struct TextLine
@@ -17,6 +20,9 @@ namespace Electron2D.UI
             public Vector2 Size;
         }
 
+        /// <summary>
+        /// The text content to display.
+        /// </summary>
         public string Text
         {
             get => _text;
@@ -30,6 +36,10 @@ namespace Electron2D.UI
             }
         }
         private string _text;
+
+        /// <summary>
+        /// The horizontal alignment of the text within the element's bounds.
+        /// </summary>
         public TextAlignment HorizontalAlignment
         {
             get => _horizontalAlignment;
@@ -43,6 +53,11 @@ namespace Electron2D.UI
             }
         }
         private TextAlignment _horizontalAlignment;
+
+
+        /// <summary>
+        /// The vertical alignment of the text within the element's bounds.
+        /// </summary>
         public TextAlignment VerticalAlignment
         {
             get => _verticalAlignment;
@@ -56,6 +71,10 @@ namespace Electron2D.UI
             }
         }
         private TextAlignment _verticalAlignment;
+
+        /// <summary>
+        /// How text is handled when it overflows the available area.
+        /// </summary>
         public TextOverflowMode OverflowMode
         {
             get => _overflowMode;
@@ -69,6 +88,10 @@ namespace Electron2D.UI
             }
         }
         private TextOverflowMode _overflowMode;
+
+        /// <summary>
+        /// The line height multiplier applied to the font's default line height.
+        /// </summary>
         public float LineHeightMultiplier
         {
             get => _lineHeightMultiplier;
@@ -82,6 +105,10 @@ namespace Electron2D.UI
             }
         }
         private float _lineHeightMultiplier;
+
+        /// <summary>
+        /// The glyph store used to render this text element's font.
+        /// </summary>
         public SharedResource<FontGlyphStore> FontGlyphStore { get; }
 
         private float _totalSizeX = 0;
@@ -89,6 +116,11 @@ namespace Electron2D.UI
         private List<TextLine> _measuredTextLines = new List<TextLine>();
         private List<(Vector2, int)> _characterStartPositions = new();
 
+        /// <summary>
+        /// Creates a new <see cref="UIText"/>.
+        /// </summary>
+        /// <param name="style">The visual style of the text.</param>
+        /// <param name="text">The initial text content to display.</param>
         public UIText(UITextStyle style, string text, UIRenderArgs? arguments = null)
             : base(arguments, true)
         {
@@ -337,6 +369,11 @@ namespace Electron2D.UI
             Renderer.SetVertexArrays(tempVertices.ToArray(), tempIndices.ToArray(), !Renderer.IsLoaded, Renderer.IsLoaded);
         }
 
+        /// <summary>
+        /// Returns the position of the character at the given index in virtual space.
+        /// </summary>
+        /// <param name="index">The index of the character.</param>
+        /// <returns>The position of the character in virtual space, or <see cref="Vector2.Zero"/> if the index is out of range.</returns>
         public Vector2 GetCharacterPositionAt(int index)
         {
             if(index < 0 || index >= _characterStartPositions.Count)
@@ -347,6 +384,11 @@ namespace Electron2D.UI
             return _characterStartPositions[index].Item1;
         }
 
+        /// <summary>
+        /// Returns the index of the character closest to the given position in virtual space.
+        /// </summary>
+        /// <param name="virtualPos">The position in virtual space.</param>
+        /// <returns>The index of the nearest character.</returns>
         public int GetCharacterIndexAt(Vector2 virtualPos)
         {
             if (_characterStartPositions.Count == 0) return 0;

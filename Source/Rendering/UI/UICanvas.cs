@@ -5,13 +5,40 @@ using static Electron2D.OpenGL.GL;
 
 namespace Electron2D.UI
 {
+    /// <summary>
+    /// Manages the UI element tree, input processing, layout, and rendering for the game's user interface.
+    /// Only one <see cref="UICanvas"/> can exist at a time.
+    /// </summary>
     public sealed class UICanvas
     {
+        /// <summary>
+        /// The active <see cref="UICanvas"/> instance.
+        /// </summary>
         public static UICanvas Instance { get; private set; }
+
+        /// <summary>
+        /// Fired when the UI scale changes, for example when the window is resized.
+        /// </summary>
         public event Action<float> OnUIScaleChanged;
+
+        /// <summary>
+        /// The model matrix used to transform UI elements from virtual space to screen space.
+        /// </summary>
         public Matrix4x4 UIModelMatrix { get; private set; }
+
+        /// <summary>
+        /// The inverse of <see cref="UIModelMatrix"/>, used to transform from screen space to virtual space.
+        /// </summary>
         public Matrix4x4 UIModelMatrixInverse { get; private set; }
+
+        /// <summary>
+        /// The virtual resolution of the canvas in pixels.
+        /// </summary>
         public Vector2 VirtualResolution { get; private set; }
+
+        /// <summary>
+        /// The current uniform UI scale factor derived from <see cref="UIModelMatrix"/>.
+        /// </summary>
         public float Scale => UIModelMatrix.M11;
 
         private List<UIElement> _rootElements = new List<UIElement>();
@@ -37,9 +64,9 @@ namespace Electron2D.UI
             }
             Instance = this;
 
-            _scalingMode = ProjectSettings.UISettings.ScalingMode;
-            VirtualResolution = ProjectSettings.UISettings.VirtualResolution;
-            _maintainAspect = ProjectSettings.UISettings.MaintainAspect;
+            _scalingMode = ProjectSettings.UICanvasSettings.ScalingMode;
+            VirtualResolution = ProjectSettings.UICanvasSettings.VirtualResolution;
+            _maintainAspect = ProjectSettings.UICanvasSettings.MaintainAspect;
 
             UpdateScaling();
 
@@ -75,6 +102,10 @@ namespace Electron2D.UI
             stencilMat.Release();
         }
 
+        /// <summary>
+        /// Registers a <see cref="UIElement"/> with the canvas so it receives layout and input processing.
+        /// </summary>
+        /// <param name="element">The element to register.</param>
         public void RegisterUIElement(UIElement element)
         {
             if (!_allElements.Contains(element))
@@ -86,12 +117,22 @@ namespace Electron2D.UI
             }
         }
 
+        /// <summary>
+        /// Unregisters a <see cref="UIElement"/> from the canvas.
+        /// </summary>
+        /// <param name="element">The element to unregister.</param>
         public void UnregisterUIElement(UIElement element)
         {
             _allElements.Remove(element);
             _rootElements.Remove(element);
         }
 
+        /// <summary>
+        /// Renders the stencil mask for a <see cref="UIElement"/> at its current bounds.
+        /// </summary>
+        /// <param name="element">The element to render a mask for.</param>
+        /// <param name="stencil">The current stencil depth.</param>
+        /// <param name="maskMode">Whether to push or pop the mask.</param>
         public void RenderMask(UIElement element, int stencil, UIElement.MaskWriteMode maskMode)
         {
             MeshRenderer renderer = element.UseWorldPosition ? _maskRendererWorld : _maskRenderer;
@@ -132,11 +173,19 @@ namespace Electron2D.UI
             renderer.Render();
         }
 
+        /// <summary>
+        /// Called when a <see cref="UIElement"/> is parented to another element, removing it from the root list.
+        /// </summary>
+        /// <param name="element">The element that was parented.</param>
         public void OnElementParented(UIElement element)
         {
             _rootElements.Remove(element);
         }
 
+        /// <summary>
+        /// Called when a <see cref="UIElement"/> is unparented, adding it back to the root list.
+        /// </summary>
+        /// <param name="element">The element that was unparented.</param>
         public void OnElementUnparented(UIElement element)
         {
             if (!_rootElements.Contains(element))
@@ -163,7 +212,7 @@ namespace Electron2D.UI
             }
             else
             {
-                VirtualResolution = ProjectSettings.UISettings.VirtualResolution;
+                VirtualResolution = ProjectSettings.UICanvasSettings.VirtualResolution;
                 float scaleX = Display.WindowSize.X / VirtualResolution.X;
                 float scaleY = Display.WindowSize.Y / VirtualResolution.Y;
 
@@ -186,18 +235,33 @@ namespace Electron2D.UI
             OnUIScaleChanged?.Invoke(Scale);
         }
 
+        /// <summary>
+        /// Converts a position from virtual space to screen space.
+        /// </summary>
+        /// <param name="position">The position in virtual space.</param>
+        /// <returns>The position in screen space.</returns>
         public Vector2 VirtualToScreen(Vector2 position)
         {
             Vector4 r = Vector4.Transform(new Vector4(position, 0, 1), UIModelMatrix);
             return new Vector2(r.X, r.Y);
         }
 
+        /// <summary>
+        /// Converts a position from screen space to virtual space.
+        /// </summary>
+        /// <param name="position">The position in screen space.</param>
+        /// <returns>The position in virtual space.</returns>
         public Vector2 ScreenToVirtual(Vector2 position)
         {
             Vector4 r = Vector4.Transform(new Vector4(position, 0, 1), UIModelMatrixInverse);
             return new Vector2(r.X, r.Y);
         }
 
+        /// <summary>
+        /// Converts a position from screen space to world space.
+        /// </summary>
+        /// <param name="position">The position in screen space.</param>
+        /// <returns>The position in world space.</returns>
         public Vector2 ScreenToWorld(Vector2 position)
         {
             Vector2 centered = new Vector2(
@@ -209,7 +273,7 @@ namespace Electron2D.UI
             return centered + Camera2D.Main.Transform.Position;
         }
 
-        public void UpdateLayout()
+        internal void UpdateLayout()
         {
             Vector2 canvasSize = ScreenToVirtual(Display.WindowSize);
             foreach (var root in _rootElements)
@@ -513,6 +577,10 @@ namespace Electron2D.UI
             return null;
         }
 
+        /// <summary>
+        /// Sets focus to the given <see cref="UIElement"/>, removing focus from the previously focused element.
+        /// </summary>
+        /// <param name="element">The element to focus.</param>
         public void Focus(UIElement element)
         {
             if (_focusedElement == element) return;
@@ -528,6 +596,10 @@ namespace Electron2D.UI
             element.Focused = true;
         }
 
+        /// <summary>
+        /// Removes focus from the given <see cref="UIElement"/> if it is currently focused.
+        /// </summary>
+        /// <param name="element">The element to unfocus.</param>
         public void Unfocus(UIElement element)
         {
             if (element != _focusedElement) return;

@@ -170,10 +170,7 @@ namespace Electron2D.UI
             _disabledForegroundColor = normalColor;
         }
 
-        /// <summary>
-        /// Updates the background and foreground colors based on the current button state.
-        /// </summary>
-        public void UpdateColors()
+        private void UpdateColors()
         {
             Color bg, fg;
 

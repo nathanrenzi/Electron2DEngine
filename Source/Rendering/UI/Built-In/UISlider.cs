@@ -1,16 +1,40 @@
-﻿using Electron2D.Rendering;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Electron2D.UI
 {
+    /// <summary>
+    /// A UI element that allows the user to select a value within a defined range by dragging a handle.
+    /// </summary>
     public sealed class UISlider : UIElement
     {
+        /// <summary>
+        /// Fired when the slider value changes.
+        /// </summary>
         public event Action<float> OnValueChanged;
+
+        /// <summary>
+        /// Fired when the slider value changes, normalized between 0 and 1.
+        /// </summary>
         public event Action<float> OnValueChanged01;
 
+        /// <summary>
+        /// The background track element.
+        /// </summary>
         public UIElement Background { get; private set; }
+
+        /// <summary>
+        /// The foreground fill element that represents the current value.
+        /// </summary>
         public UIElement Foreground { get; private set; }
+
+        /// <summary>
+        /// The draggable handle element.
+        /// </summary>
         public UIElement Handle { get; private set; }
+
+        /// <summary>
+        /// The minimum value of the slider.
+        /// </summary>
         public float MinValue
         {
             get => _minValue;
@@ -25,6 +49,10 @@ namespace Electron2D.UI
             }
         }
         private float _minValue;
+
+        /// <summary>
+        /// The maximum value of the slider.
+        /// </summary>
         public float MaxValue
         {
             get => _maxValue;
@@ -39,6 +67,10 @@ namespace Electron2D.UI
             }
         }
         private float _maxValue;
+
+        /// <summary>
+        /// The current value of the slider, clamped between <see cref="MinValue"/> and <see cref="MaxValue"/>.
+        /// </summary>
         public float Value
         {
             get => _value;
@@ -53,9 +85,20 @@ namespace Electron2D.UI
             }
         }
         private float _value;
+
+        /// <summary>
+        /// The current value of the slider normalized between 0 and 1.
+        /// </summary>
         public float Value01 => MathEx.Clamp01((Value - MinValue) / (MaxValue - MinValue));
         private int _handleEndPadding;
 
+        /// <summary>
+        /// Creates a new <see cref="UISlider"/>.
+        /// </summary>
+        /// <param name="style">The visual style of the slider.</param>
+        /// <param name="value">The initial value. Defaults to 0.</param>
+        /// <param name="minValue">The minimum value. Defaults to 0.</param>
+        /// <param name="maxValue">The maximum value. Defaults to 1.</param>
         public UISlider(UISliderStyle style, float value = 0, float minValue = 0, float maxValue = 1,
             UIRenderArgs? arguments = null) : base(arguments, false)
         {

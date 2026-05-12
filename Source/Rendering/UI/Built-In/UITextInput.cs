@@ -8,18 +8,48 @@ using System.Text;
 
 namespace Electron2D.UI
 {
+    /// <summary>
+    /// A UI element that allows the user to input and edit text.
+    /// Supports caret navigation, word jumping, clipboard paste, and key repeat.
+    /// </summary>
     public sealed class UITextInput : UIElement, IKeyListener
     {
         private const float REPEAT_DELAY = 0.4f;
         private const float REPEAT_RATE = 0.035f;
 
+        /// <summary>
+        /// Fired when the text content changes.
+        /// </summary>
         public event Action<string> OnTextUpdate;
+
+        /// <summary>
+        /// Fired when a text update is attempted but rejected, such as exceeding <see cref="MaxCharacterCount"/>.
+        /// </summary>
         public event Action OnTextUpdateFailed;
+
+        /// <summary>
+        /// Fired when the user submits the text by pressing Enter.
+        /// </summary>
         public event Action<string> OnTextSubmit;
 
+        /// <summary>
+        /// The background panel element.
+        /// </summary>
         public UIElement Background { get; }
+
+        /// <summary>
+        /// The text display element.
+        /// </summary>
         public UIText TextElement { get; }
-        public UIElement CaretPanel { get; }
+
+        /// <summary>
+        /// The caret element.
+        /// </summary>
+        public UIElement Caret { get; }
+
+        /// <summary>
+        /// The current text content of the input.
+        /// </summary>
         public string Text
         {
             get
@@ -42,6 +72,10 @@ namespace Electron2D.UI
             }
         }
         private string _text = "";
+
+        /// <summary>
+        /// The placeholder text displayed when the input is empty.
+        /// </summary>
         public string PromptText
         {
             get
@@ -55,6 +89,10 @@ namespace Electron2D.UI
             }
         }
         private string _promptText;
+
+        /// <summary>
+        /// The color of the input text.
+        /// </summary>
         public Color TextColor
         {
             get => _textColor;
@@ -65,6 +103,10 @@ namespace Electron2D.UI
             }
         }
         private Color _textColor;
+
+        /// <summary>
+        /// The color of the prompt text displayed when the input is empty.
+        /// </summary>
         public Color PromptTextColor
         {
             get => _promptTextColor;
@@ -77,6 +119,10 @@ namespace Electron2D.UI
             }
         }
         private Color _promptTextColor;
+
+        /// <summary>
+        /// The maximum number of characters allowed, or -1 for no limit.
+        /// </summary>
         public int MaxCharacterCount
         {
             get => _maxCharacterCount;
@@ -98,6 +144,10 @@ namespace Electron2D.UI
             }
         }
         private int _maxCharacterCount;
+
+        /// <summary>
+        /// The maximum number of lines allowed, or -1 for no limit.
+        /// </summary>
         public int MaxLineCount { get; set; }
 
         private KeyCode _holdingKey = KeyCode.Unknown;
@@ -111,6 +161,14 @@ namespace Electron2D.UI
         private List<(string, int)> _words = new();
         private StringBuilder _builder = new();
 
+        /// <summary>
+        /// Creates a new <see cref="UITextInput"/>.
+        /// </summary>
+        /// <param name="style">The visual style of the text input.</param>
+        /// <param name="text">The initial text content.</param>
+        /// <param name="promptText">The placeholder text shown when the input is empty. Defaults to an empty string.</param>
+        /// <param name="maxCharacterCount">The maximum number of characters allowed, or -1 for no limit. Defaults to -1.</param>
+        /// <param name="maxLineCount">The maximum number of lines allowed, or -1 for no limit. Defaults to -1.</param>
         public UITextInput(UITextInputStyle style, string text, string promptText = "", int maxCharacterCount = -1,
             int maxLineCount = -1, UIRenderArgs? arguments = null) : base(arguments, false)
         {
@@ -138,23 +196,23 @@ namespace Electron2D.UI
             caretSize = UICanvas.Instance.ScreenToVirtual(caretSize);
             if(style.CaretDef != null)
             {
-                CaretPanel = style.CaretDef.Create(arguments);
+                Caret = style.CaretDef.Create(arguments);
             }
             else
             {
                 SharedResource<Shader> shader = SharedResource<Shader>.Create(new Shader(Shader.ParseShader(
                     Resources.GetEngineResourcePath("Shaders/CaretBlink.glsl")), globalUniformTags: ["time"]));
                 SharedResource<Material> mat = SharedResource<Material>.Create(Material.Create(shader));
-                CaretPanel = new UIPanel(mat, arguments);
+                Caret = new UIPanel(mat, arguments);
                 shader.Release();
                 mat.Release();
             }
-            CaretPanel.IgnoreLayout = true;
-            CaretPanel.ExplicitSize = caretSize;
-            CaretPanel.Interactable = false;
-            CaretPanel.Pivot = new Vector2(0, (float)TextElement.FontGlyphStore.Value.Ascent / style.TextStyle.FontArguments.FontSize);
-            CaretPanel.Visible = Focused;
-            TextElement.AddChild(CaretPanel);
+            Caret.IgnoreLayout = true;
+            Caret.ExplicitSize = caretSize;
+            Caret.Interactable = false;
+            Caret.Pivot = new Vector2(0, (float)TextElement.FontGlyphStore.Value.Ascent / style.TextStyle.FontArguments.FontSize);
+            Caret.Visible = Focused;
+            TextElement.AddChild(Caret);
             TextElement.OnLayoutComplete += UpdateCaret;
 
             UpdateText(text);
@@ -166,13 +224,13 @@ namespace Electron2D.UI
             });
             AddEventListener(UIEventType.GainFocus, (evt) =>
             {
-                CaretPanel.Visible = true;
+                Caret.Visible = true;
                 _isEditing = true;
                 Input.LockKeyInput(this, 1);
             });
             AddEventListener(UIEventType.LoseFocus, (evt) =>
             {
-                CaretPanel.Visible = false;
+                Caret.Visible = false;
                 _isEditing = false;
                 Input.UnlockKeyInput(this, 1);
             });
@@ -198,10 +256,10 @@ namespace Electron2D.UI
 
         private void UpdateCaret()
         {
-            if(CaretPanel != null)
+            if(Caret != null)
             {
-                CaretPanel.Position = TextElement.GetCharacterPositionAt(_caretIndex);
-                CaretPanel.Renderer.Material.Value.Shader.Value.SetFloat("startTime", Time.GameTime);
+                Caret.Position = TextElement.GetCharacterPositionAt(_caretIndex);
+                Caret.Renderer.Material.Value.Shader.Value.SetFloat("startTime", Time.GameTime);
             }
         }
 

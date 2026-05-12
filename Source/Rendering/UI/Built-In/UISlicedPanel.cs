@@ -59,6 +59,13 @@ namespace Electron2D.UI
         private int _borderPixelSize;
         private int _stride = 4;
 
+        /// <summary>
+        /// Creates a new <see cref="UISlicedPanel"/> rendered with a texture, using
+        /// <see cref="Rendering.Shaders.GlobalShaders.Interface"/> as the default material.
+        /// </summary>
+        /// <param name="texture">The texture used to render the panel.</param>
+        /// <param name="borderUV">The UV coordinates defining the 9-slice border regions.</param>
+        /// <param name="borderPixelSize">The border thickness in pixels for 9-sliced rendering.</param>
         public UISlicedPanel(SharedResource<Texture2D> texture, Border borderUV, int borderPixelSize, UIRenderArgs? arguments = null)
             : base(arguments, true)
         {
@@ -74,6 +81,12 @@ namespace Electron2D.UI
             Renderer.SetVertexArrays(_vertices, _indices);
         }
 
+        /// <summary>
+        /// Creates a new <see cref="UISlicedPanel"/> rendered with a material.
+        /// </summary>
+        /// <param name="material">The material used to render the panel.</param>
+        /// <param name="borderUV">The UV coordinates defining the 9-slice border regions.</param>
+        /// <param name="borderPixelSize">The border thickness in pixels for 9-sliced rendering.</param>
         public UISlicedPanel(SharedResource<Material> material, Border borderUV, int borderPixelSize, UIRenderArgs? arguments = null)
             : base(arguments, true)
         {

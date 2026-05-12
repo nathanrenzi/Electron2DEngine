@@ -16,20 +16,31 @@ namespace Electron2D.UI
         };
 
         /// <summary>
-        /// Creates a <see cref="UIPanel"/> rendered with a texture.
+        /// Creates a <see cref="UIPanel"/> rendered with a texture, using 
+        /// <see cref="Rendering.Shaders.GlobalShaders.Interface"/>
+        /// as the default material.
         /// </summary>
+        /// <param name="texture">The texture used to render the panel.</param>
         public UIPanel(SharedResource<Texture2D> texture, UIRenderArgs? arguments = null) : base(arguments, true)
         {
             Renderer.Material.Value.SetMainTexture(texture);
             Initialize();
         }
 
+        /// <summary>
+        /// Creates a <see cref="UIPanel"/> rendered with a color.
+        /// </summary>
+        /// <param name="color">The color used to render the panel.</param>
         public UIPanel(Color color, UIRenderArgs? arguments = null) : base(arguments, true)
         {
             SetColor(color);
             Initialize();
         }
 
+        /// <summary>
+        /// Creates a <see cref="UIPanel"/> rendered with a material.
+        /// </summary>
+        /// <param name="material">The material used to render the panel.</param>
         public UIPanel(SharedResource<Material> material, UIRenderArgs? arguments = null) : base(arguments, true)
         {
             Renderer.SetMaterial(material);

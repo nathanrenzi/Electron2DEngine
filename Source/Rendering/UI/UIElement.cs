@@ -10,7 +10,7 @@ namespace Electron2D.UI
     public abstract class UIElement : IRenderable
     {
         /// <summary>
-        /// Invoked after the UIElement has completed both measure and arrange passes.
+        /// Fired after the UIElement has completed both measure and arrange passes.
         /// </summary>
         public event Action OnLayoutComplete;
 
@@ -18,11 +18,13 @@ namespace Electron2D.UI
         /// Gets the parent UIElement of this element in the UI hierarchy.
         /// </summary>
         public UIElement Parent { get; private set; }
-        private List<UIElement> _children = new List<UIElement>();
+
         /// <summary>
         /// Gets a read-only collection of child UIElements.
         /// </summary>
         public IReadOnlyList<UIElement> Children => _children;
+        private List<UIElement> _children = new List<UIElement>();
+
         /// <summary>
         /// Gets or sets the position of this element relative to its parent.
         /// Setting this property invalidates arrangement.
@@ -40,14 +42,17 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _position;
+
         /// <summary>
         /// Gets the actual size calculated during the arrange pass.
         /// </summary>
         public Vector2 Size { get; private set; }
+
         /// <summary>
         /// Gets the desired size calculated during the measure pass.
         /// </summary>
         public Vector2 DesiredSize { get; private set; }
+
         /// <summary>
         /// Gets or sets an explicit size for this element, overriding content-driven sizing during the measure pass.
         /// When set, the element will always report this as its desired size, bypassing layout and child measurement.
@@ -67,6 +72,7 @@ namespace Electron2D.UI
             }
         }
         private Vector2? _explicitSize;
+
         /// <summary>
         /// Gets or sets the pivot point for this element, expressed as a normalized value (0-1).
         /// The pivot determines the origin point for positioning and transformations.
@@ -86,6 +92,7 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _pivot = Vector2.Zero;
+
         /// <summary>
         /// Gets or sets the anchor point within the parent element, expressed as a normalized value (0-1).
         /// The anchor determines where this element is positioned within its parent's bounds.
@@ -104,6 +111,7 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _anchor = Vector2.Zero;
+
         /// <summary>
         /// Gets or sets the margin (outer spacing) around this element.
         /// Setting this property invalidates measurement and updates the mesh.
@@ -119,6 +127,7 @@ namespace Electron2D.UI
             }
         }
         private Border _margin;
+
         /// <summary>
         /// Gets or sets the padding (inner spacing) within this element.
         /// Setting this property invalidates measurement and updates the mesh.
@@ -134,6 +143,7 @@ namespace Electron2D.UI
             }
         }
         private Border _padding;
+
         /// <summary>
         /// Gets or sets the minimum size constraints for this element.
         /// Setting this property invalidates measurement and updates the mesh.
@@ -152,6 +162,7 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _minSize = Vector2.Zero;
+
         /// <summary>
         /// Gets or sets the maximum size constraints for this element.
         /// Setting this property invalidates measurement and updates the mesh.
@@ -170,11 +181,13 @@ namespace Electron2D.UI
             }
         }
         private Vector2 _maxSize = new Vector2(float.MaxValue, float.MaxValue);
+
         /// <summary>
         /// Gets or sets additional pixels to extend the interaction area beyond the visual bounds.
         /// Useful for making small UI elements easier to click.
         /// </summary>
         public float ExtraInteractionPixels { get; set; }
+
         /// <summary>
         /// Gets or sets whether this element is visible.
         /// When visibility changes, GainVisibility or LoseVisibility events are raised.
@@ -204,10 +217,12 @@ namespace Electron2D.UI
             }
         }
         private bool _visible = true;
+
         /// <summary>
         /// Gets or sets whether this element is enabled.
         /// </summary>
         public bool Enabled { get; set; } = true;
+
         /// <summary>
         /// Gets or sets whether this element can be interacted with.
         /// When interactability changes, GainInteractability or LoseInteractability events are raised.
@@ -231,6 +246,7 @@ namespace Electron2D.UI
             }
         }
         private bool _interactable = true;
+
         /// <summary>
         /// Gets or sets whether this element ignores the layout of its parent element.
         /// </summary>
@@ -248,32 +264,37 @@ namespace Electron2D.UI
             }
         }
         private bool _ignoreLayout;
+
         /// <summary>
         /// Gets whether this element currently has focus.
         /// </summary>
         public bool Focused { get; internal set; }
+
         /// <summary>
         /// Gets whether the measure pass results are still valid.
         /// </summary>
         public bool IsMeasureValid { get; private set; }
+
         /// <summary>
         /// Gets whether the arrange pass results are still valid.
         /// </summary>
         public bool IsArrangeValid { get; private set; }
+
         /// <summary>
         /// Gets or sets the layout strategy used to position and size child elements.
         /// </summary>
         public UILayout Layout { get; set; }
-        private List<IConstraint> _constraints = new List<IConstraint>();
 
         /// <summary>
         /// Gets the mesh renderer used to draw this element (if it exists).
         /// </summary>
         public MeshRenderer Renderer { get; protected set; }
+
         /// <summary>
         /// Gets the rendering layer order for this element.
         /// </summary>
         public int RenderLayer { get; private set; }
+
         /// <summary>
         /// Gets or sets whether to use world-space for rendering. This value propogates to children.
         /// </summary>
@@ -294,22 +315,30 @@ namespace Electron2D.UI
             }
         }
         private bool _useWorldPosition;
+
         /// <summary>
         /// Gets whether this element ignores post-processing effects.
         /// </summary>
         public bool IgnorePostProcessing { get; }
+
         /// <summary>
         /// Gets or sets whether to snap this element to screen pixels. Only considered when not using world space.
         /// </summary>
         public bool SnapToPixels { get; set; }
+
         /// <summary>
-        /// Gets whether this element can have children added to it.
+        /// Gets or sets whether this element can have children added to it.
         /// </summary>
         public bool CanAddChildren { get; set; } = true;
+
+        /// <summary>
+        /// Gets whether this element clips its children to its own bounds using the stencil buffer.
+        /// </summary>
         public bool Mask { get; }
+
         private bool _useMeshRenderer;
         private CursorType _hoverCursorType = CursorType.Arrow;
-
+        private List<IConstraint> _constraints = new List<IConstraint>();
         private Dictionary<UIEventType, List<Action<UIEvent>>> _eventHandlers = new Dictionary<UIEventType, List<Action<UIEvent>>>();
 
 
@@ -600,10 +629,10 @@ namespace Electron2D.UI
         /// <summary>
         /// Adds a constraint that will be applied to this element during arrangement.
         /// </summary>
-        /// <param name="constrant">The constraint to add.</param>
-        public void AddConstraint(IConstraint constrant)
+        /// <param name="constraint">The constraint to add.</param>
+        public void AddConstraint(IConstraint constraint)
         {
-            _constraints.Add(constrant);
+            _constraints.Add(constraint);
             InvalidateArrange();
         }
 
@@ -936,9 +965,11 @@ namespace Electron2D.UI
         }
 
         /// <summary>
-        /// Sets the explicit size and position of this element without triggering redundant layout passes.
-        /// Prefer this over setting Size and Position individually when changing both.
+        /// Sets the explicit size and position of this element in a single operation, avoiding redundant layout passes.
+        /// Prefer this over setting <see cref="ExplicitSize"/> and <see cref="Position"/> individually when changing both.
         /// </summary>
+        /// <param name="explicitSize">The explicit size to apply.</param>
+        /// <param name="position">The position to apply.</param>
         public void SetTransform(Vector2 explicitSize, Vector2 position)
         {
             bool sizeChanged = ExplicitSize != explicitSize;

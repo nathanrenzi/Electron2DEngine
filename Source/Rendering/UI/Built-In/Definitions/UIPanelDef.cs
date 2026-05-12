@@ -4,7 +4,7 @@ using System.Drawing;
 namespace Electron2D.UI
 {
     /// <summary>
-    /// Defines the visual style of a <see cref="UIPanelDef"/>.
+    /// Defines the rendering type of a <see cref="UIPanelDef"/>.
     /// </summary>
     public enum UIPanelType
     {
@@ -64,32 +64,46 @@ namespace Electron2D.UI
         /// <summary>
         /// Creates a <see cref="UIPanelType.Panel"/> definition rendered with a solid color.
         /// </summary>
+        /// <param name="color">The color used to render the panel.</param>
         public static UIPanelDef PanelFromColor(Color color)
             => new UIPanelDef(UIPanelType.Panel, color, null, null, default, 0);
+
         /// <summary>
         /// Creates a <see cref="UIPanelType.Panel"/> definition rendered with a material.
         /// </summary>
+        /// <param name="material">The material used to render the panel.</param>
         public static UIPanelDef PanelFromMaterial(SharedResource<Material> material)
             => new UIPanelDef(UIPanelType.Panel, null, material, null, default, 0);
+
         /// <summary>
         /// Creates a <see cref="UIPanelType.Panel"/> definition rendered with a texture.
         /// </summary>
+        /// <param name="texture">The texture used to render the panel.</param>
         public static UIPanelDef PanelFromTexture(SharedResource<Texture2D> texture)
             => new UIPanelDef(UIPanelType.Panel, null, null, texture, default, 0);
+
         /// <summary>
         /// Creates a <see cref="UIPanelType.Sliced"/> definition rendered with a material.
         /// </summary>
+        /// <param name="material">The material used to render the panel.</param>
+        /// <param name="borderUV">The UV coordinates defining the 9-slice border regions.</param>
+        /// <param name="borderPixelSize">The border thickness in pixels for 9-sliced rendering.</param>
         public static UIPanelDef SlicedFromMaterial(SharedResource<Material> material, Border borderUV, int borderPixelSize)
             => new UIPanelDef(UIPanelType.Sliced, null, material, null, borderUV, borderPixelSize);
+
         /// <summary>
         /// Creates a <see cref="UIPanelType.Sliced"/> definition rendered with a texture.
         /// </summary>
+        /// <param name="texture">The texture used to render the panel.</param>
+        /// <param name="borderUV">The UV coordinates defining the 9-slice border regions.</param>
+        /// <param name="borderPixelSize">The border thickness in pixels for 9-sliced rendering.</param>
         public static UIPanelDef SlicedFromTexture(SharedResource<Texture2D> texture, Border borderUV, int borderPixelSize)
             => new UIPanelDef(UIPanelType.Sliced, null, null, texture, borderUV, borderPixelSize);
 
         /// <summary>
         /// Instantiates a <see cref="UIElement"/> based on this definition.
         /// </summary>
+        /// <returns>A new <see cref="UIPanel"/> or <see cref="UISlicedPanel"/> configured from this definition.</returns>
         public UIElement Create(UIRenderArgs? arguments = null)
         {
             return Type switch

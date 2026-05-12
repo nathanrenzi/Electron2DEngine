@@ -17,7 +17,7 @@ namespace Electron2D
         // -------------------
 
         // Misc --------------
-        public static UISettings UISettings { get; private set; } = new UISettings();
+        public static UICanvasSettings UICanvasSettings { get; private set; } = new UICanvasSettings();
         public static bool GraphicsErrorCheckingEnabled { get; private set; } = false;
         public static bool ShowElectron2DSplashscreen { get; private set; } = false;
         public static bool UseHDRFrameBuffers { get; private set; } = false;
@@ -47,7 +47,7 @@ namespace Electron2D
             if (overrides.ServerHeartbeatIntervalMilliseconds.HasValue) ServerHeartbeatIntervalMilliseconds = overrides.ServerHeartbeatIntervalMilliseconds.Value;
 
             // Misc
-            if (overrides.UISettings != null) UISettings = overrides.UISettings;
+            if (overrides.UICanvasSettings != null) UICanvasSettings = overrides.UICanvasSettings;
             if (overrides.GraphicsErrorCheckingEnabled.HasValue) GraphicsErrorCheckingEnabled = overrides.GraphicsErrorCheckingEnabled.Value;
             if (overrides.ShowElectron2DSplashscreen.HasValue) ShowElectron2DSplashscreen = overrides.ShowElectron2DSplashscreen.Value;
             if (overrides.UseHDRFrameBuffers.HasValue) UseHDRFrameBuffers = overrides.UseHDRFrameBuffers.Value;
@@ -71,7 +71,7 @@ namespace Electron2D
         // -------------------
 
         // Misc --------------
-        public UISettings? UISettings { get; set; }
+        public UICanvasSettings? UICanvasSettings { get; set; }
         public bool? GraphicsErrorCheckingEnabled { get; set; }
         public bool? ShowElectron2DSplashscreen { get; set; }
         public bool? UseHDRFrameBuffers { get; set; }

@@ -82,6 +82,10 @@ namespace Electron2D.UI
         private Vector2 _dragStartMouse;
         private Vector2 _dragStartScroll;
 
+        /// <summary>
+        /// Creates a new <see cref="UIScrollContainer"/>.
+        /// </summary>
+        /// <param name="style">The visual style of the scrollbars, or <see langword="null"/> for no scrollbars.</param>
         public UIScrollContainer(UIScrollContainerStyle? style = null, UIRenderArgs? arguments = null)
             : base(arguments.HasValue ? new UIRenderArgs(arguments.Value) { Mask = true } : new UIRenderArgs() { Mask = true }, false)
         {
