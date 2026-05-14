@@ -243,6 +243,13 @@ namespace Electron2D.UI
         {
             float thickness = _style!.Thickness;
 
+            bool bothVisible = _verticalHandle != null && _horizontalHandle != null
+                && (_style.VerticalVisibility == ScrollBarVisibility.Always || MaxScrollOffset.Y > 0)
+                && (_style.HorizontalVisibility == ScrollBarVisibility.Always || MaxScrollOffset.X > 0);
+
+            float vTrackH = innerRect.Height - (bothVisible ? thickness : 0f);
+            float hTrackW = innerRect.Width - (bothVisible ? thickness : 0f);
+
             if (_verticalHandle != null)
             {
                 bool visible = _style.VerticalVisibility == ScrollBarVisibility.Always
@@ -251,17 +258,16 @@ namespace Electron2D.UI
                 _verticalHandle.Visible = visible;
                 if (_verticalBackground != null) _verticalBackground.Visible = visible;
 
-                float trackH = innerRect.Height;
                 float trackX = innerRect.X + innerRect.Width - thickness; ;
-                _verticalTrackLength = trackH;
-                _verticalHandleSize = Math.Max(_style.MinHandleSize, innerRect.Height * (innerRect.Height / (innerRect.Height + MaxScrollOffset.Y)));
+                _verticalTrackLength = vTrackH;
+                _verticalHandleSize = Math.Max(_style.MinHandleSize, vTrackH * (vTrackH / (vTrackH + MaxScrollOffset.Y)));
 
                 float handleY = MaxScrollOffset.Y > 0
                     ? (_verticalTrackLength - _verticalHandleSize) * (ScrollOffset.Y / MaxScrollOffset.Y)
                     : 0f;
 
                 if (_verticalBackground != null)
-                    _verticalBackground.Arrange(new Rect(trackX, innerRect.Y, thickness, trackH));
+                    _verticalBackground.Arrange(new Rect(trackX, innerRect.Y, thickness, vTrackH));
 
                 _verticalHandle.Arrange(new Rect(trackX, innerRect.Y + handleY, thickness, _verticalHandleSize));
             }
@@ -274,17 +280,16 @@ namespace Electron2D.UI
                 _horizontalHandle.Visible = visible;
                 if (_horizontalBackground != null) _horizontalBackground.Visible = visible;
 
-                float trackW = innerRect.Width;
                 float trackY = innerRect.Y + innerRect.Height - thickness;
-                _horizontalTrackLength = trackW;
-                _horizontalHandleSize = Math.Max(_style.MinHandleSize, innerRect.Width * (innerRect.Width / (innerRect.Width + MaxScrollOffset.X)));
+                _horizontalTrackLength = hTrackW;
+                _horizontalHandleSize = Math.Max(_style.MinHandleSize, hTrackW * (hTrackW / (hTrackW + MaxScrollOffset.X)));
 
                 float handleX = MaxScrollOffset.X > 0
                     ? (_horizontalTrackLength - _horizontalHandleSize) * (ScrollOffset.X / MaxScrollOffset.X)
                     : 0f;
 
                 if (_horizontalBackground != null)
-                    _horizontalBackground.Arrange(new Rect(innerRect.X, trackY, trackW, thickness));
+                    _horizontalBackground.Arrange(new Rect(innerRect.X, trackY, hTrackW, thickness));
 
                 _horizontalHandle.Arrange(new Rect(innerRect.X + handleX, trackY, _horizontalHandleSize, thickness));
             }
