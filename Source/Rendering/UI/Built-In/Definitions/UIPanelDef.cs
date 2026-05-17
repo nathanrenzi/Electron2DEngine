@@ -62,6 +62,13 @@ namespace Electron2D.UI
         }
 
         /// <summary>
+        /// Creates a blank <see cref="UIPanelType.Panel"/> definition rendered in white.
+        /// </summary>
+        /// <returns></returns>
+        public static UIPanelDef Blank()
+            => new UIPanelDef(UIPanelType.Panel, System.Drawing.Color.White, null, null, default, 0);
+
+        /// <summary>
         /// Creates a <see cref="UIPanelType.Panel"/> definition rendered with a solid color.
         /// </summary>
         /// <param name="color">The color used to render the panel.</param>
