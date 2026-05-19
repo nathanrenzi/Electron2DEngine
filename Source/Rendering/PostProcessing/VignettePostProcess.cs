@@ -1,5 +1,5 @@
 ﻿using Electron2D.Rendering.Shaders;
-using System.Drawing;
+
 using System.Numerics;
 
 namespace Electron2D.Rendering.PostProcessing

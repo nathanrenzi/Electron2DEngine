@@ -2,7 +2,7 @@
 using Electron2D.Rendering;
 using Electron2D.Rendering.Shaders;
 using GLFW;
-using System.Drawing;
+
 using System.Numerics;
 using System.Text;
 

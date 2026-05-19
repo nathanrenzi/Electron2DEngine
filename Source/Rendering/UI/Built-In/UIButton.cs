@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿
 using System.Numerics;
 
 namespace Electron2D.UI

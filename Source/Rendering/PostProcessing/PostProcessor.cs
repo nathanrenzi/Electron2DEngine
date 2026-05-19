@@ -1,5 +1,5 @@
 ﻿using Electron2D.Rendering.Shaders;
-using System.Drawing;
+
 using System.Numerics;
 using static Electron2D.OpenGL.GL;
 

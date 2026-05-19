@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Numerics;
 using static Electron2D.OpenGL.GL;
@@ -32,23 +33,23 @@ namespace Electron2D.Rendering
 
         public Vector2 GetSize() => new Vector2(Width, Height);
 
-        public void Use(int _textureSlot)
+        public void Use(int textureSlot)
         {
-            glActiveTexture(_textureSlot);
+            glActiveTexture(textureSlot);
             glBindTexture(GL_TEXTURE_2D, Handle);
         }
 
-        public unsafe void SetData(Rectangle _bounds, byte[] _data)
+        public unsafe void SetData(Rectangle bounds, byte[] data)
         {
             // Using not in-use texture slot since this does not cache itself as the last used texture anywhere
             Use(GL_TEXTURE0);
-            fixed (byte* ptr = _data)
+            fixed (byte* ptr = data)
             {
-                glTexSubImage2D(GL_TEXTURE_2D, 0, _bounds.Left, _bounds.Top, _bounds.Width, _bounds.Height, GL_RGBA, GL_UNSIGNED_BYTE, ptr);
+                glTexSubImage2D(GL_TEXTURE_2D, 0, bounds.Left, bounds.Top, bounds.Width, bounds.Height, GL_RGBA, GL_UNSIGNED_BYTE, ptr);
             }
         }
 
-        public unsafe Bitmap GetData(int format = GL_BGRA)
+        public Bitmap GetData(int format = GL_BGRA)
         {
             Use(GL_TEXTURE0);
             Bitmap bitmap = new Bitmap(Width, Height);
@@ -63,7 +64,7 @@ namespace Electron2D.Rendering
             return bitmap;
         }
 
-        public unsafe void Save(string _filePath)
+        public unsafe void Save(string filePath)
         {
             Use(GL_TEXTURE0);
             Bitmap bitmap = new Bitmap(Width, Height);
@@ -75,15 +76,15 @@ namespace Electron2D.Rendering
             glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.Scan0);
 
             bitmap.UnlockBits(data);
-            bitmap.Save(_filePath, ImageFormat.Png);
+            bitmap.Save(filePath, ImageFormat.Png);
             bitmap.Dispose();
         }
 
-        public void SetFilteringMode(bool _linear)
+        public void SetFilteringMode(bool linear)
         {
             Use(GL_TEXTURE0);
 
-            if (_linear)
+            if (linear)
             {
                 // Linear filtering
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -97,7 +98,7 @@ namespace Electron2D.Rendering
             }
         }
 
-        private void Dispose(bool _disposing)
+        private void Dispose(bool disposing)
         {
             if(!_disposed)
             {

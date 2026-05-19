@@ -1,6 +1,6 @@
 ﻿using static Electron2D.OpenGL.GL;
 using System.Numerics;
-using System.Drawing;
+
 
 namespace Electron2D.Rendering.Shaders
 {
@@ -147,13 +147,11 @@ namespace Electron2D.Rendering.Shaders
 
         public void SetColor(string uniformName, Color value)
         {
-            float[] col = {
-                MathF.Pow(value.R / 255f, 2.2f),
-                MathF.Pow(value.G / 255f, 2.2f),
-                MathF.Pow(value.B / 255f, 2.2f),
-                value.A / 255f
-            };
-            glUniform4fv(GetUniformLocation(uniformName), 1, col);
+            glUniform4f(GetUniformLocation(uniformName),
+                MathF.Pow(value.R, 2.2f),
+                MathF.Pow(value.G, 2.2f),
+                MathF.Pow(value.B, 2.2f),
+                value.A);
         }
 
         public void Dispose()

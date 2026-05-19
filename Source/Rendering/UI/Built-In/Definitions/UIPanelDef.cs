@@ -1,5 +1,4 @@
 ﻿using Electron2D.Rendering;
-using System.Drawing;
 
 namespace Electron2D.UI
 {
@@ -66,7 +65,7 @@ namespace Electron2D.UI
         /// </summary>
         /// <returns></returns>
         public static UIPanelDef Blank()
-            => new UIPanelDef(UIPanelType.Panel, System.Drawing.Color.White, null, null, default, 0);
+            => new UIPanelDef(UIPanelType.Panel, Electron2D.Color.White, null, null, default, 0);
 
         /// <summary>
         /// Creates a <see cref="UIPanelType.Panel"/> definition rendered with a solid color.

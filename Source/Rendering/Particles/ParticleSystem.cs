@@ -1,6 +1,6 @@
 ﻿using Electron2D.Misc;
 using Electron2D.Rendering;
-using System.Drawing;
+
 using System.Numerics;
 using DotnetNoise;
 
@@ -630,17 +630,9 @@ namespace Electron2D
             float xpos = _particle.Position.X + (IsWorldSpace ? _particle.Origin.X - _transform.Position.X : _particle.Origin.X) * 2;
             float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y - _transform.Position.Y : _particle.Origin.Y) * 2;
 
-            Vector4 color;
-            if (_colorOverLifetimeEnabled)
-            {
-                Color eval = ColorOverLifetime.Evaluate(t);
-                color = new Vector4((_particle.Color.R / 255f) * (eval.R / 255f), (_particle.Color.G / 255f) * (eval.G / 255f),
-                    (_particle.Color.B / 255f) * (eval.B / 255f), (_particle.Color.A / 255f) * (eval.A / 255f));
-            }
-            else
-            {
-                color = new Vector4(_particle.Color.R / 255f, _particle.Color.G / 255f, _particle.Color.B / 255f, _particle.Color.A / 255f);
-            }
+            Vector4 color = _colorOverLifetimeEnabled
+                ? _particle.Color * ColorOverLifetime.Evaluate(t)
+                : _particle.Color;
 
             // Top Left
             _vertices[i + 0] = tl.X + xpos;

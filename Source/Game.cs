@@ -7,7 +7,7 @@ using Electron2D.Rendering.PostProcessing;
 using Electron2D.Rendering.Shaders;
 using Electron2D.UI;
 using GLFW;
-using System.Drawing;
+
 using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
@@ -77,7 +77,7 @@ namespace Electron2D
         public void SetBackgroundColor(Color backgroundColor)
         {
             BackgroundColor = backgroundColor;
-            LinearBackgroundColor = new Vector4(MathF.Pow(backgroundColor.R / 255f, 2.2f), MathF.Pow(backgroundColor.G / 255f, 2.2f), MathF.Pow(backgroundColor.B / 255f, 2.2f), backgroundColor.A);
+            LinearBackgroundColor = new Vector4(MathF.Pow(backgroundColor.R, 2.2f), MathF.Pow(backgroundColor.G, 2.2f), MathF.Pow(backgroundColor.B, 2.2f), backgroundColor.A);
         }
 
         public void SetBlendingMode(BlendMode blendMode)
@@ -172,7 +172,7 @@ namespace Electron2D
 
                     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
                     glClearColor(0, 0, 0, 1);
-                    Splashscreen.Render(splashscreenTexture, (int)(e * 255));
+                    Splashscreen.Render(splashscreenTexture, e);
                     if (t > fadeTimePercentage / 2f && !hasPlayedAudio)
                     {
                         hasPlayedAudio = true;

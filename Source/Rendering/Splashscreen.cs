@@ -1,5 +1,5 @@
 ﻿using Electron2D.Rendering.Shaders;
-using System.Drawing;
+
 using System.Numerics;
 using static Electron2D.OpenGL.GL;
 
@@ -38,11 +38,11 @@ namespace Electron2D.Rendering
             _vertexArray.AddBuffer(_vertexBuffer, _layout);
         }
 
-        public static unsafe void Render(SharedResource<Texture2D> texture, int alpha)
+        public static unsafe void Render(SharedResource<Texture2D> texture, float alpha)
         {
             SharedResource<Shader> shader = GlobalShaders.Interface.AddRef();
             shader.Value.Use();
-            shader.Value.SetColor("mainColor", Color.FromArgb(alpha, Color.White));
+            shader.Value.SetColor("mainColor", Color.White.WithAlpha(alpha));
             shader.Value.SetMatrix4x4("model", Matrix4x4.Identity);
             shader.Value.SetMatrix4x4("uiMatrix", Matrix4x4.Identity);
             shader.Value.SetMatrix4x4("projection", Matrix4x4.Identity);

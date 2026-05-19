@@ -1,6 +1,6 @@
 ﻿using Electron2D.Rendering.Shaders;
 using Electron2D.Rendering;
-using System.Drawing;
+
 using System.Numerics;
 using static Electron2D.Light;
 
@@ -106,7 +106,7 @@ namespace Electron2D
                     _shader.SetFloat($"pointLights[{i}].constant", l.Constant);
                     _shader.SetFloat($"pointLights[{i}].intensity", l.Intensity);
                     _shader.SetVector3($"pointLights[{i}].color",
-                        new Vector3(l.Color.R / 255f, l.Color.G / 255f, l.Color.B / 255f));
+                        new Vector3(l.Color.R, l.Color.G, l.Color.B));
                 }
                 else
                 {
