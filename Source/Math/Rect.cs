@@ -1,5 +1,8 @@
-﻿namespace Electron2D
+﻿using System.Runtime.InteropServices;
+
+namespace Electron2D
 {
+    [StructLayout(LayoutKind.Sequential)]
     public struct Rect
     {
         public float X, Y, Width, Height;
