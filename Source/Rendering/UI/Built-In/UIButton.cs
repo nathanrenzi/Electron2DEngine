@@ -221,6 +221,9 @@ namespace Electron2D.UI
             {
                 _isPressed = false;
                 UpdateColors();
+            });
+            AddEventListener(UIEventType.Click, _ =>
+            {
                 OnClick?.Invoke();
             });
             AddEventListener(UIEventType.MouseEnter, _ =>
