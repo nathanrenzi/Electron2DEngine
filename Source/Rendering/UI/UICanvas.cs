@@ -1,9 +1,9 @@
-﻿using Electron2D.Rendering;
-using Electron2D.Rendering.Shaders;
+﻿using Atlas2D.Rendering;
+using Atlas2D.Rendering.Shaders;
 using System.Numerics;
-using static Electron2D.OpenGL.GL;
+using static Atlas2D.OpenGL.GL;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// Manages the UI element tree, input processing, layout, and rendering for the game's user interface.

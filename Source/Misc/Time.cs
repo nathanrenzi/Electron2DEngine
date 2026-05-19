@@ -1,7 +1,7 @@
-﻿using Electron2D.Rendering;
-using Electron2D.Rendering.Shaders;
+﻿using Atlas2D.Rendering;
+using Atlas2D.Rendering.Shaders;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public static class Time
     {

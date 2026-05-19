@@ -1,4 +1,4 @@
-﻿namespace Electron2D.Rendering.Text
+﻿namespace Atlas2D.Rendering.Text
 {
     public enum TextAlignment
     {

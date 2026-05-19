@@ -3,7 +3,7 @@
 // For additional information please see the included LICENSE.md file or view it on GitHub:
 // https://github.com/tom-weiland/RiptideSteamTransport/blob/main/LICENSE.md
 
-using Electron2D;
+using Atlas2D;
 using Steamworks;
 using System;
 using System.Runtime.InteropServices;

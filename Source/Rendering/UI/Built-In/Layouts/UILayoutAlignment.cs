@@ -1,4 +1,4 @@
-﻿namespace Electron2D.UI
+﻿namespace Atlas2D.UI
 {
     /// <summary>
     /// Controls how children are aligned within a <see cref="UILayout"/>.

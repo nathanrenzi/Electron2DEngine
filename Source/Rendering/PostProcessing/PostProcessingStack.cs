@@ -1,4 +1,4 @@
-﻿namespace Electron2D.Rendering.PostProcessing
+﻿namespace Atlas2D.Rendering.PostProcessing
 {
     public class PostProcessingStack
     {

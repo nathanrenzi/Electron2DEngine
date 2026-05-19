@@ -1,4 +1,4 @@
-﻿namespace Electron2D.UI
+﻿namespace Atlas2D.UI
 {
     /// <summary>
     /// Defines a four-sided border with independent left, top, right, and bottom values.

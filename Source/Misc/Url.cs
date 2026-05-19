@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Electron2D.Misc
+namespace Atlas2D.Misc
 {
     public static class Url
     {

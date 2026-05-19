@@ -1,4 +1,4 @@
-﻿namespace Electron2D.UI
+﻿namespace Atlas2D.UI
 {
     /// <summary>
     /// Defines a constraint that can be applied to a <see cref="UIElement"/> to modify its layout properties.

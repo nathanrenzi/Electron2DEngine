@@ -1,6 +1,6 @@
-﻿using Electron2D.Rendering.Shaders;
+﻿using Atlas2D.Rendering.Shaders;
 
-namespace Electron2D.Rendering
+namespace Atlas2D.Rendering
 {
     /// <summary>
     /// An interface that allows classes to register into <see cref="ShaderGlobalUniforms"/> and pass data to all shaders.

@@ -1,4 +1,4 @@
-﻿namespace Electron2D.Rendering
+﻿namespace Atlas2D.Rendering
 {
     /// <summary>
     /// Handles rendering every renderable object in the scene. All Render() functions are called from here.

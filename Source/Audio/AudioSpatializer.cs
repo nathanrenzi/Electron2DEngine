@@ -1,7 +1,7 @@
 ﻿using NAudio.Wave;
 using System.Numerics;
 
-namespace Electron2D.Audio
+namespace Atlas2D.Audio
 {
     public class AudioSpatializer : IGameClass
     {

@@ -1,4 +1,4 @@
-﻿namespace Electron2D.Rendering
+﻿namespace Atlas2D.Rendering
 {
     /// <summary>
     /// An interface that allows an object to register in the render layer system.

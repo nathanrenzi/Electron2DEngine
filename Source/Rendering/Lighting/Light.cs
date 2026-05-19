@@ -1,6 +1,6 @@
 ﻿
 
-namespace Electron2D
+namespace Atlas2D
 {
     /// <summary>
     /// A light object that can light the scene.

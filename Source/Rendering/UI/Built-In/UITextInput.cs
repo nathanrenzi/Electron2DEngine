@@ -1,12 +1,12 @@
-﻿using Electron2D.Misc.Input;
-using Electron2D.Rendering;
-using Electron2D.Rendering.Shaders;
+﻿using Atlas2D.Misc.Input;
+using Atlas2D.Rendering;
+using Atlas2D.Rendering.Shaders;
 using GLFW;
 
 using System.Numerics;
 using System.Text;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// A UI element that allows the user to input and edit text.

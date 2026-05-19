@@ -1,4 +1,4 @@
-﻿namespace Electron2D.UI
+﻿namespace Atlas2D.UI
 {
     /// <summary>
     /// Defines the phase of an event as it propagates through the UI element tree.

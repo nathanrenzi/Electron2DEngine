@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// A base class for UI layouts that arrange children along a single primary axis

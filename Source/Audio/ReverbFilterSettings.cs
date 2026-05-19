@@ -1,4 +1,4 @@
-﻿namespace Electron2D.Audio
+﻿namespace Atlas2D.Audio
 {
     public class ReverbFilterSettings
     {

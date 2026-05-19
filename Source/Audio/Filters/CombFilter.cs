@@ -1,4 +1,4 @@
-﻿namespace Electron2D.Audio.Filters
+﻿namespace Atlas2D.Audio.Filters
 {
     public class CombFilter
     {

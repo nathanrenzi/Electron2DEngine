@@ -1,6 +1,6 @@
-﻿using Electron2D.UI;
+﻿using Atlas2D.UI;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public static class ProjectSettings
     {
@@ -19,9 +19,9 @@ namespace Electron2D
         // Misc --------------
         public static UICanvasSettings UICanvasSettings { get; private set; } = new UICanvasSettings();
         public static bool GraphicsErrorCheckingEnabled { get; private set; } = false;
-        public static bool ShowElectron2DSplashscreen { get; private set; } = false;
+        public static bool ShowEngineSplashscreen { get; private set; } = true;
         public static bool UseHDRFrameBuffers { get; private set; } = false;
-        public static string WindowTitle { get; private set; } = "Electron2D Development Build";
+        public static string WindowTitle { get; private set; } = "Atlas2D Development Build";
         public static string EngineResourcePath { get; private set; } = "Resources/";
         // -------------------
 
@@ -49,7 +49,7 @@ namespace Electron2D
             // Misc
             if (overrides.UICanvasSettings != null) UICanvasSettings = overrides.UICanvasSettings;
             if (overrides.GraphicsErrorCheckingEnabled.HasValue) GraphicsErrorCheckingEnabled = overrides.GraphicsErrorCheckingEnabled.Value;
-            if (overrides.ShowElectron2DSplashscreen.HasValue) ShowElectron2DSplashscreen = overrides.ShowElectron2DSplashscreen.Value;
+            if (overrides.ShowEngineSplashscreen.HasValue) ShowEngineSplashscreen = overrides.ShowEngineSplashscreen.Value;
             if (overrides.UseHDRFrameBuffers.HasValue) UseHDRFrameBuffers = overrides.UseHDRFrameBuffers.Value;
             if (!string.IsNullOrEmpty(overrides.WindowTitle)) WindowTitle = overrides.WindowTitle;
             if (!string.IsNullOrEmpty(overrides.EngineResourcePath)) EngineResourcePath = overrides.EngineResourcePath;
@@ -73,7 +73,7 @@ namespace Electron2D
         // Misc --------------
         public UICanvasSettings? UICanvasSettings { get; set; }
         public bool? GraphicsErrorCheckingEnabled { get; set; }
-        public bool? ShowElectron2DSplashscreen { get; set; }
+        public bool? ShowEngineSplashscreen { get; set; }
         public bool? UseHDRFrameBuffers { get; set; }
         public string? WindowTitle { get; set; }
         public string? EngineResourcePath { get; set; }

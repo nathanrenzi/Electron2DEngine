@@ -2,7 +2,7 @@
 using Box2D.NetStandard.Dynamics.Joints.Mouse;
 using System.Numerics;
 
-namespace Electron2D.PhysicsBox2D
+namespace Atlas2D.PhysicsBox2D
 {
     public class RigidbodyMouseJointDef : IRigidbodyJointDef
     {

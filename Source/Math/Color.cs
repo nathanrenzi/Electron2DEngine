@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Electron2D
+namespace Atlas2D
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct Color : IEquatable<Color>

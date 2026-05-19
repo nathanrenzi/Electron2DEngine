@@ -1,17 +1,17 @@
-﻿using Electron2D.Audio;
-using Electron2D.Misc;
-using Electron2D.Networking;
-using Electron2D.PhysicsBox2D;
-using Electron2D.Rendering;
-using Electron2D.Rendering.PostProcessing;
-using Electron2D.Rendering.Shaders;
-using Electron2D.UI;
+﻿using Atlas2D.Audio;
+using Atlas2D.Misc;
+using Atlas2D.Networking;
+using Atlas2D.PhysicsBox2D;
+using Atlas2D.Rendering;
+using Atlas2D.Rendering.PostProcessing;
+using Atlas2D.Rendering.Shaders;
+using Atlas2D.UI;
 using GLFW;
 
 using System.Numerics;
-using static Electron2D.OpenGL.GL;
+using static Atlas2D.OpenGL.GL;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public abstract class Game
     {
@@ -138,19 +138,19 @@ namespace Electron2D
             Material.Initialize();
 
             #region Splashscreen
-            if (ProjectSettings.ShowElectron2DSplashscreen)
+            if (ProjectSettings.ShowEngineSplashscreen)
             {
                 // Displaying splashscreen
                 Debug.Log("Displaying splashscreen...");
                 Splashscreen.Initialize();
-                SharedResource<Texture2D> splashscreenTexture = Resources.GetTexture(Resources.GetEngineResourcePath("Textures/Electron2DSplashscreen.png"), false);
+                SharedResource<Texture2D> splashscreenTexture = Resources.GetTexture(Resources.GetEngineResourcePath("Textures/Splashscreen.png"), false);
                 float splashscreenStartTime = (float)Glfw.Time;
                 float splashscreenDisplayTime = 4f;
                 float fadeTimePercentage = 0.3f;
                 float bufferTime = 0.5f;
                 float currentTime = -bufferTime;
                 bool hasPlayedAudio = false;
-                AudioInstance splashscreenAudio = AudioSystem.CreateInstance(Resources.GetEngineResourcePath("Audio/Electron2DRiff.mp3"), volume: 0.3f);
+                AudioInstance splashscreenAudio = AudioSystem.CreateInstance(Resources.GetEngineResourcePath("Audio/EngineRiff.mp3"), volume: 0.3f);
                 while (!Glfw.WindowShouldClose(Display.Window) && (currentTime - bufferTime) < splashscreenDisplayTime)
                 {
                     Input.ProcessInput(); // Letting the window know the program is responding

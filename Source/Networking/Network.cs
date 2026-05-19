@@ -1,10 +1,10 @@
 ﻿using Riptide;
 using Riptide.Utils;
-using Electron2D.Networking.Core;
+using Atlas2D.Networking.Core;
 using Steamworks;
 using System.Reflection;
 
-namespace Electron2D.Networking
+namespace Atlas2D.Networking
 {
     /// <summary>
     /// A general purpose networking class powered by <see href="https://riptide.tomweiland.net/manual/overview/get-started.html">RiptideNetworking</see>.

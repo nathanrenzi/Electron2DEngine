@@ -1,7 +1,7 @@
-﻿using Electron2D.Rendering.Shaders;
+﻿using Atlas2D.Rendering.Shaders;
 
 
-namespace Electron2D.Rendering.PostProcessing
+namespace Atlas2D.Rendering.PostProcessing
 {
     public class ColorGradingPostProcess : IPostProcess
     {

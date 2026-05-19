@@ -1,4 +1,4 @@
-﻿namespace Electron2D.UI
+﻿namespace Atlas2D.UI
 {
     /// <summary>
     /// Controls the sizing of content within a <see cref="UIScrollContainer"/>.

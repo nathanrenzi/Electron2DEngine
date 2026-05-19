@@ -1,4 +1,4 @@
-﻿namespace Electron2D.PhysicsBox2D
+﻿namespace Atlas2D.PhysicsBox2D
 {
     public enum PhysicsLayer
     {

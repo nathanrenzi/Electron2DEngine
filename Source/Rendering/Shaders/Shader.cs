@@ -1,8 +1,8 @@
-﻿using static Electron2D.OpenGL.GL;
+﻿using static Atlas2D.OpenGL.GL;
 using System.Numerics;
 
 
-namespace Electron2D.Rendering.Shaders
+namespace Atlas2D.Rendering.Shaders
 {
     public class Shader : IDisposable
     {

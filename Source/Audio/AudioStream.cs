@@ -1,7 +1,7 @@
 ﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
-namespace Electron2D.Audio
+namespace Atlas2D.Audio
 {
     public class AudioStream : WaveStream
     {

@@ -8,7 +8,7 @@ using Box2D.NetStandard.Dynamics.World;
 using Box2D.NetStandard.Dynamics.World.Callbacks;
 using System.Numerics;
 
-namespace Electron2D.PhysicsBox2D
+namespace Atlas2D.PhysicsBox2D
 {
     public static class Physics
     {

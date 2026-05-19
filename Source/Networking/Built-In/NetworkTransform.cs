@@ -2,7 +2,7 @@
 using Riptide;
 using System.Numerics;
 
-namespace Electron2D.Networking
+namespace Atlas2D.Networking
 {
     /// <summary>
     /// Replicates a Transform object over the network. Uses <see cref="NetworkGameClass"/>.

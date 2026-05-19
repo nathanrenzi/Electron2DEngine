@@ -1,7 +1,7 @@
-﻿using Electron2D.Rendering;
+﻿using Atlas2D.Rendering;
 using System.Numerics;
 
-namespace Electron2D
+namespace Atlas2D
 {
     /// <summary>
     /// This class allows for spritesheet calculations and stores the data of all active spritesheets

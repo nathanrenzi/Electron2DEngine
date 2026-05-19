@@ -1,6 +1,6 @@
 ﻿using Box2D.NetStandard.Dynamics.Joints;
 
-namespace Electron2D.PhysicsBox2D
+namespace Atlas2D.PhysicsBox2D
 {
     public class RigidbodyMotorJointDef : IRigidbodyJointDef
     {

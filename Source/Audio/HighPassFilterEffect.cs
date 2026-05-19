@@ -1,7 +1,7 @@
 ﻿using NAudio.Dsp;
 using NAudio.Wave;
 
-namespace Electron2D.Audio
+namespace Atlas2D.Audio
 {
     public class HighPassFilterEffect : IAudioEffect
     {

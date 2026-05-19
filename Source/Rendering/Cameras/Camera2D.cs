@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Electron2D.Rendering
+namespace Atlas2D.Rendering
 {
     public class Camera2D
     {

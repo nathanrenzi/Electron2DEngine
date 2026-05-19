@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// Defines how the UI canvas is scaled relative to the window size.

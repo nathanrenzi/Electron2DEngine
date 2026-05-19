@@ -1,9 +1,9 @@
-﻿using Electron2D.Misc.Input;
-using Electron2D.Rendering;
+﻿using Atlas2D.Misc.Input;
+using Atlas2D.Rendering;
 using GLFW;
 using System.Numerics;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public static class Input
     {

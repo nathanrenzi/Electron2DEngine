@@ -1,7 +1,7 @@
-﻿using Electron2D.Rendering;
+﻿using Atlas2D.Rendering;
 
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// A simple UI element that renders a solid color, texture, or material as a quad.

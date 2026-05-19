@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// A UI element that allows the user to select a value within a defined range by dragging a handle.

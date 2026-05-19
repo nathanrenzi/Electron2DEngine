@@ -1,6 +1,6 @@
 ﻿
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// Defines per-state colors for a single layer of a <see cref="UIButton"/> (background, text, or icon).

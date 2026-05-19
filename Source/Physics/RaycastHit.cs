@@ -1,7 +1,7 @@
 ﻿using Box2D.NetStandard.Dynamics.Fixtures;
 using System.Numerics;
 
-namespace Electron2D.PhysicsBox2D
+namespace Atlas2D.PhysicsBox2D
 {
     public class RaycastHit
     {

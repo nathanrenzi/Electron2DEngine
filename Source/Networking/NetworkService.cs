@@ -1,7 +1,7 @@
 ﻿using Riptide;
 using System.Reflection;
 
-namespace Electron2D.Networking
+namespace Atlas2D.Networking
 {
     /// <summary>
     /// Marks a method as a handler for a server-side network message.

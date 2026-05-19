@@ -1,9 +1,9 @@
-﻿using Electron2D.UI;
+﻿using Atlas2D.UI;
 
-namespace Electron2D
+namespace Atlas2D
 {
     /// <summary>
-    /// The base class for all scene hierarchy elements in Electron2D.
+    /// The base class for all scene hierarchy elements.
     /// Handles grouping, lifecycle management, and parent-child state propagation for 
     /// <see cref="IGameClass"/>, <see cref="UIComponent"/>, and nested <see cref="Node"/> instances.
     /// </summary>

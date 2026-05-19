@@ -1,10 +1,10 @@
-﻿using Electron2D.Rendering.Shaders;
-using Electron2D.Rendering;
+﻿using Atlas2D.Rendering.Shaders;
+using Atlas2D.Rendering;
 
 using System.Numerics;
-using static Electron2D.Light;
+using static Atlas2D.Light;
 
-namespace Electron2D
+namespace Atlas2D
 {
     /// <summary>
     /// A global manager for lights.

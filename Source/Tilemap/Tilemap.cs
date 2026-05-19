@@ -1,11 +1,11 @@
 ﻿using Box2D.NetStandard.Collision.Shapes;
 using Box2D.NetStandard.Dynamics.Bodies;
 using Box2D.NetStandard.Dynamics.Fixtures;
-using Electron2D.PhysicsBox2D;
-using Electron2D.Rendering;
+using Atlas2D.PhysicsBox2D;
+using Atlas2D.Rendering;
 using System.Numerics;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public class Tilemap : IRenderable, IGameClass
     {

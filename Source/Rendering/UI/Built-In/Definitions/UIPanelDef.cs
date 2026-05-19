@@ -1,6 +1,6 @@
-﻿using Electron2D.Rendering;
+﻿using Atlas2D.Rendering;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// Defines the rendering type of a <see cref="UIPanelDef"/>.
@@ -65,7 +65,7 @@ namespace Electron2D.UI
         /// </summary>
         /// <returns></returns>
         public static UIPanelDef Blank()
-            => new UIPanelDef(UIPanelType.Panel, Electron2D.Color.White, null, null, default, 0);
+            => new UIPanelDef(UIPanelType.Panel, Atlas2D.Color.White, null, null, default, 0);
 
         /// <summary>
         /// Creates a <see cref="UIPanelType.Panel"/> definition rendered with a solid color.

@@ -1,6 +1,6 @@
-﻿using Electron2D.Rendering;
+﻿using Atlas2D.Rendering;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public struct TileMesh
     {

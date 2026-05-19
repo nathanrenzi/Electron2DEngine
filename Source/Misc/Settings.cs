@@ -1,8 +1,8 @@
-﻿using Electron2D.Rendering;
+﻿using Atlas2D.Rendering;
 using GLFW;
 using Newtonsoft.Json;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public class Settings
     {

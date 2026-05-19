@@ -1,10 +1,10 @@
-﻿using Electron2D.Rendering;
+﻿using Atlas2D.Rendering;
 using GLFW;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Numerics;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public static class Cursor
     {

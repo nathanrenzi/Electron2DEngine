@@ -1,4 +1,4 @@
-﻿namespace Electron2D
+﻿namespace Atlas2D
 {
     /// <summary>
     /// This struct represents a spritesheet on one of the texture slots in the GPU

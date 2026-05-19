@@ -2,7 +2,7 @@
 using System.Security;
 using System.Text;
 
-namespace Electron2D.OpenGL
+namespace Atlas2D.OpenGL
 {
     /// <summary>
     ///     Returns a function pointer for the OpenGL function with the specified name. 

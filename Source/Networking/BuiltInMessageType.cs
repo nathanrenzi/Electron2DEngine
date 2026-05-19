@@ -1,4 +1,4 @@
-﻿namespace Electron2D.Networking
+﻿namespace Atlas2D.Networking
 {
     internal enum BuiltInMessageType
     {

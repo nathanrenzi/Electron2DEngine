@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Electron2D
+namespace Atlas2D
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct Rect

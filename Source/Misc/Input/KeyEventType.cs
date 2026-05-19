@@ -1,4 +1,4 @@
-﻿namespace Electron2D.Misc.Input
+﻿namespace Atlas2D.Misc.Input
 {
     public enum KeyEventType
     {

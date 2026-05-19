@@ -1,9 +1,9 @@
-﻿using Electron2D.Management;
-using Electron2D.Rendering;
-using Electron2D.Rendering.Text;
+﻿using Atlas2D.Management;
+using Atlas2D.Rendering;
+using Atlas2D.Rendering.Text;
 using System.Text;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public static class Resources
     {

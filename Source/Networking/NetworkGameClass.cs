@@ -1,6 +1,6 @@
 ﻿using Riptide;
 
-namespace Electron2D.Networking
+namespace Atlas2D.Networking
 {
     /// <summary>
     /// An abstract class that provides the boilerplate for networked game classes.

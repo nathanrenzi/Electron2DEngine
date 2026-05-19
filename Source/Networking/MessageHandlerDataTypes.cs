@@ -1,6 +1,6 @@
 ﻿using Riptide;
 
-namespace Electron2D.Networking
+namespace Atlas2D.Networking
 {
     internal struct NetworkGameClassData
     {

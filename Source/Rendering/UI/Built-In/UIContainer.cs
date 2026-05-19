@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// A blank, invisible UI element used for grouping or layout purposes.

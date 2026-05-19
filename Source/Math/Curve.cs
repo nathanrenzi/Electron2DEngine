@@ -2,7 +2,7 @@
 using System.Numerics;
 using System.Text;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public struct Curve
     {

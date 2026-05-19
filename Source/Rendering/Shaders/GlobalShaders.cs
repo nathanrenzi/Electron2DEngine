@@ -1,4 +1,4 @@
-﻿namespace Electron2D.Rendering.Shaders
+﻿namespace Atlas2D.Rendering.Shaders
 {
     public static class GlobalShaders
     {

@@ -1,9 +1,9 @@
-﻿using Electron2D.Rendering.Shaders;
+﻿using Atlas2D.Rendering.Shaders;
 
 using System.Numerics;
-using static Electron2D.OpenGL.GL;
+using static Atlas2D.OpenGL.GL;
 
-namespace Electron2D.Rendering.PostProcessing
+namespace Atlas2D.Rendering.PostProcessing
 {
     /// <summary>
     /// Manages all post processing effects and renders them to the screen.

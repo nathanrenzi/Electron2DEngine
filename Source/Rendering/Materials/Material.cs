@@ -1,8 +1,8 @@
-﻿using Electron2D.Rendering.Shaders;
+﻿using Atlas2D.Rendering.Shaders;
 
-using static Electron2D.OpenGL.GL;
+using static Atlas2D.OpenGL.GL;
 
-namespace Electron2D.Rendering
+namespace Atlas2D.Rendering
 {
     public class Material : IDisposable
     {

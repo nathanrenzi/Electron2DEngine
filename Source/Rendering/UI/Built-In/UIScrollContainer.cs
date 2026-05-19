@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// A UI element that allows its content to be scrolled when it exceeds the available space.

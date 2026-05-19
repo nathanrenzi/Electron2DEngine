@@ -1,8 +1,8 @@
-﻿using Electron2D.Audio.Filters;
+﻿using Atlas2D.Audio.Filters;
 using NAudio.Dsp;
 using NAudio.Wave;
 
-namespace Electron2D.Audio
+namespace Atlas2D.Audio
 {
     public class ReverbEffect : IAudioEffect, ISampleProvider
     {

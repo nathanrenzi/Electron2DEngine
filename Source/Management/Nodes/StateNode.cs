@@ -1,4 +1,4 @@
-﻿namespace Electron2D
+﻿namespace Atlas2D
 {
     /// <summary>
     /// A <see cref="Node"/> that groups child nodes into named states and enables or disables them 

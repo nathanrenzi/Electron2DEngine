@@ -1,13 +1,13 @@
-﻿using Electron2D.Rendering;
-using Electron2D.Rendering.Text;
-using Electron2D.UI;
+﻿using Atlas2D.Rendering;
+using Atlas2D.Rendering.Text;
+using Atlas2D.UI;
 using FreeTypeSharp;
 using FreeTypeSharp.Native;
 using System.Numerics;
-using static Electron2D.OpenGL.GL;
+using static Atlas2D.OpenGL.GL;
 using static FreeTypeSharp.Native.FT;
 
-namespace Electron2D.Management
+namespace Atlas2D.Management
 {
     public static class FontGlyphFactory
     {

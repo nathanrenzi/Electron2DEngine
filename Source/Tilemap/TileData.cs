@@ -1,7 +1,7 @@
-﻿using Electron2D.PhysicsBox2D;
-using Electron2D.Rendering;
+﻿using Atlas2D.PhysicsBox2D;
+using Atlas2D.Rendering;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public struct TileData
     {

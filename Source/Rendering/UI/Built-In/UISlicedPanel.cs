@@ -1,7 +1,7 @@
-﻿using Electron2D.Rendering;
+﻿using Atlas2D.Rendering;
 using System.Numerics;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// A <see cref="UIElement"/> that renders a 9-sliced panel, procedurally stretching a texture's edges and corners

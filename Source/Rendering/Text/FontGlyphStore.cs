@@ -1,8 +1,8 @@
 ﻿using static FreeTypeSharp.Native.FT;
-using static Electron2D.OpenGL.GL;
+using static Atlas2D.OpenGL.GL;
 using FreeTypeSharp;
 
-namespace Electron2D.Rendering.Text
+namespace Atlas2D.Rendering.Text
 {
     public class FontGlyphStore : IDisposable
     {

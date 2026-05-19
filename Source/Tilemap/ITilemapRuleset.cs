@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public interface ITilemapRuleset
     {

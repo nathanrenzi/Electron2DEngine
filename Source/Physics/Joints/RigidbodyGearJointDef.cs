@@ -1,7 +1,7 @@
 ﻿using Box2D.NetStandard.Dynamics.Joints;
 using Box2D.NetStandard.Dynamics.Joints.Gear;
 
-namespace Electron2D.PhysicsBox2D
+namespace Atlas2D.PhysicsBox2D
 {
     public class RigidbodyGearJointDef : IRigidbodyJointDef
     {

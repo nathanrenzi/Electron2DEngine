@@ -1,11 +1,11 @@
-﻿using Electron2D.Rendering;
-using Electron2D.Rendering.Shaders;
+﻿using Atlas2D.Rendering;
+using Atlas2D.Rendering.Shaders;
 using GLFW;
 
 using System.Numerics;
-using static Electron2D.OpenGL.GL;
+using static Atlas2D.OpenGL.GL;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     public abstract class UIElement : IRenderable
     {

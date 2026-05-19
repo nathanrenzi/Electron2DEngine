@@ -1,4 +1,4 @@
-﻿namespace Electron2D
+﻿namespace Atlas2D
 {
     public enum GamepadButton
     {

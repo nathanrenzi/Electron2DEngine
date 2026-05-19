@@ -1,6 +1,6 @@
 ﻿
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// Defines the visual style of a <see cref="UITextInput"/>.

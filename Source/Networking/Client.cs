@@ -1,7 +1,7 @@
 ﻿using Riptide;
 using Riptide.Transports.Steam;
 
-namespace Electron2D.Networking.Core
+namespace Atlas2D.Networking.Core
 {
     /// <summary>
     /// A host/client client implementation using <see cref="Riptide.Client"/>.

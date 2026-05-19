@@ -1,12 +1,12 @@
-﻿using Electron2D.Rendering;
-using Electron2D.Rendering.PostProcessing;
+﻿using Atlas2D.Rendering;
+using Atlas2D.Rendering.PostProcessing;
 using GLFW;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Numerics;
-using static Electron2D.OpenGL.GL;
+using static Atlas2D.OpenGL.GL;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public static class Display
     {

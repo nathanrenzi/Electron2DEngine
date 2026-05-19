@@ -1,6 +1,6 @@
 ﻿using GLFW;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public static class Debug
     {

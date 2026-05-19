@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Electron2D.Rendering.Text
+namespace Atlas2D.Rendering.Text
 {
     public struct Character
     {

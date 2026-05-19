@@ -1,4 +1,4 @@
-# Electron2D
+# Atlas2D
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
@@ -18,10 +18,10 @@ A 2D game engine written in C#.
 
 ### Installation
 
-Electron2D is currently used as a Git submodule. From the root of your game's repository:
+Atlas2D is currently used as a Git submodule. From the root of your game's repository:
 
 ```bash
-git submodule add https://github.com/nathanrenzi/Electron2D.git
+git submodule add https://github.com/nathanrenzi/Atlas2D.git
 git submodule update --init --recursive
 ```
 
@@ -29,7 +29,7 @@ Then reference the engine project from your game's `.csproj`:
 
 ```xml
 <ItemGroup>
-    <ProjectReference Include="Electron2D\Electron2D.csproj" />
+    <ProjectReference Include="Atlas2D\Atlas2D.csproj" />
 </ItemGroup>
 ```
 
@@ -62,7 +62,7 @@ public class Program
 Create a class that inherits from `Game`, which will contain your game logic:
 
 ```csharp
-using Electron2D;
+using Atlas2D;
 
 public class MyGame : Game
 {

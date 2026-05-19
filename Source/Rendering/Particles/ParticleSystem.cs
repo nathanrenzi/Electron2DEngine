@@ -1,10 +1,10 @@
-﻿using Electron2D.Misc;
-using Electron2D.Rendering;
+﻿using Atlas2D.Misc;
+using Atlas2D.Rendering;
 
 using System.Numerics;
 using DotnetNoise;
 
-namespace Electron2D
+namespace Atlas2D
 {
     public class ParticleSystem : IRenderable, IGameClass
     {

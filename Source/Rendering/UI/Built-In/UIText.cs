@@ -1,13 +1,13 @@
-﻿using Electron2D.Rendering;
-using Electron2D.Rendering.Shaders;
-using Electron2D.Rendering.Text;
+﻿using Atlas2D.Rendering;
+using Atlas2D.Rendering.Shaders;
+using Atlas2D.Rendering.Text;
 using FreeTypeSharp.Native;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using static FreeTypeSharp.Native.FT;
 
-namespace Electron2D.UI
+namespace Atlas2D.UI
 {
     /// <summary>
     /// A UI element that renders text with support for word wrapping, alignment, and overflow modes.
