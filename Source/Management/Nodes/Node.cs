@@ -64,6 +64,8 @@ namespace Atlas2D
         protected virtual void OnUpdate() { }
         protected virtual void OnFixedUpdate() { }
         protected virtual void OnDispose() { }
+        protected virtual void OnChildAdded(IGameClass child) { }
+        protected virtual void OnChildRemoved(IGameClass child) { }
         protected virtual void OnParentChanged(Node newParent) { }
 
         public bool Contains(IGameClass gameClass)
@@ -96,8 +98,7 @@ namespace Atlas2D
             {
                 if (sg.Parent != null)
                 {
-                    Debug.LogError("Node already has a parent, cannot register.");
-                    return;
+                    sg.Parent.RemoveChild(sg);
                 }
 
                 if (sg.ContainsRecursive(this))
@@ -125,6 +126,7 @@ namespace Atlas2D
 
             Engine.Game.UnregisterGameClass(gameClass);
             _gameClasses.Add(gameClass);
+            OnChildAdded(gameClass);
         }
 
         public void AddChild(UIElement element)
@@ -139,6 +141,7 @@ namespace Atlas2D
             if (_disposed) return;
 
             _gameClasses.Remove(gameClass);
+            OnChildRemoved(gameClass);
 
             if (gameClass is Node sg)
             {
