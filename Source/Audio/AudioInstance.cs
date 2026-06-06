@@ -51,8 +51,6 @@ namespace Atlas2D.Audio
             set { if (Stream != null) Stream.EnableLooping = value; }
         }
 
-        private AudioSpatializer _spatializer;
-
         public AudioInstance(string fileName, float volume, float pitch, bool isLoop, float startStopVolumeFadeTime = 0.001f)
         {
             Pitch = pitch;
@@ -60,7 +58,7 @@ namespace Atlas2D.Audio
             {
                 throw new FileNotFoundException(fileName);
             }
-            Stream = new AudioStream(fileName, false);
+            Stream = new AudioStream(fileName);
             Volume = volume;
             IsLoop = isLoop;
             StartStopVolumeFadeTime = startStopVolumeFadeTime;
@@ -75,11 +73,6 @@ namespace Atlas2D.Audio
             IsLoop = isLoop;
             StartStopVolumeFadeTime = startStopVolumeFadeTime;
             HookStreamEvents();
-        }
-
-        internal void SetSpatializer(AudioSpatializer spatializer)
-        {
-            _spatializer = spatializer;
         }
 
         private void HookStreamEvents()
@@ -111,17 +104,9 @@ namespace Atlas2D.Audio
             Stream = stream;
             Stream.EnableLooping = IsLoop;
             HookStreamEvents();
-            if (_spatializer != null)
-            {
-                AudioSpatializer spatializer = _spatializer;
-                spatializer.RemoveAudioInstance(this);
-                spatializer.AddAudioInstance(this);
-            }
 
             if (shouldPlay) Play();
         }
-
-        public AudioSpatializer GetSpatializer() => _spatializer;
 
         public void AddEffect(IAudioEffect effect)
         {
@@ -175,7 +160,6 @@ namespace Atlas2D.Audio
 
         public void Dispose()
         {
-            _spatializer?.RemoveAudioInstance(this);
             Stream?.Dispose();
         }
     }

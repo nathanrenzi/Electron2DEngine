@@ -39,9 +39,9 @@ namespace Atlas2D.Audio
             }
         }
 
-        public static AudioInstance CreateInstance(string fileName, float volume = 1, float pitch = 1, bool isLoop = false, bool is3D = false)
+        public static AudioInstance CreateInstance(string fileName, float volume = 1, float pitch = 1, bool isLoop = false)
         {
-            var stream = new AudioStream(fileName, is3D);
+            var stream = new AudioStream(fileName);
             var instance = new AudioInstance(stream, volume, pitch, isLoop);
             return instance;
         }

@@ -9,8 +9,6 @@ namespace Atlas2D.Audio
         public string FileName { get; }
         public AudioVolumeFadeSampleProvider VolumeFadeSampleProvider { get; private set; }
         public ISampleProvider SampleProvider { get; set; }
-        public IPanStrategy PanStrategy { get; }
-        public bool Is3D { get; }
         public bool EnableLooping { get; set; }
         public override WaveFormat WaveFormat => _sourceStream.WaveFormat;
         public override long Length => _sourceStream.Length;
@@ -19,39 +17,36 @@ namespace Atlas2D.Audio
             get => _sourceStream.Position;
             set => _sourceStream.Position = value;
         }
+        /// <summary>
+        /// Controls how quickly spatialization values (volume and panning) track their targets.
+        /// Lower values = slower/smoother transitions; higher values = faster response.
+        /// Range: 0–1, where 1 means instant (no smoothing).
+        /// </summary>
+        public float SpatialSmoothingFactor { get; set; } = 0.15f;
 
         private WaveStream _sourceStream;
         private VolumeSampleProvider _volumeSampleProvider;
-        private PanningSampleProvider _panningSampleProvider;
+        private StereoPanningSampleProvider _panningSampleProvider;
 
         private float _volume = 1f;
         private float _panning = 0f;
         private float _spatialVolumeMultiplier = 1f;
         private float _spatialPanningAdditive = 0f;
+        private float _smoothedSpatialVolumeMultiplier = 1f;
+        private float _smoothedSpatialPanningAdditive = 0f;
+
         private volatile bool _streamEnded;
 
-        public AudioStream(string fileName, bool is3D, IPanStrategy panStrategy = null)
+        public AudioStream(string fileName)
         {
             FileName = fileName;
             _sourceStream = new AudioFileReader(fileName);
             EnableLooping = true;
-            Is3D = is3D;
-            PanStrategy = panStrategy ?? new SinPanStrategy();
 
             _volumeSampleProvider = new VolumeSampleProvider(this.ToSampleProvider());
+            _panningSampleProvider = new StereoPanningSampleProvider(_volumeSampleProvider);
 
-            if (Is3D)
-            {
-                _panningSampleProvider = new PanningSampleProvider(_volumeSampleProvider.ToMono());
-                _panningSampleProvider.PanStrategy = PanStrategy;
-                SampleProvider = _panningSampleProvider;
-            }
-            else
-            {
-                SampleProvider = _volumeSampleProvider;
-            }
-
-            VolumeFadeSampleProvider = new AudioVolumeFadeSampleProvider(SampleProvider);
+            VolumeFadeSampleProvider = new AudioVolumeFadeSampleProvider(_panningSampleProvider);
             SampleProvider = VolumeFadeSampleProvider;
         }
 
@@ -75,11 +70,22 @@ namespace Atlas2D.Audio
 
         /// <summary>
         /// Sets the spatialization multipliers applied on top of base audio values during playback.
+        /// Call <see cref="SnapSpatializationValues"/> first if you want immediate effect with no smoothing lag.
         /// </summary>
         public void SetSpatializationValues(float volumeMultiplier, float panningAdditive)
         {
             _spatialVolumeMultiplier = volumeMultiplier;
             _spatialPanningAdditive = panningAdditive;
+        }
+
+        /// <summary>
+        /// Instantly snaps the smoothed spatialization values to the current targets, bypassing the lerp.
+        /// Useful when teleporting a source to avoid a slow fade from its previous position.
+        /// </summary>
+        public void SnapSpatializationValues()
+        {
+            _smoothedSpatialVolumeMultiplier = _spatialVolumeMultiplier;
+            _smoothedSpatialPanningAdditive = _spatialPanningAdditive;
         }
 
         internal void FireStreamEnd() => OnStreamEnd?.Invoke();
@@ -92,8 +98,10 @@ namespace Atlas2D.Audio
                 return 0;
             }
 
-            _volumeSampleProvider.Volume = _volume * _spatialVolumeMultiplier;
-            if (Is3D) _panningSampleProvider.Pan = MathEx.Clamp(_panning + _spatialPanningAdditive, -1, 1);
+            _smoothedSpatialVolumeMultiplier = MathEx.Lerp(_smoothedSpatialVolumeMultiplier, _spatialVolumeMultiplier, SpatialSmoothingFactor);
+            _smoothedSpatialPanningAdditive = MathEx.Lerp(_smoothedSpatialPanningAdditive, _spatialPanningAdditive, SpatialSmoothingFactor);
+            _volumeSampleProvider.Volume = _volume * _smoothedSpatialVolumeMultiplier;
+            _panningSampleProvider.Pan = MathEx.Clamp(_panning + _smoothedSpatialPanningAdditive, -1, 1);
 
             int totalBytesRead = 0;
             while (totalBytesRead < count)
