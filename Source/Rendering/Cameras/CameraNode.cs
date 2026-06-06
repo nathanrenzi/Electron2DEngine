@@ -4,6 +4,9 @@ namespace Atlas2D
 {
     public class CameraNode : TransformNode
     {
+        /// <summary>
+        /// The current main camera of the scene. Used for rendering and audio spatialization.
+        /// </summary>
         public static CameraNode Main { get; private set; }
 
         public bool IsMain { get; private set; }
@@ -22,7 +25,7 @@ namespace Atlas2D
         }
 
         /// <summary>
-        /// Sets the main camera used for rendering and audio spatialization.
+        /// Sets this camera as the main camera, replacing the current <see cref="Main"/>.
         /// </summary>
         /// <param name="cameraNode"></param>
         public static void SetMain(CameraNode cameraNode)

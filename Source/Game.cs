@@ -23,7 +23,7 @@ namespace Atlas2D
 
         protected Thread PhysicsThread { get; private set; }
         protected CancellationTokenSource PhysicsCancellationToken { get; private set; } = new();
-        protected Camera2D DefaultCamera { get; set; }
+        protected CameraNode DefaultCamera { get; set; }
 
         private bool _doFixedUpdate = false;
         private List<IGameClass> _classes = new List<IGameClass>();
@@ -121,8 +121,7 @@ namespace Atlas2D
 
             Initialize();
 
-            DefaultCamera = new Camera2D(Vector2.Zero, 1);
-            _defaultSpatialListener = new AudioSpatialListener(DefaultCamera.Transform);
+            DefaultCamera = new CameraNode();
 
             Display.CreateWindow(Settings.WindowWidth, Settings.WindowHeight, ProjectSettings.WindowTitle);
             Input.Initialize();

@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using static Atlas2D.OpenGL.GL;
+﻿using static Atlas2D.OpenGL.GL;
 
 namespace Atlas2D.Rendering
 {
@@ -216,7 +215,7 @@ namespace Atlas2D.Rendering
             {
                 Material.Value.Shader.Value.SetMatrix4x4("model", _transform.GetScaleMatrix() * _transform.GetRotationMatrix() * _transform.GetPositionMatrix());
             }
-            Material.Value.Shader.Value.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? Camera2D.Main.GetUnscaledProjectionMatrix() : Camera2D.Main.GetViewProjectionMatrix());
+            Material.Value.Shader.Value.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? CameraNode.Main.GetUnscaledProjectionMatrix() : CameraNode.Main.GetViewProjectionMatrix());
 
             VertexArray.Bind();
             IndexBuffer.Bind();

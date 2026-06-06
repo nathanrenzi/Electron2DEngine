@@ -268,9 +268,9 @@ namespace Atlas2D.UI
                 position.X - Display.WindowSize.X * 0.5f,
                 (Display.WindowSize.Y * 0.5f) - position.Y
             );
-            centered /= Camera2D.Main.Zoom;
+            centered /= CameraNode.Main.Zoom;
 
-            return centered + Camera2D.Main.Transform.Position;
+            return centered + CameraNode.Main.WorldPosition;
         }
 
         internal void UpdateLayout()
