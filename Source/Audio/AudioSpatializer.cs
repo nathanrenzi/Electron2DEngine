@@ -48,7 +48,7 @@ namespace Atlas2D.Audio
                 instance.Stream.SetFadeTime(0.0001f);
                 if (wasPlaying) instance.Stop();
 
-                var newStream = new AudioStream(instance, instance.Stream.FileName, true);
+                var newStream = new AudioStream(instance.Stream.FileName, true);
                 instance.Stream.Dispose();
                 instance.Stream = newStream;
                 instance.Stream.Position = position;
@@ -72,6 +72,10 @@ namespace Atlas2D.Audio
         {
             CalculateDistanceMultiplier();
             CalculatePanning();
+            foreach (var instance in AudioInstances)
+            {
+                instance.Stream?.SetSpatializationValues(DistanceBasedVolumeMultiplier01, DirectionBasedPanning);
+            }
         }
 
         private void CalculateDistanceMultiplier()

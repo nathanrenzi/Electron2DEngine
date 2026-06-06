@@ -1,4 +1,4 @@
-﻿using NAudio.Wave;
+using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace Atlas2D.Audio
@@ -20,23 +20,25 @@ namespace Atlas2D.Audio
             set => _sourceStream.Position = value;
         }
 
-        private AudioInstance _audioInstance;
         private WaveStream _sourceStream;
         private VolumeSampleProvider _volumeSampleProvider;
-        private AudioPitchSampleProvider _pitchShiftingSampleProvider;
         private PanningSampleProvider _panningSampleProvider;
 
-        public AudioStream(AudioInstance audioInstance, string fileName, bool is3D, IPanStrategy panStrategy = null)
+        private float _volume = 1f;
+        private float _panning = 0f;
+        private float _spatialVolumeMultiplier = 1f;
+        private float _spatialPanningAdditive = 0f;
+        private volatile bool _streamEnded;
+
+        public AudioStream(string fileName, bool is3D, IPanStrategy panStrategy = null)
         {
             FileName = fileName;
-            _audioInstance = audioInstance;
             _sourceStream = new AudioFileReader(fileName);
             EnableLooping = true;
             Is3D = is3D;
             PanStrategy = panStrategy ?? new SinPanStrategy();
 
             _volumeSampleProvider = new VolumeSampleProvider(this.ToSampleProvider());
-            _pitchShiftingSampleProvider = new AudioPitchSampleProvider(_volumeSampleProvider);
 
             if (Is3D)
             {
@@ -53,10 +55,34 @@ namespace Atlas2D.Audio
             SampleProvider = VolumeFadeSampleProvider;
         }
 
-        internal void SetInstance(AudioInstance instance) => _audioInstance = instance;
-        public void SetFadeDirection(int direction) => VolumeFadeSampleProvider.SetFadeDirection(direction);
+        public void SetFadeDirection(int direction)
+        {
+            if (direction > 0) _streamEnded = false;
+            VolumeFadeSampleProvider.SetFadeDirection(direction);
+        }
+
         public void SetFadeTime(float fade) => VolumeFadeSampleProvider.VolumeFadeTime = fade;
         public float GetFadeTime() => VolumeFadeSampleProvider.VolumeFadeTime;
+
+        /// <summary>
+        /// Sets the base volume and panning values read during playback.
+        /// </summary>
+        public void SetAudioValues(float volume, float panning)
+        {
+            _volume = volume;
+            _panning = panning;
+        }
+
+        /// <summary>
+        /// Sets the spatialization multipliers applied on top of base audio values during playback.
+        /// </summary>
+        public void SetSpatializationValues(float volumeMultiplier, float panningAdditive)
+        {
+            _spatialVolumeMultiplier = volumeMultiplier;
+            _spatialPanningAdditive = panningAdditive;
+        }
+
+        internal void FireStreamEnd() => OnStreamEnd?.Invoke();
 
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -66,13 +92,8 @@ namespace Atlas2D.Audio
                 return 0;
             }
 
-            AudioSpatializer spatializer = _audioInstance?.GetSpatializer();
-            float volumeMultiplier = spatializer?.DistanceBasedVolumeMultiplier01 ?? 1f;
-            float panningAdditive = spatializer?.DirectionBasedPanning ?? 0f;
-
-            _volumeSampleProvider.Volume = (_audioInstance?.Volume ?? 1f) * volumeMultiplier;
-            _pitchShiftingSampleProvider.Pitch = _audioInstance?.Pitch ?? 1f;
-            if (Is3D) _panningSampleProvider.Pan = MathEx.Clamp((_audioInstance?.Panning ?? 0f) + panningAdditive, -1, 1);
+            _volumeSampleProvider.Volume = _volume * _spatialVolumeMultiplier;
+            if (Is3D) _panningSampleProvider.Pan = MathEx.Clamp(_panning + _spatialPanningAdditive, -1, 1);
 
             int totalBytesRead = 0;
             while (totalBytesRead < count)
@@ -82,7 +103,11 @@ namespace Atlas2D.Audio
                 {
                     if (_sourceStream.Position == 0 || !EnableLooping)
                     {
-                        OnStreamEnd?.Invoke();
+                        if (!_streamEnded)
+                        {
+                            _streamEnded = true;
+                            AudioSystem.NotifyStreamEnded(this);
+                        }
                         break;
                     }
                     _sourceStream.Position = 0;

@@ -31,7 +31,6 @@ namespace Atlas2D
         private List<IGameClass> _classesRemoveQueue = new List<IGameClass>();
         private bool _useClassesQueue = false;
         private BlendMode _currentBlendMode = BlendMode.Interpolative;
-        private AudioSpatialListener _defaultSpatialListener;
         private bool _hasExited = false;
 
         private void PopClassesQueue()
@@ -231,6 +230,7 @@ namespace Atlas2D
                 }
                 _useClassesQueue = false;
                 PopClassesQueue();
+                AudioSystem.Update();
                 LateUpdateEvent?.Invoke();
                 PerformanceTimings.GameObjectMilliseconds = (Glfw.Time - goST) * 1000;
                 // --------------------------

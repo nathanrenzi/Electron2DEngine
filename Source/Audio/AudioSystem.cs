@@ -1,5 +1,6 @@
-﻿using NAudio.Wave.SampleProviders;
+using NAudio.Wave.SampleProviders;
 using NAudio.Wave;
+using System.Collections.Concurrent;
 
 namespace Atlas2D.Audio
 {
@@ -14,6 +15,7 @@ namespace Atlas2D.Audio
         private static IWavePlayer _outputDevice;
         private static MixingSampleProvider _mixer;
         private static VolumeSampleProvider _masterVolumeSampleProvider;
+        private static readonly ConcurrentQueue<AudioStream> _streamEndedQueue = new();
 
         public static void Initialize(float masterVolume, int sampleRate = 44100, int channelCount = 2)
         {
@@ -26,11 +28,21 @@ namespace Atlas2D.Audio
             _outputDevice.Play();
         }
 
+        /// <summary>
+        /// Fires pending stream-end events on the main thread. Must be called once per frame.
+        /// </summary>
+        public static void Update()
+        {
+            while (_streamEndedQueue.TryDequeue(out AudioStream stream))
+            {
+                stream.FireStreamEnd();
+            }
+        }
+
         public static AudioInstance CreateInstance(string fileName, float volume = 1, float pitch = 1, bool isLoop = false, bool is3D = false)
         {
-            var stream = new AudioStream(null, fileName, is3D);
+            var stream = new AudioStream(fileName, is3D);
             var instance = new AudioInstance(stream, volume, pitch, isLoop);
-            stream.SetInstance(instance);
             return instance;
         }
 
@@ -38,6 +50,11 @@ namespace Atlas2D.Audio
         {
             if (_mixer.MixerInputs.Contains(audioInstance.Stream.SampleProvider)) return;
             _mixer.AddMixerInput(ConvertToRightChannelCount(audioInstance.Stream.SampleProvider));
+        }
+
+        internal static void NotifyStreamEnded(AudioStream stream)
+        {
+            _streamEndedQueue.Enqueue(stream);
         }
 
         private static ISampleProvider ConvertToRightChannelCount(ISampleProvider input)

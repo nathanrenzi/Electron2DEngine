@@ -1,47 +1,67 @@
-﻿namespace Atlas2D.Audio
+namespace Atlas2D.Audio
 {
     public class AudioInstance : IDisposable
     {
         public event Action OnFadeInEnd;
         public event Action OnFadeOutEnd;
-        public AudioStream? Stream { get; set; }
+
+        public AudioStream? Stream
+        {
+            get => _stream;
+            set
+            {
+                _stream = value;
+                _stream?.SetAudioValues(_volume, _panning);
+            }
+        }
+        private AudioStream? _stream;
+
         public PlaybackState PlaybackState { get; private set; }
         public float StartStopVolumeFadeTime { get; private set; }
-        public float Volume { get; set; }
-        public float Panning { get; set; }
+
+        public float Volume
+        {
+            get => _volume;
+            set
+            {
+                _volume = value;
+                Stream?.SetAudioValues(_volume, _panning);
+            }
+        }
+        private float _volume = 1f;
+
+        public float Panning
+        {
+            get => _panning;
+            set
+            {
+                _panning = value;
+                Stream?.SetAudioValues(_volume, _panning);
+            }
+        }
+        private float _panning = 0f;
+
         public float Pitch { get; set; }
+
         public List<IAudioEffect> Effects { get; } = new List<IAudioEffect>();
 
         public bool IsLoop
         {
-            get
-            {
-                if (Stream != null)
-                {
-                    return Stream.EnableLooping;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            set
-            {
-                if(Stream != null) Stream.EnableLooping = value;
-            }
+            get => Stream?.EnableLooping ?? false;
+            set { if (Stream != null) Stream.EnableLooping = value; }
         }
 
         private AudioSpatializer _spatializer;
 
         public AudioInstance(string fileName, float volume, float pitch, bool isLoop, float startStopVolumeFadeTime = 0.001f)
         {
-            Volume = volume;
             Pitch = pitch;
-            if(!File.Exists(fileName))
+            if (!File.Exists(fileName))
             {
                 throw new FileNotFoundException(fileName);
             }
-            Stream = new AudioStream(this, fileName, _spatializer?.Is3D ?? false);
+            Stream = new AudioStream(fileName, false);
+            Volume = volume;
             IsLoop = isLoop;
             StartStopVolumeFadeTime = startStopVolumeFadeTime;
             HookStreamEvents();
@@ -49,9 +69,9 @@
 
         public AudioInstance(AudioStream? stream, float volume, float pitch, bool isLoop, float startStopVolumeFadeTime = 0.001f)
         {
-            Volume = volume;
             Pitch = pitch;
             Stream = stream;
+            Volume = volume;
             IsLoop = isLoop;
             StartStopVolumeFadeTime = startStopVolumeFadeTime;
             HookStreamEvents();
@@ -90,7 +110,6 @@
             Stream?.Dispose();
             Stream = stream;
             Stream.EnableLooping = IsLoop;
-            // re-apply effects
             HookStreamEvents();
             if (_spatializer != null)
             {
@@ -106,7 +125,7 @@
 
         public void AddEffect(IAudioEffect effect)
         {
-            if (Stream == null) return; 
+            if (Stream == null) return;
             effect.Initialize(Stream.SampleProvider);
             Stream.SampleProvider = effect;
             Effects.Add(effect);
