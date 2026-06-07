@@ -1,12 +1,10 @@
-﻿using Atlas2D.Misc;
 using Atlas2D.Rendering;
-
 using System.Numerics;
 using DotnetNoise;
 
 namespace Atlas2D
 {
-    public class ParticleSystem : IRenderable, IGameClass
+    public class ParticleSystemNode : TransformNode, IRenderable
     {
         private const int PREWARM_STEPS = 100;
 
@@ -52,8 +50,6 @@ namespace Atlas2D
         #region Private Fields
         private float[] _vertices;
         private uint[] _indices;
-        private Transform _transform;
-        private Transform _fakeTransform;
         private Random _random;
         private int _randomSeed;
         private bool _playOnAwake;
@@ -65,7 +61,7 @@ namespace Atlas2D
         private Vector2 _calculatedVelocity;
         #endregion
 
-        public ParticleSystem(Transform transform, bool playOnAwake, bool prewarm, bool isWorldSpace, bool inheritVelocity,
+        public ParticleSystemNode(bool playOnAwake, bool prewarm, bool isWorldSpace, bool inheritVelocity,
             int maxParticles, SharedResource<Material> material, int renderLayer = 1, int randomSeed = -1, bool ignorePostProcessing = false)
         {
             _playOnAwake = playOnAwake;
@@ -76,28 +72,19 @@ namespace Atlas2D
             RenderLayer = renderLayer;
             IgnorePostProcessing = ignorePostProcessing;
 
-            _fakeTransform = new Transform();
-
             // Pre-allocating arrays
-            // 4 vertices * (X + Y + U + V) * total particles
+            // 4 vertices * (X + Y + U + V + R + G + B + A) * total particles
             _vertices = new float[4 * 8 * maxParticles];
             // 6 indices (2 triangles) * total particles
             _indices = new uint[6 * maxParticles];
 
-            //Pre-allocating particle list
             Particles = new List<Particle>(MaxParticles);
 
             _randomSeed = randomSeed == -1 ? DateTime.Now.Millisecond : randomSeed;
             _random = new Random(_randomSeed);
             _noise = new FastNoise(_randomSeed);
 
-            _transform = transform;
-            if (_transform == null)
-            {
-                Debug.LogError("PARTICLE SYSTEM: Cannot create particle system if entity does not have a Transform component!");
-                return;
-            }
-            Renderer = new MeshRenderer(_transform, material);
+            Renderer = new MeshRenderer(this, material);
             Renderer.UseCustomIndexRenderCount = true;
             Renderer.OnBeforeRender += SetModelMatrix;
             BufferLayout layout = new BufferLayout();
@@ -107,38 +94,34 @@ namespace Atlas2D
             Renderer.SetBufferLayoutBeforeLoad(layout);
             Renderer.SetVertexArrays(_vertices, _indices, false, Renderer.IsLoaded);
             Renderer.Load(false);
+        }
 
-            if (Prewarm) PrewarmParticles(); // Currently does not work
-            if (_playOnAwake) Play();
-
+        protected override void OnEnable()
+        {
+            _lastPosition = WorldPosition;
             RenderLayerManager.OrderRenderable(this);
-            Engine.Game.RegisterGameClass(this);
+            if (Prewarm) PrewarmParticles();
+            if (_playOnAwake) Play();
         }
 
-        ~ParticleSystem()
+        protected override void OnDisable()
         {
-            Dispose();
-        }
-
-        public void Dispose()
-        {
-            // remove all particles
-            Renderer?.Dispose();
-            Engine.Game.UnregisterGameClass(this);
             RenderLayerManager.RemoveRenderable(this);
-            GC.SuppressFinalize(this);
         }
 
-        public void FixedUpdate() { }
+        protected override void OnDispose()
+        {
+            Renderer?.Dispose();
+            RenderLayerManager.RemoveRenderable(this);
+        }
 
-
-        public ParticleSystem SetBlendMode(BlendMode blendMode)
+        public ParticleSystemNode SetBlendMode(BlendMode blendMode)
         {
             BlendMode = blendMode;
             return this;
         }
 
-        public ParticleSystem SetConstantEmissionMode(bool isLoop, float duration = -1, float emissionsPerSecond = -1)
+        public ParticleSystemNode SetConstantEmissionMode(bool isLoop, float duration = -1, float emissionsPerSecond = -1)
         {
             if (emissionsPerSecond != -1)
             {
@@ -146,7 +129,7 @@ namespace Atlas2D
             }
             EmissionMode = ParticleEmissionMode.Constant;
             IsLoop = isLoop;
-            if(!IsLoop && duration == -1)
+            if (!IsLoop && duration == -1)
             {
                 Debug.LogError("Duration of -1 is not valid for a non-looping particle system.");
                 Duration = 1;
@@ -158,10 +141,10 @@ namespace Atlas2D
             return this;
         }
 
-        public ParticleSystem SetBurstEmissionMode(bool isLoop, int burstSpawnAmount, float loopDelay = -1,
+        public ParticleSystemNode SetBurstEmissionMode(bool isLoop, int burstSpawnAmount, float loopDelay = -1,
             float emissionsPerSecond = -1)
         {
-            if(emissionsPerSecond != -1)
+            if (emissionsPerSecond != -1)
             {
                 EmissionParticlesPerSecond = emissionsPerSecond;
             }
@@ -180,137 +163,137 @@ namespace Atlas2D
             return this;
         }
 
-        public ParticleSystem SetInvertEmissionDirection(bool flag)
+        public ParticleSystemNode SetInvertEmissionDirection(bool flag)
         {
             InvertEmissionDirection = flag;
             return this;
         }
 
-        public ParticleSystem SetEmitAlongEmissionShapeNormal(bool flag)
+        public ParticleSystemNode SetEmitAlongEmissionShapeNormal(bool flag)
         {
             EmitAlongEmissionShapeNormal = flag;
             return this;
         }
 
-        public ParticleSystem SetEmissionsPerSecond(float emissionsPerSecond)
+        public ParticleSystemNode SetEmissionsPerSecond(float emissionsPerSecond)
         {
             EmissionParticlesPerSecond = emissionsPerSecond;
             return this;
         }
 
-        public ParticleSystem SetEmissionDirection(Vector2 direction)
+        public ParticleSystemNode SetEmissionDirection(Vector2 direction)
         {
             EmissionDirection = direction;
             return this;
         }
 
-        public ParticleSystem SetEmissionSpreadAngle(float angle)
+        public ParticleSystemNode SetEmissionSpreadAngle(float angle)
         {
             EmissionSpreadAngle = angle;
             return this;
         }
 
-        public ParticleSystem SetEmissionShape(ParticleEmissionShape shape, float size)
+        public ParticleSystemNode SetEmissionShape(ParticleEmissionShape shape, float size)
         {
             EmissionShape = shape;
             EmissionSize = size;
             return this;
         }
 
-        public ParticleSystem SetSize(float min, float max)
+        public ParticleSystemNode SetSize(float min, float max)
         {
             SizeRange = new Vector2(min, max);
             return this;
         }
 
-        public ParticleSystem SetSize(float size)
+        public ParticleSystemNode SetSize(float size)
         {
             SizeRange = new Vector2(size, size);
             return this;
         }
 
-        public ParticleSystem SetStartRotation(float min, float max)
+        public ParticleSystemNode SetStartRotation(float min, float max)
         {
             StartRotationRange = new Vector2(min, max);
             return this;
         }
 
-        public ParticleSystem SetStartRotation(float rotation)
+        public ParticleSystemNode SetStartRotation(float rotation)
         {
             StartRotationRange = new Vector2(rotation, rotation);
             return this;
         }
 
-        public ParticleSystem SetAngularVelocity(float min, float max)
+        public ParticleSystemNode SetAngularVelocity(float min, float max)
         {
             AngularVelocityRange = new Vector2(min, max);
             return this;
         }
 
-        public ParticleSystem SetAngularVelocity(float angularVelocity)
+        public ParticleSystemNode SetAngularVelocity(float angularVelocity)
         {
             AngularVelocityRange = new Vector2(angularVelocity, angularVelocity);
             return this;
         }
 
-        public ParticleSystem SetLifetime(float min, float max)
+        public ParticleSystemNode SetLifetime(float min, float max)
         {
             LifetimeRange = new Vector2(min, max);
             return this;
         }
 
-        public ParticleSystem SetLifetime(float lifetime)
+        public ParticleSystemNode SetLifetime(float lifetime)
         {
             LifetimeRange = new Vector2(lifetime, lifetime);
             return this;
         }
 
-        public ParticleSystem SetSpeed(float min, float max)
+        public ParticleSystemNode SetSpeed(float min, float max)
         {
             SpeedRange = new Vector2(min, max);
             return this;
         }
 
-        public ParticleSystem SetSpeed(float speed)
+        public ParticleSystemNode SetSpeed(float speed)
         {
             SpeedRange = new Vector2(speed, speed);
             return this;
         }
 
-        public ParticleSystem SetColor(Color color)
+        public ParticleSystemNode SetColor(Color color)
         {
             ColorRange = new Gradient(color);
             return this;
         }
 
-        public ParticleSystem SetColor(Gradient gradient)
+        public ParticleSystemNode SetColor(Gradient gradient)
         {
             ColorRange = gradient;
             return this;
         }
 
-        public ParticleSystem SetColorOverLifetime(Gradient colorOverLifetime)
+        public ParticleSystemNode SetColorOverLifetime(Gradient colorOverLifetime)
         {
             _colorOverLifetimeEnabled = true;
             ColorOverLifetime = colorOverLifetime;
             return this;
         }
 
-        public ParticleSystem SetSizeOverLifetime(Curve sizeCurve)
+        public ParticleSystemNode SetSizeOverLifetime(Curve sizeCurve)
         {
             _sizeOverLifetimeEnabled = true;
             SizeOverLifetime = sizeCurve;
             return this;
         }
 
-        public ParticleSystem SetSpeedOverLifetime(Curve speedCurve)
+        public ParticleSystemNode SetSpeedOverLifetime(Curve speedCurve)
         {
             _speedOverLifetimeEnabled = true;
             SpeedOverLifetime = speedCurve;
             return this;
         }
 
-        public ParticleSystem SetNoiseSettings(float noiseStrength, float noiseFrequency, float noiseSpeed)
+        public ParticleSystemNode SetNoiseSettings(float noiseStrength, float noiseFrequency, float noiseSpeed)
         {
             _noiseEnabled = true;
             NoiseStrength = noiseStrength;
@@ -331,12 +314,10 @@ namespace Atlas2D
 
             for (int x = 0; x < PREWARM_STEPS; x++)
             {
-                // Updating all particles
                 for (int i = 0; i < Particles.Count; i++)
                 {
                     Particle particle = Particles[i];
 
-                    // Used for particle over-lifetime effects (if enabled)
                     float t = 1 - (particle.Lifetime / particle.InitialLifetime);
 
                     particle.Position += particle.Velocity * deltaTime * (_speedOverLifetimeEnabled ? SpeedOverLifetime.Evaluate(t) : 1);
@@ -357,7 +338,7 @@ namespace Atlas2D
         {
             if (IsWorldSpace)
             {
-                Renderer.Material.Value.Shader.Value.SetMatrix4x4("model", _fakeTransform.GetScaleMatrix() * _fakeTransform.GetRotationMatrix() * _transform.GetPositionMatrix());
+                Renderer.Material.Value.Shader.Value.SetMatrix4x4("model", WorldMatrix);
             }
         }
         #endregion
@@ -396,14 +377,13 @@ namespace Atlas2D
         }
         #endregion
 
-        public void Update()
+        protected override void OnUpdate()
         {
             if (!IsPlaying) return;
 
-            // Particle spawn check
-            if(EmissionMode == ParticleEmissionMode.Constant)
+            if (EmissionMode == ParticleEmissionMode.Constant)
             {
-                if(IsLoop || (!IsLoop && LoopTime <= Duration))
+                if (IsLoop || (!IsLoop && LoopTime <= Duration))
                 {
                     while (_spawnTime > _spawnInterval)
                     {
@@ -412,9 +392,9 @@ namespace Atlas2D
                     }
                 }
             }
-            else if(EmissionMode == ParticleEmissionMode.Burst)
+            else if (EmissionMode == ParticleEmissionMode.Burst)
             {
-                if(IsLoop && LoopTime > Duration)
+                if (IsLoop && LoopTime > Duration)
                 {
                     _currentBurstAmount = 0;
                     LoopTime = 0;
@@ -429,12 +409,10 @@ namespace Atlas2D
 
             ApplyNoise();
 
-            // Updating all particles
             for (int i = 0; i < Particles.Count; i++)
             {
                 Particle particle = Particles[i];
 
-                // Used for particle over-lifetime effects (if enabled)
                 float t = 1 - (particle.Lifetime / particle.InitialLifetime);
 
                 particle.Position += particle.Velocity * Time.DeltaTime * (_speedOverLifetimeEnabled ? SpeedOverLifetime.Evaluate(t) : 1);
@@ -448,23 +426,24 @@ namespace Atlas2D
 
             UpdateMesh();
 
-            // Calculating velocity
-            _calculatedVelocity = _transform.Position - _lastPosition;
-            _lastPosition = _transform.Position;
+            _calculatedVelocity = WorldPosition - _lastPosition;
+            _lastPosition = WorldPosition;
 
             LoopTime += Time.DeltaTime;
-            if(EmissionMode == ParticleEmissionMode.Constant)
+            if (EmissionMode == ParticleEmissionMode.Constant)
             {
                 _spawnTime += Time.DeltaTime;
             }
-            else if(EmissionMode == ParticleEmissionMode.Burst)
+            else if (EmissionMode == ParticleEmissionMode.Burst)
             {
-                if(_currentBurstAmount < BurstSpawnAmount)
+                if (_currentBurstAmount < BurstSpawnAmount)
                 {
                     _spawnTime += Time.DeltaTime;
                 }
             }
         }
+
+        protected override void OnFixedUpdate() { }
 
         private void ApplyNoise()
         {
@@ -498,33 +477,20 @@ namespace Atlas2D
 
             if (p == null)
             {
-                // If a new particle must be created, check to see if there is room left
                 if (Particles.Count >= MaxParticles) return;
                 p = new Particle();
                 Particles.Add(p);
             }
 
-            // Spawn speed
             float spawnSpeed = MathEx.RandomFloatInRange(_random, SpeedRange.X, SpeedRange.Y);
-
-            // Spawn rotation
             float spawnRotation = MathEx.RandomFloatInRange(_random, StartRotationRange.X, StartRotationRange.Y);
-
-            // Spawn angular velocity
             float spawnAngularVelocity = MathEx.RandomFloatInRange(_random, AngularVelocityRange.X, AngularVelocityRange.Y);
-
-            // Spawn color
             float percentage = (float)_random.NextDouble();
             Color spawnColor = ColorRange.Evaluate(percentage);
-
-            // Spawn size
             float spawnSize = MathEx.RandomFloatInRange(_random, SizeRange.X, SizeRange.Y);
-
-            // Spawn lifetime
             float spawnLifetime = MathEx.RandomFloatInRange(_random, LifetimeRange.X, LifetimeRange.Y);
 
-            // Spawn position
-            Vector2 spawnPosition = IsWorldSpace ? _transform.Position : Vector2.Zero;
+            Vector2 spawnPosition = IsWorldSpace ? WorldPosition : Vector2.Zero;
             Vector2 alongNormal = Vector2.Zero;
             switch (EmissionShape)
             {
@@ -570,7 +536,6 @@ namespace Atlas2D
                     break;
             }
 
-            // Spawn direction
             float spawnDirRotation = (float)(_random.NextDouble() * EmissionSpreadAngle);
             Vector2 spawnDirection = MathEx.RotateVector2(EmitAlongEmissionShapeNormal ? alongNormal : EmissionDirection,
                 spawnDirRotation - (EmissionSpreadAngle / 2f));
@@ -616,7 +581,6 @@ namespace Atlas2D
 
         private void UpdateParticleMesh(int _index, Particle _particle)
         {
-            // Used for particle over-lifetime effects (if enabled)
             float t = 1 - (_particle.Lifetime / _particle.InitialLifetime);
 
             int i = _index * 32;
@@ -627,8 +591,8 @@ namespace Atlas2D
             Vector2 br = MathEx.RotateVector2(new Vector2(hs, -hs), _particle.Rotation);
             Vector2 bl = MathEx.RotateVector2(new Vector2(-hs, -hs), _particle.Rotation);
 
-            float xpos = _particle.Position.X + (IsWorldSpace ? _particle.Origin.X - _transform.Position.X : _particle.Origin.X) * 2;
-            float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y - _transform.Position.Y : _particle.Origin.Y) * 2;
+            float xpos = _particle.Position.X + (IsWorldSpace ? _particle.Origin.X - WorldPosition.X : _particle.Origin.X) * 2;
+            float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y - WorldPosition.Y : _particle.Origin.Y) * 2;
 
             Vector4 color = _colorOverLifetimeEnabled
                 ? _particle.Color * ColorOverLifetime.Evaluate(t)
