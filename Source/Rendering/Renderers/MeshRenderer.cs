@@ -19,7 +19,7 @@ namespace Atlas2D.Rendering
         public Action OnBeforeRender { get; set; }
         public Action OnAfterRender { get; set; }
 
-        private Transform? _transform;
+        private TransformNode? _transform;
 
         /// <summary>
         /// If enabled, the object will not move in world space, but will instead stay in one place in screen space.
@@ -50,7 +50,7 @@ namespace Atlas2D.Rendering
             Engine.Game.RegisterGameClass(this);
         }
 
-        public MeshRenderer(Transform transform, SharedResource<Material> material)
+        public MeshRenderer(TransformNode transform, SharedResource<Material> material)
         {
             _transform = transform;
             Material = material.AddRef();
@@ -213,7 +213,7 @@ namespace Atlas2D.Rendering
             Material.Value.Use();
             if(_transform != null)
             {
-                Material.Value.Shader.Value.SetMatrix4x4("model", _transform.GetScaleMatrix() * _transform.GetRotationMatrix() * _transform.GetPositionMatrix());
+                Material.Value.Shader.Value.SetMatrix4x4("model", _transform.WorldMatrix);
             }
             Material.Value.Shader.Value.SetMatrix4x4("projection", UseUnscaledProjectionMatrix ? CameraNode.Main.GetUnscaledProjectionMatrix() : CameraNode.Main.GetViewProjectionMatrix());
 
