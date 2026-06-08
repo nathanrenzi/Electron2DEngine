@@ -588,8 +588,8 @@ namespace Atlas2D.PhysicsBox2D
                 else
                 {
                     // Both are rigidbodies
-                    Rigidbody.InvokeCollision(idA, idB, true);
-                    Rigidbody.InvokeCollision(idB, idA, true);
+                    RigidbodyNode.InvokeCollision(idA, idB, true);
+                    RigidbodyNode.InvokeCollision(idB, idA, true);
                 }
             }
 
@@ -626,8 +626,8 @@ namespace Atlas2D.PhysicsBox2D
                 else
                 {
                     // Both are rigidbodies
-                    Rigidbody.InvokeCollision(idA, idB, false);
-                    Rigidbody.InvokeCollision(idB, idA, false);
+                    RigidbodyNode.InvokeCollision(idA, idB, false);
+                    RigidbodyNode.InvokeCollision(idB, idA, false);
                 }
             }
 
@@ -666,7 +666,7 @@ namespace Atlas2D.PhysicsBox2D
 
             public override void SayGoodbye(Fixture fixture)
             {
-                foreach (var rigidbody in Rigidbody.Rigidbodies)
+                foreach (var rigidbody in RigidbodyNode.Rigidbodies)
                 {
                     if (rigidbody.ID == fixture.Body.GetUserData<uint>())
                     {

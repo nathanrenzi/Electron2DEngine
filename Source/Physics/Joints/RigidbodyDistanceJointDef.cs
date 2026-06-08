@@ -6,8 +6,8 @@ namespace Atlas2D.PhysicsBox2D
 {
     public class RigidbodyDistanceJointDef : IRigidbodyJointDef
     {
-        public Rigidbody RigidbodyA { get; set; }
-        public Rigidbody RigidbodyB { get; set; }
+        public RigidbodyNode RigidbodyA { get; set; }
+        public RigidbodyNode RigidbodyB { get; set; }
         public Vector2 LocalAnchorA { get; set; }
         public Vector2 LocalAnchorB { get; set; }
         public float Length { get; set; }

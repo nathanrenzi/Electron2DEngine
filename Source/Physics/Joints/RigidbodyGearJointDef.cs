@@ -5,8 +5,8 @@ namespace Atlas2D.PhysicsBox2D
 {
     public class RigidbodyGearJointDef : IRigidbodyJointDef
     {
-        public Rigidbody RigidbodyA { get; set; }
-        public Rigidbody RigidbodyB { get; set; }
+        public RigidbodyNode RigidbodyA { get; set; }
+        public RigidbodyNode RigidbodyB { get; set; }
         public Joint Joint1 { get; set; }
         public Joint Joint2 { get; set; }
         public float Ratio { get; set; }

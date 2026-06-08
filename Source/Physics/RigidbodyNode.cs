@@ -1,4 +1,4 @@
-﻿using Box2D.NetStandard.Collision.Shapes;
+using Box2D.NetStandard.Collision.Shapes;
 using Box2D.NetStandard.Dynamics.Bodies;
 using Box2D.NetStandard.Dynamics.Fixtures;
 using Box2D.NetStandard.Dynamics.Joints;
@@ -6,15 +6,15 @@ using System.Numerics;
 
 namespace Atlas2D.PhysicsBox2D
 {
-    public class Rigidbody : IGameClass
+    public class RigidbodyNode : TransformNode
     {
         public static readonly float Epsilon = 1f;
-        public static List<Rigidbody> Rigidbodies = new List<Rigidbody>();
+        public static List<RigidbodyNode> Rigidbodies = new List<RigidbodyNode>();
 
-        public Action<Rigidbody> OnBeginContact { get; set; }
-        public Action<Rigidbody> OnEndContact { get; set; }
-        public List<Rigidbody> CurrentContacts { get; set; } = new List<Rigidbody>();
-        public Dictionary<uint, Rigidbody> Joints = new Dictionary<uint, Rigidbody>();
+        public Action<RigidbodyNode> OnBeginContact { get; set; }
+        public Action<RigidbodyNode> OnEndContact { get; set; }
+        public List<RigidbodyNode> CurrentContacts { get; set; } = new List<RigidbodyNode>();
+        public Dictionary<uint, RigidbodyNode> Joints = new Dictionary<uint, RigidbodyNode>();
         public bool IsDestroyed { get; private set; }
         public uint ID { get; private set; } = uint.MaxValue;
         public Body PhysicsBody
@@ -103,31 +103,28 @@ namespace Atlas2D.PhysicsBox2D
         private float _lerpDeltaTime;
         private float _lastLerpTime;
 
-        private Transform _transform;
-
         private bool _isValid = false;
         private bool _interpolationReady = false;
 
-        public static Rigidbody CreateDynamic(Transform transform, RigidbodyDynamicDef def)
+        public static RigidbodyNode CreateDynamic(RigidbodyDynamicDef def)
         {
-            return new Rigidbody(transform, false, def.Velocity, def.AngularVelocity, def.MassData, def.Friction, def.Bounciness,
+            return new RigidbodyNode(false, def.Velocity, def.AngularVelocity, def.MassData, def.Friction, def.Bounciness,
                 def.Density, def.LinearDampening, def.AngularDampening, def.FixedRotation, def.Shape,
                 RigidbodyMode.Dynamic, def.Layer, def.HitMask, def.GroupIndex, def.ConvexColliderPoints);
         }
 
-        public static Rigidbody CreateKinematic(Transform transform, RigidbodyKinematicDef def)
+        public static RigidbodyNode CreateKinematic(RigidbodyKinematicDef def)
         {
-            return new Rigidbody(transform, true, new Vector2(0, 0), 0, new MassData(), def.Friction, def.Bounciness, 1, 0.0f, 0.0f, false, def.Shape,
+            return new RigidbodyNode(true, new Vector2(0, 0), 0, new MassData(), def.Friction, def.Bounciness, 1, 0.0f, 0.0f, false, def.Shape,
                 RigidbodyMode.Kinematic, def.Layer, def.HitMask, def.GroupIndex, def.ConvexColliderPoints);
         }
 
-        private Rigidbody(Transform transform, bool isStatic, Vector2 startVelocity, float startAngularVelocity,
+        private RigidbodyNode(bool isStatic, Vector2 startVelocity, float startAngularVelocity,
             MassData massData, float friction, float bounciness, float density, float linearDampening,
             float angularDampening, bool fixedRotation, RigidbodyShape rigidbodyShape, RigidbodyMode rigidbodyMode,
             ushort layer, ushort hitMask, short groupIndex, Vector2[] convexColliderPoints)
         {
             IsStatic = isStatic;
-            _transform = transform;
             _velocity = startVelocity;
             _angularVelocity = startAngularVelocity;
             _linearDampening = linearDampening;
@@ -144,20 +141,12 @@ namespace Atlas2D.PhysicsBox2D
             GroupIndex = groupIndex;
             ConvexColliderPoints = convexColliderPoints;
 
-            if (_transform == null)
-            {
-                Debug.LogError("PHYSICS: A rigidbody is trying to be added to an entity without a Transform component, removing...");
-                _isValid = false;
-                Dispose();
-                return;
-            }
             Rigidbodies.Add(this);
-            Engine.Game.RegisterGameClass(this);
 
             BodyDef bodyDef = new BodyDef()
             {
-                position = _transform.Position / Physics.WorldScalar,
-                angle = _transform.Rotation,
+                position = LocalPosition / Physics.WorldScalar,
+                angle = LocalRotation,
                 linearVelocity = _velocity,
                 angularVelocity = _angularVelocity,
                 linearDamping = _linearDampening,
@@ -180,12 +169,12 @@ namespace Atlas2D.PhysicsBox2D
             switch (Shape)
             {
                 case RigidbodyShape.Box:
-                    fixtureDef.shape = new PolygonShape((_transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar, (_transform.Scale.Y - Epsilon) / 2f / Physics.WorldScalar);
+                    fixtureDef.shape = new PolygonShape((LocalScale.X - Epsilon) / 2f / Physics.WorldScalar, (LocalScale.Y - Epsilon) / 2f / Physics.WorldScalar);
                     break;
                 case RigidbodyShape.Circle:
                     fixtureDef.shape = new CircleShape()
                     {
-                        Radius = (_transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar
+                        Radius = (LocalScale.X - Epsilon) / 2f / Physics.WorldScalar
                     };
                     break;
                 case RigidbodyShape.ConvexMesh:
@@ -197,25 +186,18 @@ namespace Atlas2D.PhysicsBox2D
             _isValid = true;
         }
 
-        ~Rigidbody()
-        {
-            Dispose();
-        }
-
-        public void Dispose()
+        protected override void OnDispose()
         {
             if (IsDestroyed) return;
             Rigidbodies.Remove(this);
-            Engine.Game.UnregisterGameClass(this);
             if (ID != uint.MaxValue) Physics.RemovePhysicsBody(ID);
             IsDestroyed = true;
-            GC.SuppressFinalize(this);
         }
 
         public static void InvokeCollision(uint _id, uint _hitId, bool _beginContact)
         {
-            Rigidbody body1 = null;
-            Rigidbody body2 = null;
+            RigidbodyNode body1 = null;
+            RigidbodyNode body2 = null;
             for (int i = 0; i < Rigidbodies.Count; i++)
             {
                 if (Rigidbodies[i].ID == _id)
@@ -245,13 +227,13 @@ namespace Atlas2D.PhysicsBox2D
             }
         }
 
-        public void FixedUpdate()
+        protected override void OnFixedUpdate()
         {
             if (!_isValid || ID == uint.MaxValue || IsDestroyed) return;
 
             // Setting values for interpolation
-            _oldPosition = _transform.Position;
-            _oldAngle = _transform.Rotation;
+            _oldPosition = LocalPosition;
+            _oldAngle = LocalRotation;
 
             _newPosition = Physics.GetBodyPosition(ID);
             _newAngle = Physics.GetBodyRotation(ID);
@@ -262,7 +244,7 @@ namespace Atlas2D.PhysicsBox2D
             _interpolationReady = true;
         }
 
-        public void Update()
+        protected override void OnUpdate()
         {
             if (!_isValid || ID == uint.MaxValue || !_interpolationReady || IsDestroyed) return;
 
@@ -270,10 +252,10 @@ namespace Atlas2D.PhysicsBox2D
             float t = MathEx.Clamp01((Time.GameTime - _lastLerpTime) / _lerpDeltaTime);
 
             //      Position
-            _transform.Position = Vector2.Lerp(_oldPosition, _newPosition, t);
+            LocalPosition = Vector2.Lerp(_oldPosition, _newPosition, t);
 
             //      Rotation
-            _transform.Rotation = (float)(_oldAngle * (1.0 - t) + (_newAngle * t));
+            LocalRotation = (float)(_oldAngle * (1.0 - t) + (_newAngle * t));
         }
 
         public uint CreateJoint(IRigidbodyJointDef _jointDef)

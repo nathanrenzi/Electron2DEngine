@@ -1,18 +1,18 @@
-﻿using Box2D.NetStandard.Collision.Shapes;
+using Box2D.NetStandard.Collision.Shapes;
 using Box2D.NetStandard.Dynamics.Bodies;
 using Box2D.NetStandard.Dynamics.Fixtures;
 using System.Numerics;
 
 namespace Atlas2D.PhysicsBox2D
 {
-    public class RigidbodySensor : IGameClass
+    public class RigidbodySensorNode : TransformNode
     {
         public static readonly float Epsilon = 1f;
-        public static List<RigidbodySensor> Sensors = new List<RigidbodySensor>();
+        public static List<RigidbodySensorNode> Sensors = new List<RigidbodySensorNode>();
 
-        public Action<Rigidbody> OnBeginContact { get; set; }
-        public Action<Rigidbody> OnEndContact { get; set; }
-        public List<Rigidbody> CurrentContacts { get; set; } = new List<Rigidbody>();
+        public Action<RigidbodyNode> OnBeginContact { get; set; }
+        public Action<RigidbodyNode> OnEndContact { get; set; }
+        public List<RigidbodyNode> CurrentContacts { get; set; } = new List<RigidbodyNode>();
 
         public uint ID { get; private set; } = uint.MaxValue;
         public RigidbodySensorShape Shape { get; private set; }
@@ -36,50 +36,25 @@ namespace Atlas2D.PhysicsBox2D
         /// </summary>
         public short GroupIndex { get; private set; }
 
-        private Transform _transform;
         private bool _isValid;
 
-        public RigidbodySensor(Vector2 size, RigidbodySensorShape shape = RigidbodySensorShape.Circle,
+        public RigidbodySensorNode(Vector2 size, Vector2 localOffset = default, RigidbodySensorShape shape = RigidbodySensorShape.Circle,
             ushort layer = 0x0001, ushort hitMask = 0xFFFF, short groupIndex = 0)
         {
-            Shape = shape;
-            Size = size;
-            Layer = layer;
-            HitMask = hitMask;
-            GroupIndex = groupIndex;
-            Initialize();
-        }
-
-        public RigidbodySensor(Transform transform, Vector2 size, Vector2 localOffset, RigidbodySensorShape shape = RigidbodySensorShape.Circle,
-            ushort layer = 0x0001, ushort hitMask = 0xFFFF, short groupIndex = 0)
-        {
-            _transform = transform;
             Shape = shape;
             Size = size;
             Offset = localOffset;
             Layer = layer;
             HitMask = hitMask;
             GroupIndex = groupIndex;
-            Initialize();
-        }
 
-        private void Initialize()
-        {
-            if (_transform == null)
-            {
-                Debug.LogError("PHYSICS: A collider sensor is trying to be added to an entity without a Transform component, removing collider...");
-                _isValid = false;
-                Dispose();
-                return;
-            }
-            Engine.Game.RegisterGameClass(this);
             Sensors.Add(this);
 
-            Vector2 pos = (_transform.Position + (_transform.Up * Offset.Y) + (_transform.Right * Offset.X));
+            Vector2 pos = WorldPosition + (Up * Offset.Y) + (Right * Offset.X);
             BodyDef bodyDef = new BodyDef()
             {
                 position = pos,
-                angle = _transform.Rotation,
+                angle = WorldRotation,
             };
 
             FixtureDef fixtureDef = new FixtureDef()
@@ -95,8 +70,8 @@ namespace Atlas2D.PhysicsBox2D
             switch (Shape)
             {
                 case RigidbodySensorShape.Box:
-                    fixtureDef.shape = new PolygonShape((_transform.Scale.X - Epsilon) / 2f / Physics.WorldScalar,
-                        (_transform.Scale.Y - Epsilon) / 2f / Physics.WorldScalar);
+                    fixtureDef.shape = new PolygonShape((WorldScale.X - Epsilon) / 2f / Physics.WorldScalar,
+                        (WorldScale.Y - Epsilon) / 2f / Physics.WorldScalar);
                     break;
                 case RigidbodySensorShape.Circle:
                     fixtureDef.shape = new CircleShape()
@@ -110,24 +85,16 @@ namespace Atlas2D.PhysicsBox2D
             _isValid = true;
         }
 
-        ~RigidbodySensor()
+        protected override void OnDispose()
         {
-            Dispose();
-        }
-
-        public void FixedUpdate() { }
-
-        public void Dispose()
-        {
-            Engine.Game.UnregisterGameClass(this);
             Sensors.Remove(this);
-            GC.SuppressFinalize(this);
+            if (ID != uint.MaxValue) Physics.RemovePhysicsBody(ID);
         }
 
         public static void InvokeCollision(uint _id, uint _hitId, bool _beginContact)
         {
-            Rigidbody hitBody = null;
-            List<Rigidbody> rigidbodies = Rigidbody.Rigidbodies;
+            RigidbodyNode hitBody = null;
+            List<RigidbodyNode> rigidbodies = RigidbodyNode.Rigidbodies;
             for (int i = 0; i < rigidbodies.Count; i++)
             {
                 if (rigidbodies[i].ID == _hitId)
@@ -137,7 +104,7 @@ namespace Atlas2D.PhysicsBox2D
             }
             if (hitBody == null) return;
 
-            RigidbodySensor sensor = null;
+            RigidbodySensorNode sensor = null;
             for (int i = 0; i < Sensors.Count; i++)
             {
                 if (Sensors[i].ID == _id)
@@ -161,12 +128,12 @@ namespace Atlas2D.PhysicsBox2D
             }
         }
 
-        public void Update()
+        protected override void OnUpdate()
         {
             if (!_isValid || ID == uint.MaxValue) return;
 
-            Physics.SetAngle(ID, _transform.Rotation);
-            Physics.SetPosition(ID, _transform.Position + (_transform.Up * Offset.Y) + (_transform.Right * Offset.X));
+            Physics.SetAngle(ID, WorldRotation);
+            Physics.SetPosition(ID, WorldPosition + (Up * Offset.Y) + (Right * Offset.X));
         }
     }
 
