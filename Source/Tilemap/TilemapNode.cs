@@ -1,4 +1,4 @@
-﻿using Box2D.NetStandard.Collision.Shapes;
+using Box2D.NetStandard.Collision.Shapes;
 using Box2D.NetStandard.Dynamics.Bodies;
 using Box2D.NetStandard.Dynamics.Fixtures;
 using Atlas2D.PhysicsBox2D;
@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace Atlas2D
 {
-    public class Tilemap : IRenderable, IGameClass
+    public class TilemapNode : TransformNode, IRenderable
     {
         public TileData[] Data { get; set; }
         public int SizeX { get; set; }
@@ -17,7 +17,6 @@ namespace Atlas2D
         public uint CollisionBody { get; private set; } = 999999999;
         public Dictionary<Vector2, Fixture> CollisionFixtures { get; set; } = new();
         public Dictionary<Vector2, bool> CollisionFixtureUpdates { get; set; } = new();
-        public Transform Transform { get; private set; }
         public int TilePixelSize { get; set; }
         public int RenderLayer { get; }
         public bool IgnorePostProcessing { get; } = false;
@@ -25,12 +24,13 @@ namespace Atlas2D
         private int _realTilePixelSize => TilePixelSize * 2;
 
         private Dictionary<Material, TileMesh> _meshDataDictionary = new();
+        private List<TileMesh> _meshList = new();
         private Random _random;
         private int _seed;
         private bool _isDirty = false;
         private bool _isColliderDirty = false;
 
-        private Tilemap(TileData[] data, int[] tileArray, int tilePixelSize,
+        private TilemapNode(TileData[] data, int[] tileArray, int tilePixelSize,
             int sizeX, int sizeY, int renderLayer = -1)
         {
             TilePixelSize = tilePixelSize;
@@ -42,13 +42,16 @@ namespace Atlas2D
 
             _seed = 1337 * sizeX + tilePixelSize * renderLayer;
             _random = new Random(_seed);
-            Transform = new Transform();
 
             for (int i = 0; i < Data.Length; i++)
             {
                 if (Data[i].Material == null) continue;
                 if (!_meshDataDictionary.ContainsKey(Data[i].Material.Value))
-                    _meshDataDictionary.Add(Data[i].Material.Value, new TileMesh(Transform, Data[i].Material));
+                {
+                    TileMesh mesh = new TileMesh(this, Data[i].Material);
+                    _meshDataDictionary.Add(Data[i].Material.Value, mesh);
+                    _meshList.Add(mesh);
+                }
             }
 
             TileRotations = new byte[Tiles.Length];
@@ -57,12 +60,9 @@ namespace Atlas2D
 
             _isDirty = true;
             _isColliderDirty = true;
-
-            RenderLayerManager.OrderRenderable(this);
-            Engine.Game.RegisterGameClass(this);
         }
 
-        public static Tilemap CreateSharedMaterial(SharedResource<Material> material, TileData[] data,
+        public static TilemapNode CreateSharedMaterial(SharedResource<Material> material, TileData[] data,
             int[] tileArray, int tilePixelSize,
             int sizeX, int sizeY, int renderLayer = -1, bool cloneArrays = true)
         {
@@ -75,35 +75,53 @@ namespace Atlas2D
             for (int i = 0; i < d.Length; i++)
                 d[i].Material = material;
 
-            return new Tilemap(d, tiles, tilePixelSize, sizeX, sizeY, renderLayer);
+            return new TilemapNode(d, tiles, tilePixelSize, sizeX, sizeY, renderLayer);
         }
 
-        public static Tilemap CreateMultiMaterial(TileData[] data, int[] tileArray, int tilePixelSize,
+        public static TilemapNode CreateMultiMaterial(TileData[] data, int[] tileArray, int tilePixelSize,
             int sizeX, int sizeY, int renderLayer = -1, bool cloneArrays = true)
         {
             TileData[] d = cloneArrays ? (TileData[])data.Clone() : data;
             int[] tiles = cloneArrays ? (int[])tileArray.Clone() : tileArray;
-            return new Tilemap(d, tiles, tilePixelSize, sizeX, sizeY, renderLayer);
+            return new TilemapNode(d, tiles, tilePixelSize, sizeX, sizeY, renderLayer);
         }
 
-        public void Update() { RegenerateEntireMesh(); }
+        protected override void OnEnable()
+        {
+            RenderLayerManager.OrderRenderable(this);
+        }
 
-        public void FixedUpdate() { }
-
-        public void Dispose()
+        protected override void OnDisable()
         {
             RenderLayerManager.RemoveRenderable(this);
-            Engine.Game.UnregisterGameClass(this);
         }
 
+        protected override void OnDispose()
+        {
+            RenderLayerManager.RemoveRenderable(this);
+            for (int i = 0; i < _meshList.Count; i++)
+                _meshList[i].Renderer.Dispose();
+            if (CollisionBody != 999999999)
+                Physics.RemovePhysicsBody(CollisionBody);
+        }
+
+        protected override void OnUpdate() { RegenerateEntireMesh(); }
+
         public string ToJson() => throw new NotImplementedException();
-        public static Tilemap FromJson(string json) => throw new NotImplementedException();
+        public static TilemapNode FromJson(string json) => throw new NotImplementedException();
 
         private void RegenerateEntireMesh()
         {
             if (!_isDirty && _isColliderDirty) RegenerateColliders();
             if (!_isDirty) return;
             _isDirty = false;
+
+            // Clear all mesh data before rebuilding to avoid duplicate geometry
+            for (int i = 0; i < _meshList.Count; i++)
+            {
+                _meshList[i].Vertices.Clear();
+                _meshList[i].Indices.Clear();
+            }
 
             for (int i = 0; i < Tiles.Length; i++)
             {
@@ -174,12 +192,13 @@ namespace Atlas2D
                 mesh.Indices.Add((uint)(vertices + 3));
             }
 
-            foreach (var m in _meshDataDictionary)
+            for (int i = 0; i < _meshList.Count; i++)
             {
-                if (m.Value.Vertices.Count > 0)
+                TileMesh mesh = _meshList[i];
+                if (mesh.Vertices.Count > 0)
                 {
-                    m.Value.Renderer.SetVertexArrays(m.Value.Vertices.ToArray(), m.Value.Indices.ToArray(),
-                        !m.Value.Renderer.HasVertexData, _setDirty: true);
+                    mesh.Renderer.SetVertexArrays(mesh.Vertices.ToArray(), mesh.Indices.ToArray(),
+                        !mesh.Renderer.HasVertexData, _setDirty: true);
                 }
             }
 
@@ -199,7 +218,7 @@ namespace Atlas2D
 
                 if (add)
                 {
-                    Vector2 fixturePosition = (localPosition + (Vector2.One * 0.5f)) * SizeX / Physics.WorldScalar;
+                    Vector2 fixturePosition = (localPosition + (Vector2.One * 0.5f)) * _realTilePixelSize / Physics.WorldScalar;
                     FixtureDef fdef = new FixtureDef();
                     PolygonShape shape = new PolygonShape();
                     shape.SetAsBox(TilePixelSize / Physics.WorldScalar, TilePixelSize / Physics.WorldScalar, fixturePosition, 0);
@@ -207,7 +226,7 @@ namespace Atlas2D
 
                     if (CollisionBody == 999999999)
                     {
-                        BodyDef bodyDef = new BodyDef() { position = Transform.Position / Physics.WorldScalar };
+                        BodyDef bodyDef = new BodyDef() { position = WorldPosition / Physics.WorldScalar };
                         CollisionBody = Physics.CreatePhysicsBody(bodyDef, fdef, new MassData(), true);
                     }
 
@@ -216,6 +235,12 @@ namespace Atlas2D
                 }
                 else
                 {
+                    // Destroy the Box2D fixture before removing from tracking
+                    if (CollisionBody != 999999999 && CollisionFixtures.TryGetValue(localPosition, out Fixture fixture))
+                    {
+                        body ??= Physics.GetBody(CollisionBody);
+                        body.DestroyFixture(fixture);
+                    }
                     CollisionFixtures.Remove(localPosition);
                 }
             }
@@ -236,7 +261,8 @@ namespace Atlas2D
         {
             int index = ToIndex(x, y);
             int currentTile = Tiles[index];
-            if (!(Data[currentTile].IsCollider && Data[tileID].IsCollider))
+            // Guard against empty tiles (-1) before accessing Data
+            if (currentTile != -1 && !(Data[currentTile].IsCollider && Data[tileID].IsCollider))
                 _isColliderDirty = true;
             Tiles[index] = tileID;
             _isDirty = true;
@@ -247,13 +273,10 @@ namespace Atlas2D
         private int ToIndex(int x, int y) => x + y * SizeX;
         private Vector2 FromIndex(int index) => new Vector2(index % SizeX, index / SizeX);
 
-
         public void Render()
         {
-            foreach (var m in _meshDataDictionary)
-            {
-                m.Value.Renderer.Render();
-            }
+            for (int i = 0; i < _meshList.Count; i++)
+                _meshList[i].Renderer.Render();
         }
     }
 }

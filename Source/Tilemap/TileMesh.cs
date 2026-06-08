@@ -8,7 +8,7 @@ namespace Atlas2D
         public List<uint> Indices;
         public MeshRenderer Renderer;
 
-        public TileMesh(Transform transform, SharedResource<Material> material)
+        public TileMesh(TransformNode transform, SharedResource<Material> material)
         {
             Vertices = new List<float>();
             Indices = new List<uint>();
