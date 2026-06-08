@@ -1,11 +1,9 @@
-﻿
-
-namespace Atlas2D
+﻿namespace Atlas2D
 {
     /// <summary>
     /// A light object that can light the scene.
     /// </summary>
-    public class Light
+    public class LightNode : TransformNode
     {
         public enum LightType { Point, Spot, Directional }
         public LightType Type { get; private set; }
@@ -65,11 +63,9 @@ namespace Atlas2D
         }
         private float _intensity;
 
-        public Transform Transform { get; private set; }
-
         public bool IsDirty { get; set; }
 
-        public Light(Color color, float height, float quadratic, float constant = 1, float intensity = 1, LightType type = LightType.Point)
+        public LightNode(Color color, float height, float quadratic, float constant = 1, float intensity = 1, LightType type = LightType.Point)
         {
             Type = type;
             Color = color;
@@ -78,13 +74,12 @@ namespace Atlas2D
             Height = height;
             Intensity = intensity;
 
-            Transform = new Transform();
-            Transform.OnPositionChanged += () => IsDirty = true;
+            OnTransformChanged += () => IsDirty = true;
 
             LightManager.Instance.RegisterLight(this, type);
         }
 
-        ~Light()
+        protected override void OnDispose()
         {
             LightManager.Instance.UnregisterLight(this, Type);
         }

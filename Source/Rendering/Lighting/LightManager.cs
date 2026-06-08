@@ -1,8 +1,7 @@
 ﻿using Atlas2D.Rendering.Shaders;
 using Atlas2D.Rendering;
-
 using System.Numerics;
-using static Atlas2D.Light;
+using static Atlas2D.LightNode;
 
 namespace Atlas2D
 {
@@ -37,17 +36,17 @@ namespace Atlas2D
 
         // MAKE SURE TO CHANGE THESE VALUES IN SHADERS TOO
         public const int MAX_POINT_LIGHTS = 16;
-        public List<Light> PointLightsInScene = new List<Light>();
+        public List<LightNode> PointLightsInScene = new List<LightNode>();
 
         // MAKE SURE TO CHANGE THESE VALUES IN SHADERS TOO
         public const int MAX_SPOTLIGHTS = 16;
-        public List<Light> SpotLightsInScene = new List<Light>();
+        public List<LightNode> SpotLightsInScene = new List<LightNode>();
 
         // MAKE SURE TO CHANGE THESE VALUES IN SHADERS TOO
         public const int MAX_DIRECTIONAL_LIGHTS = 1;
-        public List<Light> DirectionalLightsInScene = new List<Light>();
+        public List<LightNode> DirectionalLightsInScene = new List<LightNode>();
 
-        public void RegisterLight(Light _light, LightType _type)
+        public void RegisterLight(LightNode _light, LightType _type)
         {
             switch (_type)
             {
@@ -63,7 +62,7 @@ namespace Atlas2D
             }
         }
 
-        public void UnregisterLight(Light _light, LightType _type)
+        public void UnregisterLight(LightNode _light, LightType _type)
         {
             switch (_type)
             {
@@ -96,11 +95,11 @@ namespace Atlas2D
             _shader.SetColor("ambientColor", AmbientColor);
             for (int i = 0; i < PointLightsInScene.Count; i++)
             {
-                Light l = PointLightsInScene[i];
+                LightNode l = PointLightsInScene[i];
                 if (i < MAX_POINT_LIGHTS)
                 {
                     _shader.SetFloat($"pointLights[{i}].initialized", 1);
-                    _shader.SetVector2($"pointLights[{i}].position", l.Transform.Position);
+                    _shader.SetVector2($"pointLights[{i}].position", l.WorldPosition);
                     _shader.SetFloat($"pointLights[{i}].height", l.Height);
                     _shader.SetFloat($"pointLights[{i}].quadratic", l.QuadraticFalloff);
                     _shader.SetFloat($"pointLights[{i}].constant", l.Constant);
