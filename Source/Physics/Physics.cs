@@ -579,11 +579,11 @@ namespace Atlas2D.PhysicsBox2D
 
                 if (fixtureA.IsSensor())
                 {
-                    RigidbodySensor.InvokeCollision(idA, idB, true);
+                    RigidbodySensorNode.InvokeCollision(idA, idB, true);
                 }
                 else if (fixtureB.IsSensor())
                 {
-                    RigidbodySensor.InvokeCollision(idB, idA, true);
+                    RigidbodySensorNode.InvokeCollision(idB, idA, true);
                 }
                 else
                 {
@@ -617,11 +617,11 @@ namespace Atlas2D.PhysicsBox2D
 
                 if (fixtureA.IsSensor())
                 {
-                    RigidbodySensor.InvokeCollision(idA, idB, false);
+                    RigidbodySensorNode.InvokeCollision(idA, idB, false);
                 }
                 else if (fixtureB.IsSensor())
                 {
-                    RigidbodySensor.InvokeCollision(idB, idA, false);
+                    RigidbodySensorNode.InvokeCollision(idB, idA, false);
                 }
                 else
                 {
@@ -674,7 +674,7 @@ namespace Atlas2D.PhysicsBox2D
                     }
                 }
 
-                foreach (var sensor in RigidbodySensor.Sensors)
+                foreach (var sensor in RigidbodySensorNode.Sensors)
                 {
                     if (sensor.ID == fixture.Body.GetUserData<uint>())
                     {
