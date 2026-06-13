@@ -1,10 +1,10 @@
-﻿using Atlas2D.UI;
+using Atlas2D.UI;
 
 namespace Atlas2D
 {
     /// <summary>
     /// The base class for all scene hierarchy elements.
-    /// Handles grouping, lifecycle management, and parent-child state propagation for 
+    /// Handles grouping, lifecycle management, and parent-child state propagation for
     /// <see cref="IGameClass"/>, <see cref="UIComponent"/>, and nested <see cref="Node"/> instances.
     /// </summary>
     public class Node : IGameClass
@@ -23,7 +23,7 @@ namespace Atlas2D
         private bool _disabledByParent = false;
         private bool _desiredEnableState = true;
         private bool _isLoaded = false;
-        protected bool _enabled = true;
+        protected bool _enabled = false;
 
         public bool Enabled => _enabled && !_disabledByParent;
 
@@ -55,8 +55,8 @@ namespace Atlas2D
         }
 
         /// <summary>
-        /// Should create any objects that should be added to the node. Make sure to call <see cref="AddChild"/>
-        /// on every <see cref="IGameClass"/> or <see cref="UIComponent"/> created.
+        /// Should create any objects that should be added to the node. Root nodes (nodes with no
+        /// parent) should call <see cref="Enable"/> once they're ready to become active.
         /// </summary>
         protected virtual void OnLoad() { }
         protected virtual void OnEnable() { }
@@ -146,15 +146,12 @@ namespace Atlas2D
             if (gameClass is Node sg)
             {
                 sg.SetParent(null);
+                sg._disabledByParent = false;
 
-                // When removed, restore intended state if different from actual
+                // Restore intended state if it was being suppressed by the old parent
                 if (sg._desiredEnableState && !sg._enabled)
                 {
                     sg.EnableInternal(false);
-                }
-                else if (sg._desiredEnableState && sg._enabled)
-                {
-                    sg.DisableInternal(false);
                 }
             }
         }
