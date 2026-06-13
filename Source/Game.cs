@@ -180,7 +180,7 @@ namespace Atlas2D
 
                     currentTime = (float)Glfw.Time - splashscreenStartTime;
                 }
-                splashscreenAudio?.Dispose();
+                splashscreenAudio.Dispose();
                 Splashscreen.Dispose();
                 splashscreenTexture.Release();
                 Debug.Log("Splashscreen ended");
