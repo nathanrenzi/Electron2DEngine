@@ -304,7 +304,7 @@ namespace Atlas2D
 
         private void PrewarmParticles()
         {
-            int spawnCount = (int)(LifetimeRange.Y / EmissionParticlesPerSecond);
+            int spawnCount = (int)(LifetimeRange.Y * EmissionParticlesPerSecond);
             for (int i = 0; i < spawnCount; i++)
             {
                 SpawnParticle();
@@ -338,7 +338,7 @@ namespace Atlas2D
         {
             if (IsWorldSpace)
             {
-                Renderer.Material.Value.Shader.Value.SetMatrix4x4("model", WorldMatrix);
+                Renderer.Material.Value.Shader.Value.SetMatrix4x4("model", Matrix4x4.Identity);
             }
         }
         #endregion
@@ -355,6 +355,7 @@ namespace Atlas2D
             IsPlaying = true;
             _currentBurstAmount = 0;
             LoopTime = 0;
+            _spawnTime = _spawnInterval;
         }
 
         public void SetPaused(bool _pause)
@@ -379,7 +380,7 @@ namespace Atlas2D
 
         protected override void OnUpdate()
         {
-            if (!IsPlaying) return;
+            if (!IsPlaying || !Enabled) return;
 
             if (EmissionMode == ParticleEmissionMode.Constant)
             {
@@ -591,8 +592,8 @@ namespace Atlas2D
             Vector2 br = MathEx.RotateVector2(new Vector2(hs, -hs), _particle.Rotation);
             Vector2 bl = MathEx.RotateVector2(new Vector2(-hs, -hs), _particle.Rotation);
 
-            float xpos = _particle.Position.X + (IsWorldSpace ? _particle.Origin.X - WorldPosition.X : _particle.Origin.X) * 2;
-            float ypos = _particle.Position.Y + (IsWorldSpace ? _particle.Origin.Y - WorldPosition.Y : _particle.Origin.Y) * 2;
+            float xpos = _particle.Position.X + _particle.Origin.X;
+            float ypos = _particle.Position.Y + _particle.Origin.Y;
 
             Vector4 color = _colorOverLifetimeEnabled
                 ? _particle.Color * ColorOverLifetime.Evaluate(t)
@@ -642,6 +643,7 @@ namespace Atlas2D
 
         public void Render()
         {
+            if (!Enabled) return;
             Engine.Game.SetBlendingMode(BlendMode);
             Renderer.Render();
             Engine.Game.SetBlendingMode(BlendMode.Interpolative);
