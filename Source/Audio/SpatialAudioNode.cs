@@ -4,7 +4,7 @@ namespace Atlas2D.Audio
 {
     public class SpatialAudioNode : TransformNode
     {
-        public SharedResource<AudioInstance> AudioInstance { get; }
+        public AudioInstance AudioInstance { get; }
         public float MinRange { get; set; } = 100f;
         public float MaxRange { get; set; } = Display.REFERENCE_WINDOW_WIDTH * 0.5f;
         public float PanningSpatializationMultiplier { get; set; } = 1.0f;
@@ -15,13 +15,13 @@ namespace Atlas2D.Audio
             new Curve.Point(1, 0, Curve.Handle.Left, Curve.Handle.Right)
         });
 
-        public SpatialAudioNode(SharedResource<AudioInstance> audioInstance)
+        public SpatialAudioNode(AudioInstance audioInstance)
         {
-            AudioInstance = audioInstance.AddRef();
+            AudioInstance = audioInstance;
         }
 
-        protected override void OnEnable() => AudioInstance.Value.Unpause();
-        protected override void OnDisable() => AudioInstance.Value.Pause();
+        protected override void OnEnable() => AudioInstance.Unpause();
+        protected override void OnDisable() => AudioInstance.Pause();
 
         protected override void OnUpdate()
         { 
@@ -31,12 +31,13 @@ namespace Atlas2D.Audio
             float volumeMultiplier = FalloffCurve.Evaluate(normalizedDistance * MathEx.Clamp(VolumeSpatializationMultiplier, 0, 1));
             float visibleHalfWidth = (Display.REFERENCE_WINDOW_WIDTH * 0.5f) / CameraNode.Main.Zoom;
             float panning = ((WorldPosition.X - listenerPos.X) / visibleHalfWidth) * MathEx.Clamp(PanningSpatializationMultiplier, 0, 10);
-            AudioInstance.Value.Stream?.SetSpatializationValues(volumeMultiplier, panning);
+            AudioInstance.Stream?.SetSpatializationValues(volumeMultiplier, panning);
         }
 
         protected override void OnDispose()
         {
-            AudioInstance.Release();
+            AudioInstance.Stop();
+            AudioInstance.Dispose();
         }
     }
 }
