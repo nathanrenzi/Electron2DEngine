@@ -2,7 +2,7 @@
 
 namespace Atlas2D.Networking
 {
-    internal struct NetworkGameClassData
+    internal struct NetworkNodeData
     {
         public uint Version;
         public int RegisterID;
@@ -10,7 +10,7 @@ namespace Atlas2D.Networking
         public ushort OwnerID;
         public string Json;
     }
-    internal struct NetworkGameClassUpdatedData
+    internal struct NetworkNodeUpdatedData
     {
         public MessageSendMode MessageSendMode;
         public string NetworkID;
@@ -19,7 +19,7 @@ namespace Atlas2D.Networking
         public string Json;
     }
 
-    internal struct NetworkGameClassSyncSpawnData
+    internal struct NetworkNodeSyncSpawnData
     {
         public uint Version;
         public int RegisterID;
@@ -31,6 +31,6 @@ namespace Atlas2D.Networking
     internal struct NetworkGameClassRequestSyncData
     {
         public ushort ToClient;
-        public NetworkGameClassData[] GameClasses;
+        public NetworkNodeData[] GameClasses;
     }
 }

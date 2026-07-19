@@ -2,6 +2,6 @@
 {
     public interface INetworkFactory
     {
-        public static abstract NetworkGameClass FactoryMethod(string json);
+        public static abstract NetworkNode FactoryMethod(string json);
     }
 }

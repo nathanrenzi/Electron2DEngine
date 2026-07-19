@@ -1,4 +1,4 @@
-﻿using Riptide;
+using Riptide;
 using Riptide.Transports.Steam;
 
 namespace Atlas2D.Networking.Core
@@ -11,31 +11,31 @@ namespace Atlas2D.Networking.Core
         public Riptide.Client RiptideClient { get; private set; }
         public SteamClient SteamClient { get; private set; }
         public NetworkServiceManager Services { get; private set; } = new(false);
-        public Dictionary<string, NetworkGameClass> NetworkGameClasses { get; private set; } = new();
+        public Dictionary<string, NetworkNode> NetworkNodes { get; private set; } = new();
         public ushort ID => RiptideClient.Id;
         public bool IsConnected => RiptideClient.IsConnected;
         public bool IsConnecting => RiptideClient.IsConnecting;
 
-        public event Action NetworkGameClassesLoaded;
+        public event Action NetworkNodesLoaded;
         public event Action<RejectReason, string?> ConnectionFailed;
         public event Action ConnectionSuccessful;
         public event Action<DisconnectReason> Disconnected;
         public event Action<ushort> ClientConnected;
         public event Action<ushort> ClientDisconnected;
-        public event Action<string> NetworkGameClassSpawned;
+        public event Action<string> NetworkNodeSpawned;
 
-        private Queue<(NetworkGameClass, string, ushort)> _syncingNetworkGameClasses = new();
+        private Queue<(NetworkNode, string, ushort)> _syncingNetworkNodes = new();
         private Server _server;
         private Queue<(BuiltInMessageType, object)> _messageQueue = new();
         private bool _isSyncing = false;
         private bool _isPaused = false;
         private int _syncCount = 0;
-        private NetworkMode _networkMode;
+        private TransportMode _networkMode;
 
-        public Client(NetworkMode networkMode)
+        public Client(TransportMode networkMode)
         {
             _networkMode = networkMode;
-            if (networkMode == NetworkMode.SteamP2P)
+            if (networkMode == TransportMode.SteamP2P)
             {
                 SteamClient = new SteamClient();
                 RiptideClient = new Riptide.Client(SteamClient);
@@ -57,10 +57,6 @@ namespace Atlas2D.Networking.Core
             Dispose();
         }
 
-        /// <summary>
-        /// Sets the server reference.
-        /// </summary>
-        /// <param name="server"></param>
         public void SetServer(Server server)
         {
             if (_server != null) return;
@@ -68,9 +64,6 @@ namespace Atlas2D.Networking.Core
             SteamClient?.ChangeLocalServer(server.SteamServer);
         }
 
-        /// <summary>
-        /// Should be called as often as possible.
-        /// </summary>
         public void ClientUpdate()
         {
             RiptideClient?.Update();
@@ -80,7 +73,7 @@ namespace Atlas2D.Networking.Core
                 {
                     (BuiltInMessageType, object) data;
                     if (!_messageQueue.TryDequeue(out data)) break;
-                    if(_isSyncing && data.Item1 != BuiltInMessageType.NetworkClassSync)
+                    if(_isSyncing && data.Item1 != BuiltInMessageType.NetworkNodeSync)
                     {
                         _messageQueue.Enqueue(data);
                         break;
@@ -88,52 +81,34 @@ namespace Atlas2D.Networking.Core
 
                     switch (data.Item1)
                     {
-                        case BuiltInMessageType.NetworkClassSpawned:
-                            HandleNetworkClassSpawned((NetworkGameClassData)data.Item2);
+                        case BuiltInMessageType.NetworkNodeSpawned:
+                            HandleNetworkNodeSpawned((NetworkNodeData)data.Item2);
                             break;
-                        case BuiltInMessageType.NetworkClassUpdated:
-                            HandleNetworkClassUpdated((NetworkGameClassUpdatedData)data.Item2);
+                        case BuiltInMessageType.NetworkNodeUpdated:
+                            HandleNetworkNodeUpdated((NetworkNodeUpdatedData)data.Item2);
                             break;
-                        case BuiltInMessageType.NetworkClassDespawned:
-                            HandleNetworkClassDespawned((string)data.Item2);
+                        case BuiltInMessageType.NetworkNodeDespawned:
+                            HandleNetworkNodeDespawned((string)data.Item2);
                             break;
-                        case BuiltInMessageType.NetworkClassSync:
+                        case BuiltInMessageType.NetworkNodeSync:
                             if(_isSyncing)
-                            {
-                                HandleNetworkClassSyncSpawn((NetworkGameClassSyncSpawnData)data.Item2);
-                            }
+                                HandleNetworkNodeSyncSpawn((NetworkNodeSyncSpawnData)data.Item2);
                             else
-                            {
-                                HandleNetworkClassSyncStart((int)data.Item2);
-                            }
+                                HandleNetworkNodeSyncStart((int)data.Item2);
                             break;
-                        case BuiltInMessageType.NetworkClassRequestSyncData:
-                            HandleNetworkClassRequestSyncData((ushort)data.Item2);
+                        case BuiltInMessageType.NetworkNodeRequestSyncData:
+                            HandleNetworkNodeRequestSyncData((ushort)data.Item2);
                             break;
                     }
                 }
             }
         }
 
-        /// <summary>
-        /// Sends a message to the host server.
-        /// </summary>
-        /// <param name="message">The message to send.</param>
-        /// <param name="shouldRelease">Should the message be automatically released to the message pool after being sent?
-        /// If you intend to use the message after it is sent, set this to false and use <see cref="Message.Release()"/> when done.</param>
         public void Send(Message message, bool shouldRelease = true)
         {
             RiptideClient.Send(message, shouldRelease);
         }
 
-        /// <summary>
-        /// Connects to a host using the given address and port. Note: Port is only used when the client is set to <see cref="NetworkMode.NetworkP2P"/>
-        /// when created, <see cref="ProjectSettings.SteamPort"/> is used for <see cref="NetworkMode.SteamP2P"/>.
-        /// </summary>
-        /// <param name="address">The IP/SteamID of the host (depending on which NetworkMode is used).</param>
-        /// <param name="port">The port to be used. Note: Only used for <see cref="NetworkMode.NetworkP2P"/>.</param>
-        /// <param name="password">The password to be given to the host for validation.</param>
-        /// <returns></returns>
         public bool Connect(string address, ushort port = 25565, string password = "")
         {
             if (IsConnected || IsConnecting)
@@ -144,7 +119,7 @@ namespace Atlas2D.Networking.Core
 
             Message message = Message.Create();
             message.AddString(password);
-            if(_networkMode == NetworkMode.NetworkP2P)
+            if(_networkMode == TransportMode.NetworkP2P)
             {
                 return RiptideClient.Connect($"{(address == "localhost" ? "127.0.0.1" : address)}:{port}", message: message, useMessageHandlers: false);
             }
@@ -152,64 +127,40 @@ namespace Atlas2D.Networking.Core
             {
                 SteamClient.SetLastUsedPassword(password);
                 if(address == "localhost" || address == "127.0.0.1")
-                {
                     return RiptideClient.Connect($"{address}", message: message, useMessageHandlers: false);
-                }
                 else
-                {
                     return RiptideClient.Connect($"{address}:{ProjectSettings.SteamPort}", message: message, useMessageHandlers: false);
-                }
             }
         }
 
-        /// <summary>
-        /// Disconnects from the server that the client is currently connected to.
-        /// </summary>
         public void Disconnect()
         {
             RiptideClient.Disconnect();
             _messageQueue.Clear();
-            if(_networkMode == NetworkMode.SteamP2P)
-            {
+            if(_networkMode == TransportMode.SteamP2P)
                 SteamClient.SetLastUsedPassword("");
-            }
         }
 
         /// <summary>
-        /// Retrieves the <see cref="NetworkGameClass"> with the given NetworkID.
+        /// Retrieves the <see cref="NetworkNode"/> with the given NetworkID.
         /// </summary>
-        /// <param name="networkID"></param>
-        /// <returns></returns>
-        public NetworkGameClass GetNetworkGameClass(string networkID)
+        public NetworkNode GetNetworkNode(string networkID)
         {
-            if(NetworkGameClasses.ContainsKey(networkID))
-            {
-                return NetworkGameClasses[networkID];
-            }
-            else
-            {
-                return null;
-            }
+            return NetworkNodes.TryGetValue(networkID, out NetworkNode node) ? node : null;
         }
 
         /// <summary>
-        /// Attempts to retrieve the <see cref="NetworkGameClass"> with the given NetworkID.
+        /// Attempts to retrieve the <see cref="NetworkNode"/> with the given NetworkID.
         /// </summary>
-        /// <param name="networkID"></param>
-        /// <param name="networkGameClass"></param>
-        /// <returns></returns>
-        public bool TryGetNetworkGameClass(string networkID, out NetworkGameClass networkGameClass)
+        public bool TryGetNetworkNode(string networkID, out NetworkNode networkNode)
         {
-            return NetworkGameClasses.TryGetValue(networkID, out networkGameClass);
+            return NetworkNodes.TryGetValue(networkID, out networkNode);
         }
 
         #region Steam Methods
-        /// <summary>
-        /// If steam networking is being used, opens the steam invite menu.
-        /// </summary>
         public void SteamOpenInviteMenu()
         {
-            if(_networkMode != NetworkMode.SteamP2P)
+            if(_networkMode != TransportMode.SteamP2P)
             {
                 Debug.LogError("Cannot open steam invite menu when steam networking is not currently being used!");
                 return;
@@ -217,13 +168,9 @@ namespace Atlas2D.Networking.Core
             SteamClient.OpenInviteMenu();
         }
 
-        /// <summary>
-        /// If steam networking is being used, invites a friend.
-        /// </summary>
-        /// <param name="steamIDFriend">The steam ID of the friend to invite.</param>
         public void SteamInviteFriend(Steamworks.CSteamID steamIDFriend)
         {
-            if (_networkMode != NetworkMode.SteamP2P)
+            if (_networkMode != TransportMode.SteamP2P)
             {
                 Debug.LogError("Cannot invite steam friend when steam networking is not currently being used!");
                 return;
@@ -246,8 +193,8 @@ namespace Atlas2D.Networking.Core
             object data = null;
             switch (messageType)
             {
-                case BuiltInMessageType.NetworkClassSpawned:
-                    data = new NetworkGameClassData()
+                case BuiltInMessageType.NetworkNodeSpawned:
+                    data = new NetworkNodeData()
                     {
                         Version = message.GetUInt(),
                         RegisterID = message.GetInt(),
@@ -256,8 +203,8 @@ namespace Atlas2D.Networking.Core
                         Json = message.GetString()
                     };
                     break;
-                case BuiltInMessageType.NetworkClassUpdated:
-                    data = new NetworkGameClassUpdatedData()
+                case BuiltInMessageType.NetworkNodeUpdated:
+                    data = new NetworkNodeUpdatedData()
                     {
                         NetworkID = message.GetString(),
                         Version = message.GetUInt(),
@@ -265,13 +212,13 @@ namespace Atlas2D.Networking.Core
                         Json = message.GetString()
                     };
                     break;
-                case BuiltInMessageType.NetworkClassDespawned:
+                case BuiltInMessageType.NetworkNodeDespawned:
                     data = message.GetString();
                     break;
-                case BuiltInMessageType.NetworkClassSync:
+                case BuiltInMessageType.NetworkNodeSync:
                     if (_isSyncing)
                     {
-                        data = new NetworkGameClassSyncSpawnData()
+                        data = new NetworkNodeSyncSpawnData()
                         {
                             Version = message.GetUInt(),
                             RegisterID = message.GetInt(),
@@ -285,135 +232,131 @@ namespace Atlas2D.Networking.Core
                         data = message.GetInt();
                     }
                     break;
-                case BuiltInMessageType.NetworkClassRequestSyncData:
+                case BuiltInMessageType.NetworkNodeRequestSyncData:
                     data = message.GetUShort();
                     break;
             }
             _messageQueue.Enqueue((messageType, data));
         }
-        private void HandleNetworkClassRequestSyncData(ushort client)
+
+        private void HandleNetworkNodeRequestSyncData(ushort client)
         {
-            // Server calls this on host client only
             _isPaused = true;
             if (client == ID) return;
             Message returnMessage = Message.Create(MessageSendMode.Reliable,
-                (ushort)BuiltInMessageType.NetworkClassRequestSyncData);
+                (ushort)BuiltInMessageType.NetworkNodeRequestSyncData);
             returnMessage.AddUShort(client);
-            int initializedClasses = 0;
-            foreach (var gameClass in NetworkGameClasses.Values)
+            int initializedCount = 0;
+            foreach (var node in NetworkNodes.Values)
             {
-                if(gameClass.IsNetworkInitialized)
-                {
-                    initializedClasses++;
-                }
+                if (node.IsNetworkInitialized) initializedCount++;
             }
-            returnMessage.AddInt(initializedClasses);
-            foreach (var gameClass in NetworkGameClasses.Values)
+            returnMessage.AddInt(initializedCount);
+            foreach (var node in NetworkNodes.Values)
             {
-                if (!gameClass.IsNetworkInitialized) continue;
-
-                returnMessage.AddUInt(gameClass.UpdateVersion);
-                returnMessage.AddInt(gameClass.GetRegisterID());
-                returnMessage.AddString(gameClass.NetworkID);
-                returnMessage.AddUShort(gameClass.OwnerID);
-                returnMessage.AddString(gameClass.ToJson());
+                if (!node.IsNetworkInitialized) continue;
+                returnMessage.AddUInt(node.UpdateVersion);
+                returnMessage.AddInt(node.GetRegisterID());
+                returnMessage.AddString(node.NetworkID);
+                returnMessage.AddUShort(node.OwnerID);
+                returnMessage.AddString(node.ToJson());
             }
-            Debug.Log($"(CLIENT): Sending requested sync data to server, total count {initializedClasses}.");
+            Debug.Log($"(CLIENT): Sending requested sync data to server, total count {initializedCount}.");
             Send(returnMessage);
             _isPaused = false;
         }
-        private void HandleNetworkClassSpawned(NetworkGameClassData data)
+
+        private void HandleNetworkNodeSpawned(NetworkNodeData data)
         {
             if (data.OwnerID == ID)
             {
-                // Network game class was spawned by local player
-                if (!NetworkGameClasses.ContainsKey(data.NetworkID))
+                if (!NetworkNodes.ContainsKey(data.NetworkID))
                 {
-                    Debug.LogError($"(CLIENT): Could not initialize locally spawned NetworkGameClass with id [{data.NetworkID}]. This should not happen.");
+                    Debug.LogError($"(CLIENT): Could not initialize locally spawned NetworkNode with id [{data.NetworkID}].");
                     return;
                 }
-                NetworkGameClasses[data.NetworkID].SetUpdateVersion(data.Version);
-                NetworkGameClasses[data.NetworkID].NetworkInitialize(data.NetworkID, data.OwnerID, this, _server);
+                NetworkNodes[data.NetworkID].SetUpdateVersion(data.Version);
+                NetworkNodes[data.NetworkID].NetworkInitialize(data.NetworkID, data.OwnerID, this, _server);
             }
             else
             {
-                NetworkGameClass networkGameClass = Network.NetworkGameClassRegister[data.RegisterID](data.Json);
-                networkGameClass.SetUpdateVersion(data.Version);
-                NetworkGameClasses.Add(data.NetworkID, networkGameClass);
-                networkGameClass.NetworkInitialize(data.NetworkID, data.OwnerID, this, _server);
+                NetworkNode node = Network.NetworkNodeRegister[data.RegisterID](data.Json);
+                node.SetUpdateVersion(data.Version);
+                NetworkNodes.Add(data.NetworkID, node);
+                node.NetworkInitialize(data.NetworkID, data.OwnerID, this, _server);
+                node.Enable();
             }
+            NetworkNodeSpawned?.Invoke(data.NetworkID);
+        }
 
-            NetworkGameClassSpawned?.Invoke(data.NetworkID);
-        }
-        private void HandleNetworkClassUpdated(NetworkGameClassUpdatedData data)
+        private void HandleNetworkNodeUpdated(NetworkNodeUpdatedData data)
         {
-            NetworkGameClass networkGameClass = GetNetworkGameClass(data.NetworkID);
-            if (networkGameClass != null)
+            NetworkNode node = GetNetworkNode(data.NetworkID);
+            if (node != null && node.CheckAndHandleUpdateVersion(data.Type, data.Version))
             {
-                if (networkGameClass.CheckAndHandleUpdateVersion(data.Type, data.Version))
-                {
-                    networkGameClass.ReceiveData(data.Type, data.Json);
-                }
+                node.ReceiveData(data.Type, data.Json);
             }
         }
-        private void HandleNetworkClassDespawned(string networkID)
+
+        private void HandleNetworkNodeDespawned(string networkID)
         {
-            NetworkGameClass networkGameClass = GetNetworkGameClass(networkID);
-            if (networkGameClass != null)
+            NetworkNode node = GetNetworkNode(networkID);
+            if (node != null)
             {
-                NetworkGameClasses.Remove(networkID);
-                networkGameClass.Despawn(false);
+                NetworkNodes.Remove(networkID);
+                node.Despawn(false);
             }
         }
-        private void HandleNetworkClassSyncSpawn(NetworkGameClassSyncSpawnData data)
+
+        private void HandleNetworkNodeSyncSpawn(NetworkNodeSyncSpawnData data)
         {
             if (data.ClientID == ID)
             {
-                // Network game class was spawned by local player
-                if (!NetworkGameClasses.ContainsKey(data.NetworkID))
+                if (!NetworkNodes.ContainsKey(data.NetworkID))
                 {
-                    Debug.LogError($"(CLIENT): Could not initialize locally spawned NetworkGameClass with id [{data.NetworkID}]. This should not happen.");
+                    Debug.LogError($"(CLIENT): Could not initialize locally spawned NetworkNode with id [{data.NetworkID}].");
                     return;
                 }
-                NetworkGameClasses[data.NetworkID].SetUpdateVersion(data.Version);
-                _syncingNetworkGameClasses.Enqueue((NetworkGameClasses[data.NetworkID], data.NetworkID, data.ClientID));
+                NetworkNodes[data.NetworkID].SetUpdateVersion(data.Version);
+                _syncingNetworkNodes.Enqueue((NetworkNodes[data.NetworkID], data.NetworkID, data.ClientID));
             }
             else
             {
-                NetworkGameClass networkGameClass = Network.NetworkGameClassRegister[data.RegisterID](data.Json);
-                networkGameClass.SetUpdateVersion(data.Version);
-                NetworkGameClasses.Add(data.NetworkID, networkGameClass);
-                _syncingNetworkGameClasses.Enqueue((networkGameClass, data.NetworkID, data.ClientID));
+                NetworkNode node = Network.NetworkNodeRegister[data.RegisterID](data.Json);
+                node.SetUpdateVersion(data.Version);
+                NetworkNodes.Add(data.NetworkID, node);
+                _syncingNetworkNodes.Enqueue((node, data.NetworkID, data.ClientID));
             }
             _syncCount--;
             Debug.Log($"(CLIENT): Received sync data from server, {_syncCount} left.");
             if (_syncCount == 0)
             {
                 _isSyncing = false;
-                while (_syncingNetworkGameClasses.Count != 0)
+                while (_syncingNetworkNodes.Count != 0)
                 {
-                    (NetworkGameClass, string, ushort) gameClassData = _syncingNetworkGameClasses.Dequeue();
-                    gameClassData.Item1.NetworkInitialize(gameClassData.Item2, gameClassData.Item3, this, _server);
-                    NetworkGameClassSpawned?.Invoke(gameClassData.Item2);
+                    (NetworkNode, string, ushort) nodeData = _syncingNetworkNodes.Dequeue();
+                    nodeData.Item1.NetworkInitialize(nodeData.Item2, nodeData.Item3, this, _server);
+                    NetworkNodeSpawned?.Invoke(nodeData.Item2);
                 }
-                NetworkGameClassesLoaded?.Invoke();
+                NetworkNodesLoaded?.Invoke();
                 Debug.Log("(CLIENT): Done syncing!");
             }
         }
-        private void HandleNetworkClassSyncStart(int syncCount)
+
+        private void HandleNetworkNodeSyncStart(int syncCount)
         {
             _syncCount = syncCount;
             if (syncCount == 0)
             {
-                NetworkGameClassesLoaded?.Invoke();
+                NetworkNodesLoaded?.Invoke();
                 Debug.Log("(CLIENT): Received sync signal from server with no data to sync, done syncing!");
                 return;
             }
-            // Telling the server to start the sync
             _isSyncing = true;
             Debug.Log($"(CLIENT): Received sync signal from server, total count: {syncCount}. Asking server for data...");
-            Send(Message.Create(MessageSendMode.Reliable, (ushort)BuiltInMessageType.NetworkClassSync));
+            Send(Message.Create(MessageSendMode.Reliable, (ushort)BuiltInMessageType.NetworkNodeSync));
         }
+
         private void HandleConnectionFailed(object? sender, ConnectionFailedEventArgs e)
         {
             string? message = null;
@@ -425,22 +368,24 @@ namespace Atlas2D.Networking.Core
             Debug.Log($"(CLIENT): Connection failed. Reason: {(e.Reason == RejectReason.Custom ? message : e.Reason)}");
             ConnectionFailed?.Invoke(e.Reason, message);
         }
+
         private void HandleConnected(object? sender, EventArgs e)
         {
             ConnectionSuccessful?.Invoke();
         }
+
         private void HandleDisconnected(object? sender, DisconnectedEventArgs e)
         {
             bool notifyServer = e.Reason != DisconnectReason.ServerStopped
                              && e.Reason != DisconnectReason.Kicked
                              && e.Reason != DisconnectReason.TimedOut;
 
-            foreach (var pair in NetworkGameClasses)
+            foreach (var pair in NetworkNodes)
             {
                 pair.Value.Despawn(!notifyServer ? false : !pair.Value.IsOwner ? false : true);
             }
-            NetworkGameClasses.Clear();
-            _syncingNetworkGameClasses.Clear();
+            NetworkNodes.Clear();
+            _syncingNetworkNodes.Clear();
             _messageQueue.Clear();
             _isPaused = false;
             _isSyncing = false;

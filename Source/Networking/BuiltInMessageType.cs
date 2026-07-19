@@ -2,10 +2,10 @@
 {
     internal enum BuiltInMessageType
     {
-        NetworkClassSpawned = 60000,
-        NetworkClassUpdated = 60001,
-        NetworkClassDespawned = 60002,
-        NetworkClassSync = 60003,
-        NetworkClassRequestSyncData = 60004,
+        NetworkNodeSpawned = 60000,
+        NetworkNodeUpdated = 60001,
+        NetworkNodeDespawned = 60002,
+        NetworkNodeSync = 60003,
+        NetworkNodeRequestSyncData = 60004,
     }
 }

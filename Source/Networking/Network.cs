@@ -1,4 +1,4 @@
-﻿using Riptide;
+using Riptide;
 using Riptide.Utils;
 using Atlas2D.Networking.Core;
 using Steamworks;
@@ -11,16 +11,21 @@ namespace Atlas2D.Networking
     /// </summary>
     public sealed class Network : IGameClass
     {
-        public delegate NetworkGameClass CreateNetworkGameClass(string json);
-        public delegate void SetNetworkGameClassRegisterID(int registerID);
-        public static List<CreateNetworkGameClass> NetworkGameClassRegister { get; private set; } = new();
+        public delegate NetworkNode CreateNetworkNode(string json);
+        public delegate void SetNetworkNodeRegisterID(int registerID);
+        public static List<CreateNetworkNode> NetworkNodeRegister { get; private set; } = new();
+        /// <summary>
+        /// Register IDs of all <see cref="NetworkNode"/> types marked with <see cref="HostOnlyAttribute"/>.
+        /// Populated by <see cref="RegisterAll"/>. The server uses this to reject spawns from non-host clients.
+        /// </summary>
+        public static HashSet<int> HostOnlyRegisterIDs { get; private set; } = new();
 
         public static Network Instance { get; } = new();
 
         public Core.Server Server { get; private set; }
         public Core.Client Client { get; private set; }
 
-        public NetworkMode NetworkMode { get; private set; }
+        public TransportMode TransportMode { get; private set; }
 
         public const ushort MIN_MESSAGE_TYPE_INTERCEPT = 60000;
         public const ushort MAX_MESSAGE_TYPE_INTERCEPT = 60004;
@@ -28,39 +33,44 @@ namespace Atlas2D.Networking
         private bool _initialized = false;
 
         /// <summary>
-        /// The NetworkManager must be initialized before it can be used. See <see cref="InitializeForSteam"/> also.
-        /// Network mode uses IP addresses and can use any user-specified port. Much less secure, as Steam Datagram Relay is not
-        /// used to pass messages, so IP addresses are visible.
+        /// Initializes network functionality. Networking must be initialized before it can be used.
         /// </summary>
-        public void InitializeForNetwork()
+        public void Initialize(TransportMode transportMode)
         {
             if (_initialized)
             {
-                Debug.LogError("NetworkManager is already initialized, cannot initialize again without resetting!");
+                Debug.LogError("Networking is already initialized, cannot initialize again without resetting!");
+                return;
             }
 
-            NetworkMode = NetworkMode.NetworkP2P;
+            switch (transportMode)
+            {
+                case TransportMode.NetworkP2P:
+                    InitializeForNetwork();
+                    break;
+                case TransportMode.SteamP2P:
+                    InitializeForSteam();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void InitializeForNetwork()
+        {
+            _initialized = true;
+            TransportMode = TransportMode.NetworkP2P;
             RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.Log, Debug.LogError, false);
-            Client = new Core.Client(NetworkMode);
-            Server = new Core.Server(NetworkMode);
+            Client = new Core.Client(TransportMode);
+            Server = new Core.Server(TransportMode);
             Client.SetServer(Server);
             Engine.Game.RegisterGameClass(this);
         }
 
-        /// <summary>
-        /// The NetworkManager must be initialized before it can be used. See <see cref="InitializeForNetwork"/> also.
-        /// Steam mode uses Steam Datagram Relay to send messages to the server and client, and can be faster than normal
-        /// P2P in some cases. Much more secure than P2P mode as IP addresses are hidden and users must be authenticated
-        /// through steam before connecting.
-        /// </summary>
-        public void InitializeForSteam()
+        private void InitializeForSteam()
         {
-            if (_initialized)
-            {
-                Debug.LogError("NetworkManager is already initialized, cannot initialize again without resetting!");
-            }
-
-            NetworkMode = NetworkMode.SteamP2P;
+            _initialized = true;
+            TransportMode = TransportMode.SteamP2P;
             uint steamAppID;
             if(File.Exists("steam_appid.txt"))
             {
@@ -68,21 +78,15 @@ namespace Atlas2D.Networking
             }
             else
             {
-                Debug.LogError("[Steamworks.NET] steam_appid.txt cannot be found. This is required to open the game through steam. " +
-                    "If you are a developer, create a text file in the build directory and have it contain the number 480, and " +
-                    "make sure this file does not get included in the release, steam auto-generates this file.");
+                Debug.LogError("[Steamworks.NET] steam_appid.txt cannot be found.");
                 return;
             }
 
             Debug.Log("\n");
             if (!Packsize.Test())
-            {
                 Debug.LogError("[Steamworks.NET] Packsize Test returned false, the wrong version of Steamworks.NET is being run in this platform.");
-            }
             if (!DllCheck.Test())
-            {
                 Debug.LogError("[Steamworks.NET] DllCheck Test returned false, One or more of the Steamworks binaries seems to be the wrong version.");
-            }
             try
             {
                 if (SteamAPI.RestartAppIfNecessary((AppId_t)steamAppID))
@@ -93,32 +97,29 @@ namespace Atlas2D.Networking
             }
             catch (DllNotFoundException e)
             {
-                Debug.LogError("[Steamworks.NET] Could not load steam_api.dll. It is likely missing or not in the correct location. " +
-                    "Refer to README for more details.\n" + e.Message);
+                Debug.LogError("[Steamworks.NET] Could not load steam_api.dll.\n" + e.Message);
                 Engine.Game.Exit();
             }
             if (!SteamAPI.Init())
             {
-                Debug.LogError("[Steamworks.NET] Steam API could not be initialized. Please make sure steam is running. If you are receiving this error while developing, please " +
-                    "make sure that steam_appid.txt is in the output directory. DO NOT ship that file with the final game build, it should only be for testing purposes.");
+                Debug.LogError("[Steamworks.NET] Steam API could not be initialized.");
                 Engine.Game.Exit();
             }
             RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.Log, Debug.LogError, false);
 
-            Client = new Core.Client(NetworkMode);
-            Server = new Core.Server(NetworkMode);
+            Client = new Core.Client(TransportMode);
+            Server = new Core.Server(TransportMode);
             Client.SetServer(Server);
             Engine.Game.RegisterGameClass(this);
         }
 
-        private static int RegisterNetworkGameClass(CreateNetworkGameClass factoryMethod)
+        private static int RegisterNetworkNode(CreateNetworkNode factoryMethod)
         {
-            if (!NetworkGameClassRegister.Contains(factoryMethod))
+            if (!NetworkNodeRegister.Contains(factoryMethod))
             {
-                NetworkGameClassRegister.Add(factoryMethod);
-                return NetworkGameClassRegister.Count - 1;
+                NetworkNodeRegister.Add(factoryMethod);
+                return NetworkNodeRegister.Count - 1;
             }
-
             return -1;
         }
 
@@ -138,8 +139,8 @@ namespace Atlas2D.Networking
                 .ToList();
 
             // Sorted by FullName to ensure deterministic ID assignment across runs
-            var networkGameClasses = allTypes
-                .Where(t => typeof(NetworkGameClass).IsAssignableFrom(t))
+            var networkNodes = allTypes
+                .Where(t => typeof(NetworkNode).IsAssignableFrom(t))
                 .OrderBy(t => t.FullName)
                 .ToList();
 
@@ -147,21 +148,28 @@ namespace Atlas2D.Networking
                 .Where(t => typeof(NetworkService).IsAssignableFrom(t))
                 .ToList();
 
-            foreach (var type in networkGameClasses)
+            foreach (var type in networkNodes)
             {
                 if (!typeof(INetworkFactory).IsAssignableFrom(type))
                 {
-                    Debug.LogWarning($"[Network] {type.FullName} is a NetworkGameClass but does not implement INetworkFactory");
+                    Debug.LogWarning($"[Network] {type.FullName} is a NetworkNode but does not implement INetworkFactory");
                     continue;
                 }
 
                 var method = type.GetMethod("FactoryMethod", BindingFlags.Static | BindingFlags.Public)
-                    ?? throw new InvalidOperationException(
-                        $"{type.FullName} must implement INetworkFactory to be registered.");
-                var del = (CreateNetworkGameClass)Delegate.CreateDelegate(typeof(CreateNetworkGameClass), method);
-                int id = RegisterNetworkGameClass(del);
-                NetworkGameClass.AssignRegisterID(type, id);
-                Debug.Log($"[Network] NetworkGameClass registered: {type.FullName} => ID {id}");
+                    ?? throw new InvalidOperationException($"{type.FullName} must implement INetworkFactory to be registered.");
+                var del = (CreateNetworkNode)Delegate.CreateDelegate(typeof(CreateNetworkNode), method);
+                int id = RegisterNetworkNode(del);
+                NetworkNode.AssignRegisterID(type, id);
+                if (type.IsDefined(typeof(HostOnlyAttribute), inherit: true))
+                {
+                    HostOnlyRegisterIDs.Add(id);
+                    Debug.Log($"[Network] NetworkNode registered (host-only): {type.FullName} => ID {id}");
+                }
+                else
+                {
+                    Debug.Log($"[Network] NetworkNode registered: {type.FullName} => ID {id}");
+                }
             }
 
             foreach (var type in networkServices)
@@ -174,11 +182,8 @@ namespace Atlas2D.Networking
 
         public void Update()
         {
-            if(NetworkMode == NetworkMode.SteamP2P) SteamAPI.RunCallbacks();
-            if (Server != null)
-            {
-                Server.ServerUpdate();
-            }
+            if(TransportMode == TransportMode.SteamP2P) SteamAPI.RunCallbacks();
+            if (Server != null) Server.ServerUpdate();
             Client.ClientUpdate();
         }
 
@@ -187,24 +192,22 @@ namespace Atlas2D.Networking
         public void Dispose()
         {
             Client.Dispose();
-            NetworkGameClassRegister.Clear();
-            NetworkGameClassRegister = null;
-            if(NetworkMode == NetworkMode.SteamP2P) SteamAPI.Shutdown();
+            NetworkNodeRegister.Clear();
+            NetworkNodeRegister = null;
+            if(TransportMode == TransportMode.SteamP2P) SteamAPI.Shutdown();
             Engine.Game.UnregisterGameClass(this);
         }
 
         /// <summary>
-        /// Resets the NetworkManager so that it can be reinitialized;
+        /// Resets the NetworkManager so that it can be reinitialized.
         /// </summary>
         public void Reset()
         {
             Client.Dispose();
             Server.Stop();
-            NetworkGameClassRegister.Clear();
-            if (NetworkMode == NetworkMode.SteamP2P)
-            {
+            NetworkNodeRegister.Clear();
+            if (TransportMode == TransportMode.SteamP2P)
                 Server.SteamServer.Shutdown();
-            }
             Server = null;
             _initialized = false;
         }

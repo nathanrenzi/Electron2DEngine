@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Riptide;
 using System.Numerics;
 
 namespace Atlas2D.Networking
 {
     /// <summary>
-    /// Replicates a Transform object over the network. Uses <see cref="NetworkGameClass"/>.
+    /// Replicates position, rotation, and scale over the network.
     /// </summary>
-    public class NetworkTransform : NetworkGameClass, INetworkFactory
+    public class NetworkTransformNode : NetworkNode, INetworkFactory
     {
         [Serializable]
         private class NetworkTransformInitializationJson
@@ -19,59 +19,34 @@ namespace Atlas2D.Networking
             public NetworkValueSettings RotationNetworkSettings;
             public NetworkValueSettings ScaleNetworkSettings;
         }
-        public static NetworkGameClass FactoryMethod(string json)
+
+        public static NetworkNode FactoryMethod(string json)
         {
-            NetworkTransform networkTransform = new NetworkTransform(new Transform());
-            networkTransform.SetJson(json);
-            return networkTransform;
+            NetworkTransformNode node = new NetworkTransformNode();
+            node.SetJson(json);
+            return node;
         }
 
-        public Transform Transform { get; private set; }
         public Vector2 Scale
-        { 
-            get
-            {
-                return Transform.Scale;
-            }
-            set
-            {
-                if(IsOwner)
-                {
-                    Transform.Scale = value;
-                }
-            }
+        {
+            get => LocalScale;
+            set { if (IsOwner) LocalScale = value; }
         }
         public Vector2 Position
         {
-            get
-            {
-                return Transform.Position;
-            }
-            set
-            {
-                if(IsOwner)
-                {
-                    Transform.Position = value;
-                }
-            }
+            get => LocalPosition;
+            set { if (IsOwner) LocalPosition = value; }
         }
         public float Rotation
         {
-            get
-            {
-                return Transform.Rotation;
-            }
-            set
-            {
-                if(IsOwner)
-                {
-                    Transform.Rotation = value;
-                }
-            }
+            get => LocalRotation;
+            set { if (IsOwner) LocalRotation = value; }
         }
+
         public NetworkValueSettings PositionNetworkSettings { get; set; }
         public NetworkValueSettings RotationNetworkSettings { get; set; }
         public NetworkValueSettings ScaleNetworkSettings { get; set; }
+
         private uint _scaleUpdateVersion = 0;
         private uint _positionUpdateVersion = 0;
         private uint _rotationUpdateVersion = 0;
@@ -92,37 +67,24 @@ namespace Atlas2D.Networking
         private Vector2 _lastSentPosition;
         private float _lastRotation;
 
-        /// <summary>
-        /// Creates a <see cref="NetworkTransform"/> object.
-        /// </summary>
-        /// <param name="transform">The transform to update through the network.</param>
-        /// <param name="positionNetworkSettings">The network settings for position.</param>
-        /// <param name="rotationNetworkSettings">The network settings for rotation.</param>
-        /// <param name="scaleNetworkSettings">The network settings for scale.</param>
-        public NetworkTransform(Transform transform, NetworkValueSettings positionNetworkSettings,
-            NetworkValueSettings rotationNetworkSettings, NetworkValueSettings scaleNetworkSettings)
+        public NetworkTransformNode()
         {
-            Transform = transform;
-            PositionNetworkSettings = positionNetworkSettings;
-            RotationNetworkSettings = rotationNetworkSettings;
-            ScaleNetworkSettings = scaleNetworkSettings;
-        }
-
-        /// <summary>
-        /// Creates a <see cref="NetworkTransform"/> object with automatic position, scale, and rotation sending disabled by default.
-        /// </summary>
-        /// <param name="transform">The transform to update through the network.</param>
-        public NetworkTransform(Transform transform)
-        {
-            Transform = transform;
             PositionNetworkSettings = new NetworkValueSettings() { SendAutomatically = true, MessageSendMode = MessageSendMode.Unreliable };
             RotationNetworkSettings = new NetworkValueSettings() { SendAutomatically = true, MessageSendMode = MessageSendMode.Unreliable };
             ScaleNetworkSettings = new NetworkValueSettings() { SendAutomatically = true, MessageSendMode = MessageSendMode.Unreliable };
         }
 
-        public override void Update()
+        public NetworkTransformNode(NetworkValueSettings positionNetworkSettings,
+            NetworkValueSettings rotationNetworkSettings, NetworkValueSettings scaleNetworkSettings)
         {
-            if(IsOwner && IsNetworkInitialized)
+            PositionNetworkSettings = positionNetworkSettings;
+            RotationNetworkSettings = rotationNetworkSettings;
+            ScaleNetworkSettings = scaleNetworkSettings;
+        }
+
+        protected override void OnUpdate()
+        {
+            if (IsOwner && IsNetworkInitialized)
             {
                 if (_currentPositionSendIntervalTime >= PositionNetworkSettings.SendInterval)
                 {
@@ -147,13 +109,13 @@ namespace Atlas2D.Networking
                 _currentRotationSendIntervalTime += Time.DeltaTime;
                 _currentScaleSendIntervalTime += Time.DeltaTime;
             }
-            else if(!IsOwner && IsNetworkInitialized)
+            else if (!IsOwner && IsNetworkInitialized)
             {
-                if(PositionNetworkSettings.Interpolate)
+                if (PositionNetworkSettings.Interpolate)
                     InterpolatePosition();
-                if(RotationNetworkSettings.Interpolate)
+                if (RotationNetworkSettings.Interpolate)
                     InterpolateRotation();
-                if(ScaleNetworkSettings.Interpolate)
+                if (ScaleNetworkSettings.Interpolate)
                     InterpolateScale();
             }
         }
@@ -168,34 +130,24 @@ namespace Atlas2D.Networking
             }
 
             float pt = _interpolatePositionTime / PositionNetworkSettings.SendInterval;
-            Transform.Position = Vector2.Lerp(_interpolateFromPosition, _interpolateToPosition, MathF.Min(pt, 1));
+            LocalPosition = Vector2.Lerp(_interpolateFromPosition, _interpolateToPosition, MathF.Min(pt, 1));
             _interpolatePositionTime += Time.DeltaTime * (1 + _interpolateToPositionQueue.Count * 0.005f);
         }
 
         private void InterpolateRotation()
         {
             float rt = (Time.GameTime - _rotationTimeReceived) / RotationNetworkSettings.SendInterval;
-            if (rt <= 1)
-            {
-                Transform.Rotation = (_interpolateFromRotation * (1f - rt)) + (_interpolateToRotation * rt);
-            }
-            else
-            {
-                Transform.Rotation = _interpolateToRotation;
-            }
+            LocalRotation = rt <= 1
+                ? (_interpolateFromRotation * (1f - rt)) + (_interpolateToRotation * rt)
+                : _interpolateToRotation;
         }
 
         private void InterpolateScale()
         {
             float st = (Time.GameTime - _scaleTimeReceived) / ScaleNetworkSettings.SendInterval;
-            if (st <= 1)
-            {
-                Transform.Scale = Vector2.Lerp(_interpolateFromScale, _interpolateToScale, st);
-            }
-            else
-            {
-                Transform.Scale = _interpolateToScale;
-            }
+            LocalScale = st <= 1
+                ? Vector2.Lerp(_interpolateFromScale, _interpolateToScale, st)
+                : _interpolateToScale;
         }
 
         /// <summary>
@@ -204,8 +156,7 @@ namespace Atlas2D.Networking
         public void SendPositionUpdate(MessageSendMode messageSendMode)
         {
             _lastSentPosition = Position;
-            string json = JsonConvert.SerializeObject(Position);
-            Send(messageSendMode, json, 1);
+            Send(messageSendMode, JsonConvert.SerializeObject(Position), 1);
         }
 
         /// <summary>
@@ -214,103 +165,86 @@ namespace Atlas2D.Networking
         public void SendRotationUpdate(MessageSendMode messageSendMode)
         {
             _lastRotation = Rotation;
-            string json = JsonConvert.SerializeObject(Rotation);
-            Send(messageSendMode, json, 2);
+            Send(messageSendMode, JsonConvert.SerializeObject(Rotation), 2);
         }
 
         /// <summary>
-        /// Manually sends a scale update;
+        /// Manually sends a scale update.
         /// </summary>
         public void SendScaleUpdate(MessageSendMode messageSendMode)
         {
             _lastSentScale = Scale;
-            string json = JsonConvert.SerializeObject(Scale);
-            Send(messageSendMode, json, 3);
+            Send(messageSendMode, JsonConvert.SerializeObject(Scale), 3);
         }
 
         protected internal override bool CheckAndHandleUpdateVersion(ushort type, uint version)
         {
-            if(type == 1)
+            if (type == 1)
             {
-                if(version > _positionUpdateVersion)
-                {
-                    _positionUpdateVersion = version;
-                    return true;
-                }
+                if (version > _positionUpdateVersion) { _positionUpdateVersion = version; return true; }
             }
-            else if(type == 2)
+            else if (type == 2)
             {
-                if (version > _rotationUpdateVersion)
-                {
-                    _rotationUpdateVersion = version;
-                    return true;
-                }
+                if (version > _rotationUpdateVersion) { _rotationUpdateVersion = version; return true; }
             }
             else if (type == 3)
             {
-                if (version > _scaleUpdateVersion)
-                {
-                    _scaleUpdateVersion = version;
-                    return true;
-                }
+                if (version > _scaleUpdateVersion) { _scaleUpdateVersion = version; return true; }
             }
             return false;
         }
 
-        protected internal override void OnDespawned()
+        protected override void OnDespawned()
         {
             _interpolateToPositionQueue.Clear();
         }
 
-        protected internal override void OnDisposed()
+        protected override void OnDispose()
         {
-            Transform = null;
+            base.OnDispose();
             _interpolateToPositionQueue.Clear();
             _interpolateToPositionQueue = null;
         }
 
-        protected internal override void OnNetworkInitialized() { }
+        protected override void OnNetworkInitialized() { }
 
         protected internal override void ReceiveData(ushort type, string json)
         {
-            if(type == 1)
+            if (type == 1)
             {
                 Vector2 position = JsonConvert.DeserializeObject<Vector2>(json);
                 if (PositionNetworkSettings.Interpolate)
-                {
                     _interpolateToPositionQueue.Enqueue(position);
-                }
-                else 
-                {
-                    Transform.Position = position;
-                }
+                else
+                    LocalPosition = position;
             }
-            else if(type == 2)
+            else if (type == 2)
             {
                 _interpolateToRotation = JsonConvert.DeserializeObject<float>(json);
-                _interpolateFromRotation = Transform.Rotation;
+                _interpolateFromRotation = LocalRotation;
                 _rotationTimeReceived = Time.GameTime;
-                if (!RotationNetworkSettings.Interpolate) Transform.Rotation = _interpolateToRotation;
+                if (!RotationNetworkSettings.Interpolate) LocalRotation = _interpolateToRotation;
             }
-            else if(type == 3)
+            else if (type == 3)
             {
                 _interpolateToScale = JsonConvert.DeserializeObject<Vector2>(json);
-                _interpolateFromScale = Transform.Scale;
+                _interpolateFromScale = LocalScale;
                 _scaleTimeReceived = Time.GameTime;
-                if (!ScaleNetworkSettings.Interpolate) Transform.Scale = _interpolateToScale;
+                if (!ScaleNetworkSettings.Interpolate) LocalScale = _interpolateToScale;
             }
         }
 
         protected internal override string ToJson()
         {
-            NetworkTransformInitializationJson initJson = new NetworkTransformInitializationJson();
-            initJson.Position = _lastSentPosition;
-            initJson.Rotation = _lastRotation;
-            initJson.Scale = _lastSentScale;
-            initJson.PositionNetworkSettings = PositionNetworkSettings;
-            initJson.RotationNetworkSettings = RotationNetworkSettings;
-            initJson.ScaleNetworkSettings = ScaleNetworkSettings;
-            return JsonConvert.SerializeObject(initJson);
+            return JsonConvert.SerializeObject(new NetworkTransformInitializationJson
+            {
+                Position = _lastSentPosition,
+                Rotation = _lastRotation,
+                Scale = _lastSentScale,
+                PositionNetworkSettings = PositionNetworkSettings,
+                RotationNetworkSettings = RotationNetworkSettings,
+                ScaleNetworkSettings = ScaleNetworkSettings
+            });
         }
 
         protected internal override void SetJson(string json)
@@ -319,9 +253,9 @@ namespace Atlas2D.Networking
             PositionNetworkSettings = initJson.PositionNetworkSettings;
             RotationNetworkSettings = initJson.RotationNetworkSettings;
             ScaleNetworkSettings = initJson.ScaleNetworkSettings;
-            _interpolateToPosition = _interpolateFromPosition = Transform.Position = initJson.Position;
-            _interpolateToRotation = _interpolateFromRotation = Transform.Rotation = initJson.Rotation;
-            _interpolateToScale = _interpolateFromScale = Transform.Scale = initJson.Scale;
+            _interpolateToPosition = _interpolateFromPosition = LocalPosition = initJson.Position;
+            _interpolateToRotation = _interpolateFromRotation = LocalRotation = initJson.Rotation;
+            _interpolateToScale = _interpolateFromScale = LocalScale = initJson.Scale;
             _rotationTimeReceived = Time.GameTime;
             _scaleTimeReceived = Time.GameTime;
             _interpolatePositionTime = 0;
